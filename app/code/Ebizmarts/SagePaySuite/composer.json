@@ -1,0 +1,17 @@
+{
+    "name": "ebizmarts/sagepaysuite",
+    "description": "SagePay's payment gateway integration for Europe.",
+    "require": {
+        "php": "5.5.*"
+    },
+    "type": "magento2-module",
+    "version": "0.0.1",
+    "extra": {
+        "map": [
+            [
+                "*",
+                "Ebizmarts/SagePaySuite"
+            ]
+        ]
+    }
+}
