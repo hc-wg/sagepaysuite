@@ -9,7 +9,7 @@
     <system>
         <section id="sagepaysuite" type="text" sortOrder="390" showInDefault="1" showInWebsite="1" showInStore="1">
             <tab>sales</tab>
-            <label>SagePay Suite</label>
+            <label>Sage Pay Suite</label>
             <resource>Magento_Config::config</resource>
             <group id="version" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                 <frontend_model>Ebizmarts\SagePaySuite\Block\Adminhtml\System\Config\Fieldset\Version</frontend_model>
