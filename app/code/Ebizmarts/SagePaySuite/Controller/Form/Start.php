@@ -21,34 +21,38 @@ class Start extends AbstractForm
         try {
             $this->_initCheckout();
 
-            if ($this->_getQuote()->getIsMultiShipping()) {
-                $this->_getQuote()->setIsMultiShipping(false);
-                $this->_getQuote()->removeAllAddresses();
-            }
+//            if ($this->_getQuote()->getIsMultiShipping()) {
+//                $this->_getQuote()->setIsMultiShipping(false);
+//                $this->_getQuote()->removeAllAddresses();
+//            }
+//
+//            $customerData = $this->_customerSession->getCustomerDataObject();
+//            $quoteCheckoutMethod = $this->_getQuote()->getCheckoutMethod();
+//            if ($customerData->getId()) {
+//                $this->_checkout->setCustomerWithAddressChange(
+//                    $customerData,
+//                    $this->_getQuote()->getBillingAddress(),
+//                    $this->_getQuote()->getShippingAddress()
+//                );
+//            } elseif ((!$quoteCheckoutMethod || $quoteCheckoutMethod != Onepage::METHOD_REGISTER)
+//                && !$this->_objectManager->get('Magento\Checkout\Helper\Data')->isAllowedGuestCheckout(
+//                    $this->_getQuote(),
+//                    $this->_getQuote()->getStoreId()
+//                )
+//            ) {
+//                $this->messageManager->addNotice(
+//                    __('To check out, please sign in with your email address.')
+//                );
+//
+//                $this->_objectManager->get('Magento\Checkout\Helper\ExpressRedirect')->redirectLogin($this);
+//                $this->_customerSession->setBeforeAuthUrl($this->_url->getUrl('*/*/*', ['_current' => true]));
+//
+//                return;
+//            }
 
-            $customerData = $this->_customerSession->getCustomerDataObject();
-            $quoteCheckoutMethod = $this->_getQuote()->getCheckoutMethod();
-            if ($customerData->getId()) {
-                $this->_checkout->setCustomerWithAddressChange(
-                    $customerData,
-                    $this->_getQuote()->getBillingAddress(),
-                    $this->_getQuote()->getShippingAddress()
-                );
-            } elseif ((!$quoteCheckoutMethod || $quoteCheckoutMethod != Onepage::METHOD_REGISTER)
-                && !$this->_objectManager->get('Magento\Checkout\Helper\Data')->isAllowedGuestCheckout(
-                    $this->_getQuote(),
-                    $this->_getQuote()->getStoreId()
-                )
-            ) {
-                $this->messageManager->addNotice(
-                    __('To check out, please sign in with your email address.')
-                );
 
-                $this->_objectManager->get('Magento\Checkout\Helper\ExpressRedirect')->redirectLogin($this);
-                $this->_customerSession->setBeforeAuthUrl($this->_url->getUrl('*/*/*', ['_current' => true]));
 
-                return;
-            }
+            //$orderId = $this->_cartManagement->placeOrder($quote->getId());
 
             $this->_checkout->start(
                 $this->_url->getUrl('*/*/placeOrder'),
@@ -75,7 +79,7 @@ class Start extends AbstractForm
         $html_form = "<form action='" . $this->_checkout->getRedirectUrl() . "' ";
         $html_form .= "method='POST' id='form_" . "sagepaysuiteform" . "' name='form_" . "sagepaysuiteform" . "'>";
         $html_form .= "<input type='hidden' name='VPSProtocol' value='" . $this->_config->getVPSProtocol() . "'/>";
-        $html_form .= "<input type='hidden' name='TxType' value='" . $this->_config->getPaymentAction() . "'/>";
+        $html_form .= "<input type='hidden' name='TxType' value='" . $this->_config->getSagepayPaymentAction() . "'/>";
         $html_form .= "<input type='hidden' name='Vendor' value='" . $this->_config->getVendorname() . "'/>";
         $html_form .= "<input type='hidden' name='Crypt' value='" . $this->_checkout->getFormCrypt() . "'/>";
         $html_form .= "</form>";

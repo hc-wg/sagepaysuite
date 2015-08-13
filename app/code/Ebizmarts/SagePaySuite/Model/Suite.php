@@ -47,8 +47,8 @@ class Suite
      * @param \Ebizmarts\SagePaySuite\Model\InfoFactory $infoFactory
      */
     public function __construct(
-        \Magento\Paypal\Model\Config\Factory $configFactory,
-        \Magento\Paypal\Model\InfoFactory $infoFactory
+        \Ebizmarts\SagePaySuite\Model\Config\Factory $configFactory,
+        \Ebizmarts\SagePaySuite\Model\InfoFactory $infoFactory
     ) {
         $this->_configFactory = $configFactory;
         $this->_infoFactory = $infoFactory;
@@ -127,28 +127,7 @@ class Suite
      */
     public function importPaymentInfo(\Magento\Framework\Object $from, \Magento\Payment\Model\InfoInterface $to)
     {
-//        // update PayPal-specific payment information in the payment object
-//        $this->getInfo()->importToPayment($from, $to);
-//
-//        /**
-//         * Detect payment review and/or frauds
-//         * PayPal pro API returns fraud results only in the payment call response
-//         */
-//        if ($from->getDataUsingMethod(\Magento\Paypal\Model\Info::IS_FRAUD)) {
-//            $to->setIsTransactionPending(true);
-//            $to->setIsFraudDetected(true);
-//        } elseif ($this->getInfo()->isPaymentReviewRequired($to)) {
-//            $to->setIsTransactionPending(true);
-//        }
-//
-//        // give generic info about transaction state
-//        if ($this->getInfo()->isPaymentSuccessful($to)) {
-//            $to->setIsTransactionApproved(true);
-//        } elseif ($this->getInfo()->isPaymentFailed($to)) {
-//            $to->setIsTransactionDenied(true);
-//        }
-//
-//        return $this;
+
     }
 
     /**
@@ -160,16 +139,6 @@ class Suite
      */
     public function void(\Magento\Framework\Object $payment)
     {
-//        $authTransactionId = $this->_getParentTransactionId($payment);
-//        if ($authTransactionId) {
-//            $api = $this->getApi();
-//            $api->setPayment($payment)->setAuthorizationId($authTransactionId)->callDoVoid();
-//            $this->importPaymentInfo($api, $payment);
-//        } else {
-//            throw new \Magento\Framework\Exception\LocalizedException(
-//                __('You need an authorization transaction to void.')
-//            );
-//        }
     }
 
     /**
@@ -182,25 +151,6 @@ class Suite
      */
     public function capture(\Magento\Framework\Object $payment, $amount)
     {
-//        $authTransactionId = $this->_getParentTransactionId($payment);
-//        if (!$authTransactionId) {
-//            return false;
-//        }
-//        $api = $this->getApi()->setAuthorizationId(
-//            $authTransactionId
-//        )->setIsCaptureComplete(
-//            $payment->getShouldCloseParentTransaction()
-//        )->setAmount(
-//            $amount
-//        )->setCurrencyCode(
-//            $payment->getOrder()->getBaseCurrencyCode()
-//        )->setInvNum(
-//            $payment->getOrder()->getIncrementId()
-//        );
-//        // TODO: pass 'NOTE' to API
-//
-//        $api->callDoCapture();
-//        $this->_importCaptureResultToPayment($api, $payment);
     }
 
     /**
@@ -211,35 +161,10 @@ class Suite
      * @return void
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-//    public function refund(\Magento\Framework\Object $payment, $amount)
-//    {
-//        $captureTxnId = $this->_getParentTransactionId($payment);
-//        if ($captureTxnId) {
-//            $api = $this->getApi();
-//            $order = $payment->getOrder();
-//            $api->setPayment(
-//                $payment
-//            )->setTransactionId(
-//                $captureTxnId
-//            )->setAmount(
-//                $amount
-//            )->setCurrencyCode(
-//                $order->getBaseCurrencyCode()
-//            );
-//            $canRefundMore = $payment->getCreditmemo()->getInvoice()->canRefund();
-//            $isFullRefund = !$canRefundMore &&
-//                0 == (double)$order->getBaseTotalOnlineRefunded() + (double)$order->getBaseTotalOfflineRefunded();
-//            $api->setRefundType(
-//                $isFullRefund ? \Magento\Paypal\Model\Config::REFUND_TYPE_FULL : \Magento\Paypal\Model\Config::REFUND_TYPE_PARTIAL
-//            );
-//            $api->callRefundTransaction();
-//            $this->_importRefundResultToPayment($api, $payment, $canRefundMore);
-//        } else {
-//            throw new \Magento\Framework\Exception\LocalizedException(
-//                __('We can\'t issue a refund transaction because there is no capture transaction.')
-//            );
-//        }
-//    }
+    public function refund(\Magento\Framework\Object $payment, $amount)
+    {
+
+    }
 
     /**
      * Cancel payment
@@ -247,63 +172,10 @@ class Suite
      * @param \Magento\Framework\Object $payment
      * @return void
      */
-//    public function cancel(\Magento\Framework\Object $payment)
-//    {
-//        if (!$payment->getOrder()->getInvoiceCollection()->count()) {
-//            $this->void($payment);
-//        }
-//    }
+    public function cancel(\Magento\Framework\Object $payment)
+    {
 
-    /**
-     * Check whether can do payment review
-     *
-     * @param \Magento\Payment\Model\InfoInterface $payment
-     * @return bool
-     */
-//    public function canReviewPayment(\Magento\Payment\Model\InfoInterface $payment)
-//    {
-//        $pendingReason = $payment->getAdditionalInformation(\Magento\Paypal\Model\Info::PENDING_REASON_GLOBAL);
-//        return $this->_isPaymentReviewRequired(
-//            $payment
-//        ) && $pendingReason != \Magento\Paypal\Model\Info::PAYMENTSTATUS_REVIEW;
-//    }
-
-    /**
-     * Check whether payment review is required
-     *
-     * @param \Magento\Payment\Model\InfoInterface $payment
-     * @return bool
-     */
-//    protected function _isPaymentReviewRequired(\Magento\Payment\Model\InfoInterface $payment)
-//    {
-//        return \Magento\Paypal\Model\Info::isPaymentReviewRequired($payment);
-//
-//    }
-
-    /**
-     * Perform the payment review
-     *
-     * @param \Magento\Payment\Model\InfoInterface $payment
-     * @param string $action
-     * @return bool
-     */
-//    public function reviewPayment(\Magento\Payment\Model\InfoInterface $payment, $action)
-//    {
-//        $api = $this->getApi()->setTransactionId($payment->getLastTransId());
-//
-//        // check whether the review is still needed
-//        $api->callGetTransactionDetails();
-//        $this->importPaymentInfo($api, $payment);
-//        if (!$this->getInfo()->isPaymentReviewRequired($payment)) {
-//            return false;
-//        }
-//
-//        // perform the review action
-//        $api->setAction($action)->callManagePendingTransactionStatus();
-//        $api->callGetTransactionDetails();
-//        $this->importPaymentInfo($api, $payment);
-//        return true;
-//    }
+    }
 
     /**
      * Fetch transaction details info
@@ -314,44 +186,7 @@ class Suite
      */
     public function fetchTransactionInfo(\Magento\Payment\Model\InfoInterface $payment, $transactionId)
     {
-//        $api = $this->getApi()->setTransactionId($transactionId)->setRawResponseNeeded(true);
-//        $api->callGetTransactionDetails();
-//        $this->importPaymentInfo($api, $payment);
-//        $data = $api->getRawSuccessResponseData();
-//        return $data ? $data : [];
-    }
 
-    /**
-     * Import capture results to payment
-     *
-     * @param \Magento\Paypal\Model\Api\Nvp $api
-     * @param \Magento\Sales\Model\Order\Payment $payment
-     * @return void
-     */
-    protected function _importCaptureResultToPayment($api, $payment)
-    {
-//        $payment->setTransactionId($api->getTransactionId())->setIsTransactionClosed(false);
-//        $this->importPaymentInfo($api, $payment);
-    }
-
-    /**
-     * Import refund results to payment
-     *
-     * @param \Magento\Paypal\Model\Api\Nvp $api
-     * @param \Magento\Sales\Model\Order\Payment $payment
-     * @param bool $canRefundMore
-     * @return void
-     */
-    protected function _importRefundResultToPayment($api, $payment, $canRefundMore)
-    {
-//        $payment->setTransactionId(
-//            $api->getRefundTransactionId()
-//        )->setIsTransactionClosed(
-//            1 // refund initiated by merchant
-//        )->setShouldCloseParentTransaction(
-//            !$canRefundMore
-//        );
-//        $this->importPaymentInfo($api, $payment);
     }
 
     /**

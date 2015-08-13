@@ -55,7 +55,8 @@ abstract class AbstractConfig implements ConfigInterface
      */
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-    ) {
+    )
+    {
         $this->_scopeConfig = $scopeConfig;
     }
 
@@ -181,64 +182,22 @@ abstract class AbstractConfig implements ConfigInterface
      * @param string $method Method code
      * @return bool
      *
-     * @todo: refactor this
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function isMethodActive($method)
     {
-//        switch ($method) {
-//            case Config::METHOD_WPS_EXPRESS:
-//            case Config::METHOD_WPP_EXPRESS:
-//                $isEnabled = $this->_scopeConfig->isSetFlag(
-//                    'payment/' . Config::METHOD_WPS_EXPRESS .'/active',
-//                    ScopeInterface::SCOPE_STORE,
-//                    $this->_storeId
-//                )
-//                || $this->_scopeConfig->isSetFlag(
-//                    'payment/' . Config::METHOD_WPP_EXPRESS .'/active',
-//                    ScopeInterface::SCOPE_STORE,
-//                    $this->_storeId
-//                );
-//                $method = Config::METHOD_WPP_EXPRESS;
-//                break;
-//            case Config::METHOD_WPS_BML:
-//            case Config::METHOD_WPP_BML:
-//                $isEnabled = $this->_scopeConfig->isSetFlag(
-//                    'payment/' . Config::METHOD_WPS_BML .'/active',
-//                    ScopeInterface::SCOPE_STORE,
-//                    $this->_storeId
-//                )
-//                || $this->_scopeConfig->isSetFlag(
-//                    'payment/' . Config::METHOD_WPP_BML .'/active',
-//                    ScopeInterface::SCOPE_STORE,
-//                    $this->_storeId
-//                );
-//                $method = Config::METHOD_WPP_BML;
-//                break;
-//            case Config::METHOD_PAYMENT_PRO:
-//            case Config::METHOD_PAYFLOWPRO:
-//                $isEnabled = $this->_scopeConfig->isSetFlag(
-//                    'payment/' . Config::METHOD_PAYMENT_PRO .'/active',
-//                    ScopeInterface::SCOPE_STORE,
-//                    $this->_storeId
-//                )
-//                || $this->_scopeConfig->isSetFlag(
-//                    'payment/' . Config::METHOD_PAYFLOWPRO .'/active',
-//                    ScopeInterface::SCOPE_STORE,
-//                    $this->_storeId
-//                );
-//                $method = Config::METHOD_PAYFLOWPRO;
-//                break;
-//            default:
-//                $isEnabled = $this->_scopeConfig->isSetFlag(
-//                    "payment/{$method}/active",
-//                    ScopeInterface::SCOPE_STORE,
-//                    $this->_storeId
-//                );
-//        }
+        $isEnabled = false;
+        switch ($method) {
+            case Config::METHOD_FORM:
+                $isEnabled = $this->_scopeConfig->isSetFlag(
+                    'sagepaysuite/' . Config::METHOD_FORM . '/active',
+                    ScopeInterface::SCOPE_STORE,
+                    $this->_storeId
+                );
+                break;
+        }
 
-        //return $this->isMethodSupportedForCountry($method) && $isEnabled;
-        return true;
+        return $this->isMethodSupportedForCountry($method) && $isEnabled;
     }
 
     /**
@@ -270,18 +229,4 @@ abstract class AbstractConfig implements ConfigInterface
     {
         $this->pathPattern = $pathPattern;
     }
-
-    /**
-     * BN code getter
-     *
-     * @return string
-     */
-//    public function getBuildNotationCode()
-//    {
-//        return $this->_scopeConfig->getValue(
-//            'paypal/bncode',
-//            ScopeInterface::SCOPE_STORE,
-//            $this->_storeId
-//        );
-//    }
 }

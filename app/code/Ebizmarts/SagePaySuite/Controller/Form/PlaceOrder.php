@@ -23,7 +23,7 @@ class PlaceOrder extends AbstractForm
             $response = $this->decodeSagePayResponse($this->getRequest()->getParam(\Ebizmarts\SagePaySuite\Model\Config::VAR_Crypt));
 
             //mark order as paid
-            //@toDo (the order is only saved upon return for now.
+            //@toDo (the order is only saved upon return for now)
 
             $this->_initCheckout();
             $this->_checkout->returnFromSagePay();

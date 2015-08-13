@@ -56,7 +56,6 @@ class SagePayConfigProvider implements ConfigProviderInterface
         ConfigFactory $configFactory,
         ResolverInterface $localeResolver,
         CurrentCustomer $currentCustomer,
-        //PaypalHelper $paypalHelper,
         PaymentHelper $paymentHelper
     ) {
         $this->localeResolver = $localeResolver;
