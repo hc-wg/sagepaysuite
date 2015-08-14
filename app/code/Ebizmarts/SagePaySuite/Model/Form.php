@@ -5,9 +5,6 @@
  */
 namespace Ebizmarts\SagePaySuite\Model;
 
-//use Magento\Paypal\Model\Api\Nvp;
-use Ebizmarts\SagePaySuite\Model\Api\ProcessableException as ApiProcessableException;
-//use Magento\Paypal\Model\Express\Checkout as ExpressCheckout;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Quote\Model\Quote;
@@ -177,7 +174,6 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         SuiteFactory $suiteFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\UrlInterface $urlBuilder,
-        //\Magento\Paypal\Model\CartFactory $cartFactory,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Framework\Exception\LocalizedExceptionFactory $exception,
         \Magento\Framework\Model\Resource\AbstractResource $resource = null,

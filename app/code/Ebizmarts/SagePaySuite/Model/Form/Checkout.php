@@ -22,29 +22,7 @@ use Magento\Quote\Model\Quote\Address;
  */
 class Checkout
 {
-    /**
-     * Cache ID prefix for "pal" lookup
-     * @var string
-     */
-    //const PAL_CACHE_ID = 'paypal_express_checkout_pal';
 
-    /**
-     * Keys for passthrough variables in sales/quote_payment and sales/order_payment
-     * Uses additional_information as storage
-     */
-//    const PAYMENT_INFO_TRANSPORT_TOKEN    = 'paypal_express_checkout_token';
-//    const PAYMENT_INFO_TRANSPORT_SHIPPING_OVERRIDDEN = 'paypal_express_checkout_shipping_overridden';
-//    const PAYMENT_INFO_TRANSPORT_SHIPPING_METHOD = 'paypal_express_checkout_shipping_method';
-//    const PAYMENT_INFO_TRANSPORT_PAYER_ID = 'paypal_express_checkout_payer_id';
-//    const PAYMENT_INFO_TRANSPORT_REDIRECT = 'paypal_express_checkout_redirect_required';
-//    const PAYMENT_INFO_TRANSPORT_BILLING_AGREEMENT = 'paypal_ec_create_ba';
-
-    /**
-     * Flag which says that was used PayPal Express Checkout button for checkout
-     * Uses additional_information as storage
-     * @var string
-     */
-    //const PAYMENT_INFO_BUTTON = 'button';
 
     /**
      * @var \Magento\Quote\Model\Quote
@@ -57,20 +35,6 @@ class Checkout
      * @var SuiteConfig
      */
     protected $_config;
-
-    /**
-     * API instance
-     *
-     * @var \Magento\Paypal\Model\Api\Nvp
-     */
-    //protected $_api;
-
-    /**
-     * Api Model Type
-     *
-     * @var string
-     */
-    //protected $_apiType = 'Magento\Paypal\Model\Api\Nvp';
 
     /**
      * Payment method type
@@ -134,13 +98,6 @@ class Checkout
     protected $_customerId;
 
     /**
-     * Billing agreement that might be created during order placing
-     *
-     * @var \Magento\Paypal\Model\Billing\Agreement
-     */
-    //protected $_billingAgreement;
-
-    /**
      * Order
      *
      * @var \Magento\Sales\Model\Order
@@ -202,16 +159,6 @@ class Checkout
      * @var \Magento\Checkout\Model\Type\OnepageFactory
      */
     protected $_checkoutOnepageFactory;
-
-    /**
-     * @var \Magento\Paypal\Model\Billing\AgreementFactory
-     */
-    //protected $_agreementFactory;
-
-    /**
-     * @var \Magento\Paypal\Model\Api\Type\Factory
-     */
-    //protected $_apiTypeFactory;
 
     /**
      * @var \Magento\Framework\Object\Copy
@@ -384,8 +331,6 @@ class Checkout
     }
 
     /**
-     * Reserve order ID for specified quote and start checkout on PayPal
-     *
      * @param string $returnUrl
      * @param string $cancelUrl
      * @param bool|null $button
@@ -536,11 +481,6 @@ class Checkout
     }
 
     /**
-     * Update quote when returned from PayPal
-     * rewrite billing address by paypal
-     * save old billing address for new customer
-     * export shipping address in case address absence
-     *
      * @param string $token
      * @return void
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)

@@ -31,9 +31,8 @@ class Form extends \Magento\Payment\Block\Form
 
     /**
      * @param Context $context
-     * @param ConfigFactory $paypalConfigFactory
-     * @param ResolverInterface $localeResolver
-     * @param Data $paypalData
+     * @param ConfigFactory $sagepayConfigFactory
+     * @param Data $sagepayData
      * @param CurrentCustomer $currentCustomer
      * @param array $data
      */

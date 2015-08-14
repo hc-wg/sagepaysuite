@@ -9,7 +9,6 @@ use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\Locale\ResolverInterface;
 use Magento\Customer\Helper\Session\CurrentCustomer;
 use Magento\Payment\Helper\Data as PaymentHelper;
-//use Magento\Paypal\Helper\Data as PaypalHelper;
 
 class SagePayConfigProvider implements ConfigProviderInterface
 {
@@ -49,7 +48,6 @@ class SagePayConfigProvider implements ConfigProviderInterface
      * @param ConfigFactory $configFactory
      * @param ResolverInterface $localeResolver
      * @param CurrentCustomer $currentCustomer
-     * @param PaypalHelper $paypalHelper
      * @param PaymentHelper $paymentHelper
      */
     public function __construct(
