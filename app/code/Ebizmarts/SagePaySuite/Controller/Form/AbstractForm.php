@@ -7,10 +7,9 @@
 namespace Ebizmarts\SagePaySuite\Controller\Form;
 
 use Magento\Checkout\Model\Type\Onepage;
-use Magento\Checkout\Controller\Express\RedirectLoginInterface;
-use Magento\Framework\App\Action\Action as AppAction;
+use Magento\Quote\Api\CartManagementInterface;
 
-class AbstractForm extends AppAction implements RedirectLoginInterface
+class AbstractForm extends \Magento\Framework\App\Action\Action
 {
 
     /**
@@ -97,6 +96,11 @@ class AbstractForm extends AppAction implements RedirectLoginInterface
     protected $_logger;
 
     /**
+     * @var \Magento\Quote\Api\CartManagementInterface
+     */
+    protected $_cartManagement;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      * @param \Magento\Customer\Model\Session $customerSession
      * @param \Magento\Checkout\Model\Session $checkoutSession
@@ -116,7 +120,8 @@ class AbstractForm extends AppAction implements RedirectLoginInterface
         \Magento\Framework\Session\Generic $sagepaysuiteSession,
         \Magento\Framework\Url\Helper\Data $urlHelper,
         \Magento\Customer\Model\Url $customerUrl,
-        \Psr\Log\LoggerInterface $logger
+        \Psr\Log\LoggerInterface $logger,
+        \Magento\Quote\Api\CartManagementInterface $cartManagement
     ) {
         $this->_customerSession = $customerSession;
         $this->_checkoutSession = $checkoutSession;
@@ -126,6 +131,7 @@ class AbstractForm extends AppAction implements RedirectLoginInterface
         $this->_urlHelper = $urlHelper;
         $this->_customerUrl = $customerUrl;
         $this->_logger = $logger;
+        $this->_cartManagement = $cartManagement;
 
         parent::__construct($context);
         $this->_config = $this->_objectManager->create($this->_configType, []);
@@ -245,5 +251,13 @@ class AbstractForm extends AppAction implements RedirectLoginInterface
     public function getActionFlagList()
     {
         return [];
+    }
+
+    /**
+     * @return \Magento\Checkout\Model\Session
+     */
+    protected function _getCheckout()
+    {
+        return $this->_objectManager->get('Magento\Checkout\Model\Session');
     }
 }

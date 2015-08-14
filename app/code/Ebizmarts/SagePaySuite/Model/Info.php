@@ -40,4 +40,17 @@ class Info
 
         return $result;
     }
+
+    public function getPublicPaymentInfo(\Magento\Payment\Model\InfoInterface $payment, $labelValuesOnly = false)
+    {
+        $result = array();
+
+        $result[\Ebizmarts\SagePaySuite\Model\Config::VAR_VPSTxId] = $payment->getAdditionalInformation(\Ebizmarts\SagePaySuite\Model\Config::VAR_VPSTxId);
+        $result["Card Type"] = $payment->getCcType();
+        $result["Card Expiration Date"] = $payment->getCcExpMonth();
+
+        return $result;
+    }
+
+
 }

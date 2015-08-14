@@ -30,7 +30,7 @@ class Cancel extends AbstractForm
                     ->unsLastSuccessQuoteId()
                     ->unsLastOrderId()
                     ->unsLastRealOrderId();
-                $this->messageManager->addSuccess(__('SagePay FORM Checkout and Order have been canceled.'));
+                $this->messageManager->addSuccess(__('SagePay FORM Checkout and order have been canceled.'));
             } else {
                 $this->messageManager->addSuccess(__('SagePay FORM Checkout has been canceled.'));
             }

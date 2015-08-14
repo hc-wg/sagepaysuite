@@ -33,18 +33,6 @@ class Info extends \Magento\Payment\Block\Info\Cc
     }
 
     /**
-     * Don't show CC type for non-CC methods
-     *
-     * @return string|null
-     */
-    public function getCcTypeName()
-    {
-        if (\Ebizmarts\SagePaySuite\Model\Config::getIsCreditCardMethod($this->getInfo()->getMethod())) {
-            return parent::getCcTypeName();
-        }
-    }
-
-    /**
      * Prepare SagePay-specific payment information
      *
      * @param \Magento\Framework\Object|array|null $transport
@@ -55,7 +43,11 @@ class Info extends \Magento\Payment\Block\Info\Cc
         $transport = parent::_prepareSpecificInformation($transport);
         $payment = $this->getInfo();
         $sagepayInfo = $this->_sagepayInfoFactory->create();
-        $info = $sagepayInfo->getPaymentInfo($payment, true);
+        if ($this->getIsSecureMode()) {
+            $info = $sagepayInfo->getPublicPaymentInfo($payment, true);
+        } else {
+            $info = $sagepayInfo->getPaymentInfo($payment, true);
+        }
         return $transport->addData($info);
     }
 }

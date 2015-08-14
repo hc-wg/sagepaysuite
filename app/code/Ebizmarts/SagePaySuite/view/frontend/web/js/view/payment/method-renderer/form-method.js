@@ -33,7 +33,6 @@ define(
             continueToSagePayForm: function() {
                 this.selectPaymentMethod();
                 setPaymentMethodAction();
-                //$.mage.redirect(window.checkoutConfig.payment.sagepaysuite.redirectUrl[this.item.method]);
                 return false;
             }
         });
