@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © 2015 Magento. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright © 2015 eBizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
  */
 
 namespace Ebizmarts\SagePaySuite\Model;
@@ -24,12 +24,6 @@ abstract class AbstractConfig implements ConfigInterface
     const PAYMENT_ACTION_AUTH = 'Authorization';
 
     const PAYMENT_ACTION_ORDER = 'Order';
-    /**#@-*/
-
-    /**
-     * PayPal Website Payments Pro - Express Checkout
-     */
-    //const METHOD_WPP_EXPRESS = 'paypal_express';
 
     /**
      * Current payment method code
