@@ -33,9 +33,9 @@
                                                                         <item name="sagepaysuiteform" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                        <!--<item name="sagepaysuitedirect" xsi:type="array">-->
-                                                                            <!--<item name="isBillingAddressRequired" xsi:type="boolean">true</item>-->
-                                                                        <!--</item>-->
+                                                                        <item name="sagepaysuitepi" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
                                                                     </item>
                                                                 </item>
                                                             </item>

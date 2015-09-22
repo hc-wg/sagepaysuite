@@ -21,7 +21,7 @@ class PaymentAction implements ArrayInterface
     {
         return [
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::PAYMENT_ACTION_PAYMENT,
+                'value' => \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE,
                 'label' => __('Payment - Authorize and Capture'),
             ]
         ];

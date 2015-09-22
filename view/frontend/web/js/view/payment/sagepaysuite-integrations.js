@@ -16,10 +16,10 @@ define(
         ) {
         'use strict';
         rendererList.push(
-//            {
-//                type: 'sagepaysuitedirect',
-//                component: 'Ebizmarts_SagePaySuite/js/view/payment/method-renderer/checkmo-method'
-//            },
+            {
+                type: 'sagepaysuitepi',
+                component: 'Ebizmarts_SagePaySuite/js/view/payment/method-renderer/pi-method'
+            },
             {
                 type: 'sagepaysuiteform',
                 component: 'Ebizmarts_SagePaySuite/js/view/payment/method-renderer/form-method'

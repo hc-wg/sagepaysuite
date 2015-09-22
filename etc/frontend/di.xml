@@ -7,11 +7,22 @@
 -->
 
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/ObjectManager/etc/config.xsd">
+
+    <virtualType name="Ebizmarts\SagePaySuite\Model\ConfigProviderPI" type="Magento\Payment\Model\CcGenericConfigProvider">
+        <arguments>
+            <argument name="methodCodes" xsi:type="array">
+                <item name="sagepaysuitepi" xsi:type="const">Ebizmarts\SagePaySuite\Model\Config::METHOD_PI</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
     <type name="Magento\Checkout\Model\CompositeConfigProvider">
         <arguments>
             <argument name="configProviders" xsi:type="array">
                 <item name="sagepaysuite_config_provider" xsi:type="object">Ebizmarts\SagePaySuite\Model\SagePayConfigProvider</item>
+                <item name="sagepaysuitepi_config_provider" xsi:type="object">Ebizmarts\SagePaySuite\Model\ConfigProviderPI</item>
             </argument>
         </arguments>
     </type>
+
 </config>
