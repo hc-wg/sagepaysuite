@@ -70,6 +70,12 @@ class Config implements ConfigInterface
     const URL_PI_API_TEST = 'https://test.sagepay.com/api/v1/';
 
     /**
+     * SagePay Status Codes
+     */
+    const SUCCESS_STATUS = '0000';
+    const AUTH3D_REQUIRED_STATUS = '2007';
+
+    /**
      * Current payment method code
      *
      * @var string

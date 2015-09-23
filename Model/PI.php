@@ -18,59 +18,58 @@ use Ebizmarts\SagePaySuite\Model\Api\PIRest;
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
-
 class PI extends \Magento\Payment\Model\Method\Cc
 {
 
     /**
      * @var string
      */
-    protected $_code                    = \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI;
+    protected $_code = \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI;
 
     /**
      * @var bool
      */
-    protected $_isGateway               = true;
+    protected $_isGateway = true;
 
     /**
      * @var bool
      */
-    protected $_canAuthorize            = true;
+    protected $_canAuthorize = true;
 
     /**
      * @var bool
      */
-    protected $_canCapture              = true;
+    protected $_canCapture = true;
 
     /**
      * @var bool
      */
-    protected $_canCapturePartial       = true;
+    protected $_canCapturePartial = true;
 
     /**
      * @var bool
      */
-    protected $_canRefund               = true;
+    protected $_canRefund = true;
 
     /**
      * @var bool
      */
-    protected $_canVoid                 = true;
+    protected $_canVoid = true;
 
     /**
      * @var bool
      */
-    protected $_canUseInternal          = true;
+    protected $_canUseInternal = true;
 
     /**
      * @var bool
      */
-    protected $_canUseCheckout          = true;
+    protected $_canUseCheckout = true;
 
     /**
      * @var bool
      */
-    protected $_canSaveCc               = false;
+    protected $_canSaveCc = false;
 
     /**
      * @var bool
@@ -136,7 +135,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
         \Magento\Framework\Model\Resource\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
-    ) {
+    )
+    {
         parent::__construct(
             $context,
             $registry,
@@ -156,6 +156,16 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $this->productMetaData = $productMetaData;
         $this->regionFactory = $regionFactory;
         $this->_pirestapi = $pirestapi;
+    }
+
+    public function assignData($data)
+    {
+        parent::assignData($data);
+        $infoInstance = $this->getInfoInstance();
+        $infoInstance->setAdditionalInformation('cc_last4', $data->getData('cc_last4'));
+        $infoInstance->setAdditionalInformation('merchant_session_Key', $data->getData('merchant_session_Key'));
+        $infoInstance->setAdditionalInformation('card_identifier', $data->getData('card_identifier'));
+        return $this;
     }
 
     /**
@@ -403,11 +413,11 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function capture(InfoInterface $payment, $amount)
     {
-        if($payment->getLastTransId()) {
-            //return $this->captureAuthorized($payment,$amount);
-            //@toDo
-            return null;
-        }
+//        if($payment->getLastTransId()) {
+//            //return $this->captureAuthorized($payment,$amount);
+//            //@toDo
+//            return null;
+//        }
 
         $order = $payment->getOrder();
         $billing = $order->getBillingAddress();
@@ -433,18 +443,41 @@ class PI extends \Magento\Payment\Model\Method\Cc
                     'postalCode' => $billing->getPostCode(),
                     'country' => $billing->getCountryId()
                 ],
-                'entryMethod' =>"Ecommerce"
+                'entryMethod' => "Ecommerce",
+                'apply3DSecure' => "Disable"
             ];
 
-            $transaction = $this->_pirestapi->capture($data);
+            if ($billing->getCountryId() == "US") {
+                $state = $billing->getRegionCode();
+                if (strlen($state) > 2) {
+                    $state = "CA"; //hardcoded as the code is not working correctly
+                }
+                $data["billingAddress"]["state"] = $state;
+            }
 
-            $payment->setTransactionId($transaction->id);
-            $payment->setIsTransactionClosed(1);
-//            $payment->setAdditionalInformation('cvc_check',$charge['source']['cvc_check']);
-//            $payment->setAdditionalInformation('address_line1_check',$charge['source']['address_line1_check']);
-//            $payment->setAdditionalInformation('address_zip_check',$charge['source']['address_zip_check']);
-        } catch(\Exception $e) {
-            throw new \Magento\Framework\Validator\Exception(__('Payment capture error.'));
+            $capture_result = $this->_pirestapi->capture($data);
+
+            if ($capture_result->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
+
+                $payment->setTransactionId($capture_result->transactionID);
+                $payment->setIsTransactionClosed(1);
+                $payment->setAdditionalInformation('statusCode', $capture_result->statusCode);
+                $payment->setAdditionalInformation('transactionType', $capture_result->transactionType);
+                $payment->setAdditionalInformation('statusDetail', $capture_result->statusDetail);
+
+            } elseif ($capture_result->statusCode == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS) {
+
+                //3D required
+                //@toDo
+
+            } else {
+                throw new \Magento\Framework\Validator\Exception(__('Invalid Sage Pay status.'));
+            }
+
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+            throw $apiException;
+        } catch (\Exception $e) {
+            throw new \Magento\Framework\Validator\Exception(__('Unable to capture payment.'));
         }
 
         return $this;
@@ -596,7 +629,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
     public function canVoid()
     {
         if (($order = $this->_registry->registry('current_order'))
-            && $order->getId() && $order->hasInvoices() ) {
+            && $order->getId() && $order->hasInvoices()
+        ) {
             return false;
         }
         return $this->_canVoid;
