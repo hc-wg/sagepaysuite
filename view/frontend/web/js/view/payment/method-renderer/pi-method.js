@@ -159,7 +159,7 @@ define(
                     placeOrder = placeOrderAction(this.getData(), false);
 
                     $.when(placeOrder).done(
-                        function(response){
+                        function(order_id,response, extra){
                             console.log("success");
                             window.location.replace(url.build('checkout/onepage/success/'));
                         }

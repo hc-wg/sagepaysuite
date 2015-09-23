@@ -27,6 +27,11 @@ class PI extends \Magento\Payment\Model\Method\Cc
     protected $_code = \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI;
 
     /**
+     * @var string
+     */
+    protected $_infoBlockType = 'Ebizmarts\SagePaySuite\Block\Info';
+
+    /**
      * @var bool
      */
     protected $_isGateway = true;
@@ -422,6 +427,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $order = $payment->getOrder();
         $billing = $order->getBillingAddress();
 
+        $vendorTxCode = substr($order->getId() . date('Y-m-d-H-i-s-') . time(), 0, 40);
+
         try {
             $data = [
                 'transactionType' => "Payment", //only supported method for now
@@ -431,8 +438,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
                         'cardIdentifier' => $payment->getAdditionalInformation("card_identifier")
                     ]
                 ],
-                'vendorTxCode' => substr($order->getId() . date('Y-m-d-H-i-s-') . time(), 0, 40),
-                'amount' => $amount,
+                'vendorTxCode' => $vendorTxCode,
+                'amount' => $amount * 100,
                 'currency' => $order->getBaseCurrencyCode(),
                 'description' => "Demo transaction",
                 'customerFirstName' => $billing->getFirstname(),
@@ -464,6 +471,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
                 $payment->setAdditionalInformation('statusCode', $capture_result->statusCode);
                 $payment->setAdditionalInformation('transactionType', $capture_result->transactionType);
                 $payment->setAdditionalInformation('statusDetail', $capture_result->statusDetail);
+                $payment->setAdditionalInformation('vendorTxCode', $vendorTxCode);
+                $payment->setCcLast4($payment->getAdditionalInformation("cc_last4"));
 
             } elseif ($capture_result->statusCode == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS) {
 
