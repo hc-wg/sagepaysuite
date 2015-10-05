@@ -7,7 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
 
-class Settings extends \Ebizmarts\SagePaySuite\Model\Api\Reporting
+class Settings
 {
 
 }

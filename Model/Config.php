@@ -23,22 +23,20 @@ class Config implements ConfigInterface
     const METHOD_PI = 'sagepaysuitepi';
 
     /**
-     * Payment actions
+     * Actions
      */
-    const PAYMENT_ACTION_PAYMENT = 'PAYMENT';
-    const PAYMENT_ACTION_DEFER = 'DEFER';
-    const PAYMENT_ACTION_AUTHENTICATE = 'AUTHENTICATE';
+    const ACTION_PAYMENT = 'PAYMENT';
+    const ACTION_DEFER = 'DEFER';
+    const ACTION_AUTHENTICATE = 'AUTHENTICATE';
+    const ACTION_VOID = 'VOID';
+    const ACTION_REFUND = 'REFUND';
+    const ACTION_POST = 'post';
 
     /**
      * SagePay MODES
      */
     const MODE_TEST = 'test';
     const MODE_LIVE = 'live';
-
-    /**
-     * SagePay ACTIONS
-     */
-    const ACTION_POST = 'post';
 
     /**
      * SagePay Vars map
@@ -68,6 +66,14 @@ class Config implements ConfigInterface
      */
     const URL_PI_API_LIVE = 'https://live.sagepay.com/api/v1/';
     const URL_PI_API_TEST = 'https://test.sagepay.com/api/v1/';
+    const URL_REPORTING_API_TEST = 'https://test.sagepay.com/access/access.htm';
+    const URL_REPORTING_API_LIVE = 'https://live.sagepay.com/access/access.htm';
+    const URL_SHARED_VOID_TEST = 'https://test.sagepay.com/gateway/service/void.vsp';
+    const URL_SHARED_VOID_LIVE = 'https://live.sagepay.com/gateway/service/void.vsp';
+    const URL_SHARED_REFUND_TEST = 'https://test.sagepay.com/gateway/service/refund.vsp';
+    const URL_SHARED_REFUND_LIVE = 'https://live.sagepay.com/gateway/service/refund.vsp';
+
+
 
     /**
      * SagePay Status Codes
@@ -212,22 +218,12 @@ class Config implements ConfigInterface
      */
     protected function _getSpecificConfigPath($fieldName)
     {
-        return "sagepaysuite/{$this->_methodCode}/{$fieldName}";
+        return "payment/sagepaysuite/{$this->_methodCode}/{$fieldName}";
     }
 
     protected function _getGlobalConfigPath($fieldName)
     {
-        return "sagepaysuite/global/{$fieldName}";
-    }
-
-    protected function _getReportingApiConfigPath($fieldName)
-    {
-        return "sagepaysuite/reportingapi/{$fieldName}";
-    }
-
-    protected function _getPaymentConfigPath($fieldName)
-    {
-        return "payment/{$this->_methodCode}/{$fieldName}";
+        return "payment/sagepaysuite/{$fieldName}";
     }
 
     /**
@@ -329,10 +325,10 @@ class Config implements ConfigInterface
 
     public function getPaymentAction(){
         $action = $this->getValue("payment_action");
-        $action = empty($action) ? self::PAYMENT_ACTION_PAYMENT : $action;
+        $action = empty($action) ? self::ACTION_PAYMENT : $action;
 
         switch($action){
-            case self::PAYMENT_ACTION_PAYMENT:
+            case self::ACTION_PAYMENT:
                 return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
                 break;
             default:
@@ -344,7 +340,7 @@ class Config implements ConfigInterface
     public function getSagepayPaymentAction(){
         $action = $this->getValue("payment_action");
 
-        return empty($action) ? self::PAYMENT_ACTION_PAYMENT : $action;
+        return empty($action) ? self::ACTION_PAYMENT : $action;
     }
 
     public function getVendorname(){
@@ -360,12 +356,8 @@ class Config implements ConfigInterface
     }
 
     public function getMode(){
-        return $this->getValue("mode");
-    }
-
-    public function getReportingApiMode(){
         return $this->_scopeConfig->getValue(
-            $this->_getReportingApiConfigPath("reporting_mode"),
+            $this->_getGlobalConfigPath("mode"),
             ScopeInterface::SCOPE_STORE,
             $this->_storeId
         );
@@ -373,7 +365,7 @@ class Config implements ConfigInterface
 
     public function getReportingApiUser(){
         return $this->_scopeConfig->getValue(
-            $this->_getReportingApiConfigPath("reporting_user"),
+            $this->_getGlobalConfigPath("reporting_user"),
             ScopeInterface::SCOPE_STORE,
             $this->_storeId
         );
@@ -381,37 +373,19 @@ class Config implements ConfigInterface
 
     public function getReportingApiPassword(){
         return $this->_scopeConfig->getValue(
-            $this->_getReportingApiConfigPath("reporting_password"),
+            $this->_getGlobalConfigPath("reporting_password"),
             ScopeInterface::SCOPE_STORE,
             $this->_storeId
         );
     }
 
     public function getPIPassword(){
-        return $this->_scopeConfig->getValue(
-            $this->_getPaymentConfigPath("password"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
-        );
+        return $this->getValue("password");
     }
 
     public function getPIKey(){
-        return $this->_scopeConfig->getValue(
-            $this->_getPaymentConfigPath("key"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
-        );
+        return $this->getValue("key");
     }
-
-    public function getPIMode(){
-        return $this->_scopeConfig->getValue(
-            $this->_getPaymentConfigPath("mode"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
-        );
-    }
-
-
 
     /**
      * @param string $pathPattern

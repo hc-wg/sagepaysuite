@@ -9,7 +9,9 @@ namespace Ebizmarts\SagePaySuite\Model;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Resource\Order\Payment\Transaction\CollectionFactory as TransactionCollectionFactory;
 use Magento\Payment\Model\InfoInterface;
-use Ebizmarts\SagePaySuite\Model\Api\PIRest;
+use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Api\PIRestApi;
+use Magento\Sales\Model\Order\Payment\Transaction as PaymentTransaction;
 
 /**
  * Class PI
@@ -101,28 +103,36 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     protected $regionFactory;
 
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRestApi
+     */
     protected $_pirestapi;
 
     /**
-     * @param \Magento\Framework\Model\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory
-     * @param \Magento\Framework\Api\AttributeValueFactory $customAttributeFactory
-     * @param \Magento\Payment\Helper\Data $paymentData
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \Magento\Payment\Model\Method\Logger $logger
-     * @param \Magento\Framework\Module\ModuleListInterface $moduleList
-     * @param \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate
-     * @param Config $config
-     * @param TransactionCollectionFactory $salesTransactionCollectionFactory
-     * @param \Magento\Framework\App\ProductMetadataInterface $productMetaData
-     * @param \Magento\Directory\Model\RegionFactory $regionFactory
-     * @param \Magento\Framework\Model\Resource\AbstractResource|null $resource
-     * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
-     * @param array $data
+     * @var \Ebizmarts\SagePaySuite\Model\Api\Transaction
+     */
+    protected $_transactionsApi;
+
+    /**
+     * @var \Ebizmarts\SagePaySuite\Helper\Data
+     */
+    protected $_suiteHelper;
+
+    /**
+     * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
+     */
+    protected $_transactionFactory;
+
+    /**
+     * @var \Magento\Framework\Message\ManagerInterface
+     */
+    protected $_messageManager;
+
+    /**
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
+
         \Magento\Framework\Model\Context $context,
         \Magento\Framework\Registry $registry,
         \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory,
@@ -133,10 +143,14 @@ class PI extends \Magento\Payment\Model\Method\Cc
         \Magento\Framework\Module\ModuleListInterface $moduleList,
         \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate,
         \Ebizmarts\SagePaySuite\Model\Config $config,
+        PIRestApi $pirestapi,
+        \Ebizmarts\SagePaySuite\Model\Api\Transaction $transactionsApi,
+        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
+        \Magento\Framework\App\RequestInterface $request,
         TransactionCollectionFactory $salesTransactionCollectionFactory,
         \Magento\Framework\App\ProductMetadataInterface $productMetaData,
         \Magento\Directory\Model\RegionFactory $regionFactory,
-        \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirestapi,
         \Magento\Framework\Model\Resource\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
@@ -161,6 +175,10 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $this->productMetaData = $productMetaData;
         $this->regionFactory = $regionFactory;
         $this->_pirestapi = $pirestapi;
+        $this->_transactionsApi = $transactionsApi;
+        $this->_suiteHelper = $suiteHelper;
+        $this->_transactionFactory = $transactionFactory;
+        $this->_messageManager = $context->getMessageManager();
     }
 
     public function assignData($data)
@@ -427,7 +445,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $order = $payment->getOrder();
         $billing = $order->getBillingAddress();
 
-        $vendorTxCode = substr($order->getId() . date('Y-m-d-H-i-s-') . time(), 0, 40);
+        $vendorTxCode = $this->_suiteHelper->generateVendorTxCode($order->getIncrementId());
 
         try {
             $data = [
@@ -484,8 +502,10 @@ class PI extends \Magento\Payment\Model\Method\Cc
             }
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+            $this->_logger->critical($apiException);
             throw $apiException;
         } catch (\Exception $e) {
+            $this->_logger->critical($e);
             throw new \Magento\Framework\Validator\Exception(__('Unable to capture payment.'));
         }
 
@@ -502,39 +522,37 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function refund(InfoInterface $payment, $amount)
     {
-//        $transactionId = $this->braintreeHelper->clearTransactionId($payment->getRefundTransactionId());
-//        try {
-//            $transaction = $this->braintreeTransaction->find($transactionId);
-//            $this->_debug($payment->getCcTransId());
-//            $this->_debug($transaction);
-//            if ($transaction->status === \Braintree_Transaction::SUBMITTED_FOR_SETTLEMENT) {
-//                if ($transaction->amount != $amount) {
-//                    $message = __('This refund is for a partial amount but the Transaction has not settled.')
-//                        ->getText();
-//                    $message .= ' ';
-//                    $message .= __('Please wait 24 hours before trying to issue a partial refund.')
-//                        ->getText();
-//                    throw new LocalizedException(
-//                        __($message)
-//                    );
-//                }
-//            }
-//
-//            $canVoid = ($transaction->status === \Braintree_Transaction::AUTHORIZED
-//                || $transaction->status === \Braintree_Transaction::SUBMITTED_FOR_SETTLEMENT);
-//            $result = $canVoid
-//                ? $this->braintreeTransaction->void($transactionId)
-//                : $this->braintreeTransaction->refund($transactionId, $amount);
-//            $this->_debug($result);
-//            if ($result->success) {
-//                $payment->setIsTransactionClosed(1);
-//            } else {
-//                throw new LocalizedException($this->errorHelper->parseBraintreeError($result));
-//            }
-//        } catch (\Exception $e) {
-//            $message = $e->getMessage();
-//            throw new LocalizedException(__('There was an error refunding the transaction: %1.', $message));
-//        }
+
+        try {
+
+            $transactionId = $payment->getLastTransId();
+            $order = $payment->getOrder();
+
+            $result = $this->_transactionsApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
+            $result = $result["data"];
+
+            //create refund transaction
+            $refundTransaction = $this->_transactionFactory->create()
+                ->setOrderPaymentObject($payment)
+                ->setTxnId($result["VPSTxId"])
+                ->setParentTxnId($transactionId)
+                ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_REFUND)
+                ->setPaymentId($payment->getId());
+
+            $refundTransaction->save();
+            $refundTransaction->setIsClosed(true);
+
+            $this->_messageManager->addSuccess(__("Sage Pay transaction " . $transactionId . " successfully refunded."));
+
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+            $this->_logger->critical($apiException);
+            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
+
+        } catch (\Exception $e) {
+            $this->_logger->critical($e);
+            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId));
+        }
+
         return $this;
     }
 
@@ -548,48 +566,30 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function void(InfoInterface $payment)
     {
-//        $transactionIds = $this->getTransactionsToVoid($payment);
-//        $message = false;
-//        foreach ($transactionIds as $transactionId) {
-//            $transaction = $this->braintreeTransaction->find($transactionId);
-//            if ($transaction->status !== \Braintree_Transaction::SUBMITTED_FOR_SETTLEMENT &&
-//                $transaction->status !== \Braintree_Transaction::AUTHORIZED) {
-//                throw new LocalizedException(
-//                    __('Some transactions are already settled or voided and cannot be voided.')
-//                );
-//            }
-//            if ($transaction->status === \Braintree_Transaction::SUBMITTED_FOR_SETTLEMENT) {
-//                $message = __('Voided capture.') ;
-//            }
-//        }
-//        $errors = '';
-//        foreach ($transactionIds as $transactionId) {
-//            $this->_debug('void-' . $transactionId);
-//            $result = $this->braintreeTransaction->void($transactionId);
-//            $this->_debug($result);
-//            if (!$result->success) {
-//                $errors .= ' ' . $this->errorHelper->parseBraintreeError($result)->getText();
-//            } elseif ($message) {
-//                $payment->setMessage($message);
-//            }
-//        }
-//        if ($errors) {
-//            throw new LocalizedException(__('There was an error voiding the transaction: %1.', $errors));
-//        } else {
-//            $match = true;
-//            foreach ($transactionIds as $transactionId) {
-//                $collection = $this->salesTransactionCollectionFactory->create()
-//                    ->addFieldToFilter('parent_txn_id', ['eq' => $transactionId])
-//                    ->addFieldToFilter('txn_type', PaymentTransaction::TYPE_VOID);
-//                if ($collection->getSize() < 1) {
-//                    $match = false;
-//                }
-//            }
-//            if ($match) {
-//                $payment->setIsTransactionClosed(1);
-//            }
-//        }
-//        return $this;
+        $transaction_id = $payment->getLastTransId();
+
+        try {
+
+            $result = $this->_transactionsApi->voidTransaction($transaction_id);
+            $result = $result["data"];
+
+
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+
+            if ($apiException->getCode() == \Ebizmarts\SagePaySuite\Model\Api\ApiException::INVALID_TRANSACTION_STATE) {
+                //unable to void transaction
+                throw new LocalizedException(__('Unable to VOID Sage Pay transaction ' . $transaction_id . ', you will need to refund it instead.'));
+            } else {
+                $this->_logger->critical($apiException);
+                throw $apiException;
+            }
+
+        } catch (\Exception $e) {
+            $this->_logger->critical($e);
+            throw new LocalizedException(__('There was an error voiding transaction ' . $transaction_id));
+        }
+
+        return $this;
     }
 
     /**
@@ -601,12 +601,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function cancel(InfoInterface $payment)
     {
-//        try {
-//            $this->void($payment);
-//        } catch (\Exception $e) {
-//            $this->_logger->critical($e);
-//            throw new LocalizedException(__('There was an error voiding the transaction: %1.', $e->getMessage()));
-//        }
+        $this->void($payment);
         return $this;
     }
 
@@ -637,11 +632,11 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function canVoid()
     {
-        if (($order = $this->_registry->registry('current_order'))
-            && $order->getId() && $order->hasInvoices()
-        ) {
-            return false;
-        }
+//        if (($order = $this->_registry->registry('current_order'))
+//            && $order->getId() && $order->hasInvoices()
+//        ) {
+//            return false;
+//        }
         return $this->_canVoid;
     }
 
