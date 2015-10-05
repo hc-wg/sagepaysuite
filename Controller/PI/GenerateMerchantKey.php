@@ -6,20 +6,24 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\PI;
 
-use Ebizmarts\SagePaySuite\Model\Api\PIRest;
-use Magento\Framework\Webapi\Exception;
+
 use Magento\Framework\Controller\ResultFactory;
 
 
 class GenerateMerchantKey extends \Magento\Framework\App\Action\Action
 {
-
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRestApi
+     */
     protected $_pirest;
 
-
+    /**
+     * @param \Magento\Framework\App\Action\Context $context
+     * @param \Ebizmarts\SagePaySuite\Model\Api\PIRestApi $pirest
+     */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirest
+        \Ebizmarts\SagePaySuite\Model\Api\PIRestApi $pirest
     )
     {
         parent::__construct($context);
