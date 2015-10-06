@@ -372,7 +372,7 @@ class Checkout
 //        }
 
         $this->_crypt = $this->makeCrypt($successUrl, $failureUrl);
-        $this->_redirectUrl = $this->_config->getSagePayFormUrl($this->_config->getMode(),SuiteConfig::ACTION_POST);
+        //$this->_redirectUrl = $this->_config->getSagePayFormUrl($this->_config->getMode(),SuiteConfig::ACTION_POST);
     }
 
     protected function makeCrypt($successUrl, $failureUrl) {

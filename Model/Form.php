@@ -26,12 +26,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     /**
      * @var string
      */
-    protected $_formBlockType = 'Ebizmarts\SagePaySuite\Block\Form\Form';
-
-    /**
-     * @var string
-     */
-    protected $_infoBlockType = 'Ebizmarts\SagePaySuite\Block\Payment\Info';
+    protected $_infoBlockType = 'Ebizmarts\SagePaySuite\Block\Info';
 
     /**
      * Availability option
@@ -118,49 +113,21 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     protected $_canReviewPayment = true;
 
     /**
-     * Suite processing instance
-     *
-     * @var \Ebizmarts\SagePaySuite\Model\Suite
+     * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suite;
+    protected $_suiteHelper;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
      */
-    protected $_storeManager;
+    protected $_transactionFactory;
 
     /**
-     * @var \Magento\Framework\UrlInterface
+     * @var \Magento\Framework\Message\ManagerInterface
      */
-    protected $_urlBuilder;
+    protected $_messageManager;
 
     /**
-     * @var \Magento\Checkout\Model\Session
-     */
-    protected $_checkoutSession;
-
-    /**
-     * @var \Magento\Framework\Exception\LocalizedExceptionFactory
-     */
-    protected $_exception;
-
-    /**
-     * @param \Magento\Framework\Model\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory
-     * @param \Magento\Framework\Api\AttributeValueFactory $customAttributeFactory
-     * @param \Magento\Payment\Helper\Data $paymentData
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \Magento\Payment\Model\Method\Logger $logger
-     * @param ProFactory $proFactory
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Magento\Framework\UrlInterface $urlBuilder
-     * @param CartFactory $cartFactory
-     * @param \Magento\Checkout\Model\Session $checkoutSession
-     * @param \Magento\Framework\Exception\LocalizedExceptionFactory $exception
-     * @param \Magento\Framework\Model\Resource\AbstractResource $resource
-     * @param \Magento\Framework\Data\Collection\AbstractDb $resourceCollection
-     * @param array $data
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -171,11 +138,8 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         \Magento\Payment\Helper\Data $paymentData,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Payment\Model\Method\Logger $logger,
-        SuiteFactory $suiteFactory,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Framework\UrlInterface $urlBuilder,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Framework\Exception\LocalizedExceptionFactory $exception,
+        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Magento\Framework\Model\Resource\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
@@ -192,69 +156,12 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
             $resourceCollection,
             $data
         );
-        $this->_storeManager = $storeManager;
-        $this->_urlBuilder = $urlBuilder;
-        //$this->_cartFactory = $cartFactory;
-        $this->_checkoutSession = $checkoutSession;
-        $this->_exception = $exception;
 
-        $suiteInstance = array_shift($data);
-        if ($suiteInstance && $suiteInstance instanceof \Ebizmarts\SagePaySuite\Model\Suite) {
-            $this->_suite = $suiteInstance;
-        } else {
-            $this->_suite = $suiteFactory->create();
-        }
-        $this->_suite->setMethod($this->_code);
+        $this->_suiteHelper = $suiteHelper;
+        $this->_transactionFactory = $transactionFactory;
+        //$this->_messageManager = $context->getMessageManager();
     }
 
-    /**
-     * Store setter
-     * Also updates store ID in config object
-     *
-     * @param \Magento\Store\Model\Store|int $store
-     * @return $this
-     */
-    public function setStore($store)
-    {
-        $this->setData('store', $store);
-        if (null === $store) {
-            $store = $this->_storeManager->getStore()->getId();
-        }
-        $this->_suite->getConfig()->setStoreId(is_object($store) ? $store->getId() : $store);
-        return $this;
-    }
-
-    /**
-     * Can be used in regular checkout
-     *
-     * @return bool
-     */
-    public function canUseCheckout()
-    {
-        return parent::canUseCheckout();
-    }
-
-    /**
-     * Whether method is available for specified currency
-     *
-     * @param string $currencyCode
-     * @return bool
-     */
-    public function canUseForCurrency($currencyCode)
-    {
-        return $this->_suite->getConfig()->isCurrencyCodeSupported($currencyCode);
-    }
-
-    /**
-     * Payment action getter compatible with payment model
-     *
-     * @see \Magento\Sales\Model\Payment::place()
-     * @return string
-     */
-    public function getConfigPaymentAction()
-    {
-        return $this->_suite->getConfig()->getPaymentAction();
-    }
 
     /**
      * Check whether payment method can be used
@@ -263,36 +170,11 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function isAvailable($quote = null)
     {
-        if (parent::isAvailable($quote) && $this->_suite->getConfig()->isMethodAvailable()) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Custom getter for payment configuration
-     *
-     * @param string $field
-     * @param int|null $storeId
-     * @return mixed
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-     */
-    public function getConfigData($field, $storeId = null)
-    {
-        return $this->_suite->getConfig()->getValue($field);
-    }
-
-    /**
-     * Order payment
-     *
-     * @param \Magento\Framework\Object|\Magento\Payment\Model\InfoInterface|Payment $payment
-     * @param float $amount
-     * @return $this
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
-    public function order(\Magento\Payment\Model\InfoInterface $payment, $amount)
-    {
-         return parent::order($payment, $amount);
+//        if (parent::isAvailable($quote) && $this->_suite->getConfig()->isMethodAvailable()) {
+//            return true;
+//        }
+//        return false;
+        return true;
     }
 
     /**
@@ -304,7 +186,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function authorize(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-        return $this->_placeOrder($payment, $amount);
+        return parent::authorize($payment, $amount);
     }
 
     /**
@@ -358,52 +240,6 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     }
 
     /**
-     * Checkout redirect URL getter for onepage checkout (hardcode)
-     *
-     * @see \Magento\Checkout\Controller\Onepage::savePaymentAction()
-     * @see Quote\Payment::getCheckoutRedirectUrl()
-     * @return string
-     */
-    public function getCheckoutRedirectUrl()
-    {
-        return $this->_urlBuilder->getUrl('sagepaysuite/form/start');
-    }
-
-    /**
-     * Fetch transaction details info
-     *
-     * @param \Magento\Payment\Model\InfoInterface $payment
-     * @param string $transactionId
-     * @return array
-     */
-    public function fetchTransactionInfo(\Magento\Payment\Model\InfoInterface $payment, $transactionId)
-    {
-    }
-
-    /**
-     * Assign data to info model instance
-     *
-     * @param array|\Magento\Framework\Object $data
-     * @return \Magento\Payment\Model\Info
-     */
-    public function assignData($data)
-    {
-        return parent::assignData($data);
-    }
-
-    /**
-     * Place an order with authorization or capture action
-     *
-     * @param Payment $payment
-     * @param float $amount
-     * @return $this
-     */
-    protected function _placeOrder(Payment $payment, $amount)
-    {
-
-    }
-
-    /**
      * Check void availability
      * @return bool
      * @throws \Magento\Framework\Exception\LocalizedException
@@ -412,30 +248,6 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     public function canVoid()
     {
         return $this->_canVoid;
-    }
-
-    /**
-     * Check capture availability
-     *
-     * @return bool
-     */
-    public function canCapture()
-    {
-        return $this->_canCapture;
-    }
-
-    /**
-     * Is active
-     *
-     * @param int|null $storeId
-     * @return bool
-     */
-    public function isActive($storeId = null)
-    {
-        $pathForm = 'payment/' . Config::METHOD_FORM . '/active';
-
-        return parent::isActive($storeId)
-        || (bool)(int)$this->_scopeConfig->getValue($pathForm, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function decrypt($strIn) {

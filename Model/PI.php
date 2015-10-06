@@ -178,7 +178,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $this->_transactionsApi = $transactionsApi;
         $this->_suiteHelper = $suiteHelper;
         $this->_transactionFactory = $transactionFactory;
-        $this->_messageManager = $context->getMessageManager();
+        //$this->_messageManager = $context->getMessageManager();
     }
 
     public function assignData($data)
@@ -542,7 +542,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $refundTransaction->save();
             $refundTransaction->setIsClosed(true);
 
-            $this->_messageManager->addSuccess(__("Sage Pay transaction " . $transactionId . " successfully refunded."));
+            //$this->_messageManager->addSuccess(__("Sage Pay transaction " . $transactionId . " successfully refunded."));
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
@@ -572,6 +572,20 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
             $result = $this->_transactionsApi->voidTransaction($transaction_id);
             $result = $result["data"];
+
+            //create void transaction
+            //not for now
+//            $refundTransaction = $this->_transactionFactory->create()
+//                ->setOrderPaymentObject($payment)
+//                ->setTxnId($result["VPSTxId"])
+//                ->setParentTxnId($transaction_id)
+//                ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_REFUND)
+//                ->setPaymentId($payment->getId());
+//
+//            $refundTransaction->save();
+//            $refundTransaction->setIsClosed(true);
+
+            //$this->_messageManager->addSuccess(__("Sage Pay transaction " . $transaction_id . " successfully voided."));
 
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {

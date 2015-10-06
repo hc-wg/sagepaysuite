@@ -12,6 +12,7 @@
             <sagepaysuiteform>
                 <active>0</active>
                 <model>Ebizmarts\SagePaySuite\Model\Form</model>
+                <payment_action>authorize_capture</payment_action>
                 <order_status>pending</order_status>
                 <title>Sage Pay FORM</title>
                 <allowspecific>0</allowspecific>
@@ -19,6 +20,7 @@
             <sagepaysuitepi>
                 <active>0</active>
                 <model>Ebizmarts\SagePaySuite\Model\PI</model>
+                <payment_action>authorize_capture</payment_action>
                 <order_status>pending</order_status>
                 <title>Sage Pay PI</title>
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>

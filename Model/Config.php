@@ -64,6 +64,8 @@ class Config implements ConfigInterface
     /**
      * SagePay URLs
      */
+    const URL_FORM_REDIRECT_LIVE = 'https://live.sagepay.com/gateway/service/vspform-register.vsp';
+    const URL_FORM_REDIRECT_TEST = 'https://test.sagepay.com/gateway/service/vspform-register.vsp';
     const URL_PI_API_LIVE = 'https://live.sagepay.com/api/v1/';
     const URL_PI_API_TEST = 'https://test.sagepay.com/api/v1/';
     const URL_REPORTING_API_TEST = 'https://test.sagepay.com/access/access.htm';
@@ -218,7 +220,7 @@ class Config implements ConfigInterface
      */
     protected function _getSpecificConfigPath($fieldName)
     {
-        return "payment/sagepaysuite/{$this->_methodCode}/{$fieldName}";
+        return "payment/{$this->_methodCode}/{$fieldName}";
     }
 
     protected function _getGlobalConfigPath($fieldName)
@@ -291,56 +293,49 @@ class Config implements ConfigInterface
         return true;
     }
 
-    public function getSagePayUrl($mode = self::MODE_LIVE, $action = self::ACTION_POST){
-
-        if($this->getMethodCode() == self::METHOD_FORM){
-
-            if($mode == self::MODE_LIVE){
-                switch($action){
-                    case self::ACTION_POST:
-                        return 'https://live.sagepay.com/gateway/service/vspform-register.vsp';
-                        break;
-                    default:
-                        return null;
-                        break;
-                }
-            }elseif($mode == self::MODE_TEST){
-                switch($action){
-                    case self::ACTION_POST:
-                        return 'https://test.sagepay.com/gateway/service/vspform-register.vsp';
-                        break;
-                    default:
-                        return null;
-                        break;
-                }
-            }
-        }
-
-        return null;
-    }
+//    public function getSagePayUrl($mode = self::MODE_LIVE, $action = self::ACTION_POST){
+//
+//        if($this->getMethodCode() == self::METHOD_FORM){
+//
+//            if($mode == self::MODE_LIVE){
+//                switch($action){
+//                    case self::ACTION_POST:
+//                        return 'https://live.sagepay.com/gateway/service/vspform-register.vsp';
+//                        break;
+//                    default:
+//                        return null;
+//                        break;
+//                }
+//            }elseif($mode == self::MODE_TEST){
+//                switch($action){
+//                    case self::ACTION_POST:
+//                        return 'https://test.sagepay.com/gateway/service/vspform-register.vsp';
+//                        break;
+//                    default:
+//                        return null;
+//                        break;
+//                }
+//            }
+//        }
+//
+//        return null;
+//    }
 
     public function getVPSProtocol(){
         return "3.00";
     }
 
-    public function getPaymentAction(){
-        $action = $this->getValue("payment_action");
-        $action = empty($action) ? self::ACTION_PAYMENT : $action;
-
-        switch($action){
-            case self::ACTION_PAYMENT:
-                return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
-                break;
-            default:
-                return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
-                break;
-        }
-    }
-
     public function getSagepayPaymentAction(){
         $action = $this->getValue("payment_action");
 
-        return empty($action) ? self::ACTION_PAYMENT : $action;
+        switch($action){
+            case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE:
+                return self::ACTION_PAYMENT;
+                break;
+            default:
+                return self::ACTION_PAYMENT;
+                break;
+        }
     }
 
     public function getVendorname(){
