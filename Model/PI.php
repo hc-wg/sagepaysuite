@@ -7,7 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Sales\Model\Resource\Order\Payment\Transaction\CollectionFactory as TransactionCollectionFactory;
+use Magento\Sales\Model\ResourceModel\Order\Payment\Transaction\CollectionFactory as TransactionCollectionFactory;
 use Magento\Payment\Model\InfoInterface;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Api\PIRestApi;
@@ -151,7 +151,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         TransactionCollectionFactory $salesTransactionCollectionFactory,
         \Magento\Framework\App\ProductMetadataInterface $productMetaData,
         \Magento\Directory\Model\RegionFactory $regionFactory,
-        \Magento\Framework\Model\Resource\AbstractResource $resource = null,
+        \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
     )
@@ -171,6 +171,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $data
         );
         $this->config = $config;
+        $this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
         $this->salesTransactionCollectionFactory = $salesTransactionCollectionFactory;
         $this->productMetaData = $productMetaData;
         $this->regionFactory = $regionFactory;
@@ -181,7 +182,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         //$this->_messageManager = $context->getMessageManager();
     }
 
-    public function assignData($data)
+    public function assignData(\Magento\Framework\DataObject $data)
     {
         parent::assignData($data);
         $infoInstance = $this->getInfoInstance();
@@ -210,7 +211,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
             throw new LocalizedException(__('Selected payment type is not allowed for billing country.'));
         }
 
-        $ccType = $info->getCcType();
+        //$ccType = $info->getCcType();
 //        if (!$ccType) {
 //            $token = $this->getInfoInstance()->getAdditionalInformation('cc_token');
 //            if ($token) {
@@ -484,7 +485,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
             if ($capture_result->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
 
-                $payment->setTransactionId($capture_result->transactionID);
+                $payment->setTransactionId($capture_result->transactionId);
                 $payment->setIsTransactionClosed(1);
                 $payment->setAdditionalInformation('statusCode', $capture_result->statusCode);
                 $payment->setAdditionalInformation('transactionType', $capture_result->transactionType);
@@ -626,7 +627,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      * @param \Magento\Quote\Api\Data\CartInterface|null $quote
      * @return bool
      */
-    public function isAvailable($quote = null)
+    public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
     {
 //        if (parent::isAvailable($quote)) {
 //            if ($quote != null) {

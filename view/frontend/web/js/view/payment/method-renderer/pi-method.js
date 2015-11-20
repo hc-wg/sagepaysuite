@@ -14,9 +14,12 @@ define(
         'mage/url',
         'Magento_Customer/js/model/customer',
         'Magento_Checkout/js/action/place-order',
-        'sagepayjs'
+        'sagepayjs',
+        'uiRegistry',
+        'mage/utils/wrapper',
+        'Magento_Checkout/js/model/full-screen-loader'
     ],
-    function ($, Component, storage, url, customer, placeOrderAction, sagepayjs) {
+    function ($, Component, storage, url, customer, placeOrderAction, sagepayjs, fullScreenLoader) {
         'use strict';
 
         return Component.extend({
@@ -50,6 +53,8 @@ define(
                 var self = this;
                 self.resetPaymentErrors();
 
+                fullScreenLoader.startLoader();
+
                 var serviceUrl = url.build('sagepaysuite/pi/generateMerchantKey');
 
                 //generate merchant session key
@@ -78,7 +83,7 @@ define(
                     //create token form
                     var token_form = document.getElementById(self.getCode() + '-token-form');
                     token_form.elements[0].setAttribute('value', merchant_session_key);
-                    token_form.elements[1].setAttribute('value', "Martin");
+                    token_form.elements[1].setAttribute('value', "Owner");
                     token_form.elements[2].setAttribute('value', document.getElementById(self.getCode() + '_cc_number').value);
                     var expiration = document.getElementById(self.getCode() + '_expiration').value;
                     expiration = expiration.length == 1 ? "0" + expiration : expiration;
@@ -128,13 +133,13 @@ define(
             getData: function () {
                 return {
                     'method': this.getCode(),
-                    'cc_type': this.creditCardType,
-                    'cc_exp_year': this.creditCardExpYear,
-                    'cc_exp_month': this.creditCardExpMonth,
                     'additional_data': {
                         'cc_last4': this.creditCardLast4,
                         'merchant_session_Key': this.merchantSessionKey,
-                        'card_identifier': this.cardIdentifier
+                        'card_identifier': this.cardIdentifier,
+                        'cc_type': this.creditCardType,
+                        'cc_exp_year': this.creditCardExpYear,
+                        'cc_exp_month': this.creditCardExpMonth
                     }
                 };
             },
@@ -184,6 +189,8 @@ define(
 
                 span.innerHTML = message;
                 span.style.display="block";
+
+                fullScreenLoader.stopLoader();
             },
             resetPaymentErrors: function(){
                 var span = document.getElementById(this.getCode() + '-payment-errors');

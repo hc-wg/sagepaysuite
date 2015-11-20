@@ -128,6 +128,12 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     protected $_messageManager;
 
     /**
+     * @var \Ebizmarts\SagePaySuite\Model\Config
+     */
+    protected $_config;
+
+
+    /**
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -139,8 +145,9 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Payment\Model\Method\Logger $logger,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        \Ebizmarts\SagePaySuite\Model\Config $config,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
-        \Magento\Framework\Model\Resource\AbstractResource $resource = null,
+        \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
     ) {
@@ -160,6 +167,8 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         $this->_suiteHelper = $suiteHelper;
         $this->_transactionFactory = $transactionFactory;
         //$this->_messageManager = $context->getMessageManager();
+        $this->_config = $config;
+        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
     }
 
 
@@ -168,7 +177,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      * @param Quote|null $quote
      * @return bool
      */
-    public function isAvailable($quote = null)
+    public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
     {
 //        if (parent::isAvailable($quote) && $this->_suite->getConfig()->isMethodAvailable()) {
 //            return true;
@@ -212,7 +221,9 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-        return parent::capture($payment, $amount);
+
+        $payment->setIsTransactionClosed(1);
+        return $this;
     }
 
     /**
@@ -250,22 +261,4 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         return $this->_canVoid;
     }
 
-    public function decrypt($strIn) {
-        $cryptPass = $this->_suite->getConfig()->getFormEncryptedPassword();
-
-        //** remove the first char which is @ to flag this is AES encrypted
-        $strIn = substr($strIn, 1);
-
-        //** HEX decoding
-        $strIn = pack('H*', $strIn);
-
-        return $this->removePKCS5Padding(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $cryptPass, $strIn, MCRYPT_MODE_CBC, $cryptPass));
-    }
-
-    // Need to remove padding bytes from end of decoded string
-    public function removePKCS5Padding($decrypted) {
-        $padChar = ord($decrypted[strlen($decrypted) - 1]);
-
-        return substr($decrypted, 0, -$padChar);
-    }
 }

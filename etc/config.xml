@@ -6,7 +6,7 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="../../Store/etc/config.xsd">
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <payment>
             <sagepaysuiteform>
@@ -15,6 +15,7 @@
                 <payment_action>authorize_capture</payment_action>
                 <order_status>pending</order_status>
                 <title>Sage Pay FORM</title>
+                <encrypted_password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <allowspecific>0</allowspecific>
             </sagepaysuiteform>
             <sagepaysuitepi>
@@ -25,6 +26,7 @@
                 <title>Sage Pay PI</title>
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>
                 <allowspecific>0</allowspecific>
+                <password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
             </sagepaysuitepi>
         </payment>
     </default>

@@ -5,7 +5,7 @@
  * See LICENSE.txt for license details.
  */
 -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Config/etc/system_file.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="payment">
             <group id="sagepaysuite" translate="label" type="text" sortOrder="500" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -31,6 +31,7 @@
                     <field id="reporting_password" translate="label" type="obscure" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Reporting API Password</label>
                         <config_path>payment/sagepaysuite/reporting_password</config_path>
+                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     </field>
                 </group>
                 <group id="sagepaysuitepi" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -56,6 +57,7 @@
                     <field id="password" translate="label" type="obscure" sortOrder="16" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Password</label>
                         <config_path>payment/sagepaysuitepi/password</config_path>
+                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     </field>
                     <field id="order_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>New Order Status</label>
@@ -112,6 +114,7 @@
                     <field id="encrypted_password" translate="label" type="obscure" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Encrypted Password</label>
                         <config_path>payment/sagepaysuiteform/encrypted_password</config_path>
+                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     </field>
                     <field id="order_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>New Order Status</label>

@@ -140,10 +140,6 @@ class Checkout
      */
     protected $_localeResolver;
 
-    /**
-     * @var \Ebizmarts\SagePaySuite\Model\Info
-     */
-    protected $_sagepayInfo;
 
     /**
      * @var \Magento\Store\Model\StoreManagerInterface
@@ -244,7 +240,6 @@ class Checkout
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Framework\App\Cache\Type\Config $configCacheType,
         \Magento\Framework\Locale\ResolverInterface $localeResolver,
-        \Ebizmarts\SagePaySuite\Model\Info $sagepayInfo,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\UrlInterface $coreUrl,
         \Magento\Checkout\Model\Type\OnepageFactory $onepageFactory,
@@ -267,7 +262,6 @@ class Checkout
         $this->_configCacheType = $configCacheType;
         $this->_logger = $logger;
         $this->_localeResolver = $localeResolver;
-        $this->_sagepayInfo = $sagepayInfo;
         $this->_storeManager = $storeManager;
         $this->_coreUrl = $coreUrl;
         //$this->_cartFactory = $cartFactory;

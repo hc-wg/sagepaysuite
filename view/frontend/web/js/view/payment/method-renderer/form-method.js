@@ -14,8 +14,9 @@ define(
         'Magento_Checkout/js/model/url-builder',
         'Magento_Customer/js/model/customer',
         'Magento_Checkout/js/model/quote',
+        'Magento_Checkout/js/model/full-screen-loader'
     ],
-    function ($, Component, storage, url, urlBuilder, customer, quote) {
+    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader) {
         'use strict';
         return Component.extend({
             defaults: {
@@ -33,6 +34,9 @@ define(
                 return $.extend(true, this._super(), {'additional_data': null});
             },
             preparePayment: function(){
+
+                fullScreenLoader.startLoader();
+
                 var self = this;
                 self.resetPaymentErrors();
 
@@ -107,17 +111,14 @@ define(
 
                 span.innerHTML = message;
                 span.style.display="block";
+
+                fullScreenLoader.stopLoader();
             },
             resetPaymentErrors: function(){
                 var span = document.getElementById(this.getCode() + '-payment-errors');
                 span.style.display="none";
 
             }
-            //continueToSagePayForm: function() {
-            //    this.selectPaymentMethod();
-            //    setPaymentMethodAction();
-            //    return false;
-            //}
         });
     }
 );

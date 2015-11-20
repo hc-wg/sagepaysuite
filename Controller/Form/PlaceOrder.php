@@ -48,7 +48,7 @@ class PlaceOrder extends AbstractForm
             $payment = $order->getPayment();
 
             //save cc data
-            $payment->setCcType($response[\Ebizmarts\SagePaySuite\Model\Config::VAR_CardType]);
+            //$payment->setCcType($response[\Ebizmarts\SagePaySuite\Model\Config::VAR_CardType]);
             $payment->setCcLast4($response[\Ebizmarts\SagePaySuite\Model\Config::VAR_Last4Digits]);
             $payment->setCcExpMonth($response[\Ebizmarts\SagePaySuite\Model\Config::VAR_ExpiryDate]);
 

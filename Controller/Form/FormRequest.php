@@ -77,6 +77,12 @@ class FormRequest extends \Magento\Framework\App\Action\Action
         $billing_address = $quote->getBillingAddress();
         $shipping_address = $quote->getShippingAddress();
 
+        //if billing is empty
+        if(is_null($billing_address->getCountry())){
+            $billing_address = $shipping_address;
+            $quote->setBillingAddress($billing_address);
+        }
+
         $customer_data = $this->_getCustomerSession()->getCustomerDataObject();
 
         $data = array();
