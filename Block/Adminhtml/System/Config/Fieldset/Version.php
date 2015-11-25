@@ -17,9 +17,9 @@ class Version extends \Magento\Backend\Block\Template implements \Magento\Framew
      */
     protected $_metaData;
     /**
-     * @var \Magento\Framework\Module\ModuleList\Loader
+     * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_loader;
+    protected $_suiteHelper;
     /**
      * @param \Magento\Backend\Block\Template\Context $context
      * @param \Magento\Framework\App\ProductMetadataInterface $productMetaData
@@ -29,13 +29,13 @@ class Version extends \Magento\Backend\Block\Template implements \Magento\Framew
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\App\ProductMetadataInterface $productMetaData,
-        \Magento\Framework\Module\ModuleList\Loader $loader,
+        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         array $data = []
     )
     {
         parent::__construct($context, $data);
         $this->_metaData = $productMetaData;
-        $this->_loader = $loader;
+        $this->_suiteHelper = $suiteHelper;
     }
     /**
      * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
@@ -48,12 +48,6 @@ class Version extends \Magento\Backend\Block\Template implements \Magento\Framew
 
     public function getVersion()
     {
-        $modules = $this->_loader->load();
-        $v = "";
-        if(isset($modules['Ebizmarts_SagePaySuite']))
-        {
-            $v =$modules['Ebizmarts_SagePaySuite']['setup_version'];
-        }
-        return $v;
+        return $this->_suiteHelper->getVersion();
     }
 }

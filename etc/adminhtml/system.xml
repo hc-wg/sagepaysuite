@@ -15,6 +15,10 @@
                 </group>
                 <group id="global" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Global</label>
+                    <field id="license" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>License Key</label>
+                        <config_path>payment/sagepaysuite/license</config_path>
+                    </field>
                     <field id="vendorname" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Vendorname</label>
                         <config_path>payment/sagepaysuite/vendorname</config_path>

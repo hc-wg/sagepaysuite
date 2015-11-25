@@ -18,16 +18,20 @@ define(
     ],
     function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader) {
         'use strict';
+
+        $(document).ready(function () {
+            var formConfig = window.checkoutConfig.payment.ebizmarts_sagepaysuiteform;
+            if(formConfig && !formConfig.licensed){
+                $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
+            }
+        });
+
         return Component.extend({
             defaults: {
                 template: 'Ebizmarts_SagePaySuite/payment/form-form'
             },
             getCode: function () {
                 return 'sagepaysuiteform';
-            },
-            /** Init observable variables */
-            initObservable: function () {
-                return this;
             },
             /** Returns payment information data */
             getData: function() {

@@ -86,8 +86,8 @@ class FormRequest extends \Magento\Framework\App\Action\Action
         $customer_data = $this->_getCustomerSession()->getCustomerDataObject();
 
         $data = array();
-        $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode("11111");
-        $data['Amount'] = $quote->getGrandTotal() * 100;
+        $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($quote->getReservedOrderId());
+        $data['Amount'] = number_format($quote->getGrandTotal(), 2, '.', '');
         $data['Currency'] = $quote->getQuoteCurrencyCode();
         $data['Description'] = "description";
         $data['SuccessURL'] = $this->_url->getUrl('*/*/success');

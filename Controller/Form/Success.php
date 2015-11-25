@@ -116,28 +116,15 @@ class Success extends \Magento\Framework\App\Action\Action
 
             $payment = $order->getPayment();
 
-            //save cc data
-            //$payment->setCcType($response[\Ebizmarts\SagePaySuite\Model\Config::VAR_CardType]);
-            $payment->setCcLast4($response[\Ebizmarts\SagePaySuite\Model\Config::VAR_Last4Digits]);
-            $payment->setCcExpMonth($response[\Ebizmarts\SagePaySuite\Model\Config::VAR_ExpiryDate]);
-
-            //save sagepay additional transaction data
-            $payment->setAdditionalInformation(\Ebizmarts\SagePaySuite\Model\Config::VAR_VendorTxCode,$response[\Ebizmarts\SagePaySuite\Model\Config::VAR_VendorTxCode]);
-            $payment->setAdditionalInformation(\Ebizmarts\SagePaySuite\Model\Config::VAR_VPSTxId,$response[\Ebizmarts\SagePaySuite\Model\Config::VAR_VPSTxId]);
-            $payment->setAdditionalInformation(\Ebizmarts\SagePaySuite\Model\Config::VAR_StatusDetail,$response[\Ebizmarts\SagePaySuite\Model\Config::VAR_StatusDetail]);
-            $payment->setAdditionalInformation(\Ebizmarts\SagePaySuite\Model\Config::VAR_AVSCV2,$response[\Ebizmarts\SagePaySuite\Model\Config::VAR_AVSCV2]);
-            $payment->setAdditionalInformation(\Ebizmarts\SagePaySuite\Model\Config::VAR_3DSecureStatus,$response[\Ebizmarts\SagePaySuite\Model\Config::VAR_3DSecureStatus]);
-            $payment->setAdditionalInformation(\Ebizmarts\SagePaySuite\Model\Config::VAR_BankAuthCode,$response[\Ebizmarts\SagePaySuite\Model\Config::VAR_BankAuthCode]);
-
+            //save payment data
+            $payment->setCcType($response["CardType"]);
+            $payment->setCcLast4($response["Last4Digits"]);
+            $payment->setCcExpMonth($response["ExpiryDate"]);
+            $payment->setTransactionId($response["VPSTxId"]);
+            $payment->setIsTransactionClosed(1);
+            $payment->setAdditionalInformation('statusDetail', $response["StatusDetail"]);
+            $payment->setAdditionalInformation('vendorTxCode', $response["VendorTxCode"]);
             $payment->save();
-
-//            $this->_eventManager->dispatch(
-//                'sagepaysuiteform_place_order_success',
-//                [
-//                    'order' => $order,
-//                    'quote' => $this->_getQuote()
-//                ]
-//            );
 
             $this->_redirect('checkout/onepage/success');
 
@@ -289,39 +276,4 @@ class Success extends \Magento\Framework\App\Action\Action
         return $this->_objectManager->get('Magento\Customer\Model\Session');
     }
 
-    /**
-     * Prepare quote for guest checkout order submit
-     *
-     * @return $this
-     */
-//    protected function _prepareGuestQuote()
-//    {
-//        $quote = $this->_quote;
-//        $quote->setCustomerId(null)
-//            ->setCustomerEmail($quote->getBillingAddress()->getEmail())
-//            ->setCustomerIsGuest(true)
-//            ->setCustomerGroupId(\Magento\Customer\Model\Group::NOT_LOGGED_IN_ID);
-//        return $this;
-//    }
-//
-//    /**
-//     * Prepare quote for customer registration and customer order submit
-//     * and restore magento customer data from quote
-//     *
-//     * @return void
-//     */
-//    protected function _prepareNewCustomerQuote()
-//    {
-//        $this->sagepaysuiteQuote->prepareQuoteForNewCustomer($this->_quote);
-//    }
-//
-//    /**
-//     * Prepare quote for customer order submit
-//     *
-//     * @return void
-//     */
-//    protected function _prepareCustomerQuote()
-//    {
-//        $this->sagepaysuiteQuote->prepareRegisteredCustomerQuote($this->_quote, $this->_customerSession->getCustomerId());
-//    }
 }

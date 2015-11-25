@@ -9,6 +9,7 @@ namespace Ebizmarts\SagePaySuite\Model;
 use Magento\Payment\Model\Method\ConfigInterface;
 use Magento\Payment\Model\MethodInterface;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\Store;
 
 /**
  * Class Config to handle all sagepay integrations configs
@@ -341,6 +342,22 @@ class Config implements ConfigInterface
     public function getVendorname(){
         return $this->_scopeConfig->getValue(
             $this->_getGlobalConfigPath("vendorname"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+    }
+
+    public function getLicense(){
+        return $this->_scopeConfig->getValue(
+            $this->_getGlobalConfigPath("license"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+    }
+
+    public function getStoreDomain(){
+        return $this->_scopeConfig->getValue(
+            Store::XML_PATH_UNSECURE_BASE_URL,
             ScopeInterface::SCOPE_STORE,
             $this->_storeId
         );

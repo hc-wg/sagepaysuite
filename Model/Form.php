@@ -222,8 +222,18 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
 
-        $payment->setIsTransactionClosed(1);
-        return $this;
+        $order = $payment->getOrder();
+
+        //create transaction record
+        $transaction = $this->_transactionFactory->create()
+            ->setOrderPaymentObject($payment)
+            //->setTxnId($result["VPSTxId"])
+            ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_PAYMENT)
+            ->setPaymentId($payment->getId());
+
+        $transaction->setIsClosed(true);
+        $transaction->save();
+
     }
 
     /**

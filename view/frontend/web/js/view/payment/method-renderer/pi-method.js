@@ -15,12 +15,19 @@ define(
         'Magento_Customer/js/model/customer',
         'Magento_Checkout/js/action/place-order',
         'sagepayjs',
-        'uiRegistry',
-        'mage/utils/wrapper',
         'Magento_Checkout/js/model/full-screen-loader'
+
     ],
     function ($, Component, storage, url, customer, placeOrderAction, sagepayjs, fullScreenLoader) {
         'use strict';
+
+
+        $(document).ready(function () {
+            var piConfig = window.checkoutConfig.payment.ebizmarts_sagepaysuitepi;
+            if(piConfig && !piConfig.licensed){
+                $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
+            }
+        });
 
         return Component.extend({
             placeOrderHandler: null,
@@ -40,15 +47,12 @@ define(
             setValidateHandler: function (handler) {
                 this.validateHandler = handler;
             },
-
             getCode: function () {
                 return 'sagepaysuitepi';
             },
-
             isActive: function () {
                 return true;
             },
-
             preparePayment: function () {
                 var self = this;
                 self.resetPaymentErrors();

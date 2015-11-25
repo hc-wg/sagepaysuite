@@ -38,8 +38,8 @@ class Info extends \Magento\Payment\Block\Info\Cc
 
         $info = array();
         $info["Card Expiration Date"] = $payment->getCcExpMonth() . "/" . $payment->getCcExpYear();
-        $info[\Ebizmarts\SagePaySuite\Model\Config::VAR_VendorTxCode] = $payment->getAdditionalInformation("vendorTxCode");
-        $info[\Ebizmarts\SagePaySuite\Model\Config::VAR_VPSTxId] = $payment->getLastTransId();
+        $info["VendorTxCode"] = $payment->getAdditionalInformation("vendorTxCode");
+        $info["VPSTxId"] = $payment->getLastTransId();
         $info["Status"] = $payment->getAdditionalInformation("statusDetail");
 
 
