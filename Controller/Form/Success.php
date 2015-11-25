@@ -41,6 +41,11 @@ class Success extends \Magento\Framework\App\Action\Action
     protected $_logger;
 
     /**
+     * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
+     */
+    protected $_transactionFactory;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
@@ -49,7 +54,8 @@ class Success extends \Magento\Framework\App\Action\Action
         \Magento\Checkout\Helper\Data $checkoutData,
         \Magento\Quote\Model\QuoteManagement $quoteManagement,
         OrderSender $orderSender,
-        \Psr\Log\LoggerInterface $logger
+        \Psr\Log\LoggerInterface $logger,
+        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
     )
     {
         parent::__construct($context);
@@ -59,6 +65,7 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->quoteManagement = $quoteManagement;
         $this->orderSender = $orderSender;
         $this->_logger = $logger;
+        $this->_transactionFactory = $transactionFactory;
     }
 
     /**
@@ -88,15 +95,13 @@ class Success extends \Magento\Framework\App\Action\Action
             $ba->setRegionCode($sa->getRegionCode());
             $ba->save();
             $this->_quote->setBillingAddress($ba);
-
-            // import payment info
-            $payment = $this->_quote->getPayment();
-            $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
-
             //$this->_quote->collectTotals();
             //$this->quoteRepository->save($quote);
             $this->_quote->save();
 
+            // import payment info
+            $payment = $this->_quote->getPayment();
+            $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
 
             $order = $this->placeOrder();
 
@@ -115,16 +120,25 @@ class Success extends \Magento\Framework\App\Action\Action
             }
 
             $payment = $order->getPayment();
-
-            //save payment data
+            $payment->setTransactionId($response["VPSTxId"]);
+            $payment->setIsTransactionClosed(1);
             $payment->setCcType($response["CardType"]);
             $payment->setCcLast4($response["Last4Digits"]);
             $payment->setCcExpMonth($response["ExpiryDate"]);
             $payment->setTransactionId($response["VPSTxId"]);
-            $payment->setIsTransactionClosed(1);
             $payment->setAdditionalInformation('statusDetail', $response["StatusDetail"]);
             $payment->setAdditionalInformation('vendorTxCode', $response["VendorTxCode"]);
             $payment->save();
+
+            //create transaction record
+            $transaction = $this->_transactionFactory->create()
+                ->setOrderPaymentObject($payment)
+                ->setTxnId($response["VPSTxId"])
+                ->setOrderId($order->getEntityId())
+                ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE)
+                ->setPaymentId($payment->getId());
+            $transaction->setIsClosed(true);
+            $transaction->save();
 
             $this->_redirect('checkout/onepage/success');
 
