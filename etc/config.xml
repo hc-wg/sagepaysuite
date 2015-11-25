@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2015 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <sagepaysuiteform>
+                <active>0</active>
+                <model>Ebizmarts\SagePaySuite\Model\Form</model>
+                <payment_action>authorize_capture</payment_action>
+                <order_status>pending</order_status>
+                <title>Sage Pay FORM</title>
+                <encrypted_password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+                <allowspecific>0</allowspecific>
+            </sagepaysuiteform>
+            <sagepaysuitepi>
+                <active>0</active>
+                <model>Ebizmarts\SagePaySuite\Model\PI</model>
+                <payment_action>authorize_capture</payment_action>
+                <order_status>pending</order_status>
+                <title>Sage Pay PI</title>
+                <cctypes>AE,VI,MC,DI,JCB</cctypes>
+                <allowspecific>0</allowspecific>
+                <password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+            </sagepaysuitepi>
+        </payment>
+    </default>
+</config>
