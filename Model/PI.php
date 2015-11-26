@@ -254,177 +254,13 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
     /**
      * @param InfoInterface $payment
-     * @param string|null $token
-     * @return array
-     * @throws LocalizedException
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
-     */
-//    protected function populateAuthorizeRequest(InfoInterface $payment, $token)
-//    {
-//        /** @var \Magento\Sales\Api\Data\OrderInterface $order */
-//        $order = $payment->getOrder();
-//        $orderId = $order->getIncrementId();
-//        $billing = $order->getBillingAddress();
-//        $shipping = $order->getShippingAddress();
-//        $transactionParams = [
-//            'channel'   => $this->getChannel(),
-//            'orderId'   => $orderId,
-//            'customer'  => [
-//                'firstName' => $billing->getFirstname(),
-//                'lastName'  => $billing->getLastname(),
-//                'company'   => $billing->getCompany(),
-//                'phone'     => $billing->getTelephone(),
-//                'fax'       => $billing->getFax(),
-//                'email'     => $order->getCustomerEmail(),
-//            ]
-//        ];
-//        $customerId = $this->braintreeHelper
-//            ->generateCustomerId($order->getCustomerId(), $order->getCustomerEmail());
-//
-//        $merchantAccountId = $this->config->getMerchantAccountId();
-//        if ($merchantAccountId) {
-//            $transactionParams['merchantAccountId'] = $merchantAccountId;
-//        }
-//
-//        if (!$this->isTokenAllowed()) {
-//            $token = null;
-//        } elseif (!$token) {
-//            $token = $this->getInfoInstance()->getAdditionalInformation('cc_token');
-//        }
-//
-//        if ($token) {
-//            $transactionParams['paymentMethodToken'] = $token;
-//            $transactionParams['customerId'] = $customerId;
-//        } elseif ($this->getInfoInstance()->getAdditionalInformation('payment_method_nonce')) {
-//            $transactionParams['paymentMethodNonce'] =
-//                $this->getInfoInstance()->getAdditionalInformation('payment_method_nonce');
-//            if ($this->isPaymentMethodNonceForCc()) {
-//                if ($order->getCustomerId() && $this->config->useVault()) {
-//                    if ($this->getInfoInstance()->getAdditionalInformation('store_in_vault')) {
-//                        $last4 = $this->getInfoInstance()->getAdditionalInformation('cc_last4');
-//                        if ($this->shouldSaveCard($last4)) {
-//                            $transactionParams['options']['storeInVaultOnSuccess'] = true;
-//                        }
-//                    } else {
-//                        $transactionParams['options']['storeInVault'] = false;
-//                    }
-//                    if ($this->vault->exists($customerId)) {
-//                        $transactionParams['customerId'] = $customerId;
-//                        //TODO: How can we update customer information?
-//                        unset($transactionParams['customer']);
-//                    } else {
-//                        $transactionParams['customer']['id'] = $customerId;
-//                    }
-//                }
-//
-//                $transactionParams['creditCard'] = [
-//                    'cardholderName'    => $billing->getFirstname() . ' ' . $billing->getLastname(),
-//                ];
-//            }
-//            $transactionParams['billing']  = $this->toBraintreeAddress($billing);
-//            $transactionParams['shipping'] = $this->toBraintreeAddress($shipping);
-//            $transactionParams['options']['addBillingAddressToPaymentMethod']  = true;
-//        } else {
-//            throw new LocalizedException(__('Incomplete payment information.'));
-//        }
-//
-//        if ($this->verify3dSecure()) {
-//            $transactionParams['options']['three_d_secure'] = [
-//                'required' => true,
-//            ];
-//
-//            if ($token && $this->getInfoInstance()->getAdditionalInformation('payment_method_nonce')) {
-//                $transactionParams['paymentMethodNonce'] =
-//                    $this->getInfoInstance()->getAdditionalInformation('payment_method_nonce');
-//                unset($transactionParams['paymentMethodToken']);
-//            }
-//        }
-//
-//        if ($this->config->isFraudProtectionEnabled() &&
-//            strlen($this->getInfoInstance()->getAdditionalInformation('device_data')) > 0) {
-//            $transactionParams['deviceData'] = $this->getInfoInstance()->getAdditionalInformation('device_data');
-//        }
-//        return $transactionParams;
-//    }
-
-
-    /**
-     * Returns extra transaction information, to be logged as part of the order payment
-     *
-     * @param \Braintree_Transaction $transaction
-     * @return array
-     */
-//    protected function getExtraTransactionInformation(\Braintree_Transaction $transaction)
-//    {
-//        $data = [];
-//        $loggedFields =[
-//            'avsErrorResponseCode',
-//            'avsPostalCodeResponseCode',
-//            'avsStreetAddressResponseCode',
-//            'cvvResponseCode',
-//            'gatewayRejectionReason',
-//            'processorAuthorizationCode',
-//            'processorResponseCode',
-//            'processorResponseText',
-//        ];
-//        foreach ($loggedFields as $loggedField) {
-//            if (!empty($transaction->{$loggedField})) {
-//                $data[$loggedField] = $transaction->{$loggedField};
-//            }
-//        }
-//        return $data;
-//    }
-
-    /**
-     * @param InfoInterface $payment
      * @param float $amount
      * @return $this
      * @throws LocalizedException
      */
     protected function partialCapture($payment, $amount)
     {
-//        $collection = $this->salesTransactionCollectionFactory->create()
-//            ->addPaymentIdFilter($payment->getId())
-//            ->addTxnTypeFilter(PaymentTransaction::TYPE_AUTH)
-//            ->setOrder('created_at', \Magento\Framework\Data\Collection::SORT_ORDER_DESC)
-//            ->setOrder('transaction_id', \Magento\Framework\Data\Collection::SORT_ORDER_DESC)
-//            ->setPageSize(1)
-//            ->setCurPage(1);
-//        $authTransaction = $collection->getFirstItem();
-//        if (!$authTransaction->getId()) {
-//            throw new LocalizedException(__('Can not find original authorization transaction for partial capture'));
-//        }
-//        if (($token = $authTransaction->getAdditionalInformation('token'))) {
-//            //order was placed using saved card or card was saved during checkout token
-//            $found = true;
-//            try {
-//                $this->braintreeCreditCard->find($token);
-//            } catch (\Exception $e) {
-//                $found = false;
-//            }
-//            if ($found) {
-//                $this->config->initEnvironment($payment->getOrder()->getStoreId());
-//                $this->braintreeAuthorize($payment, $amount, true, $token);
-//            } else {
-//                // case if payment token is no more applicable. attempt to clone transaction
-//                $result = $this->cloneTransaction($amount, $authTransaction->getTxnId());
-//                if ($result && $result->success) {
-//                    $this->processSuccessResult($payment, $result, $amount);
-//                } else {
-//                    throw new LocalizedException($this->errorHelper->parseBraintreeError($result));
-//                }
-//            }
-//        } else {
-//            // order was placed without saved card and card wasn't saved during checkout
-//            $result = $this->cloneTransaction($amount, $authTransaction->getTxnId());
-//            if ($result->success) {
-//                $this->processSuccessResult($payment, $result, $amount);
-//            } else {
-//                throw new LocalizedException($this->errorHelper->parseBraintreeError($result));
-//            }
-//        }
-//        return $this;
+
     }
 
     /**
@@ -437,11 +273,6 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function capture(InfoInterface $payment, $amount)
     {
-//        if($payment->getLastTransId()) {
-//            //return $this->captureAuthorized($payment,$amount);
-//            //@toDo
-//            return null;
-//        }
 
         $order = $payment->getOrder();
         $billing = $order->getBillingAddress();

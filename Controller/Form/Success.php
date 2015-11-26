@@ -99,6 +99,11 @@ class Success extends \Magento\Framework\App\Action\Action
             //$this->quoteRepository->save($quote);
             $this->_quote->save();
 
+            $transactionId = $response["VPSTxId"];
+            //strip brackets
+            $transactionId = str_replace("{","",$transactionId);
+            $transactionId = str_replace("}","",$transactionId);
+
             // import payment info
             $payment = $this->_quote->getPayment();
             $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
@@ -120,12 +125,12 @@ class Success extends \Magento\Framework\App\Action\Action
             }
 
             $payment = $order->getPayment();
-            $payment->setTransactionId($response["VPSTxId"]);
+            $payment->setTransactionId($transactionId);
+            $payment->setLastTransId($transactionId);
             $payment->setIsTransactionClosed(1);
             $payment->setCcType($response["CardType"]);
             $payment->setCcLast4($response["Last4Digits"]);
             $payment->setCcExpMonth($response["ExpiryDate"]);
-            $payment->setTransactionId($response["VPSTxId"]);
             $payment->setAdditionalInformation('statusDetail', $response["StatusDetail"]);
             $payment->setAdditionalInformation('vendorTxCode', $response["VendorTxCode"]);
             $payment->save();
@@ -139,6 +144,15 @@ class Success extends \Magento\Framework\App\Action\Action
                 ->setPaymentId($payment->getId());
             $transaction->setIsClosed(true);
             $transaction->save();
+
+            //update invoice transaction id
+            $invoices = $order->getInvoiceCollection();
+            if($invoices->count()){
+                foreach ($invoices as $_invoice) {
+                    $_invoice->setTransactionId($payment->getLastTransId());
+                    $_invoice->save();
+                }
+            }
 
             $this->_redirect('checkout/onepage/success');
 

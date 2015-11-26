@@ -9,6 +9,7 @@ use Magento\Sales\Model\Order\Payment;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Quote\Model\Quote;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Framework\Exception\LocalizedException;
 
 /**
  * SagePaySuite FORM Module
@@ -33,7 +34,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      *
      * @var bool
      */
-    protected $_isGateway = false;
+    protected $_isGateway = true;
 
     /**
      * Availability option
@@ -89,7 +90,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      *
      * @var bool
      */
-    protected $_canUseInternal = false;
+    protected $_canUseInternal = true;
 
     /**
      * Availability option
@@ -132,6 +133,11 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     protected $_config;
 
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Api\Transaction
+     */
+    protected $_transactionsApi;
+
 
     /**
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -144,6 +150,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         \Magento\Payment\Helper\Data $paymentData,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Payment\Model\Method\Logger $logger,
+        \Ebizmarts\SagePaySuite\Model\Api\Transaction $transactionsApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
@@ -167,6 +174,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         $this->_suiteHelper = $suiteHelper;
         $this->_transactionFactory = $transactionFactory;
         //$this->_messageManager = $context->getMessageManager();
+        $this->_transactionsApi = $transactionsApi;
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
     }
@@ -222,21 +230,6 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
 
-//        $order = $payment->getOrder();
-//
-//        $pi = $payment->getId();
-//
-//        //create transaction record
-//        $transaction = $this->_transactionFactory->create()
-//            ->setOrderPaymentObject($payment)
-//            //->setTxnId("1234567890")
-//            //->setPaymentId($payment->getId())
-//            //->setOrderId($order->getId())
-//            ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_PAYMENT)
-//            ->setPaymentId($payment->getId());
-//
-//        $transaction->setIsClosed(true);
-//        $transaction->save();
 
     }
 
@@ -250,7 +243,37 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function refund(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-        return parent::refund($payment, $amount);
+        try {
+
+            $transactionId = $payment->getLastTransId();
+            $order = $payment->getOrder();
+
+            $result = $this->_transactionsApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
+            $result = $result["data"];
+
+            //create refund transaction
+            $refundTransaction = $this->_transactionFactory->create()
+                ->setOrderPaymentObject($payment)
+                ->setTxnId($result["VPSTxId"])
+                ->setParentTxnId($transactionId)
+                ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_REFUND)
+                ->setPaymentId($payment->getId());
+
+            $refundTransaction->save();
+            $refundTransaction->setIsClosed(true);
+
+            //$this->_messageManager->addSuccess(__("Sage Pay transaction " . $transactionId . " successfully refunded."));
+
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+            $this->_logger->critical($apiException);
+            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
+
+        } catch (\Exception $e) {
+            $this->_logger->critical($e);
+            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId));
+        }
+
+        return $this;
     }
 
     /**
