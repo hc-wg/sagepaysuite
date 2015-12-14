@@ -31,6 +31,7 @@ define([
         preparePayment: function () {
             $('#edit_form').off('submitOrder').on('submitOrder', this.submitAdminOrder.bind(this));
             $('#edit_form').off('changePaymentData').on('changePaymentData', this.changePaymentData.bind(this));
+            this.disableValidation();
         },
         changePaymentData: function(){
             console.log("changePaymentData");
@@ -39,6 +40,9 @@ define([
             console.log("fieldObserver");
         },
         disableValidation: function(){
+
+            console.log("disable validation for PI");
+
             var method = this.getCode();
             var self = this;
             if ($('payment_form_'+ method)){
@@ -63,7 +67,11 @@ define([
             var self = this;
             self.resetPaymentErrors();
 
-            var serviceUrl = url.build('/sagepaysuite/pi/generateMerchantKey');
+            //var serviceUrl = 'http://test.me:8888/magento2/admin/sagepaysuite/pi/generateMerchantKey';
+            //var serviceUrl = url.build('sagepaysuite/pi/generateMerchantKey');
+            var serviceUrl = sagepaysuitepi_config.url.generateMerchantKey;
+
+            order._realSubmit();
 
             //generate merchant session key
             storage.get(serviceUrl).done(
@@ -72,7 +80,7 @@ define([
                     if (response.success) {
                         self.sagepayTokeniseCard(response.merchant_session_key);
                     } else {
-                        self.showPaymentError(response.error_message);
+                        self.showPaymentError(response.error_message ? response.error_message : response.message);
                     }
                 }
             ).fail(
@@ -81,46 +89,6 @@ define([
                 }
             );
             return false;
-
-            //var ccNumber = $("#braintree_cc_number").val(),
-            //    ccExprYr = $("#braintree_expiration_yr").val(),
-            //    ccExprMo = $("#braintree_expiration").val(),
-            //    self = this;
-            //if (self.options.useCvv) {
-            //    var cvv = $('#braintree_cc_cid').val();
-            //}
-            //
-            //if (ccNumber) {
-            //    this.enableDisableFields(true);
-            //    var braintreeClient = new braintree.api.Client({clientToken: this.options.clientToken}),
-            //        braintreeObj = {
-            //            number: ccNumber,
-            //            expirationMonth: ccExprMo,
-            //            expirationYear: ccExprYr,
-            //            };
-            //    if (self.options.useCvv) {
-            //        braintreeObj.cvv = cvv;
-            //    }
-            //    braintreeClient.tokenizeCard(
-            //        braintreeObj,
-            //        function (err, nonce) {
-            //            if (!err) {
-            //                $('#braintree_nonce').val(nonce);
-            //                if (self.options.isFraudDetectionEnabled) {
-            //                    $('#braintree_device_id').val($('#device_data').val());
-            //                }
-            //                order._realSubmit();
-            //            } else {
-            //                //TODO: handle error case
-            //            }
-            //        }
-            //    );
-            //} else {
-            //    if (self.options.isFraudDetectionEnabled) {
-            //        $('#braintree_device_id').val($('#device_data').val());
-            //    }
-            //    order._realSubmit();
-            //}
         },
         sagepayTokeniseCard: function (merchant_session_key) {
 
@@ -229,6 +197,9 @@ define([
 
             span.innerHTML = message;
             span.style.display = "block";
+
+            $('#edit_form').trigger('processStop');
+            $('body').trigger('processStop');
         },
         resetPaymentErrors: function () {
             var span = document.getElementById(this.getCode() + '-payment-errors');

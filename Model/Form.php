@@ -90,7 +90,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      *
      * @var bool
      */
-    protected $_canUseInternal = true;
+    protected $_canUseInternal = false;
 
     /**
      * Availability option
@@ -187,11 +187,12 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
     {
-//        if (parent::isAvailable($quote) && $this->_suite->getConfig()->isMethodAvailable()) {
-//            return true;
-//        }
-//        return false;
-        return true;
+        $country = null;
+        if($quote != null && $quote->getBillingAddress() != null){
+            $country = $quote->getBillingAddress()->getCountryId();
+        }
+
+        return $this->_config->isMethodAvailable($this->_code,$country);
     }
 
     /**
@@ -254,6 +255,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
             //create refund transaction
             $refundTransaction = $this->_transactionFactory->create()
                 ->setOrderPaymentObject($payment)
+                ->setOrderId($order->getEntityId())
                 ->setTxnId($result["VPSTxId"])
                 ->setParentTxnId($transactionId)
                 ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_REFUND)

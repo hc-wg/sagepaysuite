@@ -10,6 +10,9 @@
         <method name="sagepaysuitepi">
             <allow_multiple_address>1</allow_multiple_address>
         </method>
+        <method name="sagepaysuiteform">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
     </methods>
 </payment>
 

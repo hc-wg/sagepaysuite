@@ -106,35 +106,20 @@ class Config implements ConfigInterface
     protected $_storeId;
 
     /**
+     * @var \Magento\Directory\Model\Config\Source\Country
+     */
+    protected $_sourceCountry;
+
+    /**
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      */
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \Magento\Directory\Model\Config\Source\Country $sourceCountry
     )
     {
         $this->_scopeConfig = $scopeConfig;
-    }
-
-    /**
-     * To check billing country is allowed for the payment method
-     *
-     * @param string $country
-     * @return bool
-     */
-    public function canUseForCountry($country)
-    {
-        /*
-        for specific country, the flag will set up as 1
-        */
-//        if ($this->getConfigData(self::KEY_ALLOW_SPECIFIC) == 1) {
-//            $availableCountries = explode(',', $this->getConfigData(self::KEY_SPECIFIC_COUNTRY));
-//            if (!in_array($country, $availableCountries)) {
-//                return false;
-//            }
-//        } elseif ($this->sourceCountry->isCountryRestricted($country)) {
-//            return false;
-//        }
-        return true;
+        $this->_sourceCountry = $sourceCountry;
     }
 
     /**
@@ -226,7 +211,7 @@ class Config implements ConfigInterface
 
     protected function _getGlobalConfigPath($fieldName)
     {
-        return "payment/sagepaysuite/{$fieldName}";
+        return "sagepaysuite/global/{$fieldName}";
     }
 
     /**
@@ -236,50 +221,50 @@ class Config implements ConfigInterface
      *
      * @return bool
      */
-    public function isMethodAvailable($methodCode = null)
+    public function isMethodAvailable($methodCode = null, $country = null)
     {
-        $methodCode = $methodCode ?: $this->_methodCode;
+        if(!$this->_methodCode && $methodCode != null){
+            $this->_methodCode = $methodCode;
+        }
 
-        return $this->isMethodActive($methodCode);
+        if(!$this->isMethodActive()){
+            return false;
+        }
+
+        if($country != null){
+            if(!$this->canUseForCountry($country)){
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
      * Check whether method active in configuration and supported for merchant country or not
      *
-     * @param string $method Method code
-     * @return bool
-     *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    public function isMethodActive($method)
+    public function isMethodActive()
     {
-        $isEnabled = false;
-        switch ($method) {
-            case Config::METHOD_FORM:
-                $isEnabled = $this->_scopeConfig->isSetFlag(
-                    'sagepaysuite/' . Config::METHOD_FORM . '/active',
-                    ScopeInterface::SCOPE_STORE,
-                    $this->_storeId
-                );
-                break;
-        }
-
-        return $this->isMethodSupportedForCountry($method) && $isEnabled;
+         return $this->getValue("active");
     }
 
-
-
     /**
-     * Check whether method supported for specified country or not
-     *
-     * @param string|null $method
-     * @param string|null $countryCode
+     * @param $country
      * @return bool
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function isMethodSupportedForCountry($method = null, $countryCode = null)
+    public function canUseForCountry($country)
     {
+        /*
+        for specific country, the flag will set up as 1
+        */
+        if ($this->getValue("allowspecific") == 1) {
+            $availableCountries = explode(',', $this->getValue("specificcountry"));
+            if (!in_array($country, $availableCountries)) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -293,34 +278,6 @@ class Config implements ConfigInterface
     {
         return true;
     }
-
-//    public function getSagePayUrl($mode = self::MODE_LIVE, $action = self::ACTION_POST){
-//
-//        if($this->getMethodCode() == self::METHOD_FORM){
-//
-//            if($mode == self::MODE_LIVE){
-//                switch($action){
-//                    case self::ACTION_POST:
-//                        return 'https://live.sagepay.com/gateway/service/vspform-register.vsp';
-//                        break;
-//                    default:
-//                        return null;
-//                        break;
-//                }
-//            }elseif($mode == self::MODE_TEST){
-//                switch($action){
-//                    case self::ACTION_POST:
-//                        return 'https://test.sagepay.com/gateway/service/vspform-register.vsp';
-//                        break;
-//                    default:
-//                        return null;
-//                        break;
-//                }
-//            }
-//        }
-//
-//        return null;
-//    }
 
     public function getVPSProtocol(){
         return "3.00";

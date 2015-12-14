@@ -91,7 +91,7 @@ class Transaction
         $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND;
         $data['Vendor'] = $this->_config->getVendorname();
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($order_id,\Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND);
-        $data['Amount'] = $amount;
+        $data['Amount'] = number_format($amount, 2, '.', '');
         $data['Currency'] = $transaction->currency;
         $data['Description'] = "Refund issued from magento.";
         $data['RelatedVPSTxId'] = $transaction->vpstxid;

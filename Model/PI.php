@@ -66,7 +66,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
     /**
      * @var bool
      */
-    protected $_canUseInternal = true;
+    protected $_canUseInternal = false;
 
     /**
      * @var bool
@@ -210,21 +210,6 @@ class PI extends \Magento\Payment\Model\Method\Cc
         if (!$this->config->canUseForCountry($billingCountry)) {
             throw new LocalizedException(__('Selected payment type is not allowed for billing country.'));
         }
-
-        //$ccType = $info->getCcType();
-//        if (!$ccType) {
-//            $token = $this->getInfoInstance()->getAdditionalInformation('cc_token');
-//            if ($token) {
-//                $ccType = $this->vault->getSavedCardType($token);
-//            }
-//        }
-
-//        if ($ccType) {
-//            $error = $this->config->canUseCcTypeForCountry($billingCountry, $ccType);
-//            if ($error) {
-//                throw new LocalizedException($error);
-//            }
-//        }
 
         return $this;
     }
@@ -460,17 +445,12 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
     {
-//        if (parent::isAvailable($quote)) {
-//            if ($quote != null) {
-//                $availableCcTypes = $this->config->getApplicableCardTypes($quote->getBillingAddress()->getCountryId());
-//                if (!$availableCcTypes) {
-//                    return false;
-//                }
-//            }
-//        } else {
-//            return false;
-//        }
-        return true;
+        $country = null;
+        if($quote != null && $quote->getBillingAddress() != null){
+            $country = $quote->getBillingAddress()->getCountryId();
+        }
+
+        return $this->config->isMethodAvailable($this->_code,$country);
     }
 
     /**
@@ -478,11 +458,6 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function canVoid()
     {
-//        if (($order = $this->_registry->registry('current_order'))
-//            && $order->getId() && $order->hasInvoices()
-//        ) {
-//            return false;
-//        }
         return $this->_canVoid;
     }
 

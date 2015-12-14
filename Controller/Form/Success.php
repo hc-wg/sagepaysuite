@@ -138,7 +138,7 @@ class Success extends \Magento\Framework\App\Action\Action
             //create transaction record
             $transaction = $this->_transactionFactory->create()
                 ->setOrderPaymentObject($payment)
-                ->setTxnId($response["VPSTxId"])
+                ->setTxnId($transactionId)
                 ->setOrderId($order->getEntityId())
                 ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE)
                 ->setPaymentId($payment->getId());
