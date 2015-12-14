@@ -82,21 +82,6 @@ class Success extends \Magento\Framework\App\Action\Action
 
             $this->_quote = $this->_getCheckoutSession()->getQuote();
 
-            //hardcode billing address for now
-            $sa = $this->_quote->getShippingAddress();
-            $ba = $this->_quote->getBillingAddress();
-            $ba->setFirstname($sa->getFirstname());
-            $ba->setLastname($sa->getLastname());
-            $ba->setStreet($sa->getStreet());
-            $ba->setTelephone($sa->getTelephone());
-            $ba->setCity($sa->getCity());
-            $ba->setPostcode($sa->getPostcode());
-            $ba->setCountryId($sa->getCountryId());
-            $ba->setRegionCode($sa->getRegionCode());
-            $ba->save();
-            $this->_quote->setBillingAddress($ba);
-            //$this->_quote->collectTotals();
-            //$this->quoteRepository->save($quote);
             $this->_quote->save();
 
             $transactionId = $response["VPSTxId"];

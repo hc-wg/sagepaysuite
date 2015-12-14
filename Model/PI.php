@@ -224,7 +224,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function authorize(InfoInterface $payment, $amount)
     {
-        //return $this->braintreeAuthorize($payment, $amount, false);
+
     }
 
     /**
