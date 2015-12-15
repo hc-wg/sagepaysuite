@@ -89,9 +89,17 @@ class Success extends \Magento\Framework\App\Action\Action
             $transactionId = str_replace("{","",$transactionId);
             $transactionId = str_replace("}","",$transactionId);
 
-            // import payment info
+            // import payment info for save order
             $payment = $this->_quote->getPayment();
             $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
+            $payment->setTransactionId($transactionId);
+            $payment->setLastTransId($transactionId);
+            $payment->setCcType($response["CardType"]);
+            $payment->setCcLast4($response["Last4Digits"]);
+            $payment->setCcExpMonth(substr($response["ExpiryDate"],0,2));
+            $payment->setCcExpYear(substr($response["ExpiryDate"],2));
+            $payment->setAdditionalInformation('statusDetail', $response["StatusDetail"]);
+            $payment->setAdditionalInformation('vendorTxCode', $response["VendorTxCode"]);
 
             $order = $this->placeOrder();
 
@@ -115,7 +123,8 @@ class Success extends \Magento\Framework\App\Action\Action
             $payment->setIsTransactionClosed(1);
             $payment->setCcType($response["CardType"]);
             $payment->setCcLast4($response["Last4Digits"]);
-            $payment->setCcExpMonth($response["ExpiryDate"]);
+            $payment->setCcExpMonth(substr($response["ExpiryDate"],0,2));
+            $payment->setCcExpYear(substr($response["ExpiryDate"],2));
             $payment->setAdditionalInformation('statusDetail', $response["StatusDetail"]);
             $payment->setAdditionalInformation('vendorTxCode', $response["VendorTxCode"]);
             $payment->save();
