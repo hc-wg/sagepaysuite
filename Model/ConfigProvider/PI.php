@@ -32,12 +32,7 @@ class PI extends CcGenericConfigProvider
     /**
      * @param CcConfig $ccConfig
      * @param PaymentHelper $paymentHelper
-     * @param \Magento\Braintree\Model\Vault $vault
-     * @param \Magento\Braintree\Model\Config\Cc $config
-     * @param \Magento\Checkout\Model\Session $checkoutSession
-     * @param \Magento\Customer\Model\Session $customerSession
-     * @param \Magento\Framework\Url $urlBuilder
-     * @param \Magento\Braintree\Helper\Data $dataHelper
+     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
      */
     public function __construct(
         CcConfig $ccConfig,

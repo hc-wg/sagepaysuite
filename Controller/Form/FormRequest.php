@@ -24,6 +24,11 @@ class FormRequest extends \Magento\Framework\App\Action\Action
     protected $_suiteHelper;
 
     /**
+     * @var \Magento\Quote\Model\Quote
+     */
+    protected $_quote;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
@@ -36,12 +41,18 @@ class FormRequest extends \Magento\Framework\App\Action\Action
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
         $this->_suiteHelper = $suiteHelper;
+
+        $this->_quote = $this->_getCheckoutSession()->getQuote();
     }
 
     public function execute()
     {
 
         try {
+
+            $this->_quote->collectTotals();
+            $this->_quote->reserveOrderId();
+            $this->_quote->save();
 
             $responseContent = [
                 'success' => true,
@@ -73,22 +84,14 @@ class FormRequest extends \Magento\Framework\App\Action\Action
             throw new \Magento\Framework\Exception\LocalizedException(__('Invalid FORM encrypted password.'));
         }
 
-        $quote = $this->_getCheckoutSession()->getQuote();
-        $billing_address = $quote->getBillingAddress();
-        $shipping_address = $quote->getShippingAddress();
-
-        //if billing is empty
-        if(is_null($billing_address->getCountry())){
-            $billing_address = $shipping_address;
-            $quote->setBillingAddress($billing_address);
-        }
-
+        $billing_address = $this->_quote->getBillingAddress();
+        $shipping_address = $this->_quote->getShippingAddress();
         $customer_data = $this->_getCustomerSession()->getCustomerDataObject();
 
         $data = array();
-        $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($quote->getReservedOrderId());
-        $data['Amount'] = number_format($quote->getGrandTotal(), 2, '.', '');
-        $data['Currency'] = $quote->getQuoteCurrencyCode();
+        $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
+        $data['Amount'] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
+        $data['Currency'] = $this->_quote->getQuoteCurrencyCode();
         $data['Description'] = "description";
         $data['SuccessURL'] = $this->_url->getUrl('*/*/success');
         $data['FailureURL'] = $this->_url->getUrl('*/*/failure');

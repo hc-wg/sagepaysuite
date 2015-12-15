@@ -8,6 +8,14 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
+        <sagepaysuite>
+            <global>
+                <active>0</active>
+                <license>[Request from ebizmarts]</license>
+                <vendorname>testebizmarts</vendorname>
+                <reporting_password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+            </global>
+        </sagepaysuite>
         <payment>
             <sagepaysuiteform>
                 <active>0</active>
