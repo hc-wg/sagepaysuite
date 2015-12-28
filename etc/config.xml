@@ -36,6 +36,15 @@
                 <allowspecific>0</allowspecific>
                 <password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
             </sagepaysuitepi>
+            <sagepaysuiteserver>
+                <active>0</active>
+                <model>Ebizmarts\SagePaySuite\Model\Server</model>
+                <payment_action>authorize_capture</payment_action>
+                <order_status>pending</order_status>
+                <title>Sage Pay SERVER</title>
+                <cctypes>AE,VI,MC,DI,JCB</cctypes>
+                <allowspecific>0</allowspecific>
+            </sagepaysuiteserver>
         </payment>
     </default>
 </config>

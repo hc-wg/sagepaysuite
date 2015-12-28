@@ -20,18 +20,18 @@ define(
         'use strict';
 
         $(document).ready(function () {
-            var formConfig = window.checkoutConfig.payment.ebizmarts_sagepaysuiteform;
-            if(formConfig && !formConfig.licensed){
+            var serverConfig = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver;
+            if(serverConfig && !serverConfig.licensed){
                 $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
             }
         });
 
         return Component.extend({
             defaults: {
-                template: 'Ebizmarts_SagePaySuite/payment/form-form'
+                template: 'Ebizmarts_SagePaySuite/payment/server-form'
             },
             getCode: function () {
-                return 'sagepaysuiteform';
+                return 'sagepaysuiteserver';
             },
             /** Returns payment information data */
             getData: function() {
@@ -71,23 +71,21 @@ define(
                 ).done(
                     function () {
 
-                        var serviceUrl = url.build('sagepaysuite/form/formRequest');
+                        var serviceUrl = url.build('sagepaysuite/server/serverRequest');
 
-                        //generate crypt and form data
+                        //send server post request
                         storage.get(serviceUrl).done(
                             function (response) {
 
                                 if (response.success) {
 
-                                    //set form data and submit
-                                    var form_form = document.getElementById(self.getCode() + '-form');
-                                    form_form.setAttribute('action',response.redirect_url);
-                                    form_form.elements[0].setAttribute('value', response.vps_protocol);
-                                    form_form.elements[1].setAttribute('value', response.tx_type);
-                                    form_form.elements[2].setAttribute('value', response.vendor);
-                                    form_form.elements[3].setAttribute('value', response.crypt);
+                                    $('#sagepaysuiteserver-actions-toolbar').css('display','none');
+                                    $('#payment_form_sagepaysuiteserver .payment-method-note').css('display','none');
 
-                                    form_form.submit();
+                                    $('#sagepaysuiteserver_embed_iframe_container').html("<iframe class='main-iframe' src='" +
+                                        response.response.data.NextURL + "'></iframe>");
+
+                                    fullScreenLoader.stopLoader();
 
                                 } else {
                                     self.showPaymentError(response.error_message);
@@ -95,7 +93,7 @@ define(
                             }
                         ).fail(
                             function (response) {
-                                self.showPaymentError("Unable to submit form to Sage Pay.");
+                                self.showPaymentError("Unable to submit to Sage Pay. Please try another payment option.");
                             }
                         );
 
@@ -113,9 +111,15 @@ define(
                 span.innerHTML = message;
                 span.style.display="block";
 
+                $('#sagepaysuiteserver-actions-toolbar').css('display','block');
+                $('#payment_form_sagepaysuiteserver .payment-method-note').css('display','block');
+
                 fullScreenLoader.stopLoader();
             },
             resetPaymentErrors: function(){
+                $('#sagepaysuiteserver-actions-toolbar').css('display','block');
+                $('#payment_form_sagepaysuiteserver .payment-method-note').css('display','block');
+
                 var span = document.getElementById(this.getCode() + '-payment-errors');
                 span.style.display="none";
 

@@ -22,6 +22,7 @@ class Config implements ConfigInterface
      */
     const METHOD_FORM = 'sagepaysuiteform';
     const METHOD_PI = 'sagepaysuitepi';
+    const METHOD_SERVER = 'sagepaysuiteserver';
 
     /**
      * Actions
@@ -75,8 +76,8 @@ class Config implements ConfigInterface
     const URL_SHARED_VOID_LIVE = 'https://live.sagepay.com/gateway/service/void.vsp';
     const URL_SHARED_REFUND_TEST = 'https://test.sagepay.com/gateway/service/refund.vsp';
     const URL_SHARED_REFUND_LIVE = 'https://live.sagepay.com/gateway/service/refund.vsp';
-
-
+    const URL_SERVER_POST_TEST = 'https://test.sagepay.com/gateway/service/vspserver-register.vsp';
+    const URL_SERVER_POST_LIVE = 'https://live.sagepay.com/gateway/service/vspserver-register.vsp';
 
     /**
      * SagePay Status Codes

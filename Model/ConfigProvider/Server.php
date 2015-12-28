@@ -6,21 +6,20 @@
 
 namespace Ebizmarts\SagePaySuite\Model\ConfigProvider;
 
-use Magento\Payment\Model\CcGenericConfigProvider;
-use Magento\Payment\Helper\Data as PaymentHelper;
-use Magento\Payment\Model\CcConfig;
+use Magento\Checkout\Model\ConfigProviderInterface;
 use \Ebizmarts\SagePaySuite\Model\Config as Config;
+use Magento\Payment\Helper\Data as PaymentHelper;
+use Magento\Framework\Escaper;
 
-class PI extends CcGenericConfigProvider
+class Server implements ConfigProviderInterface
 {
-
     /**
      * @var string
      */
-    protected $methodCode = Config::METHOD_PI;
+    protected $methodCode = Config::METHOD_SERVER;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Form
+     * @var \Ebizmarts\SagePaySuite\Model\Server
      */
     protected $method;
 
@@ -30,25 +29,16 @@ class PI extends CcGenericConfigProvider
     protected $_suiteHelper;
 
     /**
-     * @param CcConfig $ccConfig
      * @param PaymentHelper $paymentHelper
-     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
      */
     public function __construct(
-        CcConfig $ccConfig,
         PaymentHelper $paymentHelper,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
     ) {
-        parent::__construct($ccConfig, $paymentHelper);
-
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
         $this->_suiteHelper = $suiteHelper;
     }
 
-
-    /**
-     * @return array|void
-     */
     public function getConfig()
     {
         if (!$this->method->isAvailable()) {
@@ -56,7 +46,7 @@ class PI extends CcGenericConfigProvider
         }
 
         return ['payment' => [
-            'ebizmarts_sagepaysuitepi' => [
+            'ebizmarts_sagepaysuiteserver' => [
                 'licensed' => $this->_suiteHelper->verify()
             ],
         ]

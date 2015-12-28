@@ -92,7 +92,7 @@ class FormRequest extends \Magento\Framework\App\Action\Action
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
         $data['Amount'] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
         $data['Currency'] = $this->_quote->getQuoteCurrencyCode();
-        $data['Description'] = "description";
+        $data['Description'] = "Magento transaction";
         $data['SuccessURL'] = $this->_url->getUrl('*/*/success');
         $data['FailureURL'] = $this->_url->getUrl('*/*/failure');
 
