@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Controller\Form;
 
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Magento\Customer\Api\Data\GroupInterface;
 
 class Success extends \Magento\Framework\App\Action\Action
 {
@@ -44,12 +45,31 @@ class Success extends \Magento\Framework\App\Action\Action
      * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
      */
     protected $_transactionFactory;
+    /**
+     * @var \Magento\Customer\Model\Session
+     */
+    protected $_customerSession;
+    /**
+     * @var \Magento\Checkout\Model\Session
+     */
+    protected $_checkoutSession;
 
     /**
+     * Success constructor.
      * @param \Magento\Framework\App\Action\Context $context
+     * @param \Magento\Customer\Model\Session $customerSession
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param \Magento\Checkout\Helper\Data $checkoutData
+     * @param \Magento\Quote\Model\QuoteManagement $quoteManagement
+     * @param OrderSender $orderSender
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
+        \Magento\Customer\Model\Session $customerSession,
+        \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Magento\Checkout\Helper\Data $checkoutData,
         \Magento\Quote\Model\QuoteManagement $quoteManagement,
@@ -66,6 +86,8 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->orderSender = $orderSender;
         $this->_logger = $logger;
         $this->_transactionFactory = $transactionFactory;
+        $this->_customerSession = $customerSession;
+        $this->_checkoutSession = $checkoutSession;
     }
 
     /**
@@ -215,7 +237,8 @@ class Success extends \Magento\Framework\App\Action\Action
 
     protected function _getCheckoutSession()
     {
-        return $this->_objectManager->get('Magento\Checkout\Model\Session');
+        return $this->_checkoutSession;
+//        return $this->_objectManager->get('Magento\Checkout\Model\Session');
     }
 
     /**
@@ -224,19 +247,19 @@ class Success extends \Magento\Framework\App\Action\Action
     protected function placeOrder()
     {
 
-//        $isNewCustomer = false;
-//        switch ($this->getCheckoutMethod()) {
-//            case \Magento\Checkout\Model\Type\Onepage::METHOD_GUEST:
-//                $this->_prepareGuestQuote();
-//                break;
-//            case \Magento\Checkout\Model\Type\Onepage::METHOD_REGISTER:
-//                $this->_prepareNewCustomerQuote();
-//                $isNewCustomer = true;
-//                break;
-//            default:
-//                $this->_prepareCustomerQuote();
-//                break;
-//        }
+        $isNewCustomer = false;
+        switch ($this->getCheckoutMethod()) {
+            case \Magento\Checkout\Model\Type\Onepage::METHOD_GUEST:
+                $this->_prepareGuestQuote();
+                break;
+            case \Magento\Checkout\Model\Type\Onepage::METHOD_REGISTER:
+                $this->_prepareNewCustomerQuote();
+                $isNewCustomer = true;
+                break;
+            default:
+                $this->_prepareCustomerQuote();
+                break;
+        }
 
         //$this->_ignoreAddressValidation();
         $this->_quote->collectTotals();
@@ -277,7 +300,7 @@ class Success extends \Magento\Framework\App\Action\Action
      */
     public function getCheckoutMethod()
     {
-        if ($this->getCustomerSession()->isLoggedIn()) {
+        if ($this->_getCustomerSession()->isLoggedIn()) {
             return \Magento\Checkout\Model\Type\Onepage::METHOD_CUSTOMER;
         }
         if (!$this->_quote->getCheckoutMethod()) {
@@ -295,7 +318,112 @@ class Success extends \Magento\Framework\App\Action\Action
      */
     protected function _getCustomerSession()
     {
-        return $this->_objectManager->get('Magento\Customer\Model\Session');
+        return $this->_customerSession;
+//        return $this->_objectManager->get('Magento\Customer\Model\Session');
+    }
+    /**
+     * Prepare quote for guest checkout order submit
+     *
+     * @return $this
+     */
+    protected function _prepareGuestQuote()
+    {
+        $this->_logger->info(__METHOD__);
+        $quote = $this->_quote;
+        $this->_logger->info($quote->getBillingAddress()->getEmail());
+        $this->_logger->info($quote->getCustomerEmail());
+        $quote->setCustomerId(null)
+            ->setCustomerEmail($quote->getBillingAddress()->getEmail())
+            ->setCustomerIsGuest(true)
+            ->setCustomerGroupId(GroupInterface::NOT_LOGGED_IN_ID);
+        return $this;
+    }
+
+    /**
+     * Prepare quote for customer registration and customer order submit
+     *
+     * @return void
+     */
+    protected function _prepareNewCustomerQuote()
+    {
+        $quote = $this->_quote;
+        $billing = $quote->getBillingAddress();
+        $shipping = $quote->isVirtual() ? null : $quote->getShippingAddress();
+
+        $customer = $quote->getCustomer();
+        $customerBillingData = $billing->exportCustomerAddress();
+        $dataArray = $this->_objectCopyService->getDataFromFieldset('checkout_onepage_quote', 'to_customer', $quote);
+        $this->dataObjectHelper->populateWithArray(
+            $customer,
+            $dataArray,
+            '\Magento\Customer\Api\Data\CustomerInterface'
+        );
+        $quote->setCustomer($customer)->setCustomerId(true);
+
+        $customerBillingData->setIsDefaultBilling(true);
+
+        if ($shipping) {
+            if (!$shipping->getSameAsBilling()) {
+                $customerShippingData = $shipping->exportCustomerAddress();
+                $customerShippingData->setIsDefaultShipping(true);
+                $shipping->setCustomerAddressData($customerShippingData);
+                // Add shipping address to quote since customer Data Object does not hold address information
+                $quote->addCustomerAddress($customerShippingData);
+            } else {
+                $shipping->setCustomerAddressData($customerBillingData);
+                $customerBillingData->setIsDefaultShipping(true);
+            }
+        } else {
+            $customerBillingData->setIsDefaultShipping(true);
+        }
+        $billing->setCustomerAddressData($customerBillingData);
+        // TODO : Eventually need to remove this legacy hack
+        // Add billing address to quote since customer Data Object does not hold address information
+        $quote->addCustomerAddress($customerBillingData);
+    }
+
+    /**
+     * Prepare quote for customer order submit
+     *
+     * @return void
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
+    protected function _prepareCustomerQuote()
+    {
+        $quote = $this->_quote;
+        $billing = $quote->getBillingAddress();
+        $shipping = $quote->isVirtual() ? null : $quote->getShippingAddress();
+
+        $customer = $this->customerRepository->getById($this->getCustomerSession()->getCustomerId());
+        $hasDefaultBilling = (bool)$customer->getDefaultBilling();
+        $hasDefaultShipping = (bool)$customer->getDefaultShipping();
+
+        if ($shipping && !$shipping->getSameAsBilling() &&
+            (!$shipping->getCustomerId() || $shipping->getSaveInAddressBook())
+        ) {
+            $shippingAddress = $shipping->exportCustomerAddress();
+            if (!$hasDefaultShipping) {
+                //Make provided address as default shipping address
+                $shippingAddress->setIsDefaultShipping(true);
+                $hasDefaultShipping = true;
+            }
+            $quote->addCustomerAddress($shippingAddress);
+            $shipping->setCustomerAddressData($shippingAddress);
+        }
+
+        if (!$billing->getCustomerId() || $billing->getSaveInAddressBook()) {
+            $billingAddress = $billing->exportCustomerAddress();
+            if (!$hasDefaultBilling) {
+                //Make provided address as default shipping address
+                if (!$hasDefaultShipping) {
+                    //Make provided address as default shipping address
+                    $billingAddress->setIsDefaultShipping(true);
+                }
+                $billingAddress->setIsDefaultBilling(true);
+            }
+            $quote->addCustomerAddress($billingAddress);
+            $billing->setCustomerAddressData($billingAddress);
+        }
     }
 
 }
