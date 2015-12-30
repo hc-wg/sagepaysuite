@@ -50,7 +50,6 @@ class SharedApi
      */
     public function executeRequest($action, $data)
     {
-
         $url = $this->_getServiceUrl($action);
 
         $curl = $this->_curlFactory->create();
@@ -67,7 +66,6 @@ class SharedApi
         foreach ($data as $_key => $_val) {
             $postData .= $_key . '=' . urlencode(mb_convert_encoding($_val, 'ISO-8859-1', 'UTF-8')) . '&';
         }
-
         $curl->write(\Zend_Http_Client::POST,
             $url,
             '1.0',
@@ -98,7 +96,6 @@ class SharedApi
             "status" => $response_status,
             "data" => $response_data
         ];
-
         return $response;
     }
 
@@ -122,6 +119,14 @@ class SharedApi
                     return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REFUND_TEST;
                 }
                 break;
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_RELEASE:
+                if($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE ){
+                    return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_RELEASE_LIVE;
+                }else{
+                    return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_RELEASE_TEST;
+                }
+                break;
+
         }
     }
 

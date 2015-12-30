@@ -54,7 +54,6 @@ class Transaction
         $params = '<vpstxid>' . $vpstxid . '</vpstxid>';
         $xml          = $this->_reportingApi->createXml('getTransactionDetail', $params);
         $api_response = $this->_reportingApi->executeRequest($xml);
-
         return $this->_reportingApi->handleApiErrors($api_response);
     }
 
@@ -70,9 +69,9 @@ class Transaction
         $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_VOID;
         $data['Vendor'] = $this->_config->getVendorname();
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode();
-        $data['VPSTxId'] = $transaction->vpstxid;
-        $data['SecurityKey'] = $transaction->securitykey;
-        $data['TxAuthNo'] = $transaction->vpsauthcode;
+        $data['VPSTxId'] = (string)$transaction->vpstxid;
+        $data['SecurityKey'] = (string)$transaction->securitykey;
+        $data['TxAuthNo'] = (string)$transaction->vpsauthcode;
 
         $response = $this->_sharedApi->executeRequest(
             \Ebizmarts\SagePaySuite\Model\Config::ACTION_VOID,
@@ -91,12 +90,12 @@ class Transaction
         $data['Vendor'] = $this->_config->getVendorname();
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($order_id,\Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND);
         $data['Amount'] = number_format($amount, 2, '.', '');
-        $data['Currency'] = $transaction->currency;
+        $data['Currency'] = (string)$transaction->currency;
         $data['Description'] = "Refund issued from magento.";
-        $data['RelatedVPSTxId'] = $transaction->vpstxid;
-        $data['RelatedVendorTxCode'] = $transaction->vendortxcode;
-        $data['RelatedSecurityKey'] = $transaction->securitykey;
-        $data['RelatedTxAuthNo'] = $transaction->vpsauthcode;
+        $data['RelatedVPSTxId'] = (string)$transaction->vpstxid;
+        $data['RelatedVendorTxCode'] = (string)$transaction->vendortxcode;
+        $data['RelatedSecurityKey'] = (string)$transaction->securitykey;
+        $data['RelatedTxAuthNo'] = (string)$transaction->vpsauthcode;
 
         $response = $this->_sharedApi->executeRequest(
             \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND,
@@ -106,6 +105,29 @@ class Transaction
         return $this->_sharedApi->handleApiErrors($response);
     }
 
+    /**
+     * @param $vpstxid
+     * @param $amount
+     * @return mixed
+     * @throws
+     */
+    public function releaseTransaction($vpstxid,$amount)
+    {
+        $transaction = $this->getTransactionDetails($vpstxid);
 
+        $data['VPSProtocol'] = $this->_config->getVPSProtocol();
+        $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_RELEASE;
+        $data['Vendor'] = $this->_config->getVendorname();
+        $data['VendorTxCode'] = (string)$transaction->vendortxcode;
+        $data['VPSTxId'] = (string)$transaction->vpstxid;
+        $data['SecurityKey'] = (string)$transaction->securitykey;
+        $data['TxAuthNo'] = (string)$transaction->vpsauthcode;
+        $data['ReleaseAmount'] = number_format($amount, 2, '.', '');
 
+        $response = $this->_sharedApi->executeRequest(
+            \Ebizmarts\SagePaySuite\Model\Config::ACTION_RELEASE,
+            $data
+        );
+        return $this->_sharedApi->handleApiErrors($response);
+    }
 }

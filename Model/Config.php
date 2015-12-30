@@ -28,10 +28,11 @@ class Config implements ConfigInterface
      * Actions
      */
     const ACTION_PAYMENT = 'PAYMENT';
-    const ACTION_DEFER = 'DEFER';
+    const ACTION_DEFER = 'DEFERRED';
     const ACTION_AUTHENTICATE = 'AUTHENTICATE';
     const ACTION_VOID = 'VOID';
     const ACTION_REFUND = 'REFUND';
+    const ACTION_RELEASE = 'RELEASE';
     const ACTION_POST = 'post';
 
     /**
@@ -86,6 +87,9 @@ class Config implements ConfigInterface
     const URL_SHARED_REFUND_LIVE = 'https://live.sagepay.com/gateway/service/refund.vsp';
     const URL_SERVER_POST_TEST = 'https://test.sagepay.com/gateway/service/vspserver-register.vsp';
     const URL_SERVER_POST_LIVE = 'https://live.sagepay.com/gateway/service/vspserver-register.vsp';
+    const URL_SHARED_RELEASE_TEST = 'https://test.sagepay.com/gateway/service/release.vsp';
+    const URL_SHARED_RELEASE_LIVE = 'https://live.sagepay.com/gateway/service/release.vsp';
+
 
     /**
      * SagePay Status Codes
@@ -240,24 +244,6 @@ class Config implements ConfigInterface
     }
 
     /**
-     * @param $country
-     * @return bool
-     */
-//    public function canUseForCountry($country)
-//    {
-//        /*
-//        for specific country, the flag will set up as 1
-//        */
-//        if ($this->getValue("allowspecific") == 1) {
-//            $availableCountries = explode(',', $this->getValue("specificcountry"));
-//            if (!in_array($country, $availableCountries)) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
-
-    /**
      * Check whether specified currency code is supported
      *
      * @param string $code
@@ -277,26 +263,28 @@ class Config implements ConfigInterface
     {
         $action = $this->getValue("payment_action");
 
-        if($this->_methodCode == self::METHOD_PI){
+        if ($this->_methodCode == self::METHOD_PI) {
             switch ($action) {
                 case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE:
-                    return self::ACTION_PAYMENT;
+                    return "Payment";
                     break;
                 default:
-                    return self::ACTION_PAYMENT;
+                    return "Payment";
                     break;
             }
-        }else{
+        } else {
             switch ($action) {
                 case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE:
-                    return "Payment";
+                    return self::ACTION_PAYMENT;
+                    break;
+                case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE:
+                    return self::ACTION_DEFER;
                     break;
                 default:
-                    return "Payment";
+                    return self::ACTION_PAYMENT;
                     break;
             }
         }
-
     }
 
     public function getVendorname()
