@@ -230,8 +230,22 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
+        if($payment->getLastTransId()) {
+            try {
+                $transactionId = $payment->getLastTransId();
 
+                $result = $this->_transactionsApi->releaseTransaction($transactionId, $amount);
+                $payment->setIsTransactionClosed(1);
+            } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+                $this->_logger->critical($apiException);
+                throw new LocalizedException(__('There was an error releasing Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
 
+            } catch (\Exception $e) {
+                $this->_logger->critical($e);
+                throw new LocalizedException(__('There was an error releasing Sage Pay transaction ' . $transactionId));
+            }
+        }
+        return $this;
     }
 
     /**
@@ -246,24 +260,14 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     {
         try {
 
-            $transactionId = $payment->getLastTransId();
+            $transactionId = $this->clearTransactionId($payment->getLastTransId());
             $order = $payment->getOrder();
 
             $result = $this->_transactionsApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
             $result = $result["data"];
 
-            //create refund transaction
-            $refundTransaction = $this->_transactionFactory->create()
-                ->setOrderPaymentObject($payment)
-                ->setOrderId($order->getEntityId())
-                ->setTxnId($result["VPSTxId"])
-                ->setParentTxnId($transactionId)
-                ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_REFUND)
-                ->setPaymentId($payment->getId());
-
-            $refundTransaction->save();
-            $refundTransaction->setIsClosed(true);
-
+            $payment->setIsTransactionClosed(1)
+                ->setShouldCloseParentTransaction(1);
             //$this->_messageManager->addSuccess(__("Sage Pay transaction " . $transactionId . " successfully refunded."));
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
@@ -299,5 +303,17 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     {
         return $this->_canVoid;
     }
-
+    public function clearTransactionId($transactionId)
+    {
+        $suffixes = [
+            '-' . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE,
+            '-' . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_VOID,
+        ];
+        foreach ($suffixes as $suffix) {
+            if (strpos($transactionId, $suffix) !== false) {
+                $transactionId = str_replace($suffix, '', $transactionId);
+            }
+        }
+        return $transactionId;
+    }
 }

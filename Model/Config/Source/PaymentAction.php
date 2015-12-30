@@ -23,6 +23,10 @@ class PaymentAction implements ArrayInterface
             [
                 'value' => \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE,
                 'label' => __('Payment - Authorize and Capture'),
+            ],
+            [
+                'value' => \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE,
+                'label' => __('Payment - Authorize Only'),
             ]
         ];
     }

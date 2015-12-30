@@ -25,7 +25,6 @@ class AccountManagement
     }
     public function aroundIsEmailAvailable(\Magento\Customer\Model\AccountManagement $accountManagement,\Closure $proceed,$customerEmail,$websiteId=null)
     {
-        error_log(__METHOD__);
         $ret = $proceed($customerEmail,$websiteId);
         $session = $this->_getSession();
         if($session)

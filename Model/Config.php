@@ -27,10 +27,11 @@ class Config implements ConfigInterface
      * Actions
      */
     const ACTION_PAYMENT = 'PAYMENT';
-    const ACTION_DEFER = 'DEFER';
+    const ACTION_DEFER = 'DEFERRED';
     const ACTION_AUTHENTICATE = 'AUTHENTICATE';
     const ACTION_VOID = 'VOID';
     const ACTION_REFUND = 'REFUND';
+    const ACTION_RELEASE = 'RELEASE';
     const ACTION_POST = 'post';
 
     /**
@@ -75,7 +76,8 @@ class Config implements ConfigInterface
     const URL_SHARED_VOID_LIVE = 'https://live.sagepay.com/gateway/service/void.vsp';
     const URL_SHARED_REFUND_TEST = 'https://test.sagepay.com/gateway/service/refund.vsp';
     const URL_SHARED_REFUND_LIVE = 'https://live.sagepay.com/gateway/service/refund.vsp';
-
+    const URL_SHARED_RELEASE_TEST = 'https://test.sagepay.com/gateway/service/release.vsp';
+    const URL_SHARED_RELEASE_LIVE = 'https://live.sagepay.com/gateway/service/release.vsp';
 
 
     /**
@@ -289,6 +291,9 @@ class Config implements ConfigInterface
         switch($action){
             case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE:
                 return self::ACTION_PAYMENT;
+                break;
+            case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE:
+                return self::ACTION_DEFER;
                 break;
             default:
                 return self::ACTION_PAYMENT;

@@ -151,14 +151,25 @@ class Success extends \Magento\Framework\App\Action\Action
             $payment->setAdditionalInformation('vendorTxCode', $response["VendorTxCode"]);
             $payment->save();
 
+            switch($this->_config->getSagepayPaymentAction())
+            {
+                case \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT:
+                    $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
+                    $closed = true;
+                    break;
+                case \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER:
+                    $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
+                    $closed = false;
+                    break;
+            }
             //create transaction record
             $transaction = $this->_transactionFactory->create()
                 ->setOrderPaymentObject($payment)
                 ->setTxnId($transactionId)
                 ->setOrderId($order->getEntityId())
-                ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE)
+                ->setTxnType($action)
                 ->setPaymentId($payment->getId());
-            $transaction->setIsClosed(true);
+            $transaction->setIsClosed($closed);
             $transaction->save();
 
             //update invoice transaction id
