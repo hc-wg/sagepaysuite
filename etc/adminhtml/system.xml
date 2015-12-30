@@ -14,7 +14,7 @@
                     <frontend_model>Ebizmarts\SagePaySuite\Block\Adminhtml\System\Config\Fieldset\Version</frontend_model>
                 </group>
                 <group id="global" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Global</label>
+                    <label>Basic Settings</label>
                     <field id="license" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>License Key</label>
                         <config_path>sagepaysuite/global/license</config_path>
@@ -36,6 +36,14 @@
                         <label>Reporting API Password</label>
                         <config_path>sagepaysuite/global/reporting_password</config_path>
                         <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    </field>
+                </group>
+                <group id="advanced" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Advanced Settings</label>
+                    <field id="threedsecure" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>3D Secure Authentication</label>
+                        <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\threedsecure</source_model>
+                        <config_path>sagepaysuite/advanced/threedsecure</config_path>
                     </field>
                 </group>
                 <group id="sagepaysuiteform" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">

@@ -187,12 +187,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
     {
-        $country = null;
-        if($quote != null && $quote->getBillingAddress() != null){
-            $country = $quote->getBillingAddress()->getCountryId();
-        }
-
-        return $this->_config->isMethodAvailable($this->_code,$country);
+        return parent::isAvailable($quote);
     }
 
     /**

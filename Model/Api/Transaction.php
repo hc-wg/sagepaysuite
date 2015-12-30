@@ -65,7 +65,6 @@ class Transaction
     public function voidTransaction($vpstxid){
 
         $transaction = $this->getTransactionDetails($vpstxid);
-        $order =
 
         $data['VPSProtocol'] = $this->_config->getVPSProtocol();
         $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_VOID;

@@ -59,5 +59,14 @@
             <input type="text" data-sagepay="securityCode"/>
         </form>
 
+        <!-- #### sagepay 3D secure form #### -->
+        <form
+            data-bind="attr: {id: getCode() + '-3Dsecure-form'}"
+            method="POST">
+            <input type="hidden" name="paReq">
+            <input type="hidden" name="termUrl">
+            <input type="hidden" name="md">
+         </form>
+
     </div>
 </div>

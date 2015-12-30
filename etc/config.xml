@@ -15,6 +15,9 @@
                 <vendorname>testebizmarts</vendorname>
                 <reporting_password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
             </global>
+            <advanced>
+                <threedsecure>UseMSPSetting</threedsecure>
+            </advanced>
         </sagepaysuite>
         <payment>
             <sagepaysuiteform>

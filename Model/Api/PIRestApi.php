@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+
 /**
  * Sage Pay PI REST API
  */
@@ -29,6 +31,12 @@ class PIRestApi
     protected $_apiExceptionFactory;
 
     /**
+     * Logging instance
+     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     */
+    protected $_suiteLogger;
+
+    /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
@@ -36,13 +44,15 @@ class PIRestApi
     public function __construct(
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory
+        \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
+        Logger $suiteLogger
     )
     {
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
         $this->_curlFactory = $curlFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
+        $this->_suiteLogger = $suiteLogger;
     }
 
     /**
@@ -122,23 +132,36 @@ class PIRestApi
 
     public function capture($payment_request)
     {
+        //log request
+        $this->_suiteLogger->SageLog(Logger::LOG_PI_REQUEST,$payment_request);
+
         $jsonRequest = json_encode($payment_request);
         $result = $this->_executeRequest($this->_getServiceUrl("transactions"), $jsonRequest);
+
+        //log result
+        $this->_suiteLogger->SageLog(Logger::LOG_PI_REQUEST,$result);
 
         if ($result["status"] == 201) {
 
             //success
             return $result["data"];
 
-        }elseif ($result["status"] == 200) {
+        }elseif ($result["status"] == 202) {
 
             //authentication required
             return $result["data"];
 
         } else {
 
-            $error_code = $result["data"]->statusCode;
-            $error_msg = $result["data"]->statusDetail;
+            $error_code = 0;
+            $error_msg = "Unable to capture Sage Pay transaction, please try another payment method.";
+
+            if(isset($result["data"]->code)){
+                $error_code = $result["data"]->code;
+            }
+            if(isset($result["data"]->description)){
+                $error_msg = $result["data"]->description;
+            }
 
             $exception = $this->_apiExceptionFactory->create([
                 'phrase' => __($error_msg),

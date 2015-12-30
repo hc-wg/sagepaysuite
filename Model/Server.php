@@ -197,7 +197,7 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
 //        }
 //
 //        return $this->_config->isMethodAvailable($this->_code,$country);
-        return parent::isAvailable();
+        return parent::isAvailable($quote);
     }
 
     /**

@@ -9,7 +9,6 @@ namespace Ebizmarts\SagePaySuite\Model;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\ResourceModel\Order\Payment\Transaction\CollectionFactory as TransactionCollectionFactory;
 use Magento\Payment\Model\InfoInterface;
-use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Api\PIRestApi;
 use Magento\Sales\Model\Order\Payment\Transaction as PaymentTransaction;
 
@@ -128,6 +127,15 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     protected $_messageManager;
 
+    protected $_isInitializeNeeded = true;
+
+    /**
+     * Payment Method feature
+     *
+     * @var bool
+     */
+    protected $_canReviewPayment = true;
+
     /**
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -192,27 +200,27 @@ class PI extends \Magento\Payment\Model\Method\Cc
         return $this;
     }
 
-    /**
-     * Validate data
-     *
-     * @return $this
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
-    public function validate()
-    {
-        $info = $this->getInfoInstance();
-        if ($info instanceof \Magento\Sales\Model\Order\Payment) {
-            $billingCountry = $info->getOrder()->getBillingAddress()->getCountryId();
-        } else {
-            $billingCountry = $info->getQuote()->getBillingAddress()->getCountryId();
-        }
-
-        if (!$this->config->canUseForCountry($billingCountry)) {
-            throw new LocalizedException(__('Selected payment type is not allowed for billing country.'));
-        }
-
-        return $this;
-    }
+//    /**
+//     * Validate data
+//     *
+//     * @return $this
+//     * @throws \Magento\Framework\Exception\LocalizedException
+//     */
+//    public function validate()
+//    {
+//        $info = $this->getInfoInstance();
+//        if ($info instanceof \Magento\Sales\Model\Order\Payment) {
+//            $billingCountry = $info->getOrder()->getBillingAddress()->getCountryId();
+//        } else {
+//            $billingCountry = $info->getQuote()->getBillingAddress()->getCountryId();
+//        }
+//
+//        if (!$this->config->canUseForCountry($billingCountry)) {
+//            throw new LocalizedException(__('Selected payment type is not allowed for billing country.'));
+//        }
+//
+//        return $this;
+//    }
 
     /**
      * Authorizes specified amount
@@ -259,64 +267,10 @@ class PI extends \Magento\Payment\Model\Method\Cc
     public function capture(InfoInterface $payment, $amount)
     {
 
-        $order = $payment->getOrder();
-        $billing = $order->getBillingAddress();
-
-        $vendorTxCode = $this->_suiteHelper->generateVendorTxCode($order->getIncrementId());
 
         try {
-            $data = [
-                'transactionType' => "Payment", //only supported method for now
-                'paymentMethod' => [
-                    'card' => [
-                        'merchantSessionKey' => $payment->getAdditionalInformation("merchant_session_Key"),
-                        'cardIdentifier' => $payment->getAdditionalInformation("card_identifier")
-                    ]
-                ],
-                'vendorTxCode' => $vendorTxCode,
-                'amount' => $amount * 100,
-                'currency' => $order->getBaseCurrencyCode(),
-                'description' => "Demo transaction",
-                'customerFirstName' => $billing->getFirstname(),
-                'customerLastName' => $billing->getLastname(),
-                'billingAddress' => [
-                    'address1' => $billing->getStreetLine(1),
-                    'city' => $billing->getCity(),
-                    'postalCode' => $billing->getPostCode(),
-                    'country' => $billing->getCountryId()
-                ],
-                'entryMethod' => "Ecommerce",
-                'apply3DSecure' => "Disable"
-            ];
 
-            if ($billing->getCountryId() == "US") {
-                $state = $billing->getRegionCode();
-                if (strlen($state) > 2) {
-                    $state = "CA"; //hardcoded as the code is not working correctly
-                }
-                $data["billingAddress"]["state"] = $state;
-            }
 
-            $capture_result = $this->_pirestapi->capture($data);
-
-            if ($capture_result->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
-
-                $payment->setTransactionId($capture_result->transactionId);
-                $payment->setIsTransactionClosed(1);
-                $payment->setAdditionalInformation('statusCode', $capture_result->statusCode);
-                $payment->setAdditionalInformation('transactionType', $capture_result->transactionType);
-                $payment->setAdditionalInformation('statusDetail', $capture_result->statusDetail);
-                $payment->setAdditionalInformation('vendorTxCode', $vendorTxCode);
-                $payment->setCcLast4($payment->getAdditionalInformation("cc_last4"));
-
-            } elseif ($capture_result->statusCode == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS) {
-
-                //3D required
-                //@toDo
-
-            } else {
-                throw new \Magento\Framework\Validator\Exception(__('Invalid Sage Pay status.'));
-            }
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
@@ -445,12 +399,13 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
     {
-        $country = null;
-        if($quote != null && $quote->getBillingAddress() != null){
-            $country = $quote->getBillingAddress()->getCountryId();
-        }
-
-        return $this->config->isMethodAvailable($this->_code,$country);
+//        $country = null;
+//        if($quote != null && $quote->getBillingAddress() != null){
+//            $country = $quote->getBillingAddress()->getCountryId();
+//        }
+//
+//        return $this->config->isMethodAvailable($this->_code,$country);
+        return parent::isAvailable($quote);
     }
 
     /**
@@ -461,4 +416,59 @@ class PI extends \Magento\Payment\Model\Method\Cc
         return $this->_canVoid;
     }
 
+    /**
+     * Validate data
+     *
+     * @return $this
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function validate()
+    {
+        $info = $this->getInfoInstance();
+        if ($info instanceof \Magento\Sales\Model\Order\Payment) {
+            $billingCountry = $info->getOrder()->getBillingAddress()->getCountryId();
+        } else {
+            $billingCountry = $info->getQuote()->getBillingAddress()->getCountryId();
+        }
+        if (!$this->config->canUseForCountry($billingCountry)) {
+            throw new LocalizedException(__('Selected payment type is not allowed for billing country.'));
+        }
+        return $this;
+    }
+
+    /**
+     * Instantiate state and set it to state object
+     *
+     * @param string $paymentAction
+     * @param \Magento\Framework\DataObject $stateObject
+     * @return void
+     */
+    public function initialize($paymentAction, $stateObject)
+    {
+        //disable sales email
+        $payment = $this->getInfoInstance();
+
+//        if($payment->getAdditionalInformation('statusCode') == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS){
+//
+//        }
+
+        $order = $payment->getOrder();
+        $order->setCanSendNewEmailFlag(false);
+
+        //set pending payment state
+        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
+        $stateObject->setStatus('pending_payment');
+        $stateObject->setIsNotified(false);
+    }
+
+    /**
+     * Attempt to accept a pending payment
+     *
+     * @param \Magento\Payment\Model\Info|Payment $payment
+     * @return bool
+     */
+    public function acceptPayment(\Magento\Payment\Model\InfoInterface $payment)
+    {
+        parent::acceptPayment($payment);
+    }
 }
