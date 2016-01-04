@@ -201,7 +201,7 @@ class ServerRequest extends \Magento\Framework\App\Action\Action
         }
 
         //log SERVER request
-        $this->_suiteLogger->SageLog(Logger::LOG_SERVER_REQUEST,$postData);
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$postData);
 
         $curl->setConfig(
             [
@@ -222,7 +222,7 @@ class ServerRequest extends \Magento\Framework\App\Action\Action
         $curl->close();
 
         //log SERVER response
-        $this->_suiteLogger->SageLog(Logger::LOG_SERVER_REQUEST,$data);
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$data);
 
         if($response_status == 200){
 

@@ -263,7 +263,6 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
 
             $payment->setIsTransactionClosed(1)
                 ->setShouldCloseParentTransaction(1);
-            //$this->_messageManager->addSuccess(__("Sage Pay transaction " . $transactionId . " successfully refunded."));
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);

@@ -21,9 +21,8 @@
         <arguments>
             <argument name="name" xsi:type="string">SagePaySuiteLogger</argument>
             <argument name="handlers"  xsi:type="array">
-                <item name="ServerRequest" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\ServerRequest</item>
+                <item name="Request" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\Request</item>
                 <item name="ServerNotify" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\ServerNotify</item>
-                <item name="PIRequest" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\PIRequest</item>
             </argument>
         </arguments>
     </type>

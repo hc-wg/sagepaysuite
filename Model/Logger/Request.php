@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Logger;
 
-class PIRequest extends \Magento\Framework\Logger\Handler\Base
+class Request extends \Magento\Framework\Logger\Handler\Base
 {
 
     /**
@@ -14,11 +14,11 @@ class PIRequest extends \Magento\Framework\Logger\Handler\Base
      * @var string
      */
 
-    protected $fileName = '/var/log/SagePaySuite/PI_Request.log';
+    protected $fileName = '/var/log/SagePaySuite/Request.log';
 
     public function isHandling(array $record)
     {
-        return $record['level'] == \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_PI_REQUEST;
+        return $record['level'] == \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST;
     }
 
 }

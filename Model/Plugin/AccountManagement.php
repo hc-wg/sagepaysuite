@@ -23,6 +23,7 @@ class AccountManagement
     {
         $this->_objectManager = $objectManager;
     }
+
     public function aroundIsEmailAvailable(\Magento\Customer\Model\AccountManagement $accountManagement,\Closure $proceed,$customerEmail,$websiteId=null)
     {
         $ret = $proceed($customerEmail,$websiteId);
@@ -39,6 +40,7 @@ class AccountManagement
         }
         return $ret;
     }
+
     protected function _getSession()
     {
         return $this->_objectManager->get('Magento\Checkout\Model\Session');

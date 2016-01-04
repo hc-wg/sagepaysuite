@@ -10,6 +10,7 @@ namespace Ebizmarts\SagePaySuite\Controller\PI;
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Api\PIRestApi;
+use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 
 
 class TransactionRequest extends \Magento\Framework\App\Action\Action
@@ -49,6 +50,11 @@ class TransactionRequest extends \Magento\Framework\App\Action\Action
     protected $_postData;
 
     /**
+     * @var OrderSender
+     */
+    protected $orderSender;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
@@ -57,7 +63,8 @@ class TransactionRequest extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Magento\Quote\Model\QuoteManagement $quoteManagement,
         Logger $suiteLogger,
-        PIRestApi $pirestapi
+        PIRestApi $pirestapi,
+        OrderSender $orderSender
     )
     {
         parent::__construct($context);
@@ -73,6 +80,7 @@ class TransactionRequest extends \Magento\Framework\App\Action\Action
         $postData = preg_split('/^\r?$/m', $postData, 2);
         $postData = json_decode(trim($postData[1]));
         $this->_postData = $postData;
+        $this->orderSender = $orderSender;
     }
 
     public function execute()
@@ -118,7 +126,20 @@ class TransactionRequest extends \Magento\Framework\App\Action\Action
 //                        $invoice = $order->prepareInvoice();
 //                        $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
 //                        $invoice->register();
-                        $payment->accept();
+//                        $payment->accept();
+                        $payment->getMethodInstance()->markAsInitialized();
+                        $order->place()->save();
+
+                        $this->orderSender->send($order);
+
+                        //prepare session to success page
+                        $this->_getCheckoutSession()->clearHelperData();
+                        //set last successful quote
+                        $this->_getCheckoutSession()->setLastQuoteId($this->_quote->getId())
+                            ->setLastSuccessQuoteId($this->_quote->getId());
+                        $this->_getCheckoutSession()->setLastOrderId($order->getId())
+                                ->setLastRealOrderId($order->getIncrementId())
+                                ->setLastOrderStatus($order->getStatus());
                     }
 
                 }else{

@@ -13,15 +13,12 @@ class Logger extends \Monolog\Logger
     /**
      * SagePaySuite log files
      */
-    const LOG_SERVER_REQUEST = 'SERVER_Request';
+    const LOG_REQUEST = 'Request';
     const LOG_SERVER_NOTIFY = 'SERVER_Notify';
 
-    const LOG_PI_REQUEST = 'PI_Request';
-
     protected static $levels = array(
-        self::LOG_SERVER_REQUEST => 'SERVER_Request',
-        self::LOG_SERVER_NOTIFY => 'SERVER_Notify',
-        self::LOG_PI_REQUEST => 'PI_Request'
+        self::LOG_REQUEST => 'SERVER_Request',
+        self::LOG_SERVER_NOTIFY => 'SERVER_Notify'
     );
 
     public function SageLog($logType, $message)

@@ -130,13 +130,6 @@ class PI extends \Magento\Payment\Model\Method\Cc
     protected $_isInitializeNeeded = true;
 
     /**
-     * Payment Method feature
-     *
-     * @var bool
-     */
-    protected $_canReviewPayment = true;
-
-    /**
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -200,27 +193,9 @@ class PI extends \Magento\Payment\Model\Method\Cc
         return $this;
     }
 
-//    /**
-//     * Validate data
-//     *
-//     * @return $this
-//     * @throws \Magento\Framework\Exception\LocalizedException
-//     */
-//    public function validate()
-//    {
-//        $info = $this->getInfoInstance();
-//        if ($info instanceof \Magento\Sales\Model\Order\Payment) {
-//            $billingCountry = $info->getOrder()->getBillingAddress()->getCountryId();
-//        } else {
-//            $billingCountry = $info->getQuote()->getBillingAddress()->getCountryId();
-//        }
-//
-//        if (!$this->config->canUseForCountry($billingCountry)) {
-//            throw new LocalizedException(__('Selected payment type is not allowed for billing country.'));
-//        }
-//
-//        return $this;
-//    }
+    public function markAsInitialized(){
+        $this->_isInitializeNeeded = false;
+    }
 
     /**
      * Authorizes specified amount
@@ -232,28 +207,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function authorize(InfoInterface $payment, $amount)
     {
-
-    }
-
-    /**
-     * @return bool
-     * @throws LocalizedException
-     */
-    protected function verify3dSecure()
-    {
-//        return $this->config->is3dSecureEnabled() &&
-//        $this->_appState->getAreaCode() !== \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE;
-    }
-
-    /**
-     * @param InfoInterface $payment
-     * @param float $amount
-     * @return $this
-     * @throws LocalizedException
-     */
-    protected function partialCapture($payment, $amount)
-    {
-
+        return parent::authorize($payment, $amount);
     }
 
     /**
@@ -266,21 +220,21 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function capture(InfoInterface $payment, $amount)
     {
-
-
-        try {
-
-
-
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->_logger->critical($apiException);
-            throw $apiException;
-        } catch (\Exception $e) {
-            $this->_logger->critical($e);
-            throw new \Magento\Framework\Validator\Exception(__('Unable to capture payment.'));
-        }
-
-        return $this;
+        return parent::capture($payment, $amount);
+//
+//        try {
+//
+//
+//
+//        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+//            $this->_logger->critical($apiException);
+//            throw $apiException;
+//        } catch (\Exception $e) {
+//            $this->_logger->critical($e);
+//            throw new \Magento\Framework\Validator\Exception(__('Unable to capture payment.'));
+//        }
+//
+//        return $this;
     }
 
     /**

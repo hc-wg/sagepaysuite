@@ -133,13 +133,13 @@ class PIRestApi
     public function capture($payment_request)
     {
         //log request
-        $this->_suiteLogger->SageLog(Logger::LOG_PI_REQUEST,$payment_request);
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$payment_request);
 
         $jsonRequest = json_encode($payment_request);
         $result = $this->_executeRequest($this->_getServiceUrl("transactions"), $jsonRequest);
 
         //log result
-        $this->_suiteLogger->SageLog(Logger::LOG_PI_REQUEST,$result);
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$result);
 
         if ($result["status"] == 201) {
 
