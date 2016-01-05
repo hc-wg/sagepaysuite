@@ -71,7 +71,7 @@ define(
                 ).done(
                     function () {
 
-                        var serviceUrl = url.build('sagepaysuite/form/formRequest');
+                        var serviceUrl = url.build('sagepaysuite/form/request');
 
                         //generate crypt and form data
                         storage.get(serviceUrl).done(

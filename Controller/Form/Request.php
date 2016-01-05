@@ -10,7 +10,7 @@ namespace Ebizmarts\SagePaySuite\Controller\Form;
 use Magento\Framework\Controller\ResultFactory;
 
 
-class FormRequest extends \Magento\Framework\App\Action\Action
+class Request extends \Magento\Framework\App\Action\Action
 {
 
     /**
