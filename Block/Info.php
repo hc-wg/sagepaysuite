@@ -53,6 +53,9 @@ class Info extends \Magento\Payment\Block\Info\Cc
             if ($payment->getAdditionalInformation("statusDetail")) {
                 $info["Status"] = $payment->getAdditionalInformation("statusDetail");
             }
+            if ($payment->getAdditionalInformation("threeDStatus")) {
+                $info["3D Status"] = $payment->getAdditionalInformation("threeDStatus");
+            }
         }
 
         return $transport->addData($info);

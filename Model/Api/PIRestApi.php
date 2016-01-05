@@ -14,6 +14,12 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 class PIRestApi
 {
 
+    const ACTION_GENERATE_MERCHANT_KEY = 'merchant-session-keys';
+    const ACTION_CAPTURE_TRANSACTION = 'transactions';
+    const ACTION_SUBMIT_3D = '3d-secure';
+    const ACTION_TRANSACTION_DETAILS = 'transaction_details';
+
+
     /**
      * @var \Magento\Framework\HTTP\Adapter\CurlFactory
      *
@@ -35,6 +41,8 @@ class PIRestApi
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
     protected $_suiteLogger;
+
+
 
     /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
@@ -58,9 +66,11 @@ class PIRestApi
     /**
      * Makes the Curl POST
      *
-     * @param string $xml description
+     * @param $url
+     * @param $body
+     * @return array
      */
-    protected function _executeRequest($url, $body)
+    protected function _executePostRequest($url, $body)
     {
 
         $curl = $this->_curlFactory->create();
@@ -96,21 +106,73 @@ class PIRestApi
     }
 
     /**
+     * Makes the Curl GET
+     *
+     * @param $url
+     * @return array
+     */
+    protected function _executeRequest($url)
+    {
+
+        $curl = $this->_curlFactory->create();
+
+        $curl->setConfig(
+            [
+                'timeout' => 120,
+                'verifypeer' => false,
+                'verifyhost' => 2,
+                'userpwd' => $this->_config->getPIKey() . ":" . $this->_config->getPIPassword()
+            ]
+        );
+
+        $curl->write(\Zend_Http_Client::GET,
+            $url,
+            '1.0',
+            array('Content-type: application/json'));
+        $data = $curl->read();
+
+        $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
+        $curl->close();
+
+        $data = preg_split('/^\r?$/m', $data, 2);
+        $data = json_decode(trim($data[1]));
+
+        $response = [
+            "status" => $response_status,
+            "data" => $data
+        ];
+
+        return $response;
+    }
+
+    /**
      * Returns url for each enviroment according the configuration.
      */
-    protected function _getServiceUrl($enpoint)
+    protected function _getServiceUrl($action,$vpsTxId=null)
     {
+        switch($action){
+            case self::ACTION_TRANSACTION_DETAILS:
+                $endpoint = "transactions/" . $vpsTxId;
+                break;
+            case self::ACTION_SUBMIT_3D:
+                $endpoint = "transactions/" . $vpsTxId . "/" . $action;
+                break;
+            default:
+                $endpoint = $action;
+                break;
+        }
+
         if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_LIVE . $enpoint;
+            return \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_LIVE . $endpoint;
         } else {
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . $enpoint;
+            return \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . $endpoint;
         }
     }
 
     public function generateMerchantKey()
     {
         $jsonBody = json_encode(array("vendorName" => $this->_config->getVendorname()));
-        $result = $this->_executeRequest($this->_getServiceUrl("merchant-session-keys"), $jsonBody);
+        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_GENERATE_MERCHANT_KEY), $jsonBody);
 
         if ($result["status"] == 201) {
 
@@ -136,7 +198,7 @@ class PIRestApi
         $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$payment_request);
 
         $jsonRequest = json_encode($payment_request);
-        $result = $this->_executeRequest($this->_getServiceUrl("transactions"), $jsonRequest);
+        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_CAPTURE_TRANSACTION), $jsonRequest);
 
         //log result
         $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$result);
@@ -162,6 +224,59 @@ class PIRestApi
             if(isset($result["data"]->description)){
                 $error_msg = $result["data"]->description;
             }
+
+            $exception = $this->_apiExceptionFactory->create([
+                'phrase' => __($error_msg),
+                'code' => $error_code
+            ]);
+
+            throw $exception;
+        }
+    }
+
+    public function submit3D($paRes, $vpsTxId)
+    {
+        $jsonBody = json_encode(array("paRes" => $paRes));
+
+        //log request
+        //$this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$jsonBody);
+
+        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_SUBMIT_3D,$vpsTxId), $jsonBody);
+
+        //log result
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$result);
+
+        if ($result["status"] == 201) {
+
+            return $result["data"];
+
+        } else {
+
+            $error_code = $result["data"]->code;
+            $error_msg = $result["data"]->description;
+
+            $exception = $this->_apiExceptionFactory->create([
+                'phrase' => __($error_msg),
+                'code' => $error_code
+            ]);
+
+            throw $exception;
+        }
+    }
+
+    public function transactionDetails($vpsTxId)
+    {
+
+        $result = $this->_executeRequest($this->_getServiceUrl(self::ACTION_TRANSACTION_DETAILS,$vpsTxId));
+
+        if ($result["status"] == 200) {
+
+            return $result["data"];
+
+        } else {
+
+            $error_code = $result["data"]->code;
+            $error_msg = $result["data"]->description;
 
             $exception = $this->_apiExceptionFactory->create([
                 'phrase' => __($error_msg),

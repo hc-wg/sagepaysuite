@@ -10,10 +10,9 @@ namespace Ebizmarts\SagePaySuite\Controller\PI;
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Api\PIRestApi;
-use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 
 
-class TransactionRequest extends \Magento\Framework\App\Action\Action
+class Request extends \Magento\Framework\App\Action\Action
 {
 
     /**
@@ -32,27 +31,35 @@ class TransactionRequest extends \Magento\Framework\App\Action\Action
     protected $_quote;
 
     /**
-     * @var \Magento\Quote\Model\QuoteManagement
-     */
-    protected $_quoteManagement;
-
-    /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
     protected $_suiteLogger;
 
     /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+
+    /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRestApi
      */
     protected $_pirestapi;
 
+    /**
+     * @var \Ebizmarts\SagePaySuite\Helper\Checkout
+     */
+    protected $_checkoutHelper;
+
+    /**
+     *  POST array
+     */
     protected $_postData;
 
     /**
-     * @var OrderSender
+     * @var \Magento\Customer\Model\Session
      */
-    protected $orderSender;
+    protected $_customerSession;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -61,10 +68,11 @@ class TransactionRequest extends \Magento\Framework\App\Action\Action
         \Magento\Framework\App\Action\Context $context,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
-        \Magento\Quote\Model\QuoteManagement $quoteManagement,
         Logger $suiteLogger,
         PIRestApi $pirestapi,
-        OrderSender $orderSender
+        \Psr\Log\LoggerInterface $logger,
+        \Magento\Customer\Model\Session $customerSession,
+        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
     )
     {
         parent::__construct($context);
@@ -72,15 +80,16 @@ class TransactionRequest extends \Magento\Framework\App\Action\Action
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
         $this->_suiteHelper = $suiteHelper;
         $this->_quote = $this->_getCheckoutSession()->getQuote();
-        $this->_quoteManagement = $quoteManagement;
         $this->_suiteLogger = $suiteLogger;
         $this->_pirestapi = $pirestapi;
+        $this->_logger = $logger;
+        $this->_checkoutHelper = $checkoutHelper;
+        $this->_customerSession = $customerSession;
 
         $postData = $this->getRequest();
         $postData = preg_split('/^\r?$/m', $postData, 2);
         $postData = json_decode(trim($postData[1]));
         $this->_postData = $postData;
-        $this->orderSender = $orderSender;
     }
 
     public function execute()
@@ -107,13 +116,18 @@ class TransactionRequest extends \Magento\Framework\App\Action\Action
                 $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
                 $payment->setTransactionId($transactionId);
                 $payment->setAdditionalInformation('statusCode', $post_response->statusCode);
-                //$payment->setAdditionalInformation('transactionType', $post_response->transactionType);
                 $payment->setAdditionalInformation('statusDetail', $post_response->statusDetail);
                 $payment->setAdditionalInformation('vendorTxCode', $vendorTxCode);
-                //$payment->setCcLast4($payment->getAdditionalInformation("cc_last4"));
+                if(isset($post_response->{'3DSecure'})) {
+                    $payment->setAdditionalInformation('threeDStatus', $post_response->{'3DSecure'}->status);
+                }
+                $payment->setCcLast4($this->_postData->card_last4);
+                $payment->setCcExpMonth($this->_postData->card_exp_month);
+                $payment->setCcExpYear($this->_postData->card_exp_year);
+                $payment->setCcType($this->_postData->card_type);
 
                 //save order with pending payment
-                $order = $this->_placeOrder();
+                $order = $this->_checkoutHelper->placeOrder();
 
                 if($order){
                     $payment = $order->getPayment();
@@ -123,14 +137,11 @@ class TransactionRequest extends \Magento\Framework\App\Action\Action
 
                     //invoice
                     if($post_response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS){
-//                        $invoice = $order->prepareInvoice();
-//                        $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
-//                        $invoice->register();
-//                        $payment->accept();
                         $payment->getMethodInstance()->markAsInitialized();
                         $order->place()->save();
 
-                        $this->orderSender->send($order);
+                        //send email
+                        $this->_checkoutHelper->sendOrderEmail($order);
 
                         //prepare session to success page
                         $this->_getCheckoutSession()->clearHelperData();
@@ -146,6 +157,10 @@ class TransactionRequest extends \Magento\Framework\App\Action\Action
                     throw new \Magento\Framework\Validator\Exception(__('Unable to save order, please use another payment method.'));
                 }
 
+                //additional details required for callback URL
+                $post_response->orderId = $order->getId();
+                $post_response->quoteId = $this->_quote->getId();
+
                 //prepare response
                 $responseContent = [
                     'success' => true,
@@ -157,13 +172,14 @@ class TransactionRequest extends \Magento\Framework\App\Action\Action
             }
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-
+            $this->_logger->critical($apiException);
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $apiException->getUserMessage()),
             ];
 
         } catch (\Exception $e) {
+            $this->_logger->critical($e);
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $e->getMessage()),
@@ -173,6 +189,14 @@ class TransactionRequest extends \Magento\Framework\App\Action\Action
         $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
         $resultJson->setData($responseContent);
         return $resultJson;
+    }
+
+    /**
+     * @return \Magento\Checkout\Model\Session
+     */
+    protected function _getCustomerSession()
+    {
+        return $this->_customerSession;
     }
 
     protected function _generateRequest($vendorTxCode){
@@ -222,21 +246,5 @@ class TransactionRequest extends \Magento\Framework\App\Action\Action
     protected function _getCheckoutSession()
     {
         return $this->_objectManager->get('Magento\Checkout\Model\Session');
-    }
-
-    protected function _getCustomerSession()
-    {
-        return $this->_objectManager->get('Magento\Customer\Model\Session');
-    }
-
-    protected function _placeOrder(){
-
-        $order = $this->_quoteManagement->submit($this->_quote);
-
-        if (!$order) {
-            throw new \Magento\Framework\Exception\LocalizedException(__('Can not save order. Please try another payment option.'));
-        }
-
-        return $order;
     }
 }

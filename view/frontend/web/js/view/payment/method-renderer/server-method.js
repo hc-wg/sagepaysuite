@@ -71,7 +71,7 @@ define(
                 ).done(
                     function () {
 
-                        var serviceUrl = url.build('sagepaysuite/server/serverRequest');
+                        var serviceUrl = url.build('sagepaysuite/server/request');
 
                         //send server post request
                         storage.get(serviceUrl).done(

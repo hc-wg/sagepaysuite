@@ -136,11 +136,16 @@ define(
 
                 var self = this;
 
-                var serviceUrl = url.build('sagepaysuite/pi/transactionRequest');
+                var serviceUrl = url.build('sagepaysuite/pi/request');
+                var callbackUrl = url.build('sagepaysuite/pi/callback3D');
 
                 var payload = {
                     merchant_session_Key: self.merchantSessionKey,
-                    card_identifier: self.cardIdentifier
+                    card_identifier: self.cardIdentifier,
+                    card_type: self.creditCardType,
+                    card_exp_month: self.creditCardExpMonth,
+                    card_exp_year: self.creditCardExpYear,
+                    card_last4: self.creditCardLast4
                 };
 
                 storage.post(
@@ -163,13 +168,18 @@ define(
                                  * 3D secure authentication required
                                  */
 
+                                //add transactionId param to callback
+                                callbackUrl += "?transactionId=" + response.response.transactionId +
+                                    "&orderId=" + response.response.orderId +
+                                    "&quoteId=" + response.response.quoteId;
+
                                 //var iframe = document.createElement("IFRAME");
                                 //iframe.setAttribute("name",self.getCode() + '-3Dsecure-iframe')
                                 var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
                                 //form3D.setAttribute('target',self.getCode() + '-3Dsecure-iframe');
                                 form3D.setAttribute('action',response.response.acsUrl);
                                 form3D.elements[0].setAttribute('value', response.response.paReq);
-                                form3D.elements[1].setAttribute('value', "http://google.com");
+                                form3D.elements[1].setAttribute('value', callbackUrl);
                                 form3D.elements[2].setAttribute('value', response.response.transactionId);
                                 //self.createModal(iframe);
                                 form3D.submit();

@@ -11,7 +11,7 @@ use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 
-class ServerRequest extends \Magento\Framework\App\Action\Action
+class Request extends \Magento\Framework\App\Action\Action
 {
 
     /**

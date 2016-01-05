@@ -45,10 +45,12 @@ class Success extends \Magento\Framework\App\Action\Action
      * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
      */
     protected $_transactionFactory;
+
     /**
      * @var \Magento\Customer\Model\Session
      */
     protected $_customerSession;
+
     /**
      * @var \Magento\Checkout\Model\Session
      */
@@ -146,8 +148,6 @@ class Success extends \Magento\Framework\App\Action\Action
 
             //prepare session to success or cancellation page
             $this->_getCheckoutSession()->clearHelperData();
-
-            //set last successful quote
             $quoteId = $this->_quote->getId();
             $this->_getCheckoutSession()->setLastQuoteId($quoteId)->setLastSuccessQuoteId($quoteId);
 
@@ -279,50 +279,29 @@ class Success extends \Magento\Framework\App\Action\Action
      */
     protected function placeOrder()
     {
-
-        $isNewCustomer = false;
         switch ($this->getCheckoutMethod()) {
             case \Magento\Checkout\Model\Type\Onepage::METHOD_GUEST:
                 $this->_prepareGuestQuote();
                 break;
             case \Magento\Checkout\Model\Type\Onepage::METHOD_REGISTER:
                 $this->_prepareNewCustomerQuote();
-                $isNewCustomer = true;
                 break;
             default:
                 $this->_prepareCustomerQuote();
                 break;
         }
 
-        //$this->_ignoreAddressValidation();
         $this->_quote->collectTotals();
 
         $order = $this->quoteManagement->submit($this->_quote);
 
-//        if ($isNewCustomer) {
-//            try {
-//                $this->_involveNewCustomer();
-//            } catch (\Exception $e) {
-//                $this->_logger->critical($e);
-//            }
-//        }
         if (!$order) {
             return null;
         }
 
-        switch ($order->getState()) {
-            case \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT:
-                // TODO
-                break;
-            // regular placement, when everything is ok
-            case \Magento\Sales\Model\Order::STATE_PROCESSING:
-            case \Magento\Sales\Model\Order::STATE_COMPLETE:
-            case \Magento\Sales\Model\Order::STATE_PAYMENT_REVIEW:
-                $this->orderSender->send($order);
-                break;
-            default:
-                break;
-        }
+        //send email
+        $this->orderSender->send($order);
+
         return $order;
     }
 
@@ -352,8 +331,8 @@ class Success extends \Magento\Framework\App\Action\Action
     protected function _getCustomerSession()
     {
         return $this->_customerSession;
-//        return $this->_objectManager->get('Magento\Customer\Model\Session');
     }
+
     /**
      * Prepare quote for guest checkout order submit
      *

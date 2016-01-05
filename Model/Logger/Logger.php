@@ -17,7 +17,7 @@ class Logger extends \Monolog\Logger
     const LOG_SERVER_NOTIFY = 'SERVER_Notify';
 
     protected static $levels = array(
-        self::LOG_REQUEST => 'SERVER_Request',
+        self::LOG_REQUEST => 'Request',
         self::LOG_SERVER_NOTIFY => 'SERVER_Notify'
     );
 

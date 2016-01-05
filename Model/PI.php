@@ -130,6 +130,27 @@ class PI extends \Magento\Payment\Model\Method\Cc
     protected $_isInitializeNeeded = true;
 
     /**
+     * @param \Magento\Framework\Model\Context $context
+     * @param \Magento\Framework\Registry $registry
+     * @param \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory
+     * @param \Magento\Framework\Api\AttributeValueFactory $customAttributeFactory
+     * @param \Magento\Payment\Helper\Data $paymentData
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param \Magento\Payment\Model\Method\Logger $logger
+     * @param \Magento\Framework\Module\ModuleListInterface $moduleList
+     * @param \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate
+     * @param Config $config
+     * @param PIRestApi $pirestapi
+     * @param Api\Transaction $transactionsApi
+     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+     * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
+     * @param \Magento\Framework\App\RequestInterface $request
+     * @param TransactionCollectionFactory $salesTransactionCollectionFactory
+     * @param \Magento\Framework\App\ProductMetadataInterface $productMetaData
+     * @param \Magento\Directory\Model\RegionFactory $regionFactory
+     * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
+     * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
+     * @param array $data
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -193,6 +214,9 @@ class PI extends \Magento\Payment\Model\Method\Cc
         return $this;
     }
 
+    /**
+     * Set initialized flag to capture payment
+     */
     public function markAsInitialized(){
         $this->_isInitializeNeeded = false;
     }
@@ -220,21 +244,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function capture(InfoInterface $payment, $amount)
     {
-        return parent::capture($payment, $amount);
-//
-//        try {
-//
-//
-//
-//        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-//            $this->_logger->critical($apiException);
-//            throw $apiException;
-//        } catch (\Exception $e) {
-//            $this->_logger->critical($e);
-//            throw new \Magento\Framework\Validator\Exception(__('Unable to capture payment.'));
-//        }
-//
-//        return $this;
+        //$payment->setIsTransactionClosed(true);
+        return $this;
     }
 
     /**
@@ -256,18 +267,20 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $result = $this->_transactionsApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
             $result = $result["data"];
 
-            //create refund transaction
-            $refundTransaction = $this->_transactionFactory->create()
-                ->setOrderPaymentObject($payment)
-                ->setTxnId($result["VPSTxId"])
-                ->setParentTxnId($transactionId)
-                ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_REFUND)
-                ->setPaymentId($payment->getId());
+//            //create refund transaction
+//            $refundTransaction = $this->_transactionFactory->create()
+//                ->setOrderPaymentObject($payment)
+//                ->setTxnId($result["VPSTxId"])
+//                ->setParentTxnId($transactionId)
+//                ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_REFUND)
+//                ->setPaymentId($payment->getId());
+//
+//            $refundTransaction->save();
+//            $refundTransaction->setIsClosed(true);
 
-            $refundTransaction->save();
-            $refundTransaction->setIsClosed(true);
+            $payment->setIsTransactionClosed(1)
+                ->setShouldCloseParentTransaction(1);
 
-            //$this->_messageManager->addSuccess(__("Sage Pay transaction " . $transactionId . " successfully refunded."));
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
@@ -346,19 +359,12 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
     /**
      * Check whether payment method is applicable to quote
-     * Purposed to allow use in controllers some logic that was implemented in blocks only before
      *
      * @param \Magento\Quote\Api\Data\CartInterface|null $quote
      * @return bool
      */
     public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
     {
-//        $country = null;
-//        if($quote != null && $quote->getBillingAddress() != null){
-//            $country = $quote->getBillingAddress()->getCountryId();
-//        }
-//
-//        return $this->config->isMethodAvailable($this->_code,$country);
         return parent::isAvailable($quote);
     }
 
@@ -399,30 +405,17 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function initialize($paymentAction, $stateObject)
     {
-        //disable sales email
         $payment = $this->getInfoInstance();
-
-//        if($payment->getAdditionalInformation('statusCode') == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS){
-//
-//        }
-
         $order = $payment->getOrder();
+
+        //disable sales email
         $order->setCanSendNewEmailFlag(false);
 
         //set pending payment state
         $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
         $stateObject->setStatus('pending_payment');
-        $stateObject->setIsNotified(false);
-    }
 
-    /**
-     * Attempt to accept a pending payment
-     *
-     * @param \Magento\Payment\Model\Info|Payment $payment
-     * @return bool
-     */
-    public function acceptPayment(\Magento\Payment\Model\InfoInterface $payment)
-    {
-        parent::acceptPayment($payment);
+        //notified state
+        $stateObject->setIsNotified(false);
     }
 }
