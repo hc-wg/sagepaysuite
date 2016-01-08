@@ -51,6 +51,8 @@ class Request extends \Magento\Framework\App\Action\Action
      */
     protected $_suiteLogger;
 
+    protected $_assignedVendorTxCode;
+
     /**
      * @param \Magento\Framework\App\Action\Context $context
      */
@@ -100,6 +102,7 @@ class Request extends \Magento\Framework\App\Action\Action
             $payment = $order->getPayment();
             $payment->setTransactionId($transactionId);
             $payment->setLastTransId($transactionId);
+            $payment->setAdditionalInformation('vendorTxCode', $this->_assignedVendorTxCode);
             $payment->save();
 
             //prepare response
@@ -134,16 +137,17 @@ class Request extends \Magento\Framework\App\Action\Action
         $billing_address = $this->_quote->getBillingAddress();
         $shipping_address = $this->_quote->getShippingAddress();
         $customer_data = $this->_getCustomerSession()->getCustomerDataObject();
+        $this->_assignedVendorTxCode = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
 
         $post_data = array();
         $post_data["VPSProtocol"] = $this->_config->getVPSProtocol();
         $post_data["TxType"] = $this->_config->getSagepayPaymentAction();
         $post_data["Vendor"] = $this->_config->getVendorname();
-        $post_data["VendorTxCode"] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
+        $post_data["VendorTxCode"] = $this->_assignedVendorTxCode;
         $post_data["Amount"] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
         $post_data["Currency"] = $this->_quote->getQuoteCurrencyCode();
         $post_data["Description"] = "Magento transaction";
-        $post_data["NotificationURL"] = $this->_url->getUrl('*/*/notify');
+        $post_data["NotificationURL"] = $this->_getNotificationUrl();
         $post_data["BillingSurname"] = substr($billing_address->getLastname(), 0, 20);
         $post_data["BillingFirstnames"] = substr($billing_address->getFirstname(), 0, 20);
         $post_data["BillingAddress1"] = substr($billing_address->getStreetLine(1), 0, 100);
@@ -190,7 +194,19 @@ class Request extends \Magento\Framework\App\Action\Action
         return $post_data;
     }
 
-    private function _sendPost ($postData){
+    protected function _getNotificationUrl()
+    {
+        $url = $this->_url->getUrl('*/*/notify', array(
+            '_secure' => true,
+            '_store' => $this->_quote->getStoreId()
+        ));
+
+        $url .= "?quoteid=" . $this->_quote->getId();
+
+        return $url;
+    }
+
+    protected function _sendPost ($postData){
 
         $curl = $this->_curlFactory->create();
         $url = $this->_getServiceURL();
@@ -239,7 +255,7 @@ class Request extends \Magento\Framework\App\Action\Action
                         if(count($aux) > 2){
                             $response_data[$aux[0]] = $aux[1];
                             for($j=2;$j<count($aux);$j++){
-                                $response_data[$aux[0]] .= $aux[$j];
+                                $response_data[$aux[0]] .= "=" . $aux[$j];
                             }
                         }
                     }

@@ -10,7 +10,7 @@ namespace Ebizmarts\SagePaySuite\Controller\Server;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 
-class Cancel extends \Magento\Framework\App\Action\Action
+class Success extends \Magento\Framework\App\Action\Action
 {
 
     /**
@@ -35,6 +35,11 @@ class Cancel extends \Magento\Framework\App\Action\Action
     protected $_checkoutSession;
 
     /**
+     * @var \Magento\Sales\Model\OrderFactory
+     */
+    protected $_orderFactory;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      * @param \Ebizmarts\SagePaySuite\Model\Api\PIRestApi $pirest
      * @param Logger $suiteLogger
@@ -47,7 +52,8 @@ class Cancel extends \Magento\Framework\App\Action\Action
         Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Psr\Log\LoggerInterface $logger,
-        \Magento\Checkout\Model\Session $checkoutSession
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Sales\Model\OrderFactory $orderFactory
     )
     {
         parent::__construct($context);
@@ -57,25 +63,36 @@ class Cancel extends \Magento\Framework\App\Action\Action
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
         $this->_logger = $logger;
         $this->_checkoutSession = $checkoutSession;
-
+        $this->_orderFactory = $orderFactory;
     }
 
     public function execute()
     {
-        $message = $this->getRequest()->getParam("message");
-        if(!empty($message)){
-            $this->messageManager->addError($message);
+        try {
+
+            $quote = $this->_objectManager->get('\Magento\Quote\Model\Quote')->load($this->getRequest()->getParam("quoteid"));
+            $order = $this->_orderFactory->create()->loadByIncrementId($quote->getReservedOrderId());
+
+            //prepare session to success page
+            $this->_checkoutSession->clearHelperData();
+            $this->_checkoutSession->setLastQuoteId($quote->getId())
+                ->setLastSuccessQuoteId($quote->getId());
+            $this->_checkoutSession->setLastOrderId($order->getId())
+                ->setLastRealOrderId($order->getIncrementId())
+                ->setLastOrderStatus($order->getStatus());
+
+        } catch (\Exception $e) {
+            $this->_logger->critical($e);
         }
 
+        //redirect to success via javascript
         $this->getResponse()->setBody(
             '<script>window.top.location.href = "'
-            . $this->_url->getUrl('checkout/cart', array(
+            . $this->_url->getUrl('checkout/onepage/success', array(
                 '_secure' => true,
                 //'_store' => $this->getRequest()->getParam('_store')
             ))
             . '";</script>'
         );
-
     }
-
 }

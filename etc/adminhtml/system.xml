@@ -42,7 +42,7 @@
                     <label>Advanced Settings</label>
                     <field id="threedsecure" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>3D Secure Authentication</label>
-                        <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\threedsecure</source_model>
+                        <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\Threedsecure</source_model>
                         <config_path>sagepaysuite/advanced/threedsecure</config_path>
                     </field>
                 </group>

@@ -19,6 +19,7 @@ use Magento\Framework\Exception\LocalizedException;
  */
 class Server extends \Magento\Payment\Model\Method\AbstractMethod
 {
+
     /**
      * @var string
      */
@@ -235,7 +236,14 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
+        return $this;
+    }
 
+    /**
+     * Set initialized flag to capture payment
+     */
+    public function markAsInitialized(){
+        $this->_isInitializeNeeded = false;
     }
 
     /**
@@ -256,19 +264,9 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
             $result = $this->_transactionsApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
             $result = $result["data"];
 
-            //create refund transaction
-            $refundTransaction = $this->_transactionFactory->create()
-                ->setOrderPaymentObject($payment)
-                ->setOrderId($order->getEntityId())
-                ->setTxnId($result["VPSTxId"])
-                ->setParentTxnId($transactionId)
-                ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_REFUND)
-                ->setPaymentId($payment->getId());
+            $payment->setIsTransactionClosed(1)
+                ->setShouldCloseParentTransaction(1);
 
-            $refundTransaction->save();
-            $refundTransaction->setIsClosed(true);
-
-            //$this->_messageManager->addSuccess(__("Sage Pay transaction " . $transactionId . " successfully refunded."));
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);

@@ -193,21 +193,18 @@ class Config implements ConfigInterface
      */
     public function getValue($key, $storeId = null)
     {
-        switch ($key) {
-            case 'getDebugReplacePrivateDataKeys':
-                return $this->methodInstance->getDebugReplacePrivateDataKeys();
-            default:
-                $underscored = strtolower(preg_replace('/(.)([A-Z])/', "$1_$2", $key));
-                $path = $this->_getSpecificConfigPath($underscored);
-                if ($path !== null) {
-                    $value = $this->_scopeConfig->getValue(
-                        $path,
-                        ScopeInterface::SCOPE_STORE,
-                        $this->_storeId
-                    );
-                    //$value = $this->_prepareValue($underscored, $value);
-                    return $value;
-                }
+        if(is_null($storeId)){
+            $storeId = $this->_storeId;
+        }
+
+        $path = $this->_getSpecificConfigPath($key);
+        if ($path !== null) {
+            $value = $this->_scopeConfig->getValue(
+                $path,
+                ScopeInterface::SCOPE_STORE,
+                $storeId
+            );
+            return $value;
         }
         return null;
     }
