@@ -28,11 +28,13 @@ class Config implements ConfigInterface
      * Actions
      */
     const ACTION_PAYMENT = 'PAYMENT';
+    const ACTION_PAYMENT_PI = 'Payment';
     const ACTION_DEFER = 'DEFERRED';
     const ACTION_AUTHENTICATE = 'AUTHENTICATE';
     const ACTION_VOID = 'VOID';
     const ACTION_REFUND = 'REFUND';
     const ACTION_RELEASE = 'RELEASE';
+    const ACTION_AUTHORISE = 'AUTHORISE';
     const ACTION_POST = 'post';
 
     /**
@@ -85,10 +87,12 @@ class Config implements ConfigInterface
     const URL_SHARED_VOID_LIVE = 'https://live.sagepay.com/gateway/service/void.vsp';
     const URL_SHARED_REFUND_TEST = 'https://test.sagepay.com/gateway/service/refund.vsp';
     const URL_SHARED_REFUND_LIVE = 'https://live.sagepay.com/gateway/service/refund.vsp';
-    const URL_SERVER_POST_TEST = 'https://test.sagepay.com/gateway/service/vspserver-register.vsp';
-    const URL_SERVER_POST_LIVE = 'https://live.sagepay.com/gateway/service/vspserver-register.vsp';
     const URL_SHARED_RELEASE_TEST = 'https://test.sagepay.com/gateway/service/release.vsp';
     const URL_SHARED_RELEASE_LIVE = 'https://live.sagepay.com/gateway/service/release.vsp';
+    const URL_SHARED_AUTHORIZE_TEST = 'https://test.sagepay.com/gateway/service/authorise.vsp';
+    const URL_SHARED_AUTHORIZE_LIVE = 'https://live.sagepay.com/gateway/service/authorise.vsp';
+    const URL_SERVER_POST_TEST = 'https://test.sagepay.com/gateway/service/vspserver-register.vsp';
+    const URL_SERVER_POST_LIVE = 'https://live.sagepay.com/gateway/service/vspserver-register.vsp';
 
 
     /**
@@ -262,25 +266,44 @@ class Config implements ConfigInterface
 
         if ($this->_methodCode == self::METHOD_PI) {
             switch ($action) {
-                case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE:
-                    return "Payment";
+                case self::ACTION_PAYMENT:
+                    return self::ACTION_PAYMENT_PI;
                     break;
                 default:
-                    return "Payment";
+                    return self::ACTION_PAYMENT_PI;
                     break;
             }
         } else {
-            switch ($action) {
-                case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE:
-                    return self::ACTION_PAYMENT;
-                    break;
-                case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE:
-                    return self::ACTION_DEFER;
-                    break;
-                default:
-                    return self::ACTION_PAYMENT;
-                    break;
-            }
+//            switch ($action) {
+//                case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE:
+//                    return self::ACTION_PAYMENT;
+//                    break;
+//                case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE:
+//                    return self::ACTION_DEFER;
+//                    break;
+//                default:
+//                    return self::ACTION_PAYMENT;
+//                    break;
+//            }
+            return $action;
+        }
+    }
+
+    public function getPaymentAction()
+    {
+        $action = $this->getValue("payment_action");
+
+        switch ($action) {
+            case self::ACTION_PAYMENT:
+                return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
+                break;
+            case self::ACTION_DEFER:
+            case self::ACTION_AUTHENTICATE:
+                return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE;
+                break;
+            default:
+                return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
+                break;
         }
     }
 

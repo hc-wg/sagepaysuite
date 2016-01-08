@@ -44,6 +44,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         switch($action){
             case \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND:
                 $prefix = "R";
+                break;
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE:
+                $prefix = "A";
+                break;
         }
 
         return substr($prefix . $order_id . "-" . date('Y-m-d-His') . time(), 0, 40);

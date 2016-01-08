@@ -418,4 +418,13 @@ class PI extends \Magento\Payment\Model\Method\Cc
         //notified state
         $stateObject->setIsNotified(false);
     }
+
+    /**
+     * Return magento payment action
+     *
+     * @return mixed
+     */
+    public function getPaymentAction(){
+        return $this->config->getPaymentAction();
+    }
 }

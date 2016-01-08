@@ -6,9 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Form;
 
-
 use Magento\Framework\Controller\ResultFactory;
-
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 class Request extends \Magento\Framework\App\Action\Action
 {
@@ -29,11 +28,18 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_quote;
 
     /**
+     * Logging instance
+     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     */
+    protected $_suiteLogger;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Ebizmarts\SagePaySuite\Model\Config $config,
+        Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
     )
     {
@@ -41,6 +47,7 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
         $this->_suiteHelper = $suiteHelper;
+        $this->_suiteLogger = $suiteLogger;
 
         $this->_quote = $this->_getCheckoutSession()->getQuote();
     }
@@ -141,6 +148,9 @@ class Request extends \Magento\Framework\App\Action\Action
 //        $data['VendorData']  = $this->getConfigData('avscv2');
 //        $data['ReferrerID']        = $this->getConfigData('referrer_id');
 //        $data['Website']        = $this->getConfigData('referrer_id');
+
+        //log request
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
 
         $preCryptString = '';
         foreach ($data as $field => $value) {

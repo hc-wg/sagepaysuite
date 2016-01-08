@@ -225,19 +225,30 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
+        $action = "with";
+
         if($payment->getLastTransId()) {
             try {
                 $transactionId = $payment->getLastTransId();
 
-                $result = $this->_transactionsApi->releaseTransaction($transactionId, $amount);
+                if($this->_config->getSagepayPaymentAction() == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER){
+                    $action = 'releasing';
+                    $result = $this->_transactionsApi->releaseTransaction($transactionId, $amount);
+                }elseif($this->_config->getSagepayPaymentAction() == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE){
+                    $action = 'authorizing';
+                    $result = $this->_transactionsApi->authorizeTransaction($transactionId, $amount, $payment->getOrder()->getIncrementId());
+                }
+
                 $payment->setIsTransactionClosed(1);
+
+
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
                 $this->_logger->critical($apiException);
-                throw new LocalizedException(__('There was an error releasing Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
+                throw new LocalizedException(__('There was an error ' . $action .' Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
 
             } catch (\Exception $e) {
                 $this->_logger->critical($e);
-                throw new LocalizedException(__('There was an error releasing Sage Pay transaction ' . $transactionId));
+                throw new LocalizedException(__('There was an error ' . $action .' Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
             }
         }
         return $this;
@@ -310,5 +321,14 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
             }
         }
         return $transactionId;
+    }
+
+    /**
+     * Return magento payment action
+     *
+     * @return mixed
+     */
+    public function getPaymentAction(){
+        return $this->_config->getPaymentAction();
     }
 }

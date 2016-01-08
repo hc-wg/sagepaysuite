@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Form;
 
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+
 class Success extends \Magento\Framework\App\Action\Action
 {
 
@@ -14,6 +16,9 @@ class Success extends \Magento\Framework\App\Action\Action
      */
     protected $_config;
 
+    /**
+     * @var \Magento\Quote\Model\Quote
+     */
     protected $_quote;
 
     /**
@@ -42,6 +47,12 @@ class Success extends \Magento\Framework\App\Action\Action
     protected $_checkoutHelper;
 
     /**
+     * Logging instance
+     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     */
+    protected $_suiteLogger;
+
+    /**
      * Success constructor.
      * @param \Magento\Framework\App\Action\Context $context
      * @param \Magento\Customer\Model\Session $customerSession
@@ -59,6 +70,7 @@ class Success extends \Magento\Framework\App\Action\Action
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Psr\Log\LoggerInterface $logger,
+        Logger $suiteLogger,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
     )
@@ -71,6 +83,7 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_customerSession = $customerSession;
         $this->_checkoutSession = $checkoutSession;
         $this->_checkoutHelper = $checkoutHelper;
+        $this->_suiteLogger = $suiteLogger;
     }
 
     /**
@@ -84,6 +97,9 @@ class Success extends \Magento\Framework\App\Action\Action
         try {
 
             $response = $this->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
+
+            //log response
+            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $response);
 
             $this->_quote = $this->_getCheckoutSession()->getQuote();
 
@@ -99,18 +115,22 @@ class Success extends \Magento\Framework\App\Action\Action
             $payment->setLastTransId($transactionId);
             $payment->setCcType($response["CardType"]);
             $payment->setCcLast4($response["Last4Digits"]);
-            $payment->setCcExpMonth(substr($response["ExpiryDate"],0,2));
-            $payment->setCcExpYear(substr($response["ExpiryDate"],2));
+            if(array_key_exists("ExpiryDate",$response)){
+                $payment->setCcExpMonth(substr($response["ExpiryDate"],0,2));
+                $payment->setCcExpYear(substr($response["ExpiryDate"],2));
+            }
+            if(array_key_exists("3DSecureStatus",$response)){
+                $payment->setAdditionalInformation('threeDStatus',$response["3DSecureStatus"]);
+            }
             $payment->setAdditionalInformation('statusDetail', $response["StatusDetail"]);
             $payment->setAdditionalInformation('vendorTxCode', $response["VendorTxCode"]);
 
             $order = $this->_checkoutHelper->placeOrder();
+            $quoteId = $this->_quote->getId();
 
             //prepare session to success or cancellation page
             $this->_getCheckoutSession()->clearHelperData();
-            $quoteId = $this->_quote->getId();
             $this->_getCheckoutSession()->setLastQuoteId($quoteId)->setLastSuccessQuoteId($quoteId);
-
             //an order may be created
             if ($order) {
                 $this->_getCheckoutSession()->setLastOrderId($order->getId())
@@ -125,12 +145,6 @@ class Success extends \Magento\Framework\App\Action\Action
             $payment->setTransactionId($transactionId);
             $payment->setLastTransId($transactionId);
             $payment->setIsTransactionClosed(1);
-            $payment->setCcType($response["CardType"]);
-            $payment->setCcLast4($response["Last4Digits"]);
-            $payment->setCcExpMonth(substr($response["ExpiryDate"],0,2));
-            $payment->setCcExpYear(substr($response["ExpiryDate"],2));
-            $payment->setAdditionalInformation('statusDetail', $response["StatusDetail"]);
-            $payment->setAdditionalInformation('vendorTxCode', $response["VendorTxCode"]);
             $payment->save();
 
             switch($this->_config->getSagepayPaymentAction())
@@ -140,6 +154,10 @@ class Success extends \Magento\Framework\App\Action\Action
                     $closed = true;
                     break;
                 case \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER:
+                    $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
+                    $closed = false;
+                    break;
+                case \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE:
                     $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
                     $closed = false;
                     break;

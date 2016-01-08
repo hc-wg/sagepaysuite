@@ -321,4 +321,13 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
         $stateObject->setStatus('pending_payment');
         $stateObject->setIsNotified(false);
     }
+
+    /**
+     * Return magento payment action
+     *
+     * @return mixed
+     */
+    public function getPaymentAction(){
+        return $this->_config->getPaymentAction();
+    }
 }

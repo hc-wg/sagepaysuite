@@ -34,7 +34,8 @@ class Form implements ConfigProviderInterface
     public function __construct(
         PaymentHelper $paymentHelper,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
-    ) {
+    )
+    {
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
         $this->_suiteHelper = $suiteHelper;
     }
@@ -46,10 +47,10 @@ class Form implements ConfigProviderInterface
         }
 
         return ['payment' => [
-                    'ebizmarts_sagepaysuiteform' => [
-                        'licensed' => $this->_suiteHelper->verify()
-                    ],
-                ]
+            'ebizmarts_sagepaysuiteform' => [
+                'licensed' => $this->_suiteHelper->verify()
+            ],
+        ]
         ];
     }
 }
