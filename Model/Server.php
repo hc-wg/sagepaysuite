@@ -192,12 +192,6 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
     {
-//        $country = null;
-//        if($quote != null && $quote->getBillingAddress() != null){
-//            $country = $quote->getBillingAddress()->getCountryId();
-//        }
-//
-//        return $this->_config->isMethodAvailable($this->_code,$country);
         return parent::isAvailable($quote);
     }
 
@@ -236,13 +230,42 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
+        try {
+            $action = "with";
+            $order = $payment->getOrder();
+
+            if ($payment->getLastTransId() && $order->getState() != \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
+
+                $transactionId = $payment->getLastTransId();
+
+                if ($this->_config->getSagepayPaymentAction() == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER) {
+                    $action = 'releasing';
+                    $result = $this->_transactionsApi->releaseTransaction($transactionId, $amount);
+                } elseif ($this->_config->getSagepayPaymentAction() == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE) {
+                    $action = 'authorizing';
+                    $result = $this->_transactionsApi->authorizeTransaction($transactionId, $amount, $order->getIncrementId());
+                }
+
+                $payment->setIsTransactionClosed(1);
+            }
+
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+            $this->_logger->critical($apiException);
+            throw new LocalizedException(__('There was an error ' . $action . ' Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
+
+        } catch (\Exception $e) {
+            $this->_logger->critical($e);
+            throw new LocalizedException(__('There was an error ' . $action . ' Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
+        }
+
         return $this;
     }
 
     /**
      * Set initialized flag to capture payment
      */
-    public function markAsInitialized(){
+    public function markAsInitialized()
+    {
         $this->_isInitializeNeeded = false;
     }
 
@@ -327,7 +350,8 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      *
      * @return mixed
      */
-    public function getPaymentAction(){
+    public function getConfigPaymentAction()
+    {
         return $this->_config->getPaymentAction();
     }
 }

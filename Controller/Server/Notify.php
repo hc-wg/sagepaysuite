@@ -129,7 +129,6 @@ class Notify extends \Magento\Framework\App\Action\Action
             //update payment details
             $payment = $order->getPayment();
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
-                //$payment->setAdditionalInformation('statusCode', $response->statusCode);
                 $payment->setAdditionalInformation('statusDetail', $this->_postData->StatusDetail);
                 $payment->setAdditionalInformation('threeDStatus', $this->_postData->{'3DSecureStatus'});
                 $payment->setCcType($this->_postData->CardType);
@@ -225,7 +224,6 @@ class Notify extends \Magento\Framework\App\Action\Action
 
     protected function _confirmPayment($transactionId)
     {
-
         //invoice
         $payment = $this->_order->getPayment();
         $payment->getMethodInstance()->markAsInitialized();
@@ -235,16 +233,26 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_orderSender->send($this->_order);
 
         //create transaction record
-        switch ($this->_config->getSagepayPaymentAction()) {
+        switch($this->_config->getSagepayPaymentAction())
+        {
             case \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT:
                 $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
                 $closed = true;
+                break;
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER:
+                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
+                $closed = false;
+                break;
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE:
+                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
+                $closed = false;
                 break;
             default:
                 $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
                 $closed = true;
                 break;
         }
+
         $transaction = $this->_transactionFactory->create()
             ->setOrderPaymentObject($payment)
             ->setTxnId($transactionId)
@@ -331,10 +339,14 @@ class Notify extends \Magento\Framework\App\Action\Action
 
     protected function _getSuccessRedirectUrl()
     {
-        return $this->_url->getUrl('*/*/success', array(
+        $url = $this->_url->getUrl('*/*/success', array(
             '_secure' => true,
             //'_store' => $this->getRequest()->getParam('_store')
         ));
+
+        $url .= "?quoteid=" . $this->_quote->getId();
+
+        return $url;
     }
 
     protected function _getFailedRedirectUrl($message)

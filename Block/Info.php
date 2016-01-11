@@ -51,7 +51,13 @@ class Info extends \Magento\Payment\Block\Info\Cc
                 $info["VPSTxId"] = $payment->getLastTransId();
             }
             if ($payment->getAdditionalInformation("statusDetail")) {
-                $info["Status"] = $payment->getAdditionalInformation("statusDetail");
+
+                $statusDetail = $payment->getAdditionalInformation("statusDetail");
+                if(strrpos($payment->getAdditionalInformation("statusDetail"), " : ") !== FALSE){
+                    $statusDetail = explode(" : ",$statusDetail);
+                    $statusDetail = $statusDetail[1];
+                }
+                $info["Status"] = $statusDetail;
             }
             if ($payment->getAdditionalInformation("threeDStatus")) {
                 $info["3D Status"] = $payment->getAdditionalInformation("threeDStatus");

@@ -328,7 +328,8 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      *
      * @return mixed
      */
-    public function getPaymentAction(){
+    public function getConfigPaymentAction()
+    {
         return $this->_config->getPaymentAction();
     }
 }

@@ -424,7 +424,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
      *
      * @return mixed
      */
-    public function getPaymentAction(){
+    public function getConfigPaymentAction()
+    {
         return $this->config->getPaymentAction();
     }
 }

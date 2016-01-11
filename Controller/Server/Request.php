@@ -30,11 +30,6 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_quote;
 
     /**
-     * @var \Magento\Quote\Model\QuoteManagement
-     */
-    protected $_quoteManagement;
-
-    /**
      * @var \Magento\Framework\HTTP\Adapter\CurlFactory
      *
      */
@@ -51,7 +46,20 @@ class Request extends \Magento\Framework\App\Action\Action
      */
     protected $_suiteLogger;
 
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+
+    /**
+     * @var string
+     */
     protected $_assignedVendorTxCode;
+
+    /**
+     * @var \Ebizmarts\SagePaySuite\Helper\Checkout
+     */
+    protected $_checkoutHelper;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -63,7 +71,9 @@ class Request extends \Magento\Framework\App\Action\Action
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         \Magento\Quote\Model\QuoteManagement $quoteManagement,
-        Logger $suiteLogger
+        Logger $suiteLogger,
+        \Psr\Log\LoggerInterface $logger,
+        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
     )
     {
         parent::__construct($context);
@@ -75,6 +85,8 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_quote = $this->_getCheckoutSession()->getQuote();
         $this->_quoteManagement = $quoteManagement;
         $this->_suiteLogger = $suiteLogger;
+        $this->_logger = $logger;
+        $this->_checkoutHelper = $checkoutHelper;
     }
 
     public function execute()
@@ -98,7 +110,9 @@ class Request extends \Magento\Framework\App\Action\Action
             $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
 
             //save order with pending payment
-            $order = $this->_placeOrder();
+            $order = $this->_checkoutHelper->placeOrder();
+
+            //set payment data
             $payment = $order->getPayment();
             $payment->setTransactionId($transactionId);
             $payment->setLastTransId($transactionId);
@@ -113,6 +127,8 @@ class Request extends \Magento\Framework\App\Action\Action
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
 
+            $this->_logger->critical($apiException);
+
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong while generating the Sage Pay request: ' . $apiException->getUserMessage()),
@@ -120,6 +136,9 @@ class Request extends \Magento\Framework\App\Action\Action
             //$this->messageManager->addError(__('Something went wrong while generating the Sage Pay request: ' . $apiException->getUserMessage()));
 
         } catch (\Exception $e) {
+
+            $this->_logger->critical($e);
+
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong while generating the Sage Pay request: ' . $e->getMessage()),
@@ -323,16 +342,5 @@ class Request extends \Magento\Framework\App\Action\Action
             'code' => $exceptionCode
         ]);
         throw $exception;
-    }
-
-    protected function _placeOrder(){
-
-        $order = $this->_quoteManagement->submit($this->_quote);
-
-        if (!$order) {
-            throw new \Magento\Framework\Exception\LocalizedException(__('Can not save order. Please try another payment option.'));
-        }
-
-        return $order;
     }
 }
