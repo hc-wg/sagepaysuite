@@ -266,7 +266,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     {
         try {
 
-            $transactionId = $this->clearTransactionId($payment->getLastTransId());
+            $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
             $order = $payment->getOrder();
 
             $result = $this->_transactionsApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
@@ -307,20 +307,6 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     public function canVoid()
     {
         return $this->_canVoid;
-    }
-
-    public function clearTransactionId($transactionId)
-    {
-        $suffixes = [
-            '-' . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE,
-            '-' . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_VOID,
-        ];
-        foreach ($suffixes as $suffix) {
-            if (strpos($transactionId, $suffix) !== false) {
-                $transactionId = str_replace($suffix, '', $transactionId);
-            }
-        }
-        return $transactionId;
     }
 
     /**

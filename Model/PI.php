@@ -65,7 +65,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
     /**
      * @var bool
      */
-    protected $_canUseInternal = false;
+    protected $_canUseInternal = true;
 
     /**
      * @var bool
@@ -261,22 +261,11 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
         try {
 
-            $transactionId = $payment->getLastTransId();
+            $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
             $order = $payment->getOrder();
 
             $result = $this->_transactionsApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
             $result = $result["data"];
-
-//            //create refund transaction
-//            $refundTransaction = $this->_transactionFactory->create()
-//                ->setOrderPaymentObject($payment)
-//                ->setTxnId($result["VPSTxId"])
-//                ->setParentTxnId($transactionId)
-//                ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_REFUND)
-//                ->setPaymentId($payment->getId());
-//
-//            $refundTransaction->save();
-//            $refundTransaction->setIsClosed(true);
 
             $payment->setIsTransactionClosed(1)
                 ->setShouldCloseParentTransaction(1);

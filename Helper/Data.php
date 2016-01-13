@@ -78,4 +78,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
         return $v;
     }
+
+    public function clearTransactionId($transactionId)
+    {
+        $suffixes = [
+            '-' . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE,
+            '-' . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_VOID,
+        ];
+        foreach ($suffixes as $suffix) {
+            if (strpos($transactionId, $suffix) !== false) {
+                $transactionId = str_replace($suffix, '', $transactionId);
+            }
+        }
+        return $transactionId;
+    }
 }

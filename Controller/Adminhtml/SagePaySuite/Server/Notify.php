@@ -4,15 +4,14 @@
  * See LICENSE.txt for license details.
  */
 
-namespace Ebizmarts\SagePaySuite\Controller\Server;
+namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\SagePaySuite\Server;
 
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 
-class Notify extends \Magento\Framework\App\Action\Action
+class Notify extends \Magento\Backend\App\AbstractAction
 {
-
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
@@ -45,11 +44,6 @@ class Notify extends \Magento\Framework\App\Action\Action
     protected $_logger;
 
     /**
-     * @var \Magento\Checkout\Model\Session
-     */
-    protected $_checkoutSession;
-
-    /**
      * @var \Magento\Quote\Model\Quote
      */
     protected $_quote;
@@ -76,8 +70,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         OrderSender $orderSender,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Checkout\Model\Session $checkoutSession
+        \Psr\Log\LoggerInterface $logger
     )
     {
         parent::__construct($context);
@@ -89,7 +82,6 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
         $this->_logger = $logger;
-        $this->_checkoutSession = $checkoutSession;
 
         $this->_postData = $this->getRequest()->getPost();
         $this->_quote = $this->_objectManager->get('\Magento\Quote\Model\Quote')->load($this->getRequest()->getParam("quoteid"));
@@ -226,8 +218,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_orderSender->send($this->_order);
 
         //create transaction record
-        switch($this->_config->getSagepayPaymentAction())
-        {
+        switch ($this->_config->getSagepayPaymentAction()) {
             case \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT:
                 $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
                 $closed = true;
@@ -265,16 +256,10 @@ class Notify extends \Magento\Framework\App\Action\Action
         }
     }
 
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCheckoutSession()
-    {
-        return $this->_checkoutSession;
-    }
-
     protected function _returnAbort()
     {
+        $this->messageManager->addError("CANCELLED");
+
         $strResponse = 'Status=OK' . "\r\n";
         $strResponse .= 'StatusDetail=Transaction ABORTED successfully' . "\r\n";
         $strResponse .= 'RedirectURL=' . $this->_getAbortRedirectUrl() . "\r\n";
@@ -320,9 +305,8 @@ class Notify extends \Magento\Framework\App\Action\Action
 
     protected function _getAbortRedirectUrl()
     {
-        $url = $this->_url->getUrl('*/*/cancel', array(
+        $url = $this->_url->getUrl('sales/order/index', array(
             '_secure' => true,
-            //'_store' => $this->getRequest()->getParam('_store')
         ));
 
         $url .= "?message=Transaction cancelled by customer";
@@ -332,12 +316,9 @@ class Notify extends \Magento\Framework\App\Action\Action
 
     protected function _getSuccessRedirectUrl()
     {
-        $url = $this->_url->getUrl('*/*/success', array(
-            '_secure' => true,
-            //'_store' => $this->getRequest()->getParam('_store')
-        ));
-
-        $url .= "?quoteid=" . $this->_quote->getId();
+        $route = 'sales/order/view';
+        $param['order_id'] = $this->_order->getId();
+        $url =  $this->_getUrl($route, $param);
 
         return $url;
     }
@@ -354,4 +335,15 @@ class Notify extends \Magento\Framework\App\Action\Action
         return $url;
     }
 
+    /**
+     * Check for is allowed
+     *
+     * @return boolean
+     */
+    protected function _isAllowed()
+    {
+        //return $this->_authorization->isAllowed('Ebizmarts_SagePaySuite::resource');
+        return true;
+
+    }
 }

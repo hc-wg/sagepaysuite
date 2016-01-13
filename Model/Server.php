@@ -281,7 +281,7 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
     {
         try {
 
-            $transactionId = $payment->getLastTransId();
+            $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
             $order = $payment->getOrder();
 
             $result = $this->_transactionsApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
