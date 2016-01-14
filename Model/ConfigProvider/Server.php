@@ -29,14 +29,36 @@ class Server implements ConfigProviderInterface
     protected $_suiteHelper;
 
     /**
+     * @var \Magento\Customer\Model\Session
+     */
+    protected $_customerSession;
+
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Token
+     */
+    protected $_tokenModel;
+
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Config
+     */
+    protected $_config;
+
+    /**
      * @param PaymentHelper $paymentHelper
      */
     public function __construct(
         PaymentHelper $paymentHelper,
-        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
-    ) {
+        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
+        \Magento\Customer\Model\Session $customerSession,
+        \Ebizmarts\SagePaySuite\Model\Config $config
+    ){
+        $this->_customerSession = $customerSession;
+        $this->_tokenModel = $tokenModel;
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
         $this->_suiteHelper = $suiteHelper;
+        $this->_config = $config;
+        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
     }
 
     public function getConfig()
@@ -45,9 +67,23 @@ class Server implements ConfigProviderInterface
             return [];
         }
 
+        //get tokens if enabled and cutomer is logged in
+        $tokenEnabled = (bool)$this->_config->getTokenEnabled();
+        $tokens = null;
+        if($tokenEnabled){
+            if(!empty($this->_customerSession->getCustomerId())) {
+                $tokens = $this->_tokenModel->getCustomerTokens($this->_customerSession->getCustomerId(),
+                    $this->_config->getVendorname());
+            }else{
+                $tokenEnabled = false;
+            }
+        }
+
         return ['payment' => [
             'ebizmarts_sagepaysuiteserver' => [
-                'licensed' => $this->_suiteHelper->verify()
+                'licensed' => $this->_suiteHelper->verify(),
+                'token_enabled' => $tokenEnabled,
+                'tokens' => $tokens
             ],
         ]
         ];

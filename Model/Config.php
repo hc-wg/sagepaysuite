@@ -348,6 +348,15 @@ class Config implements ConfigInterface
         );
     }
 
+    public function getTokenEnabled()
+    {
+        return $this->_scopeConfig->getValue(
+            $this->_getGlobalConfigPath("token"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+    }
+
     public function getReportingApiUser()
     {
         return $this->_scopeConfig->getValue(

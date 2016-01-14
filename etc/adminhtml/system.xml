@@ -28,6 +28,11 @@
                         <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\Mode</source_model>
                         <config_path>sagepaysuite/global/mode</config_path>
                     </field>
+                    <field id="token" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Save Credit Card Tokens</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>sagepaysuite/global/token</config_path>
+                    </field>
                     <field id="reporting_user" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Reporting API User</label>
                         <config_path>sagepaysuite/global/reporting_user</config_path>

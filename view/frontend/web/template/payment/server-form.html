@@ -9,7 +9,7 @@
         <input type="radio"
                name="payment[method]"
                class="radio"
-               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()" />
+               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
         <label data-bind="attr: {'for': getCode()}" class="label">
             <img class="payment-icon sagepaysuite-payment-icon" src="http://www.sagepay.co.uk/files/logo_0.png"/>
             <span data-bind="text: getTitle()"></span>
@@ -23,11 +23,42 @@
             <!--/ko-->
         </div>
 
+        <!-- ko if: (customerHasTokens())-->
+        <div id="sagepaysuiteserver-tokens" class="sagepaysuite-tokens">
+            <div class="token-list">
+                <!-- ko foreach: {data: getCustomerTokens()} -->
+                <div class="token-row">
+                    <input type="radio"
+                           data-bind="attr: { 'id': $parent.getCode() + '-token-' + id, 'name': $parent.getCode() + '-token' },
+                           checked:$index == 0">
+                    <label data-bind="attr: { 'for': $parent.getCode() + '-token-' + id }">
+                        <p data-bind="html: '**********' + cc_last_4"></p>
+                        <img data-bind="attr: {
+                        'src': $parent.getIcons(cc_type) }">
+                        <a class="delete-token-link" href="#"
+                           data-bind="click: function () { $parent.deleteToken(id); return false; }">delete</a>
+                    </label>
+                </div>
+                <script>
+                    jQuery('#sagepaysuiteserver-token-1').css('margin-left','300px');
+                    alert(111);
+                </script>
+                <!--/ko-->
+            </div>
+            <a class="add-new-card-link" href="#" data-bind="click: addNewCard">Add new card</a>
+            <p class="using-new-card-message">You will be using a new credit card.</p>
+            <a class="use-saved-card-link" href="#" data-bind="click: useSavedTokens">Use a saved card</a>
+        </div>
+        <!--/ko-->
+
         <fieldset class="fieldset" data-bind='attr: {id: "payment_form_" + getCode()}'>
-            <span data-bind="attr: {id: getCode() + '-payment-errors'}" class="message error" style="display: none;"></span>
+            <span data-bind="attr: {id: getCode() + '-payment-errors'}" class="message error"
+                  style="display: none;"></span>
+
             <div class="payment-method-note">
                 <strong>
-                    <!-- ko text: $t('A secure Sage Pay iframe will open for you to input credit card details.') --><!-- /ko -->
+                    <!-- ko text: $t('A secure Sage Pay iframe will open for you to input credit card details.') -->
+                    <!-- /ko -->
                 </strong>
             </div>
         </fieldset>

@@ -59,7 +59,15 @@ class Notify extends \Magento\Framework\App\Action\Action
      */
     protected $_order;
 
+    /**
+     * @var array
+     */
     protected $_postData;
+
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Token
+     */
+    protected $_tokenModel;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -77,7 +85,8 @@ class Notify extends \Magento\Framework\App\Action\Action
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Psr\Log\LoggerInterface $logger,
-        \Magento\Checkout\Model\Session $checkoutSession
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Ebizmarts\SagePaySuite\Model\Token $tokenModel
     )
     {
         parent::__construct($context);
@@ -90,6 +99,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
         $this->_logger = $logger;
         $this->_checkoutSession = $checkoutSession;
+        $this->_tokenModel = $tokenModel;
 
         $this->_postData = $this->getRequest()->getPost();
         $this->_quote = $this->_objectManager->get('\Magento\Quote\Model\Quote')->load($this->getRequest()->getParam("quoteid"));
@@ -129,6 +139,19 @@ class Notify extends \Magento\Framework\App\Action\Action
                 $payment->setCcExpMonth(substr($this->_postData->ExpiryDate, 0, 2));
                 $payment->setCcExpYear(substr($this->_postData->ExpiryDate, 2));
                 $payment->save();
+            }
+
+            if(isset($this->_postData->Token)){
+                //save token
+
+                $this->_tokenModel->saveToken($order->getCustomerId(),
+                    $this->_postData->Token,
+                    $this->_postData->CardType,
+                    $this->_postData->Last4Digits,
+                    substr($this->_postData->ExpiryDate, 0, 2),
+                    substr($this->_postData->ExpiryDate, 2),
+                    $this->_config->getVendorname()
+                );
             }
 
             /**

@@ -62,6 +62,16 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_checkoutHelper;
 
     /**
+     * @var \Ebizmarts\SagePaySuite\Model\Server
+     */
+    protected $_serverModel;
+
+    /**
+     *  POST array
+     */
+    protected $_postData;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
@@ -73,7 +83,8 @@ class Request extends \Magento\Framework\App\Action\Action
         \Magento\Quote\Model\QuoteManagement $quoteManagement,
         Logger $suiteLogger,
         \Psr\Log\LoggerInterface $logger,
-        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
+        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
+        \Ebizmarts\SagePaySuite\Model\Server $serverModel
     )
     {
         parent::__construct($context);
@@ -87,6 +98,12 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_suiteLogger = $suiteLogger;
         $this->_logger = $logger;
         $this->_checkoutHelper = $checkoutHelper;
+        $this->_serverModel = $serverModel;
+
+        $postData = $this->getRequest();
+        $postData = preg_split('/^\r?$/m', $postData, 2);
+        $postData = json_decode(trim($postData[1]));
+        $this->_postData = $postData;
     }
 
     public function execute()
@@ -98,7 +115,13 @@ class Request extends \Magento\Framework\App\Action\Action
             $this->_quote->reserveOrderId();
 
             //generate POST request
-            $request = $this->_generateRequest();
+            $request = $this->_serverModel->generateRequest($this->_quote,
+                $this->_getCustomerSession()->getCustomerDataObject(),
+                $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId()),
+                $this->_getNotificationUrl(),
+                $this->_postData->save_token,
+                $this->_postData->token
+            );
 
             //send POST to Sage Pay
             $post_response = $this->_handleApiErrors($this->_sendPost($request));
@@ -151,68 +174,6 @@ class Request extends \Magento\Framework\App\Action\Action
         return $resultJson;
     }
 
-    private function _generateRequest(){
-
-        $billing_address = $this->_quote->getBillingAddress();
-        $shipping_address = $this->_quote->getShippingAddress();
-        $customer_data = $this->_getCustomerSession()->getCustomerDataObject();
-        $this->_assignedVendorTxCode = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
-
-        $post_data = array();
-        $post_data["VPSProtocol"] = $this->_config->getVPSProtocol();
-        $post_data["TxType"] = $this->_config->getSagepayPaymentAction();
-        $post_data["Vendor"] = $this->_config->getVendorname();
-        $post_data["VendorTxCode"] = $this->_assignedVendorTxCode;
-        $post_data["Amount"] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
-        $post_data["Currency"] = $this->_quote->getQuoteCurrencyCode();
-        $post_data["Description"] = "Magento transaction";
-        $post_data["NotificationURL"] = $this->_getNotificationUrl();
-        $post_data["BillingSurname"] = substr($billing_address->getLastname(), 0, 20);
-        $post_data["BillingFirstnames"] = substr($billing_address->getFirstname(), 0, 20);
-        $post_data["BillingAddress1"] = substr($billing_address->getStreetLine(1), 0, 100);
-        $post_data["BillingCity"] = substr($billing_address->getCity(), 0,  40);
-        $post_data["BillingState"] = substr($billing_address->getRegionCode(), 0, 2);
-        $post_data["BillingPostCode"] = substr($billing_address->getPostcode(), 0, 10);
-        $post_data["BillingCountry"] = substr($billing_address->getCountryId(), 0, 2);
-        $post_data["DeliverySurname"] = substr($shipping_address->getLastname(), 0, 20);
-        $post_data["DeliveryFirstnames"] = substr($shipping_address->getFirstname(), 0, 20);
-        $post_data["DeliveryAddress1"] = substr($shipping_address->getStreetLine(1), 0, 100);
-        $post_data["DeliveryCity"] = substr($shipping_address->getCity(), 0,  40);
-        $post_data["DeliveryState"] = substr($shipping_address->getRegionCode(), 0, 2);
-        $post_data["DeliveryPostCode"] = substr($shipping_address->getPostcode(), 0, 10);
-        $post_data["DeliveryCountry"] = substr($shipping_address->getCountryId(), 0, 2);
-
-        //not mandatory
-//        Token
-//        BillingAddress2
-//        BillingPhone
-//        DeliveryAddress2
-//        DeliveryPhone
-//        CustomerEMail
-//        Basket
-//        AllowGiftAid
-//        ApplyAVSCV2
-//        Apply3DSecure
-//        Profile
-//        BillingAgreement
-//        AccountType
-//        CreateToken
-//        StoreToken
-//        BasketXML
-//        CustomerXML
-//        SurchargeXML
-//        VendorData
-//        ReferrerID
-//        Language
-//        Website
-//        FIRecipientAcctNumber
-//        FIRecipientSurname
-//        FIRecipientPostcode
-//        FIRecipientDoB
-
-        return $post_data;
-    }
-
     protected function _getNotificationUrl()
     {
         $url = $this->_url->getUrl('*/*/notify', array(
@@ -259,12 +220,13 @@ class Request extends \Magento\Framework\App\Action\Action
         //log SERVER response
         $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$data);
 
+        $response_data = [];
         if($response_status == 200){
 
             //parse response
             $data = preg_split('/^\r?$/m', $data, 2);
             $data = explode(chr(13), $data[1]);
-            $response_data = [];
+
             for($i=0;$i<count($data);$i++){
                 if(!empty($data[$i])){
                     $aux = explode("=",trim($data[$i]));
