@@ -122,7 +122,6 @@ define(
                                 self.showPaymentError("Unable to submit to Sage Pay. Please try another payment option.");
                             }
                         );
-
                     }
                 ).fail(
                     function (response) {
@@ -168,6 +167,45 @@ define(
             },
             deleteToken: function (id) {
 
+                var self = this;
+
+                if(confirm("Are you sure you wish to delete this saved credit card token?")){
+
+                    var serviceUrl = url.build('sagepaysuite/token/delete');
+
+                    //send token delete post
+                    storage.post(serviceUrl,
+                        JSON.stringify({
+                            token_id: id
+                        })).done(
+                        function (response) {
+
+                            if (response.success && response.success == true) {
+                                //hide token row
+                                $('#' + self.getCode() + '-token-' + id).prop("checked", false);
+                                $('#' + self.getCode() + '-tokenrow-' + id).hide()
+
+                                //delete from token list
+                                var tokens = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens;
+                                for (var i = 0; i < tokens.length; i++) {
+                                    if (id == tokens[i].id){
+                                        tokens.splice(i, 1);
+                                    }
+                                }
+                                if (tokens.length == 0) {
+                                    $('#' + self.getCode() + '-tokens').hide();
+                                    self.use_token = false;
+                                }
+                            } else {
+                                self.showPaymentError(response.error_message);
+                            }
+                        }
+                    ).fail(
+                        function (response) {
+                            self.showPaymentError("Unable to delete credit card token.");
+                        }
+                    );
+                }
             },
             customerHasTokens: function () {
                 if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver) {

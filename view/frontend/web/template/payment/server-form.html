@@ -27,10 +27,9 @@
         <div id="sagepaysuiteserver-tokens" class="sagepaysuite-tokens">
             <div class="token-list">
                 <!-- ko foreach: {data: getCustomerTokens()} -->
-                <div class="token-row">
+                <div data-bind="attr: { 'id': $parent.getCode() + '-tokenrow-' + id }" class="token-row">
                     <input type="radio"
-                           data-bind="attr: { 'id': $parent.getCode() + '-token-' + id, 'name': $parent.getCode() + '-token' },
-                           checked:$index == 0">
+                           data-bind="attr: { 'id': $parent.getCode() + '-token-' + id, 'name': $parent.getCode() + '-token' }">
                     <label data-bind="attr: { 'for': $parent.getCode() + '-token-' + id }">
                         <p data-bind="html: '**********' + cc_last_4"></p>
                         <img data-bind="attr: {
@@ -39,10 +38,6 @@
                            data-bind="click: function () { $parent.deleteToken(id); return false; }">delete</a>
                     </label>
                 </div>
-                <script>
-                    jQuery('#sagepaysuiteserver-token-1').css('margin-left','300px');
-                    alert(111);
-                </script>
                 <!--/ko-->
             </div>
             <a class="add-new-card-link" href="#" data-bind="click: addNewCard">Add new card</a>

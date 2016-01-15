@@ -45,9 +45,37 @@ class Token extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         }
 
         $this->_afterLoad($object);
-//
-//        return $this;
 
         return $data;
+    }
+
+    /**
+     * Checks if token is owned by customer
+     *
+     * @param $customerId
+     * @param $tokenId
+     * @return bool
+     */
+    public function isTokenOwnedByCustomer($customerId, $tokenId)
+    {
+        $connection = $this->getConnection();
+        $select = $connection->select()
+            ->from(
+                $this->getMainTable()
+            )->where(
+                'customer_id=?',
+                $customerId
+            )->where(
+                'id=?',
+                $tokenId
+            );
+
+        $data = $connection->fetchAll($select);
+
+        if (count($data) == 1) {
+            return true;
+        }
+
+        return false;
     }
 }
