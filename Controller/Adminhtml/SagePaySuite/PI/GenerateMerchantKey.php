@@ -10,7 +10,7 @@ namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\SagePaySuite\PI;
 use Magento\Framework\Controller\ResultFactory;
 
 
-class GenerateMerchantKey extends Magento\Backend\App\AbstractAction
+class GenerateMerchantKey extends \Magento\Backend\App\AbstractAction
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRestApi

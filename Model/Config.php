@@ -22,15 +22,19 @@ class Config implements ConfigInterface
      */
     const METHOD_FORM = 'sagepaysuiteform';
     const METHOD_PI = 'sagepaysuitepi';
+    const METHOD_SERVER = 'sagepaysuiteserver';
 
     /**
      * Actions
      */
     const ACTION_PAYMENT = 'PAYMENT';
-    const ACTION_DEFER = 'DEFER';
+    const ACTION_PAYMENT_PI = 'Payment';
+    const ACTION_DEFER = 'DEFERRED';
     const ACTION_AUTHENTICATE = 'AUTHENTICATE';
     const ACTION_VOID = 'VOID';
     const ACTION_REFUND = 'REFUND';
+    const ACTION_RELEASE = 'RELEASE';
+    const ACTION_AUTHORISE = 'AUTHORISE';
     const ACTION_POST = 'post';
 
     /**
@@ -38,6 +42,14 @@ class Config implements ConfigInterface
      */
     const MODE_TEST = 'test';
     const MODE_LIVE = 'live';
+
+    /**
+     * 3D secure MODES
+     */
+    const MODE_3D_DEFAULT = 'UseMSPSetting';
+    const MODE_3D_FORCE = 'Force';
+    const MODE_3D_DISABLE = 'Disable';
+    const MODE_3D_IGNORE = 'ForceIgnoringRules';
 
     /**
      * SagePay Vars map
@@ -75,7 +87,12 @@ class Config implements ConfigInterface
     const URL_SHARED_VOID_LIVE = 'https://live.sagepay.com/gateway/service/void.vsp';
     const URL_SHARED_REFUND_TEST = 'https://test.sagepay.com/gateway/service/refund.vsp';
     const URL_SHARED_REFUND_LIVE = 'https://live.sagepay.com/gateway/service/refund.vsp';
-
+    const URL_SHARED_RELEASE_TEST = 'https://test.sagepay.com/gateway/service/release.vsp';
+    const URL_SHARED_RELEASE_LIVE = 'https://live.sagepay.com/gateway/service/release.vsp';
+    const URL_SHARED_AUTHORIZE_TEST = 'https://test.sagepay.com/gateway/service/authorise.vsp';
+    const URL_SHARED_AUTHORIZE_LIVE = 'https://live.sagepay.com/gateway/service/authorise.vsp';
+    const URL_SERVER_POST_TEST = 'https://test.sagepay.com/gateway/service/vspserver-register.vsp';
+    const URL_SERVER_POST_LIVE = 'https://live.sagepay.com/gateway/service/vspserver-register.vsp';
 
 
     /**
@@ -142,7 +159,8 @@ class Config implements ConfigInterface
     /**
      * @param string $methodCode
      */
-    public function setMethodCode($methodCode){
+    public function setMethodCode($methodCode)
+    {
         $this->_methodCode = $methodCode;
     }
 
@@ -179,21 +197,18 @@ class Config implements ConfigInterface
      */
     public function getValue($key, $storeId = null)
     {
-        switch ($key) {
-            case 'getDebugReplacePrivateDataKeys':
-                return $this->methodInstance->getDebugReplacePrivateDataKeys();
-            default:
-                $underscored = strtolower(preg_replace('/(.)([A-Z])/', "$1_$2", $key));
-                $path = $this->_getSpecificConfigPath($underscored);
-                if ($path !== null) {
-                    $value = $this->_scopeConfig->getValue(
-                        $path,
-                        ScopeInterface::SCOPE_STORE,
-                        $this->_storeId
-                    );
-                    //$value = $this->_prepareValue($underscored, $value);
-                    return $value;
-                }
+        if(is_null($storeId)){
+            $storeId = $this->_storeId;
+        }
+
+        $path = $this->_getSpecificConfigPath($key);
+        if ($path !== null) {
+            $value = $this->_scopeConfig->getValue(
+                $path,
+                ScopeInterface::SCOPE_STORE,
+                $storeId
+            );
+            return $value;
         }
         return null;
     }
@@ -214,30 +229,9 @@ class Config implements ConfigInterface
         return "sagepaysuite/global/{$fieldName}";
     }
 
-    /**
-     * Check whether method available for checkout or not
-     *
-     * @param null $methodCode
-     *
-     * @return bool
-     */
-    public function isMethodAvailable($methodCode = null, $country = null)
+    protected function _getAdvancedConfigPath($fieldName)
     {
-        if(!$this->_methodCode && $methodCode != null){
-            $this->_methodCode = $methodCode;
-        }
-
-        if(!$this->isMethodActive()){
-            return false;
-        }
-
-        if($country != null){
-            if(!$this->canUseForCountry($country)){
-                return false;
-            }
-        }
-
-        return true;
+        return "sagepaysuite/advanced/{$fieldName}";
     }
 
     /**
@@ -247,7 +241,174 @@ class Config implements ConfigInterface
      */
     public function isMethodActive()
     {
-         return $this->getValue("active");
+        return $this->getValue("active");
+    }
+
+    /**
+     * Check whether specified currency code is supported
+     *
+     * @param string $code
+     * @return bool
+     */
+    public function isCurrencyCodeSupported($code)
+    {
+        return true;
+    }
+
+    public function getVPSProtocol()
+    {
+        return "3.00";
+    }
+
+    public function getSagepayPaymentAction()
+    {
+        $action = $this->getValue("payment_action");
+
+        if ($this->_methodCode == self::METHOD_PI) {
+            switch ($action) {
+                case self::ACTION_PAYMENT:
+                    return self::ACTION_PAYMENT_PI;
+                    break;
+                default:
+                    return self::ACTION_PAYMENT_PI;
+                    break;
+            }
+        } else {
+//            switch ($action) {
+//                case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE:
+//                    return self::ACTION_PAYMENT;
+//                    break;
+//                case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE:
+//                    return self::ACTION_DEFER;
+//                    break;
+//                default:
+//                    return self::ACTION_PAYMENT;
+//                    break;
+//            }
+            return $action;
+        }
+    }
+
+    public function getPaymentAction()
+    {
+        $action = $this->getValue("payment_action");
+
+        switch ($action) {
+            case self::ACTION_PAYMENT:
+                return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
+                break;
+            case self::ACTION_DEFER:
+            case self::ACTION_AUTHENTICATE:
+                return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE;
+                break;
+            default:
+                return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
+                break;
+        }
+    }
+
+    public function getVendorname()
+    {
+        return $this->_scopeConfig->getValue(
+            $this->_getGlobalConfigPath("vendorname"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+    }
+
+    public function getLicense()
+    {
+        return $this->_scopeConfig->getValue(
+            $this->_getGlobalConfigPath("license"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+    }
+
+    public function getStoreDomain()
+    {
+        return $this->_scopeConfig->getValue(
+            Store::XML_PATH_UNSECURE_BASE_URL,
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+    }
+
+    public function getFormEncryptedPassword()
+    {
+        return $this->getValue("encrypted_password");
+    }
+
+    public function getMode()
+    {
+        return $this->_scopeConfig->getValue(
+            $this->_getGlobalConfigPath("mode"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+    }
+
+    public function getTokenEnabled()
+    {
+        return $this->_scopeConfig->getValue(
+            $this->_getGlobalConfigPath("token"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+    }
+
+    public function getReportingApiUser()
+    {
+        return $this->_scopeConfig->getValue(
+            $this->_getGlobalConfigPath("reporting_user"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+    }
+
+    public function getReportingApiPassword()
+    {
+        return $this->_scopeConfig->getValue(
+            $this->_getGlobalConfigPath("reporting_password"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+    }
+
+    public function getPIPassword()
+    {
+        return $this->getValue("password");
+    }
+
+    public function getPIKey()
+    {
+        return $this->getValue("key");
+    }
+
+    /**
+     * @param string $pathPattern
+     */
+    public function setPathPattern($pathPattern)
+    {
+
+    }
+
+    public function get3Dsecure()
+    {
+        $config_value = $this->_scopeConfig->getValue(
+            $this->_getAdvancedConfigPath("threedsecure"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+
+        switch ($this->_methodCode) {
+            case self::METHOD_PI:
+                return $config_value;
+                break;
+            default:
+                return $config_value;
+                break;
+        }
     }
 
     /**
@@ -266,100 +427,5 @@ class Config implements ConfigInterface
             }
         }
         return true;
-    }
-
-    /**
-     * Check whether specified currency code is supported
-     *
-     * @param string $code
-     * @return bool
-     */
-    public function isCurrencyCodeSupported($code)
-    {
-        return true;
-    }
-
-    public function getVPSProtocol(){
-        return "3.00";
-    }
-
-    public function getSagepayPaymentAction(){
-        $action = $this->getValue("payment_action");
-
-        switch($action){
-            case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE:
-                return self::ACTION_PAYMENT;
-                break;
-            default:
-                return self::ACTION_PAYMENT;
-                break;
-        }
-    }
-
-    public function getVendorname(){
-        return $this->_scopeConfig->getValue(
-            $this->_getGlobalConfigPath("vendorname"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
-        );
-    }
-
-    public function getLicense(){
-        return $this->_scopeConfig->getValue(
-            $this->_getGlobalConfigPath("license"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
-        );
-    }
-
-    public function getStoreDomain(){
-        return $this->_scopeConfig->getValue(
-            Store::XML_PATH_UNSECURE_BASE_URL,
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
-        );
-    }
-
-    public function getFormEncryptedPassword(){
-        return $this->getValue("encrypted_password");
-    }
-
-    public function getMode(){
-        return $this->_scopeConfig->getValue(
-            $this->_getGlobalConfigPath("mode"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
-        );
-    }
-
-    public function getReportingApiUser(){
-        return $this->_scopeConfig->getValue(
-            $this->_getGlobalConfigPath("reporting_user"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
-        );
-    }
-
-    public function getReportingApiPassword(){
-        return $this->_scopeConfig->getValue(
-            $this->_getGlobalConfigPath("reporting_password"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
-        );
-    }
-
-    public function getPIPassword(){
-        return $this->getValue("password");
-    }
-
-    public function getPIKey(){
-        return $this->getValue("key");
-    }
-
-    /**
-     * @param string $pathPattern
-     */
-    public function setPathPattern($pathPattern){
-
     }
 }

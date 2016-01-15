@@ -1,16 +1,22 @@
 /**
- * Copyright © 2015 Magento. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright © 2015 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
  */
+
 /*jshint jquery:true*/
+
 define([
     "jquery",
     "sagepayjs",
-    'mage/storage',
     'mage/url',
     "jquery/ui"
-], function ($, sagepayjs, storage, url) {
+], function ($, sagepayjs, url) {
     "use strict";
+
+    /**
+     * Disable card server validation in admin
+     */
+    order.addExcludedPaymentMethod('sagepaysuitepi');
 
     $.widget('mage.sagepaysuitepiCcForm', {
         options: {
@@ -26,12 +32,17 @@ define([
         prepare: function (event, method) {
             if (method === this.options.code) {
                 this.preparePayment();
+
+                $('#sagepaysuitepi_cc_type').val("VI");
+                $('#sagepaysuitepi_cc_number').val("4929000000006");
+                $('#sagepaysuitepi_expiration').val("12");
+                $('#sagepaysuitepi_expiration_yr').val("2022");
+                $('#sagepaysuitepi_cc_cid').val("123");
             }
         },
         preparePayment: function () {
             $('#edit_form').off('submitOrder').on('submitOrder', this.submitAdminOrder.bind(this));
             $('#edit_form').off('changePaymentData').on('changePaymentData', this.changePaymentData.bind(this));
-            this.disableValidation();
         },
         changePaymentData: function(){
             console.log("changePaymentData");
@@ -39,55 +50,28 @@ define([
         fieldObserver: function(){
             console.log("fieldObserver");
         },
-        disableValidation: function(){
-
-            console.log("disable validation for PI");
-
-            var method = this.getCode();
-            var self = this;
-            if ($('payment_form_'+ method)){
-                this.paymentMethod = method;
-                var form = 'payment_form_'+method;
-                [form + '_before', form, form + '_after'].each(function(el) {
-                    var block = $(el);
-                    if (block) {
-                        block.select('input', 'select', 'textarea').each(function(field) {
-                            if (!el.include('_before') && !el.include('_after') && !field.bindChange) {
-                                field.observe('change', self.fieldObserver.bind(this))
-                            }
-                        },this);
-                    }
-                },this);
-            }
-        },
         submitAdminOrder: function () {
-
-            //var url = order.loadBaseUrl;
 
             var self = this;
             self.resetPaymentErrors();
 
-            //var serviceUrl = 'http://test.me:8888/magento2/admin/sagepaysuite/pi/generateMerchantKey';
-            //var serviceUrl = url.build('sagepaysuite/pi/generateMerchantKey');
             var serviceUrl = sagepaysuitepi_config.url.generateMerchantKey;
 
-            order._realSubmit();
+            //order._realSubmit();
 
-            //generate merchant session key
-            storage.get(serviceUrl).done(
-                function (response) {
+            jQuery.ajax( {
+                url: serviceUrl,
+                data: {form_key: window.FORM_KEY},
+                type: 'POST'
+            }).done(function(response) {
+                if (response.success) {
+                    self.sagepayTokeniseCard(response.merchant_session_key);
+                } else {
+                    console.log(response);
+                    self.showPaymentError(response.error_message ? response.error_message : response.message);
+                }
+            });
 
-                    if (response.success) {
-                        self.sagepayTokeniseCard(response.merchant_session_key);
-                    } else {
-                        self.showPaymentError(response.error_message ? response.error_message : response.message);
-                    }
-                }
-            ).fail(
-                function (response) {
-                    self.showPaymentError("Unable to create merchant session key.");
-                }
-            );
             return false;
         },
         sagepayTokeniseCard: function (merchant_session_key) {
@@ -116,7 +100,7 @@ define([
                     input_cc_owner.setAttribute('type',"text");
                     input_cc_owner.setAttribute('data-sagepay',"cardholderName");
                     token_form.appendChild(input_cc_owner);
-                    input_cc_owner.setAttribute('value',"");
+                    input_cc_owner.setAttribute('value',"Owner");
 
                     var input_cc_number = document.createElement("input");
                     input_cc_number.setAttribute('type',"text");
@@ -144,7 +128,7 @@ define([
                     //update token form
                     var token_form = document.getElementById(self.getCode() + '-token-form');
                     token_form.elements[0].setAttribute('value', merchant_session_key);
-                    token_form.elements[1].setAttribute('value', "");
+                    token_form.elements[1].setAttribute('value', "Owner");
                     token_form.elements[2].setAttribute('value', document.getElementById(self.getCode() + '_cc_number').value);
                     var expiration = document.getElementById(self.getCode() + '_expiration').value;
                     expiration = expiration.length == 1 ? "0" + expiration : expiration;
@@ -170,7 +154,7 @@ define([
 
                             try {
 
-                                self.placeOrder();
+                                self.placeTansactionRequest();
 
                             } catch (err) {
                                 console.log(err);
@@ -187,6 +171,38 @@ define([
                     alert("Unable to initialize Sage Pay payment method, please refresh the page and try again.");
                 }
             }
+        },
+        placeTansactionRequest: function(){
+
+            var self = this;
+
+            var serviceUrl = sagepaysuitepi_config.url.request;
+
+            var payload = {
+                merchant_session_Key: self.merchantSessionKey,
+                card_identifier: self.cardIdentifier,
+                card_type: self.creditCardType,
+                card_exp_month: self.creditCardExpMonth,
+                card_exp_year: self.creditCardExpYear,
+                card_last4: self.creditCardLast4,
+                form_key: window.FORM_KEY
+            };
+
+            jQuery.ajax( {
+                url: serviceUrl,
+                data: payload,
+                type: 'POST'
+            }).done(function(response) {
+                if(response.success == true) {
+
+                    //redirect to success
+                    window.location.href = response.response.redirect;
+
+                }else{
+                    self.showPaymentError(response.error_message ? response.error_message : "Invalid Sage Pay response, please use another payment method.");
+                }
+                console.log(response);
+            });
         },
         getCode: function(){
             return this.options.code;
@@ -215,7 +231,6 @@ define([
                     $('#edit_form').find(':radio[name="payment[method]"]:checked').val()
                 ]
             );
-            this.disableValidation();
         }
     });
 

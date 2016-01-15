@@ -13,14 +13,19 @@
                 <active>0</active>
                 <license>[Request from ebizmarts]</license>
                 <vendorname>testebizmarts</vendorname>
+                <mode>test</mode>
+                <token>0</token>
                 <reporting_password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
             </global>
+            <advanced>
+                <threedsecure>UseMSPSetting</threedsecure>
+            </advanced>
         </sagepaysuite>
         <payment>
             <sagepaysuiteform>
                 <active>0</active>
                 <model>Ebizmarts\SagePaySuite\Model\Form</model>
-                <payment_action>authorize_capture</payment_action>
+                <payment_action>PAYMENT</payment_action>
                 <order_status>pending</order_status>
                 <title>Sage Pay FORM</title>
                 <encrypted_password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
@@ -29,13 +34,22 @@
             <sagepaysuitepi>
                 <active>0</active>
                 <model>Ebizmarts\SagePaySuite\Model\PI</model>
-                <payment_action>authorize_capture</payment_action>
+                <payment_action>PAYMENT</payment_action>
                 <order_status>pending</order_status>
                 <title>Sage Pay PI</title>
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>
                 <allowspecific>0</allowspecific>
                 <password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
             </sagepaysuitepi>
+            <sagepaysuiteserver>
+                <active>0</active>
+                <model>Ebizmarts\SagePaySuite\Model\Server</model>
+                <payment_action>PAYMENT</payment_action>
+                <order_status>pending</order_status>
+                <title>Sage Pay SERVER</title>
+                <cctypes>AE,VI,MC,DI,JCB</cctypes>
+                <allowspecific>0</allowspecific>
+            </sagepaysuiteserver>
         </payment>
     </default>
 </config>

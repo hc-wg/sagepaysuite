@@ -21,7 +21,8 @@ class Info extends \Magento\Payment\Block\Info\Cc
         \Magento\Framework\View\Element\Template\Context $context,
         \Magento\Payment\Model\Config $paymentConfig,
         array $data = []
-    ) {
+    )
+    {
         parent::__construct($context, $paymentConfig, $data);
     }
 
@@ -37,11 +38,36 @@ class Info extends \Magento\Payment\Block\Info\Cc
         $payment = $this->getInfo();
 
         $info = array();
-        $info["Card Expiration Date"] = $payment->getCcExpMonth() . "/" . $payment->getCcExpYear();
-        $info["VendorTxCode"] = $payment->getAdditionalInformation("vendorTxCode");
-        $info["VPSTxId"] = $payment->getLastTransId();
-        $info["Status"] = $payment->getAdditionalInformation("statusDetail");
+        if ($payment->getCcExpMonth()) {
+            $info["Card Expiration Date"] = $payment->getCcExpMonth() . "/" . $payment->getCcExpYear();
+        }
 
+        //only backend details
+        if ($this->_appState->getAreaCode() === \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE){
+            if ($payment->getAdditionalInformation("vendorTxCode")) {
+                $info["VendorTxCode"] = $payment->getAdditionalInformation("vendorTxCode");
+            }
+            if ($payment->getLastTransId()) {
+                $info["VPSTxId"] = $payment->getLastTransId();
+            }
+            if ($payment->getAdditionalInformation("statusDetail")) {
+
+                $statusDetail = $payment->getAdditionalInformation("statusDetail");
+                if(strrpos($payment->getAdditionalInformation("statusDetail"), " : ") !== FALSE){
+                    $statusDetail = explode(" : ",$statusDetail);
+                    $statusDetail = $statusDetail[1];
+                }
+                $info["Status"] = $statusDetail;
+            }
+            if ($payment->getAdditionalInformation("threeDStatus")) {
+                $info["3D Status"] = $payment->getAdditionalInformation("threeDStatus");
+            }
+            if ($payment->getAdditionalInformation("moto")) {
+                $info["Source"] = "Backend Order";
+            }else{
+                $info["Source"] = "Frontend Order";
+            }
+        }
 
         return $transport->addData($info);
     }

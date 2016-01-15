@@ -23,6 +23,10 @@ define(
             {
                 type: 'sagepaysuiteform',
                 component: 'Ebizmarts_SagePaySuite/js/view/payment/method-renderer/form-method'
+            },
+            {
+                type: 'sagepaysuiteserver',
+                component: 'Ebizmarts_SagePaySuite/js/view/payment/method-renderer/server-method'
             }
         );
         /** Add view logic here if needed */

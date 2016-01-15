@@ -44,6 +44,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         switch($action){
             case \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND:
                 $prefix = "R";
+                break;
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE:
+                $prefix = "A";
+                break;
         }
 
         return substr($prefix . $order_id . "-" . date('Y-m-d-His') . time(), 0, 40);
@@ -73,5 +77,19 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $v =$modules['Ebizmarts_SagePaySuite']['setup_version'];
         }
         return $v;
+    }
+
+    public function clearTransactionId($transactionId)
+    {
+        $suffixes = [
+            '-' . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE,
+            '-' . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_VOID,
+        ];
+        foreach ($suffixes as $suffix) {
+            if (strpos($transactionId, $suffix) !== false) {
+                $transactionId = str_replace($suffix, '', $transactionId);
+            }
+        }
+        return $transactionId;
     }
 }

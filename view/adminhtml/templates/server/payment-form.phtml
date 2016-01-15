@@ -1,0 +1,25 @@
+<?php
+/**
+ * Copyright © 2015 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+
+// @codingStandardsIgnoreFile
+
+$_code = $block->getMethodCode();
+
+?>
+
+<div id="payment_form_<?php echo $_code ?>" class="admin__page-section-item" style="display:none;"
+     data-mage-init='{"sagepaysuiteServerForm":{}}'>
+
+    <span id="<?php echo $_code ?>-payment-errors" class="message error" style="display: none;"></span>
+
+    <script>
+        var sagepaysuiteserver_config = {
+            "url": {
+                "request" : '<?php echo $this->getUrl('admin/sagePaySuite_server/request', []); ?>'
+            }
+        };
+    </script>
+</div>

@@ -1,10 +1,12 @@
 <?php
 /**
- * Copyright © 2015 eBizmarts. All rights reserved.
+ * Copyright © 2015 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
+
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 /**
  * Sage Pay Reporting API parent class
@@ -29,6 +31,12 @@ class SharedApi
     protected $_config;
 
     /**
+     * Logging instance
+     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     */
+    protected $_suiteLogger;
+
+    /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
      * @param ApiExceptionFactory $apiExceptionFactory
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
@@ -36,11 +44,13 @@ class SharedApi
     public function __construct(
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
-        \Ebizmarts\SagePaySuite\Model\Config $config
+        \Ebizmarts\SagePaySuite\Model\Config $config,
+        Logger $suiteLogger
     ) {
         $this->_config = $config;
         $this->_curlFactory = $curlFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
+        $this->_suiteLogger = $suiteLogger;
     }
 
     /**
@@ -50,7 +60,6 @@ class SharedApi
      */
     public function executeRequest($action, $data)
     {
-
         $url = $this->_getServiceUrl($action);
 
         $curl = $this->_curlFactory->create();
@@ -67,7 +76,6 @@ class SharedApi
         foreach ($data as $_key => $_val) {
             $postData .= $_key . '=' . urlencode(mb_convert_encoding($_val, 'ISO-8859-1', 'UTF-8')) . '&';
         }
-
         $curl->write(\Zend_Http_Client::POST,
             $url,
             '1.0',
@@ -78,12 +86,11 @@ class SharedApi
         $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
         $curl->close();
 
+        //parse response
+        $response_data = [];
         if($response_status == 200){
-
-            //parse response
             $data = preg_split('/^\r?$/m', $data, 2);
             $data = explode(chr(13), $data[1]);
-            $response_data = [];
             for($i=0;$i<count($data);$i++){
                 if(!empty($data[$i])){
                     $aux = explode("=",trim($data[$i]));
@@ -92,13 +99,14 @@ class SharedApi
                     }
                 }
             }
+        }else{
+            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
         }
 
         $response = [
             "status" => $response_status,
             "data" => $response_data
         ];
-
         return $response;
     }
 
@@ -122,6 +130,23 @@ class SharedApi
                     return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REFUND_TEST;
                 }
                 break;
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_RELEASE:
+                if($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE ){
+                    return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_RELEASE_LIVE;
+                }else{
+                    return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_RELEASE_TEST;
+                }
+                break;
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE:
+                if($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE ){
+                    return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_AUTHORIZE_LIVE;
+                }else{
+                    return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_AUTHORIZE_TEST;
+                }
+                break;
+            default:
+                return null;
+
         }
     }
 
@@ -139,9 +164,11 @@ class SharedApi
             }else{
 
                 //there was an error
-                $detail = explode(":",$response["data"]["StatusDetail"]);
-                $exceptionCode = trim($detail[0]);
-                $exceptionPhrase = trim($detail[1]);
+                if(array_key_exists("StatusDetail",$response["data"])){
+                    $detail = explode(":",$response["data"]["StatusDetail"]);
+                    $exceptionCode = trim($detail[0]);
+                    $exceptionPhrase = trim($detail[1]);
+                }
             }
         }
 
