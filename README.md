@@ -1,3 +1,6 @@
-# magento2-sage-pay-suite
+# Sage Pay Suite module for Magento 2
 
-https://github.com/ebizmarts/magento2-sage-pay-suite/blob/master/CHANGELOG.md
+
+
+[CHANGELOG](https://github.com/ebizmarts/magento2-sage-pay-suite/blob/master/CHANGELOG.md)
+
