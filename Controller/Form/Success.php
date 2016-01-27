@@ -124,6 +124,8 @@ class Success extends \Magento\Framework\App\Action\Action
             }
             $payment->setAdditionalInformation('statusDetail', $response["StatusDetail"]);
             $payment->setAdditionalInformation('vendorTxCode', $response["VendorTxCode"]);
+            $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
+            $payment->setAdditionalInformation('mode', $this->_config->getMode());
 
             $order = $this->_checkoutHelper->placeOrder();
             $quoteId = $this->_quote->getId();

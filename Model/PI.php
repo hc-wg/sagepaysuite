@@ -342,7 +342,9 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function cancel(InfoInterface $payment)
     {
-        $this->void($payment);
+        if($this->canVoid()){
+            $this->void($payment);
+        }
         return $this;
     }
 

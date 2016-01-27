@@ -140,6 +140,8 @@ class Request extends \Magento\Framework\App\Action\Action
             $payment->setTransactionId($transactionId);
             $payment->setLastTransId($transactionId);
             $payment->setAdditionalInformation('vendorTxCode', $this->_assignedVendorTxCode);
+            $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
+            $payment->setAdditionalInformation('mode', $this->_config->getMode());
             $payment->save();
 
             //prepare response

@@ -196,7 +196,7 @@ class Notify extends \Magento\Framework\App\Action\Action
             if ($status == "ABORT") { //Transaction canceled by customer
 
                 //cancel pending payment order
-                $order->cancel()->save();
+                $this->_cancelOrder($order);
 
                 return $this->_returnAbort();
 
@@ -224,7 +224,7 @@ class Notify extends \Magento\Framework\App\Action\Action
             $this->_logger->critical($apiException);
 
             //cancel pending payment order
-            $order->cancel()->save();
+            $this->_cancelOrder($order);
 
             return $this->_returnInvalid("Something went wrong while authorizing payment: " . $apiException->getUserMessage());
 
@@ -232,9 +232,32 @@ class Notify extends \Magento\Framework\App\Action\Action
             $this->_logger->critical($e);
 
             //cancel pending payment order
-            $order->cancel()->save();
+            $this->_cancelOrder($order);
 
             return $this->_returnInvalid("Something went wrong while authorizing payment: " . $e->getMessage());
+        }
+    }
+
+    protected function _cancelOrder($order)
+    {
+        try {
+            $order->cancel()->save();
+
+            //restore quote
+            if ($this->_quote->getId())
+            {
+                $this->_quote->setIsActive(1)
+                    ->setReservedOrderId(NULL)
+                    ->save();
+
+                $this->_checkoutSession->replaceQuote($this->_quote);
+            }
+
+            //Unset data
+            $this->_checkoutSession->unsLastRealOrderId();
+
+        } catch (Exception $e) {
+            Mage::logException($e);
         }
     }
 

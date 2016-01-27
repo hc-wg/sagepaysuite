@@ -125,6 +125,8 @@ class Request extends \Magento\Framework\App\Action\Action
                 $payment->setCcExpMonth($this->_postData->card_exp_month);
                 $payment->setCcExpYear($this->_postData->card_exp_year);
                 $payment->setCcType($this->_postData->card_type);
+                $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
+                $payment->setAdditionalInformation('mode', $this->_config->getMode());
 
                 //save order with pending payment
                 $order = $this->_checkoutHelper->placeOrder();

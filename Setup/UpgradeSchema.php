@@ -98,6 +98,24 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $installer->getConnection()->createTable($table);
         }
 
+        /**
+         * CURRENT VERSION LOWER THAN 1.1.1
+         */
+        if (version_compare($context->getVersion(), '1.1.1') == -1) {
+
+            /**
+             * add column fraud_check to transaction table
+             */
+            $tableName = $setup->getTable('sales_payment_transaction');
+            $setup->getConnection()->addColumn($tableName, "sagepaysuite_fraud_check",
+                [
+                    'type' => \Magento\Framework\DB\Ddl\Table::TYPE_BOOLEAN,
+                    'nullable' => false,
+                    'comment' => 'Sage Pay Fraud Check Flag'
+                ]
+            );
+        }
+
         $installer->endSetup();
     }
 }

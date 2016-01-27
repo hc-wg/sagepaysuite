@@ -311,6 +311,9 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function cancel(\Magento\Payment\Model\InfoInterface $payment)
     {
+        if($this->canVoid()){
+            $this->void($payment);
+        }
         return parent::cancel($payment);
     }
 

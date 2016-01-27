@@ -71,7 +71,7 @@ define(
                         method: paymentData
                     };
                 }
-                return storage.put(
+                storage.put(
                     serviceUrl, JSON.stringify(payload)
                 ).done(
                     function () {
@@ -94,7 +94,7 @@ define(
                         }
 
                         //send server post request
-                        storage.post(serviceUrl,
+                        return storage.post(serviceUrl,
                             JSON.stringify({
                                 save_token: save_token,
                                 token: token
@@ -102,6 +102,8 @@ define(
                             function (response) {
 
                                 if (response.success) {
+
+                                    self.hideOtherPaymentOptions();
 
                                     $('#sagepaysuiteserver-actions-toolbar').css('display', 'none');
                                     $('#payment_form_sagepaysuiteserver .payment-method-note').css('display', 'none');
@@ -128,6 +130,41 @@ define(
                         self.showPaymentError("Unable to save payment method.");
                     }
                 );
+            },
+            hideOtherPaymentOptions: function()
+            {
+                /**
+                 *
+                 * At this point the order was already saved so we need to
+                 * disable other payment options and quote alterations
+                 *
+                 */
+
+                //hide other payment methods
+                $('.payment-method').each(function() {
+                    if(!$(this).hasClass("_active")){
+                        $(this).hide();
+                    }
+                });
+
+                //hide other payment options
+                $('.payment-option').each(function() {
+                    $(this).hide();
+                });
+
+                //disable checkout navigation
+                $('.opc-progress-bar-item').each(function() {
+                    if(!$(this).hasClass("_active")){
+                        $(this).find("span").css('display','none');
+                    }
+                });
+
+                //disable edit shipping options
+                $('.action-edit').each(function() {
+                    $(this).hide();
+                });
+                $('#billing-address-same-as-shipping-' + this.getCode()).prop('disabled',true);
+
             },
             showPaymentError: function (message) {
 

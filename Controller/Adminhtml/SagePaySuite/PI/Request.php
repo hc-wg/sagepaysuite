@@ -128,6 +128,8 @@ class Request extends \Magento\Backend\App\AbstractAction
                     $payment->setAdditionalInformation('threeDStatus', $post_response->{'3DSecure'}->status);
                 }
                 $payment->setAdditionalInformation('moto', true);
+                $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
+                $payment->setAdditionalInformation('mode', $this->_config->getMode());
 
                 //save order with pending payment
                 //$order = $this->_checkoutHelper->placeOrder();
