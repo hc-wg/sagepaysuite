@@ -50,6 +50,15 @@
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>
                 <allowspecific>0</allowspecific>
             </sagepaysuiteserver>
+            <sagepaysuitepaypal>
+                <active>0</active>
+                <model>Ebizmarts\SagePaySuite\Model\Paypal</model>
+                <payment_action>PAYMENT</payment_action>
+                <billing_agreement>0</billing_agreement>
+                <order_status>pending</order_status>
+                <title>Paypal</title>
+                <allowspecific>0</allowspecific>
+            </sagepaysuitepaypal>
         </payment>
     </default>
 </config>

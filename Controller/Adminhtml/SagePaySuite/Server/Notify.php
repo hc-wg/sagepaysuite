@@ -64,7 +64,7 @@ class Notify extends \Magento\Backend\App\AbstractAction
      * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
+        \Magento\Backend\App\Action\Context $context,
         Logger $suiteLogger,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         OrderSender $orderSender,

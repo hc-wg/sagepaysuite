@@ -59,3 +59,12 @@
     border-bottom: 1px solid #ccc;
     padding: 5px 0 10px;
 }
+
+.paypal-payment-method-logo {
+    background-image: url('images/paypal_checkout.png');
+    width: 100%;
+    height: 30px;
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-position: center;
+}

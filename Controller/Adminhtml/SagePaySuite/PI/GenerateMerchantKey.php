@@ -22,7 +22,7 @@ class GenerateMerchantKey extends \Magento\Backend\App\AbstractAction
      * @param \Ebizmarts\SagePaySuite\Model\Api\PIRestApi $pirest
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
+        \Magento\Backend\App\Action\Context $context,
         \Ebizmarts\SagePaySuite\Model\Api\PIRestApi $pirest
     )
     {

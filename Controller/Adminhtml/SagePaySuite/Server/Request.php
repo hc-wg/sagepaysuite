@@ -89,7 +89,7 @@ class Request extends \Magento\Backend\App\AbstractAction
      * @param DataHelper $helper
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
+        \Magento\Backend\App\Action\Context $context,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
@@ -99,7 +99,6 @@ class Request extends \Magento\Backend\App\AbstractAction
         \Psr\Log\LoggerInterface $logger,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Magento\Quote\Model\QuoteManagement $quoteManagement,
-        \Magento\Backend\Helper\Data $adminhtmlData,
         \Magento\Framework\Data\Form\FormKey $formKey
     )
     {
@@ -116,7 +115,6 @@ class Request extends \Magento\Backend\App\AbstractAction
         $this->_logger = $logger;
         $this->_checkoutHelper = $checkoutHelper;
         $this->_quoteManagement = $quoteManagement;
-        $this->_adminhtmlData = $adminhtmlData;
     }
 
     /**
