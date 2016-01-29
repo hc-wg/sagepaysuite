@@ -4,7 +4,7 @@
 
 ## Installation Instructions
 
-1. Manual Instalation
- * Create folder __app/code/Ebizmarts/SagePaySuite__ if not present.
- * Copy package content inside this folder.
- * Run from command line: `bin/magento setup:upgrade`.
+* Manual Instalation
+    * Create folder __app/code/Ebizmarts/SagePaySuite__ if not present.
+    * Copy package content inside this folder.
+    * Run from command line: `bin/magento setup:upgrade`.
