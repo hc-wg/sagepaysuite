@@ -56,7 +56,7 @@
                 <payment_action>PAYMENT</payment_action>
                 <billing_agreement>0</billing_agreement>
                 <order_status>pending</order_status>
-                <title>Paypal</title>
+                <title>PayPal</title>
                 <allowspecific>0</allowspecific>
             </sagepaysuitepaypal>
         </payment>

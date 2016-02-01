@@ -55,14 +55,9 @@ class Callback extends \Magento\Framework\App\Action\Action
     protected $_postData;
 
     /**
-     * @var \Magento\Framework\HTTP\Adapter\CurlFactory
+     * @var \Ebizmarts\SagePaySuite\Model\Api\Post
      */
-    protected $_curlFactory;
-
-    /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
-     */
-    protected $_apiExceptionFactory;
+    protected $_postApi;
 
     /**
      * Success constructor.
@@ -85,8 +80,7 @@ class Callback extends \Magento\Framework\App\Action\Action
         Logger $suiteLogger,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
-        \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory
+        \Ebizmarts\SagePaySuite\Model\Api\Post $postApi
     )
     {
         parent::__construct($context);
@@ -98,8 +92,7 @@ class Callback extends \Magento\Framework\App\Action\Action
         $this->_checkoutSession = $checkoutSession;
         $this->_checkoutHelper = $checkoutHelper;
         $this->_suiteLogger = $suiteLogger;
-        $this->_curlFactory = $curlFactory;
-        $this->_apiExceptionFactory = $apiExceptionFactory;
+        $this->_postApi = $postApi;
 
         $this->_postData = $this->getRequest()->getPost();
         $this->_quote = $this->_getCheckoutSession()->getQuote();
@@ -119,23 +112,20 @@ class Callback extends \Magento\Framework\App\Action\Action
             $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $this->_postData);
 
             if (!empty($this->_postData) && isset($this->_postData->Status) && $this->_postData->Status == "PAYPALOK") {
-
+                // response OK
             } else {
                 if (!empty($this->_postData) && isset($this->_postData->StatusDetail)) {
-                    throw new LocalizedException("Can not place Paypal order: " . $this->_postData->StatusDetail);
+                    throw new LocalizedException("Can not place PayPal order: " . $this->_postData->StatusDetail);
                 } else {
-                    throw new LocalizedException("Can not place Paypal order, please try another payment method");
+                    throw new LocalizedException("Can not place PayPal order, please try another payment method");
                 }
             }
 
             //toDo
             //update shipping from paypal and other data
 
-            //send ok to sagepay
+            //send COMPLETION post to sagepay
             $completion_response = $this->_sendCompletionPost()["data"];
-
-            //log response
-            //$this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $completion_response);
 
             /**
              *  SUCCESSFULLY COMPLETED PAYMENT (CAPTURE, DEFER or AUTH)
@@ -233,7 +223,12 @@ class Callback extends \Magento\Framework\App\Action\Action
             "Amount" => number_format($this->_quote->getGrandTotal(), 2, '.', ''),
             "Accept" => "YES"
         );
-        return $this->_handleApiErrors($this->_sendPost($request));
+
+        return $this->_postApi->sendPost($request,
+            $this->_getServiceURL(),
+            array("OK", 'REGISTERED', 'AUTHENTICATED'),
+            'Invalid response from PayPal'
+        );
     }
 
     /**
@@ -268,108 +263,6 @@ class Callback extends \Magento\Framework\App\Action\Action
         } else {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_PAYPAL_COMPLETION_TEST;
         }
-    }
-
-    protected function _handleApiErrors($response)
-    {
-        $exceptionPhrase = "Invalid response from PayPal";
-        $exceptionCode = 0;
-
-        if ($response["status"] == 200) {
-
-            if (!empty($response) && array_key_exists("data", $response)) {
-                if (array_key_exists("Status", $response["data"]) && (
-                        $response["data"]["Status"] == 'OK' ||
-                        $response["data"]["Status"] == 'REGISTERED' ||
-                        $response["data"]["Status"] == 'AUTHENTICATED'
-                    )
-                ) {
-
-                    //this is a successfull response
-                    return $response;
-
-                } else {
-
-                    //there was an error
-                    $detail = explode(":", $response["data"]["StatusDetail"]);
-                    $exceptionCode = trim($detail[0]);
-                    $exceptionPhrase = trim($detail[1]);
-                }
-            }
-        }
-
-        $exception = $this->_apiExceptionFactory->create([
-            'phrase' => __($exceptionPhrase),
-            'code' => $exceptionCode
-        ]);
-        throw $exception;
-    }
-
-    protected function _sendPost($postData)
-    {
-
-        $curl = $this->_curlFactory->create();
-        $url = $this->_getServiceURL();
-
-        $post_data_string = '';
-        foreach ($postData as $_key => $_val) {
-            $post_data_string .= $_key . '=' . urlencode(mb_convert_encoding($_val, 'ISO-8859-1', 'UTF-8')) . '&';
-        }
-
-        //log request
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $postData);
-
-        $curl->setConfig(
-            [
-                'timeout' => 120,
-                'verifypeer' => false,
-                'verifyhost' => 2
-            ]
-        );
-
-        $curl->write(\Zend_Http_Client::POST,
-            $url,
-            '1.0',
-            [],
-            $post_data_string);
-        $data = $curl->read();
-
-        $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
-        $curl->close();
-
-        //log response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
-
-        $response_data = [];
-        if ($response_status == 200) {
-
-            //parse response
-            $data = preg_split('/^\r?$/m', $data, 2);
-            $data = explode(chr(13), $data[1]);
-
-            for ($i = 0; $i < count($data); $i++) {
-                if (!empty($data[$i])) {
-                    $aux = explode("=", trim($data[$i]));
-                    if (count($aux) == 2) {
-                        $response_data[$aux[0]] = $aux[1];
-                    } else {
-                        if (count($aux) > 2) {
-                            $response_data[$aux[0]] = $aux[1];
-                            for ($j = 2; $j < count($aux); $j++) {
-                                $response_data[$aux[0]] .= "=" . $aux[$j];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        $response = [
-            "status" => $response_status,
-            "data" => $response_data
-        ];
-
-        return $response;
     }
 
 }

@@ -178,7 +178,6 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
 
         $this->_suiteHelper = $suiteHelper;
         $this->_transactionFactory = $transactionFactory;
-        //$this->_messageManager = $context->getMessageManager();
         $this->_transactionsApi = $transactionsApi;
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
@@ -356,75 +355,5 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
     public function getConfigPaymentAction()
     {
         return $this->_config->getPaymentAction();
-    }
-
-    /**
-     * @param $quote
-     * return array
-     */
-    public function generateRequest($quote,$customer_data,$assignedVendorTxCode,$notificationUrl,$saveToken = false,$token=null){
-
-        $billing_address = $quote->getBillingAddress();
-        $shipping_address = $quote->getShippingAddress();
-
-        $data = array();
-        $data["VPSProtocol"] = $this->_config->getVPSProtocol();
-        $data["TxType"] = $this->_config->getSagepayPaymentAction();
-        $data["Vendor"] = $this->_config->getVendorname();
-        $data["VendorTxCode"] = $assignedVendorTxCode;
-        $data["Amount"] = number_format($quote->getGrandTotal(), 2, '.', '');
-        $data["Currency"] = $quote->getQuoteCurrencyCode();
-        $data["Description"] = "Magento transaction";
-        $data["NotificationURL"] = $notificationUrl;
-        $data["BillingSurname"] = substr($billing_address->getLastname(), 0, 20);
-        $data["BillingFirstnames"] = substr($billing_address->getFirstname(), 0, 20);
-        $data["BillingAddress1"] = substr($billing_address->getStreetLine(1), 0, 100);
-        $data["BillingCity"] = substr($billing_address->getCity(), 0,  40);
-        $data["BillingState"] = substr($billing_address->getRegionCode(), 0, 2);
-        $data["BillingPostCode"] = substr($billing_address->getPostcode(), 0, 10);
-        $data["BillingCountry"] = substr($billing_address->getCountryId(), 0, 2);
-        $data["DeliverySurname"] = substr($shipping_address->getLastname(), 0, 20);
-        $data["DeliveryFirstnames"] = substr($shipping_address->getFirstname(), 0, 20);
-        $data["DeliveryAddress1"] = substr($shipping_address->getStreetLine(1), 0, 100);
-        $data["DeliveryCity"] = substr($shipping_address->getCity(), 0,  40);
-        $data["DeliveryState"] = substr($shipping_address->getRegionCode(), 0, 2);
-        $data["DeliveryPostCode"] = substr($shipping_address->getPostcode(), 0, 10);
-        $data["DeliveryCountry"] = substr($shipping_address->getCountryId(), 0, 2);
-
-        //token
-        if($saveToken == true){
-            $data["CreateToken"] = 1;
-        }
-        if(!is_null($token)){
-            $data["StoreToken"] = 1;
-            $data["Token"] = $token;
-        }
-
-        //not mandatory
-//        BillingAddress2
-//        BillingPhone
-//        DeliveryAddress2
-//        DeliveryPhone
-//        CustomerEMail
-//        Basket
-//        AllowGiftAid
-//        ApplyAVSCV2
-//        Apply3DSecure
-//        Profile
-//        BillingAgreement
-//        AccountType
-//        BasketXML
-//        CustomerXML
-//        SurchargeXML
-//        VendorData
-//        ReferrerID
-//        Language
-//        Website
-//        FIRecipientAcctNumber
-//        FIRecipientSurname
-//        FIRecipientPostcode
-//        FIRecipientDoB
-
-        return $data;
     }
 }

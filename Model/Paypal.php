@@ -315,43 +315,4 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
     {
         return $this->_config->getPaymentAction();
     }
-
-    /**
-     * @param $quote
-     * return array
-     */
-    public function generateRequest($quote,$customer_data,$assignedVendorTxCode,$callbackUrl){
-
-        $billing_address = $quote->getBillingAddress();
-        $shipping_address = $quote->getShippingAddress();
-
-        $data = array();
-        $data["VPSProtocol"] = $this->_config->getVPSProtocol();
-        $data["TxType"] = $this->_config->getSagepayPaymentAction();
-        $data["Vendor"] = $this->_config->getVendorname();
-        $data["VendorTxCode"] = $assignedVendorTxCode;
-        $data["Amount"] = number_format($quote->getGrandTotal(), 2, '.', '');
-        $data["Currency"] = $quote->getQuoteCurrencyCode();
-        $data["Description"] = "Magento transaction";
-        $data["CardType"] = "PAYPAL";
-        $data["BillingSurname"] = substr($billing_address->getLastname(), 0, 20);
-        $data["BillingFirstnames"] = substr($billing_address->getFirstname(), 0, 20);
-        $data["BillingAddress1"] = substr($billing_address->getStreetLine(1), 0, 100);
-        $data["BillingCity"] = substr($billing_address->getCity(), 0,  40);
-        $data["BillingState"] = substr($billing_address->getRegionCode(), 0, 2);
-        $data["BillingPostCode"] = substr($billing_address->getPostcode(), 0, 10);
-        $data["BillingCountry"] = substr($billing_address->getCountryId(), 0, 2);
-        $data["DeliverySurname"] = substr($shipping_address->getLastname(), 0, 20);
-        $data["DeliveryFirstnames"] = substr($shipping_address->getFirstname(), 0, 20);
-        $data["DeliveryAddress1"] = substr($shipping_address->getStreetLine(1), 0, 100);
-        $data["DeliveryCity"] = substr($shipping_address->getCity(), 0,  40);
-        $data["DeliveryState"] = substr($shipping_address->getRegionCode(), 0, 2);
-        $data["DeliveryPostCode"] = substr($shipping_address->getPostcode(), 0, 10);
-        $data["DeliveryCountry"] = substr($shipping_address->getCountryId(), 0, 2);
-
-        $data["PayPalCallbackURL"] = $callbackUrl;
-        $data["BillingAgreement"] = (int)$this->_config->getPaypalBillingAgreement();
-
-        return $data;
-    }
 }

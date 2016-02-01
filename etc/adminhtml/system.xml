@@ -212,7 +212,7 @@
                     <field id="model"></field>
                 </group>
                 <group id="sagepaysuitepaypal" translate="label" type="text" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Sage Pay Paypal Integration</label>
+                    <label>Sage Pay PayPal Integration</label>
                     <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

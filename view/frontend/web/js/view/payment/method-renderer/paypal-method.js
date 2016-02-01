@@ -81,7 +81,7 @@ define(
                                     if(response.response.data.PayPalRedirectURL){
                                         window.location.href = response.response.data.PayPalRedirectURL;
                                     }else{
-                                        self.showPaymentError("Invalid response from Paypal, please try another payment method");
+                                        self.showPaymentError("Invalid response from PayPal, please try another payment method");
                                     }
                                 } else {
                                     self.showPaymentError(response.error_message);
@@ -89,7 +89,7 @@ define(
                             }
                         ).fail(
                             function (response) {
-                                self.showPaymentError("Unable to submit form to Sage Pay.");
+                                self.showPaymentError("Unable to submit form to PayPal.");
                             }
                         );
                     }
