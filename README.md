@@ -4,7 +4,7 @@
 
 ## Installation Instructions
 
-#### ~~ Manual Instalation ~~
+#### ~~ Manual Installation ~~
 
 1. Create folder __app/code/Ebizmarts/SagePaySuite__ if not present.
 
