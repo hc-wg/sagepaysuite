@@ -27,6 +27,10 @@ define(
             {
                 type: 'sagepaysuiteserver',
                 component: 'Ebizmarts_SagePaySuite/js/view/payment/method-renderer/server-method'
+            },
+            {
+                type: 'sagepaysuitepaypal',
+                component: 'Ebizmarts_SagePaySuite/js/view/payment/method-renderer/paypal-method'
             }
         );
         /** Add view logic here if needed */

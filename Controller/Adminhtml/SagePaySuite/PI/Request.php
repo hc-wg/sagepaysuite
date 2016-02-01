@@ -70,7 +70,7 @@ class Request extends \Magento\Backend\App\AbstractAction
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
+        \Magento\Backend\App\Action\Context $context,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         Logger $suiteLogger,
@@ -128,6 +128,8 @@ class Request extends \Magento\Backend\App\AbstractAction
                     $payment->setAdditionalInformation('threeDStatus', $post_response->{'3DSecure'}->status);
                 }
                 $payment->setAdditionalInformation('moto', true);
+                $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
+                $payment->setAdditionalInformation('mode', $this->_config->getMode());
 
                 //save order with pending payment
                 //$order = $this->_checkoutHelper->placeOrder();

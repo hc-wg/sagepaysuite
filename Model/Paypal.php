@@ -12,18 +12,16 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Exception\LocalizedException;
 
 /**
- * SagePaySuite SERVER Module
- * @method \Magento\Quote\Api\Data\PaymentMethodExtensionInterface getExtensionAttributes()
+ * SagePaySuite Paypal integration
  * @SuppressWarnings(PHPMD.TooManyFields)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class Server extends \Magento\Payment\Model\Method\AbstractMethod
+class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
 {
-
     /**
      * @var string
      */
-    protected $_code = \Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER;
+    protected $_code = \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL;
 
     /**
      * @var string
@@ -139,10 +137,6 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      */
     protected $_transactionsApi;
 
-
-    protected $_isInitializeNeeded = true;
-
-
     /**
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -161,8 +155,7 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
-    )
-    {
+    ) {
         parent::__construct(
             $context,
             $registry,
@@ -178,9 +171,9 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
 
         $this->_suiteHelper = $suiteHelper;
         $this->_transactionFactory = $transactionFactory;
-        $this->_transactionsApi = $transactionsApi;
         $this->_config = $config;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
+        $this->_transactionsApi = $transactionsApi;
     }
 
 
@@ -229,43 +222,33 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-        try {
-            $action = "with";
-            $order = $payment->getOrder();
+        $action = "with";
 
-            if ($payment->getLastTransId() && $order->getState() != \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
-
+        if($payment->getLastTransId()) {
+            try {
                 $transactionId = $payment->getLastTransId();
 
-                if ($this->_config->getSagepayPaymentAction() == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER) {
+                if($this->_config->getSagepayPaymentAction() == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER){
                     $action = 'releasing';
                     $result = $this->_transactionsApi->releaseTransaction($transactionId, $amount);
-                } elseif ($this->_config->getSagepayPaymentAction() == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE) {
+                }elseif($this->_config->getSagepayPaymentAction() == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE){
                     $action = 'authorizing';
-                    $result = $this->_transactionsApi->authorizeTransaction($transactionId, $amount, $order->getIncrementId());
+                    $result = $this->_transactionsApi->authorizeTransaction($transactionId, $amount, $payment->getOrder()->getIncrementId());
                 }
 
                 $payment->setIsTransactionClosed(1);
+
+
+            } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+                $this->_logger->critical($apiException);
+                throw new LocalizedException(__('There was an error ' . $action .' Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
+
+            } catch (\Exception $e) {
+                $this->_logger->critical($e);
+                throw new LocalizedException(__('There was an error ' . $action .' Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
             }
-
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->_logger->critical($apiException);
-            throw new LocalizedException(__('There was an error ' . $action . ' Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
-
-        } catch (\Exception $e) {
-            $this->_logger->critical($e);
-            throw new LocalizedException(__('There was an error ' . $action . ' Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
         }
-
         return $this;
-    }
-
-    /**
-     * Set initialized flag to capture payment
-     */
-    public function markAsInitialized()
-    {
-        $this->_isInitializeNeeded = false;
     }
 
     /**
@@ -289,7 +272,6 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
             $payment->setIsTransactionClosed(1)
                 ->setShouldCloseParentTransaction(1);
 
-
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
             throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
@@ -310,9 +292,6 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function cancel(\Magento\Payment\Model\InfoInterface $payment)
     {
-        if($this->canVoid()){
-            $this->void($payment);
-        }
         return parent::cancel($payment);
     }
 
@@ -325,26 +304,6 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
     public function canVoid()
     {
         return $this->_canVoid;
-    }
-
-    /**
-     * Instantiate state and set it to state object
-     *
-     * @param string $paymentAction
-     * @param \Magento\Framework\DataObject $stateObject
-     * @return void
-     */
-    public function initialize($paymentAction, $stateObject)
-    {
-        //disable sales email
-        $payment = $this->getInfoInstance();
-        $order = $payment->getOrder();
-        $order->setCanSendNewEmailFlag(false);
-
-        //set pending payment state
-        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
-        $stateObject->setStatus('pending_payment');
-        $stateObject->setIsNotified(false);
     }
 
     /**

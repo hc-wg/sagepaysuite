@@ -67,6 +67,14 @@ class Info extends \Magento\Payment\Block\Info\Cc
             }else{
                 $info["Source"] = "Frontend Order";
             }
+
+            //fraud
+            if ($payment->getAdditionalInformation("t3maction")) {
+                $info["ThirdMan Action"] = $payment->getAdditionalInformation("t3maction");
+            }
+            if ($payment->getAdditionalInformation("t3mscore")) {
+                $info["ThirdMan Score"] = $payment->getAdditionalInformation("t3mscore");
+            }
         }
 
         return $transport->addData($info);

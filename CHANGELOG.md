@@ -1,3 +1,14 @@
+1.1.2 (01/02/2016)
+=============
+* New Features
+    * PayPal integration (frontend).
+    * Cancel Pening payments CRON.
+    * Fraud report CRON.
+    * Token list in frontend customer area.
+    * Unit tests additions.
+* Bugfixes
+    * Virtual products state address error.
+
 1.1.0 (15/01/2016)
 =============
 * New Features

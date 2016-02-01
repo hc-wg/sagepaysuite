@@ -23,6 +23,7 @@ class Config implements ConfigInterface
     const METHOD_FORM = 'sagepaysuiteform';
     const METHOD_PI = 'sagepaysuitepi';
     const METHOD_SERVER = 'sagepaysuiteserver';
+    const METHOD_PAYPAL = 'sagepaysuitepaypal';
 
     /**
      * Actions
@@ -93,13 +94,24 @@ class Config implements ConfigInterface
     const URL_SHARED_AUTHORIZE_LIVE = 'https://live.sagepay.com/gateway/service/authorise.vsp';
     const URL_SERVER_POST_TEST = 'https://test.sagepay.com/gateway/service/vspserver-register.vsp';
     const URL_SERVER_POST_LIVE = 'https://live.sagepay.com/gateway/service/vspserver-register.vsp';
-
+    const URL_DIRECT_POST_TEST = 'https://test.sagepay.com/gateway/service/vspdirect-register.vsp';
+    const URL_DIRECT_POST_LIVE = 'https://live.sagepay.com/gateway/service/vspdirect-register.vsp';
+    const URL_PAYPAL_COMPLETION_TEST = 'https://test.sagepay.com/gateway/service/complete.vsp';
+    const URL_PAYPAL_COMPLETION_LIVE = 'https://live.sagepay.com/gateway/service/complete.vsp';
 
     /**
      * SagePay Status Codes
      */
     const SUCCESS_STATUS = '0000';
     const AUTH3D_REQUIRED_STATUS = '2007';
+
+    /**
+     * SagePay Third Man Score Statuses
+     */
+    const T3STATUS_NORESULT = 'NORESULT';
+    const T3STATUS_OK = 'OK';
+    const T3STATUS_HOLD = 'HOLD';
+    const T3STATUS_REJECT = 'REJECT';
 
     /**
      * Current payment method code
@@ -274,17 +286,6 @@ class Config implements ConfigInterface
                     break;
             }
         } else {
-//            switch ($action) {
-//                case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE:
-//                    return self::ACTION_PAYMENT;
-//                    break;
-//                case \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE:
-//                    return self::ACTION_DEFER;
-//                    break;
-//                default:
-//                    return self::ACTION_PAYMENT;
-//                    break;
-//            }
             return $action;
         }
     }
@@ -409,6 +410,11 @@ class Config implements ConfigInterface
                 return $config_value;
                 break;
         }
+    }
+
+    public function getPaypalBillingAgreement()
+    {
+        return $this->getValue("billing_agreement");
     }
 
     /**

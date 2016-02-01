@@ -34,13 +34,20 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_suiteLogger;
 
     /**
+     * Sage Pay Suite Request Helper
+     * @var \Ebizmarts\SagePaySuite\Helper\Request
+     */
+    protected $_requestHelper;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         Logger $suiteLogger,
-        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
     )
     {
         parent::__construct($context);
@@ -48,6 +55,7 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
         $this->_suiteHelper = $suiteHelper;
         $this->_suiteLogger = $suiteLogger;
+        $this->_requestHelper = $requestHelper;
 
         $this->_quote = $this->_getCheckoutSession()->getQuote();
     }
@@ -91,8 +99,6 @@ class Request extends \Magento\Framework\App\Action\Action
             throw new \Magento\Framework\Exception\LocalizedException(__('Invalid FORM encrypted password.'));
         }
 
-        $billing_address = $this->_quote->getBillingAddress();
-        $shipping_address = $this->_quote->getShippingAddress();
         $customer_data = $this->_getCustomerSession()->getCustomerDataObject();
 
         $data = array();
@@ -110,32 +116,8 @@ class Request extends \Magento\Framework\App\Action\Action
 //        $data['SendEMail']
 //        $data['EmailMessage']
 
-        //mandatory
-        $data['BillingSurname']    = substr($billing_address->getLastname(), 0, 20);
-        $data['BillingFirstnames'] = substr($billing_address->getFirstname(), 0, 20);
-        $data['BillingAddress1']   = substr($billing_address->getStreetLine(1), 0, 100);
-        $data['BillingCity']       = substr($billing_address->getCity(), 0,  40);
-        $data['BillingPostCode']   = substr($billing_address->getPostcode(), 0, 10);
-        $data['BillingCountry']    = substr($billing_address->getCountryId(), 0, 2);
-        $data['BillingState'] = substr($billing_address->getRegionCode(), 0, 2);
-
-        //not mandatory
-//        $data['BillingAddress2']   = ($this->getConfigData('mode') == 'test') ? 88 : $this->ss($billing->getStreet(2), 100);
-
-
-        //mandatory
-        $data['DeliverySurname']    = substr($shipping_address->getLastname(), 0, 20);
-        $data['DeliveryFirstnames'] = substr($shipping_address->getFirstname(), 0, 20);
-        $data['DeliveryAddress1']   = substr($shipping_address->getStreetLine(1), 0, 100);
-        $data['DeliveryCity']       = substr($shipping_address->getCity(), 0,  40);
-        $data['DeliveryPostCode']   = substr($shipping_address->getPostcode(), 0, 10);
-        $data['DeliveryCountry']    = substr($shipping_address->getCountryId(), 0, 2);
-        $data['DeliveryState'] = substr($shipping_address->getRegionCode(), 0, 2);
-
-        //not mandatory
-//        $data['DeliveryAddress2']   = ($this->getConfigData('mode') == 'test') ? 88 : $this->ss($billing->getStreet(2), 100);
-//        $data['DeliveryState'] = $billing->getRegionCode();
-//        $data['DeliveryPhone'] = $billing->getRegionCode();
+        //populate address information
+        $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
 
 //        $data['BasketXML'] = $basket;
 //        $data['AllowGiftAid'] = (int)$this->getConfigData('allow_gift_aid');

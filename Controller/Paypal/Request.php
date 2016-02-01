@@ -4,12 +4,10 @@
  * See LICENSE.txt for license details.
  */
 
-namespace Ebizmarts\SagePaySuite\Controller\Server;
-
+namespace Ebizmarts\SagePaySuite\Controller\Paypal;
 
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-
 
 class Request extends \Magento\Framework\App\Action\Action
 {
@@ -36,29 +34,9 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_suiteLogger;
 
     /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $_logger;
-
-    /**
-     * @var string
-     */
-    protected $_assignedVendorTxCode;
-
-    /**
-     * @var \Ebizmarts\SagePaySuite\Helper\Checkout
-     */
-    protected $_checkoutHelper;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Post
      */
     protected $_postApi;
-
-    /**
-     *  POST array
-     */
-    protected $_postData;
 
     /**
      * Sage Pay Suite Request Helper
@@ -72,68 +50,41 @@ class Request extends \Magento\Framework\App\Action\Action
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Ebizmarts\SagePaySuite\Model\Config $config,
+        Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
-        \Magento\Quote\Model\QuoteManagement $quoteManagement,
-        Logger $suiteLogger,
-        \Psr\Log\LoggerInterface $logger,
-        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
     )
     {
         parent::__construct($context);
         $this->_config = $config;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
         $this->_suiteHelper = $suiteHelper;
-        $this->_postApi = $postApi;
-        $this->_quote = $this->_getCheckoutSession()->getQuote();
-        $this->_quoteManagement = $quoteManagement;
         $this->_suiteLogger = $suiteLogger;
-        $this->_logger = $logger;
-        $this->_checkoutHelper = $checkoutHelper;
+        $this->_postApi = $postApi;
         $this->_requestHelper = $requestHelper;
 
-        $postData = $this->getRequest();
-        $postData = preg_split('/^\r?$/m', $postData, 2);
-        $postData = json_decode(trim($postData[1]));
-        $this->_postData = $postData;
+        $this->_quote = $this->_getCheckoutSession()->getQuote();
     }
 
     public function execute()
     {
         try {
 
-            //prepare quote
             $this->_quote->collectTotals();
             $this->_quote->reserveOrderId();
+            $this->_quote->save();
 
             //generate POST request
             $request = $this->_generateRequest();
 
             //send POST to Sage Pay
-            //$post_response = $this->_handleApiErrors($this->_sendPost($request));
             $post_response = $this->_postApi->sendPost($request,
                 $this->_getServiceURL(),
-                array("OK")
+                array("PPREDIRECT"),
+                'Invalid response from PayPal'
             );
-
-            //set payment info for save order
-            $transactionId = $post_response["data"]["VPSTxId"];
-            $transactionId = str_replace("}","",str_replace("{","",$transactionId));
-            $payment = $this->_quote->getPayment();
-            $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
-
-            //save order with pending payment
-            $order = $this->_checkoutHelper->placeOrder();
-
-            //set payment data
-            $payment = $order->getPayment();
-            $payment->setTransactionId($transactionId);
-            $payment->setLastTransId($transactionId);
-            $payment->setAdditionalInformation('vendorTxCode', $this->_assignedVendorTxCode);
-            $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
-            $payment->setAdditionalInformation('mode', $this->_config->getMode());
-            $payment->save();
+            //$post_response = $this->_handleApiErrors($this->_sendPost($request));
 
             //prepare response
             $responseContent = [
@@ -141,25 +92,12 @@ class Request extends \Magento\Framework\App\Action\Action
                 'response' => $post_response
             ];
 
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-
-            $this->_logger->critical($apiException);
-
+        }  catch (\Exception $e) {
             $responseContent = [
                 'success' => false,
-                'error_message' => __('Something went wrong while generating the Sage Pay request: ' . $apiException->getUserMessage()),
+                'error_message' => __('Something went wrong: ' . $e->getMessage()),
             ];
-            //$this->messageManager->addError(__('Something went wrong while generating the Sage Pay request: ' . $apiException->getUserMessage()));
-
-        } catch (\Exception $e) {
-
-            $this->_logger->critical($e);
-
-            $responseContent = [
-                'success' => false,
-                'error_message' => __('Something went wrong while generating the Sage Pay request: ' . $e->getMessage()),
-            ];
-            //$this->messageManager->addError(__('Something went wrong while generating the Sage Pay request: ' . $e->getMessage()));
+            $this->messageManager->addError(__('Something went wrong: ' . $e->getMessage()));
         }
 
         $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
@@ -167,9 +105,9 @@ class Request extends \Magento\Framework\App\Action\Action
         return $resultJson;
     }
 
-    protected function _getNotificationUrl()
+    protected function _getCallbackUrl()
     {
-        $url = $this->_url->getUrl('*/*/notify', array(
+        $url = $this->_url->getUrl('*/*/callback', array(
             '_secure' => true,
             '_store' => $this->_quote->getStoreId()
         ));
@@ -179,6 +117,57 @@ class Request extends \Magento\Framework\App\Action\Action
         return $url;
     }
 
+    private function _getServiceURL(){
+        if($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE){
+            return \Ebizmarts\SagePaySuite\Model\Config::URL_DIRECT_POST_LIVE;
+        }else{
+            return \Ebizmarts\SagePaySuite\Model\Config::URL_DIRECT_POST_TEST;
+        }
+    }
+
+    protected function _getCheckoutSession()
+    {
+        return $this->_objectManager->get('Magento\Checkout\Model\Session');
+    }
+
+    /**
+     * @return \Magento\Checkout\Model\Session
+     */
+    protected function _getCustomerSession()
+    {
+        return $this->_objectManager->get('Magento\Customer\Model\Session');
+    }
+
+//    protected function _handleApiErrors($response)
+//    {
+//        $exceptionPhrase = "Invalid response from Sage Pay";
+//        $exceptionCode = 0;
+//
+//        if($response["status"] == 200){
+//
+//            if (!empty($response) && array_key_exists("data",$response)) {
+//                if(array_key_exists("Status",$response["data"]) && $response["data"]["Status"] == 'PPREDIRECT'){
+//
+//                    //this is a successfull response
+//                    return $response;
+//
+//                }else{
+//
+//                    //there was an error
+//                    $detail = explode(":",$response["data"]["StatusDetail"]);
+//                    $exceptionCode = trim($detail[0]);
+//                    $exceptionPhrase = trim($detail[1]);
+//                }
+//            }
+//        }
+//
+//        $exception = $this->_apiExceptionFactory->create([
+//            'phrase' => __($exceptionPhrase),
+//            'code' => $exceptionCode
+//        ]);
+//        throw $exception;
+//    }
+//
 //    protected function _sendPost ($postData){
 //
 //        $curl = $this->_curlFactory->create();
@@ -189,7 +178,7 @@ class Request extends \Magento\Framework\App\Action\Action
 //            $post_data_string .= $_key . '=' . urlencode(mb_convert_encoding($_val, 'ISO-8859-1', 'UTF-8')) . '&';
 //        }
 //
-//        //log SERVER request
+//        //log request
 //        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$postData);
 //
 //        $curl->setConfig(
@@ -210,7 +199,7 @@ class Request extends \Magento\Framework\App\Action\Action
 //        $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
 //        $curl->close();
 //
-//        //log SERVER response
+//        //log response
 //        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$data);
 //
 //        $response_data = [];
@@ -246,60 +235,6 @@ class Request extends \Magento\Framework\App\Action\Action
 //    }
 
     /**
-     * @return string
-     */
-    private function _getServiceURL(){
-        if($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE){
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_LIVE;
-        }else{
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_TEST;
-        }
-    }
-
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCheckoutSession()
-    {
-        return $this->_objectManager->get('Magento\Checkout\Model\Session');
-    }
-
-    protected function _getCustomerSession()
-    {
-        return $this->_objectManager->get('Magento\Customer\Model\Session');
-    }
-
-//    protected function _handleApiErrors($response)
-//    {
-//        $exceptionPhrase = "Invalid response from Sage Pay";
-//        $exceptionCode = 0;
-//
-//        if($response["status"] == 200){
-//
-//            if (!empty($response) && array_key_exists("data",$response)) {
-//                if(array_key_exists("Status",$response["data"]) && $response["data"]["Status"] == 'OK'){
-//
-//                    //this is a successfull response
-//                    return $response;
-//
-//                }else{
-//
-//                    //there was an error
-//                    $detail = explode(":",$response["data"]["StatusDetail"]);
-//                    $exceptionCode = trim($detail[0]);
-//                    $exceptionPhrase = trim($detail[1]);
-//                }
-//            }
-//        }
-//
-//        $exception = $this->_apiExceptionFactory->create([
-//            'phrase' => __($exceptionPhrase),
-//            'code' => $exceptionCode
-//        ]);
-//        throw $exception;
-//    }
-
-    /**
      * return array
      */
     protected function _generateRequest()
@@ -312,7 +247,7 @@ class Request extends \Magento\Framework\App\Action\Action
         $data["Amount"] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
         $data["Currency"] = $this->_quote->getQuoteCurrencyCode();
         $data["Description"] = "Magento transaction";
-        $data["NotificationURL"] = $this->_getNotificationUrl();
+        $data["CardType"] = "PAYPAL";
 
         //address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
@@ -332,39 +267,8 @@ class Request extends \Magento\Framework\App\Action\Action
 //        $data["DeliveryPostCode"] = substr($shipping_address->getPostcode(), 0, 10);
 //        $data["DeliveryCountry"] = substr($shipping_address->getCountryId(), 0, 2);
 
-        //token
-        if($this->_postData->save_token == true){
-            $data["CreateToken"] = 1;
-        }
-        if(!is_null($this->_postData->token)){
-            $data["StoreToken"] = 1;
-            $data["Token"] = $this->_postData->token;
-        }
-
-        //not mandatory
-//        BillingAddress2
-//        BillingPhone
-//        DeliveryAddress2
-//        DeliveryPhone
-//        CustomerEMail
-//        Basket
-//        AllowGiftAid
-//        ApplyAVSCV2
-//        Apply3DSecure
-//        Profile
-//        BillingAgreement
-//        AccountType
-//        BasketXML
-//        CustomerXML
-//        SurchargeXML
-//        VendorData
-//        ReferrerID
-//        Language
-//        Website
-//        FIRecipientAcctNumber
-//        FIRecipientSurname
-//        FIRecipientPostcode
-//        FIRecipientDoB
+        $data["PayPalCallbackURL"] = $this->_getCallbackUrl();
+        $data["BillingAgreement"] = (int)$this->_config->getPaypalBillingAgreement();
 
         return $data;
     }

@@ -4,11 +4,11 @@
  * See LICENSE.txt for license details.
  */
 
-namespace Ebizmarts\SagePaySuite\Controller\Form;
+namespace Ebizmarts\SagePaySuite\Controller\Paypal;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
-class Success extends \Magento\Framework\App\Action\Action
+class Callback extends \Magento\Framework\App\Action\Action
 {
 
     /**
@@ -52,6 +52,13 @@ class Success extends \Magento\Framework\App\Action\Action
      */
     protected $_suiteLogger;
 
+    protected $_postData;
+
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Api\Post
+     */
+    protected $_postApi;
+
     /**
      * Success constructor.
      * @param \Magento\Framework\App\Action\Context $context
@@ -72,18 +79,23 @@ class Success extends \Magento\Framework\App\Action\Action
         \Psr\Log\LoggerInterface $logger,
         Logger $suiteLogger,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
-        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
+        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
+        \Ebizmarts\SagePaySuite\Model\Api\Post $postApi
     )
     {
         parent::__construct($context);
         $this->_config = $config;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
+        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
         $this->_logger = $logger;
         $this->_transactionFactory = $transactionFactory;
         $this->_customerSession = $customerSession;
         $this->_checkoutSession = $checkoutSession;
         $this->_checkoutHelper = $checkoutHelper;
         $this->_suiteLogger = $suiteLogger;
+        $this->_postApi = $postApi;
+
+        $this->_postData = $this->getRequest()->getPost();
+        $this->_quote = $this->_getCheckoutSession()->getQuote();
     }
 
     /**
@@ -96,34 +108,39 @@ class Success extends \Magento\Framework\App\Action\Action
     {
         try {
 
-            $response = $this->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
-
             //log response
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $response);
+            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $this->_postData);
 
-            $this->_quote = $this->_getCheckoutSession()->getQuote();
+            if (!empty($this->_postData) && isset($this->_postData->Status) && $this->_postData->Status == "PAYPALOK") {
+                // response OK
+            } else {
+                if (!empty($this->_postData) && isset($this->_postData->StatusDetail)) {
+                    throw new LocalizedException("Can not place PayPal order: " . $this->_postData->StatusDetail);
+                } else {
+                    throw new LocalizedException("Can not place PayPal order, please try another payment method");
+                }
+            }
 
-            $this->_quote->save();
+            //toDo
+            //update shipping from paypal and other data
 
-            $transactionId = $response["VPSTxId"];
-            $transactionId = str_replace("{","",str_replace("}","",$transactionId)); //strip brackets
+            //send COMPLETION post to sagepay
+            $completion_response = $this->_sendCompletionPost()["data"];
+
+            /**
+             *  SUCCESSFULLY COMPLETED PAYMENT (CAPTURE, DEFER or AUTH)
+             */
+
+            $transactionId = $completion_response["VPSTxId"];
+            $transactionId = str_replace("{", "", str_replace("}", "", $transactionId)); //strip brackets
 
             //import payment info for save order
             $payment = $this->_quote->getPayment();
-            $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
+            $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
             $payment->setTransactionId($transactionId);
             $payment->setLastTransId($transactionId);
-            $payment->setCcType($response["CardType"]);
-            $payment->setCcLast4($response["Last4Digits"]);
-            if(array_key_exists("ExpiryDate",$response)){
-                $payment->setCcExpMonth(substr($response["ExpiryDate"],0,2));
-                $payment->setCcExpYear(substr($response["ExpiryDate"],2));
-            }
-            if(array_key_exists("3DSecureStatus",$response)){
-                $payment->setAdditionalInformation('threeDStatus',$response["3DSecureStatus"]);
-            }
-            $payment->setAdditionalInformation('statusDetail', $response["StatusDetail"]);
-            $payment->setAdditionalInformation('vendorTxCode', $response["VendorTxCode"]);
+            $payment->setCcType("PayPal");
+            $payment->setAdditionalInformation('statusDetail', $completion_response["StatusDetail"]);
             $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
             $payment->setAdditionalInformation('mode', $this->_config->getMode());
 
@@ -149,8 +166,7 @@ class Success extends \Magento\Framework\App\Action\Action
             $payment->setIsTransactionClosed(1);
             $payment->save();
 
-            switch($this->_config->getSagepayPaymentAction())
-            {
+            switch ($this->_config->getSagepayPaymentAction()) {
                 case \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT:
                     $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
                     $closed = true;
@@ -181,7 +197,7 @@ class Success extends \Magento\Framework\App\Action\Action
 
             //update invoice transaction id
             $invoices = $order->getInvoiceCollection();
-            if($invoices->count()){
+            if ($invoices->count()) {
                 foreach ($invoices as $_invoice) {
                     $_invoice->setTransactionId($payment->getLastTransId());
                     $_invoice->save();
@@ -194,8 +210,25 @@ class Success extends \Magento\Framework\App\Action\Action
 
         } catch (\Exception $e) {
             $this->_logger->critical($e);
-            $this->_redirectToCartAndShowError('We can\'t place the order. Please try another payment method.');
+            $this->_redirectToCartAndShowError('We can\'t place the order. Please try another payment method. ' . $e->getMessage());
         }
+    }
+
+    protected function _sendCompletionPost()
+    {
+        $request = array(
+            "VPSProtocol" => $this->_config->getVPSProtocol(),
+            "TxType" => "COMPLETE",
+            "VPSTxId" => $this->_postData->VPSTxId,
+            "Amount" => number_format($this->_quote->getGrandTotal(), 2, '.', ''),
+            "Accept" => "YES"
+        );
+
+        return $this->_postApi->sendPost($request,
+            $this->_getServiceURL(),
+            array("OK", 'REGISTERED', 'AUTHENTICATED'),
+            'Invalid response from PayPal'
+        );
     }
 
     /**
@@ -210,47 +243,6 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_redirect('checkout/cart');
     }
 
-    protected function decodeSagePayResponse($crypt){
-        if (empty($crypt)) {
-            $this->_redirectToCartAndShowError('Invalid response from SagePay, please contact our support team to rectify payment.');
-        }else{
-            $strDecoded = $this->decrypt($crypt);
-
-            $responseRaw = explode('&',$strDecoded);
-            $response = array();
-
-            for($i = 0;$i < count($responseRaw);$i++){
-                $strField = explode('=',$responseRaw[$i]);
-                $response[$strField[0]] = $strField[1];
-            }
-
-            if(!array_key_exists(\Ebizmarts\SagePaySuite\Model\Config::VAR_VPSTxId,$response)){
-                $this->_redirectToCartAndShowError('Invalid response from SagePay, please contact our support team to rectify payment.');
-            }else{
-                return $response;
-            }
-        }
-    }
-
-    public function decrypt($strIn) {
-        $cryptPass = $this->_config->getFormEncryptedPassword();
-
-        //** remove the first char which is @ to flag this is AES encrypted
-        $strIn = substr($strIn, 1);
-
-        //** HEX decoding
-        $strIn = pack('H*', $strIn);
-
-        return $this->removePKCS5Padding(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $cryptPass, $strIn, MCRYPT_MODE_CBC, $cryptPass));
-    }
-
-    // Need to remove padding bytes from end of decoded string
-    public function removePKCS5Padding($decrypted) {
-        $padChar = ord($decrypted[strlen($decrypted) - 1]);
-
-        return substr($decrypted, 0, -$padChar);
-    }
-
     protected function _getCheckoutSession()
     {
         return $this->_checkoutSession;
@@ -262,6 +254,15 @@ class Success extends \Magento\Framework\App\Action\Action
     protected function _getCustomerSession()
     {
         return $this->_customerSession;
+    }
+
+    private function _getServiceURL()
+    {
+        if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
+            return \Ebizmarts\SagePaySuite\Model\Config::URL_PAYPAL_COMPLETION_LIVE;
+        } else {
+            return \Ebizmarts\SagePaySuite\Model\Config::URL_PAYPAL_COMPLETION_TEST;
+        }
     }
 
 }
