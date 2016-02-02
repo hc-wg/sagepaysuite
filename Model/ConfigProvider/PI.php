@@ -30,6 +30,11 @@ class PI extends CcGenericConfigProvider
     protected $_suiteHelper;
 
     /**
+     * @var \Ebizmarts\SagePaySuite\Model\Config
+     */
+    protected $_config;
+
+    /**
      * @param CcConfig $ccConfig
      * @param PaymentHelper $paymentHelper
      * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
@@ -37,12 +42,14 @@ class PI extends CcGenericConfigProvider
     public function __construct(
         CcConfig $ccConfig,
         PaymentHelper $paymentHelper,
-        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        \Ebizmarts\SagePaySuite\Model\Config $config
     ) {
         parent::__construct($ccConfig, $paymentHelper);
 
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
         $this->_suiteHelper = $suiteHelper;
+        $this->_config = $config;
     }
 
 
@@ -57,7 +64,8 @@ class PI extends CcGenericConfigProvider
 
         return ['payment' => [
             'ebizmarts_sagepaysuitepi' => [
-                'licensed' => $this->_suiteHelper->verify()
+                'licensed' => $this->_suiteHelper->verify(),
+                'mode' => $this->_config->getMode()
             ],
         ]
         ];

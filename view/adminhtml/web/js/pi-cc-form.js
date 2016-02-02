@@ -7,11 +7,17 @@
 
 define([
     "jquery",
-    "sagepayjs",
     'mage/url',
     "jquery/ui"
-], function ($, sagepayjs, url) {
+], function ($, url) {
     "use strict";
+
+    //load sagepay library
+    if(sagepaysuitepi_config && !sagepaysuitepi_config.mode == 'live'){
+        var sagepayjs = require(['sagepayjs_live']);
+    }else{
+        var sagepayjs = require(['sagepayjs_test']);
+    }
 
     /**
      * Disable card server validation in admin
@@ -33,11 +39,11 @@ define([
             if (method === this.options.code) {
                 this.preparePayment();
 
-                $('#sagepaysuitepi_cc_type').val("VI");
-                $('#sagepaysuitepi_cc_number').val("4929000000006");
-                $('#sagepaysuitepi_expiration').val("12");
-                $('#sagepaysuitepi_expiration_yr').val("2022");
-                $('#sagepaysuitepi_cc_cid').val("123");
+                //$('#sagepaysuitepi_cc_type').val("VI");
+                //$('#sagepaysuitepi_cc_number').val("4929000000006");
+                //$('#sagepaysuitepi_expiration').val("12");
+                //$('#sagepaysuitepi_expiration_yr').val("2022");
+                //$('#sagepaysuitepi_cc_cid').val("123");
             }
         },
         preparePayment: function () {
@@ -45,10 +51,10 @@ define([
             $('#edit_form').off('changePaymentData').on('changePaymentData', this.changePaymentData.bind(this));
         },
         changePaymentData: function(){
-            console.log("changePaymentData");
+            //console.log("changePaymentData");
         },
         fieldObserver: function(){
-            console.log("fieldObserver");
+            //console.log("fieldObserver");
         },
         submitAdminOrder: function () {
 

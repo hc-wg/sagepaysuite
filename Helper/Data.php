@@ -34,6 +34,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->_config = $config;
     }
 
+    public function getSagePayConfig(){
+        return $this->_config;
+    }
+
     /**
      * @param Number $order_id
      * @param String $action

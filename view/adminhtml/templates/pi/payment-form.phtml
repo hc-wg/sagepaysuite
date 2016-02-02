@@ -7,6 +7,7 @@
 // @codingStandardsIgnoreFile
 
 $_code = $block->getMethodCode();
+$_config = $this->helper('Ebizmarts\SagePaySuite\Helper\Data')->getSagePayConfig();
 ?>
 
 
@@ -77,7 +78,8 @@ $_code = $block->getMethodCode();
             "url": {
                 "generateMerchantKey" : '<?php echo $this->getUrl('admin/sagePaySuite_pI/generateMerchantKey', []); ?>',
                 "request" : '<?php echo $this->getUrl('admin/sagePaySuite_pI/request', []); ?>'
-            }
+            },
+            "mode": '<?php echo $_config->getMode(); ?>'
         };
     </script>
 
