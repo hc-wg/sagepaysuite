@@ -50,6 +50,25 @@ class Token extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
+     * Get tokens by customer id and vendorname
+     */
+    public function getTokenById($tokenId)
+    {
+        $connection = $this->getConnection();
+        $select = $connection->select()
+            ->from(
+                $this->getMainTable()
+            )->where(
+                'id=?',
+                $tokenId
+            );
+
+        $data = $connection->fetchRow($select);
+
+        return $data;
+    }
+
+    /**
      * Checks if token is owned by customer
      *
      * @param $customerId

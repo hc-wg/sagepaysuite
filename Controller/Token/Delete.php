@@ -39,6 +39,16 @@ class Delete extends \Magento\Framework\App\Action\Action
     protected $_customerSession;
 
     /**
+     * @var \Ebizmarts\SagePaySuite\Model\Api\Post
+     */
+    protected $_postApi;
+
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Config
+     */
+    protected $_config;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
@@ -46,7 +56,9 @@ class Delete extends \Magento\Framework\App\Action\Action
         Logger $suiteLogger,
         \Psr\Log\LoggerInterface $logger,
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
-        \Magento\Customer\Model\Session $customerSession
+        \Magento\Customer\Model\Session $customerSession,
+        \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
+        \Ebizmarts\SagePaySuite\Model\Config $config
     )
     {
         parent::__construct($context);
@@ -54,6 +66,8 @@ class Delete extends \Magento\Framework\App\Action\Action
         $this->_logger = $logger;
         $this->_tokenModel = $tokenModel;
         $this->_customerSession = $customerSession;
+        $this->_postApi = $postApi;
+        $this->_config = $config;
 
         $this->_isCustomerArea = false;
 
@@ -68,9 +82,6 @@ class Delete extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
-
-            //$this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$this->_postData);
-
             if (empty($this->_tokenId)) {
                 //try get parameter, might be comming from the customer area
                 if(!empty($this->getRequest()->getParam("token_id"))){
@@ -81,9 +92,17 @@ class Delete extends \Magento\Framework\App\Action\Action
                 }
             }
 
+            $token = $this->_tokenModel->loadToken($this->_tokenId);
+
             //validate ownership
-            if ($this->_tokenModel->isTokenOwnedByCustomer($this->_customerSession->getCustomerId(), $this->_tokenId)) {
-                $this->_tokenModel->deleteToken($this->_tokenId);
+            if ($token->isOwnedByCustomer($this->_customerSession->getCustomerId())) {
+
+                //delete token from sagepay
+                $this->_deleteFromSagePay($token);
+
+                //delete from DB
+                $token->deleteToken();
+
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to delete token: Token is not owned by you'));
             }
@@ -125,6 +144,38 @@ class Delete extends \Magento\Framework\App\Action\Action
             $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
             $resultJson->setData($responseContent);
             return $resultJson;
+        }
+    }
+
+    protected function _deleteFromSagePay($token)
+    {
+        try {
+
+            //generate delete POST request
+            $data = array();
+            $data["VPSProtocol"] = $this->_config->getVPSProtocol();
+            $data["TxType"] = "REMOVETOKEN";
+            $data["Vendor"] = $token->getVendorname();
+            $data["Token"] = $token->getToken();
+
+            //send POST to Sage Pay
+            $this->_postApi->sendPost($data,
+                $this->_getServiceURL(),
+                array("OK")
+            );
+
+        }catch (\Exception $e) {
+
+            $this->_logger->critical($e);
+            //we do not show any error message to frontend
+        }
+    }
+
+    private function _getServiceURL(){
+        if($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE){
+            return \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_LIVE;
+        }else{
+            return \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_TEST;
         }
     }
 }

@@ -22,7 +22,6 @@ define(
         $(document).ready(function () {
             var serverConfig = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver;
             if (serverConfig) {
-
                 if (!serverConfig.licensed) {
                     $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
                 }
@@ -33,7 +32,8 @@ define(
             defaults: {
                 template: 'Ebizmarts_SagePaySuite/payment/server-form',
                 use_token: false,
-                save_token: false
+                save_token: false,
+                used_token_slots: 0
             },
             getCode: function () {
                 return 'sagepaysuiteserver';
@@ -131,12 +131,19 @@ define(
                     }
                 );
             },
+            checkMaxTokensPerCustomer: function(){
+                if(this.used_token_slots > 0 && this.used_token_slots >= window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.max_tokens){
+                    $('#' + this.getCode() + '-tokens .token-list .message-max-tokens').show();
+                }else{
+                    $('#' + this.getCode() + '-tokens .token-list .message-max-tokens').hide();
+                }
+            },
             hideOtherPaymentOptions: function()
             {
                 /**
                  *
                  * At this point the order was already saved so we need to
-                 * disable other payment options and quote alterations
+                 * disable other payment options and possible quote alterations
                  *
                  */
 
@@ -218,6 +225,11 @@ define(
                         function (response) {
 
                             if (response.success && response.success == true) {
+
+                                //check warning message
+                                self.used_token_slots = self.used_token_slots - 1;
+                                self.checkMaxTokensPerCustomer();
+
                                 //hide token row
                                 $('#' + self.getCode() + '-token-' + id).prop("checked", false);
                                 $('#' + self.getCode() + '-tokenrow-' + id).hide()
@@ -251,6 +263,8 @@ define(
                         this.save_token = true;
                         if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens &&
                             window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens.length > 0) {
+                            this.used_token_slots = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens.length;
+                            this.checkMaxTokensPerCustomer();
                             this.use_token = true;
                             return true;
                         } else {

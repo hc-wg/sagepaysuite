@@ -13,6 +13,12 @@
  */
 ?>
 <?php $_items = $block->getItems(); ?>
+
+<?php if(count($_items) >= \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER){ ?>
+    <!--Max tokens per customer message-->
+    <div class="message info empty"><span><?php /* @escapeNotVerified */ echo __('You are currently using all your credit card token slots.'); ?></span></div>
+<?php } ?>
+
 <?php if (count($_items)): ?>
     <div class="table-wrapper sagepaysuite-tokens">
         <table id="my-sagepaysuite-tokens-table" class="data table sagepaysuite-tokens-table">

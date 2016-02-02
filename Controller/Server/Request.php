@@ -67,6 +67,11 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_requestHelper;
 
     /**
+     * @var \Ebizmarts\SagePaySuite\Model\Token
+     */
+    protected $_tokenModel;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
@@ -78,7 +83,8 @@ class Request extends \Magento\Framework\App\Action\Action
         Logger $suiteLogger,
         \Psr\Log\LoggerInterface $logger,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
+        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
+        \Ebizmarts\SagePaySuite\Model\Token $tokenModel
     )
     {
         parent::__construct($context);
@@ -92,6 +98,7 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_logger = $logger;
         $this->_checkoutHelper = $checkoutHelper;
         $this->_requestHelper = $requestHelper;
+        $this->_tokenModel = $tokenModel;
 
         $postData = $this->getRequest();
         $postData = preg_split('/^\r?$/m', $postData, 2);
@@ -269,36 +276,6 @@ class Request extends \Magento\Framework\App\Action\Action
         return $this->_objectManager->get('Magento\Customer\Model\Session');
     }
 
-//    protected function _handleApiErrors($response)
-//    {
-//        $exceptionPhrase = "Invalid response from Sage Pay";
-//        $exceptionCode = 0;
-//
-//        if($response["status"] == 200){
-//
-//            if (!empty($response) && array_key_exists("data",$response)) {
-//                if(array_key_exists("Status",$response["data"]) && $response["data"]["Status"] == 'OK'){
-//
-//                    //this is a successfull response
-//                    return $response;
-//
-//                }else{
-//
-//                    //there was an error
-//                    $detail = explode(":",$response["data"]["StatusDetail"]);
-//                    $exceptionCode = trim($detail[0]);
-//                    $exceptionPhrase = trim($detail[1]);
-//                }
-//            }
-//        }
-//
-//        $exception = $this->_apiExceptionFactory->create([
-//            'phrase' => __($exceptionPhrase),
-//            'code' => $exceptionCode
-//        ]);
-//        throw $exception;
-//    }
-
     /**
      * return array
      */
@@ -317,29 +294,26 @@ class Request extends \Magento\Framework\App\Action\Action
         //address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
 
-//        $data["BillingSurname"] = substr($billing_address->getLastname(), 0, 20);
-//        $data["BillingFirstnames"] = substr($billing_address->getFirstname(), 0, 20);
-//        $data["BillingAddress1"] = substr($billing_address->getStreetLine(1), 0, 100);
-//        $data["BillingCity"] = substr($billing_address->getCity(), 0,  40);
-//        $data["BillingState"] = substr($billing_address->getRegionCode(), 0, 2);
-//        $data["BillingPostCode"] = substr($billing_address->getPostcode(), 0, 10);
-//        $data["BillingCountry"] = substr($billing_address->getCountryId(), 0, 2);
-//        $data["DeliverySurname"] = substr($shipping_address->getLastname(), 0, 20);
-//        $data["DeliveryFirstnames"] = substr($shipping_address->getFirstname(), 0, 20);
-//        $data["DeliveryAddress1"] = substr($shipping_address->getStreetLine(1), 0, 100);
-//        $data["DeliveryCity"] = substr($shipping_address->getCity(), 0,  40);
-//        $data["DeliveryState"] = substr($shipping_address->getRegionCode(), 0, 2);
-//        $data["DeliveryPostCode"] = substr($shipping_address->getPostcode(), 0, 10);
-//        $data["DeliveryCountry"] = substr($shipping_address->getCountryId(), 0, 2);
-
         //token
-        if($this->_postData->save_token == true){
+        if($this->_postData->save_token == true &&
+            !empty($this->_getCustomerSession()->getCustomerDataObject()) &&
+            !$this->_tokenModel->isCustomerUsingMaxTokenSlots(
+                $this->_getCustomerSession()->getCustomerDataObject()->getId(),
+                $this->_config->getVendorname()
+            ))
+        {
+            //save token
             $data["CreateToken"] = 1;
+        }else{
+            if(!is_null($this->_postData->token))
+            {
+                //use token
+                $data["StoreToken"] = 1;
+                $data["Token"] = $this->_postData->token;
+            }
         }
-        if(!is_null($this->_postData->token)){
-            $data["StoreToken"] = 1;
-            $data["Token"] = $this->_postData->token;
-        }
+
+
 
         //not mandatory
 //        BillingAddress2

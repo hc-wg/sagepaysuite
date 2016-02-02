@@ -71,20 +71,7 @@ class TokenList extends \Magento\Framework\View\Element\Template
      */
     protected function _prepareLayout()
     {
-        parent::_prepareLayout();
-
-//        $pager = $this->getLayout()->createBlock(
-//            'Magento\Theme\Block\Html\Pager',
-//            'downloadable.customer.products.pager'
-//        )->setCollection(
-//            $this->getItems()
-//        )->setPath('downloadable/customer/products');
-//        $this->setChild('pager', $pager);
-//        $this->getItems()->load();
-//        foreach ($this->getItems() as $item) {
-//            $item->setPurchased($this->getPurchased()->getItemById($item->getPurchasedId()));
-//        }
-        return $this;
+        return parent::_prepareLayout();
     }
 
     /**

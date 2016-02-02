@@ -98,6 +98,8 @@ class Config implements ConfigInterface
     const URL_DIRECT_POST_LIVE = 'https://live.sagepay.com/gateway/service/vspdirect-register.vsp';
     const URL_PAYPAL_COMPLETION_TEST = 'https://test.sagepay.com/gateway/service/complete.vsp';
     const URL_PAYPAL_COMPLETION_LIVE = 'https://live.sagepay.com/gateway/service/complete.vsp';
+    const URL_TOKEN_POST_REMOVE_LIVE = 'https://live.sagepay.com/gateway/service/removetoken.vsp';
+    const URL_TOKEN_POST_REMOVE_TEST = 'https://test.sagepay.com/gateway/service/removetoken.vsp';
 
     /**
      * SagePay Status Codes
@@ -112,6 +114,11 @@ class Config implements ConfigInterface
     const T3STATUS_OK = 'OK';
     const T3STATUS_HOLD = 'HOLD';
     const T3STATUS_REJECT = 'REJECT';
+
+    /*
+     * Max tokens per customer
+     */
+    const MAX_TOKENS_PER_CUSTOMER = 3;
 
     /**
      * Current payment method code
