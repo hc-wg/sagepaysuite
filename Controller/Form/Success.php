@@ -53,6 +53,11 @@ class Success extends \Magento\Framework\App\Action\Action
     protected $_suiteLogger;
 
     /**
+     * @var \Crypt_AES
+     */
+    protected $_crypt;
+
+    /**
      * Success constructor.
      * @param \Magento\Framework\App\Action\Context $context
      * @param \Magento\Customer\Model\Session $customerSession
@@ -72,7 +77,8 @@ class Success extends \Magento\Framework\App\Action\Action
         \Psr\Log\LoggerInterface $logger,
         Logger $suiteLogger,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
-        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
+        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
+        \Crypt_AES $crypt
     )
     {
         parent::__construct($context);
@@ -84,6 +90,7 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_checkoutSession = $checkoutSession;
         $this->_checkoutHelper = $checkoutHelper;
         $this->_suiteLogger = $suiteLogger;
+        $this->_crypt = $crypt;
     }
 
     /**
@@ -241,14 +248,12 @@ class Success extends \Magento\Framework\App\Action\Action
         //** HEX decoding
         $strIn = pack('H*', $strIn);
 
-        return $this->removePKCS5Padding(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $cryptPass, $strIn, MCRYPT_MODE_CBC, $cryptPass));
-    }
+        $this->_crypt->setBlockLength(128);
+        $this->_crypt->setKey($cryptPass);
+        $this->_crypt->setIV($cryptPass);
+        $decoded = $this->_crypt->decrypt($strIn);
 
-    // Need to remove padding bytes from end of decoded string
-    public function removePKCS5Padding($decrypted) {
-        $padChar = ord($decrypted[strlen($decrypted) - 1]);
-
-        return substr($decrypted, 0, -$padChar);
+        return $decoded;
     }
 
     protected function _getCheckoutSession()

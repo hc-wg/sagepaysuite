@@ -90,7 +90,7 @@ class SharedApi
         $response_data = [];
         if($response_status == 200){
             $data = preg_split('/^\r?$/m', $data, 2);
-            $data = explode(chr(13), $data[1]);
+            $data = explode('\n', $data[1]);
             for($i=0;$i<count($data);$i++){
                 if(!empty($data[$i])){
                     $aux = explode("=",trim($data[$i]));

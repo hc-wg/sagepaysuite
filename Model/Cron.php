@@ -177,9 +177,8 @@ class Cron
                     $t3mscore = (string)$response->t3mscore;
 
 
-                    if ($trmaction == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT) {
-                        //still no result, do nothing
-                    } else {
+                    if ($trmaction != \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT)
+                    {
                         //process fraud action
                         //@toDo
 

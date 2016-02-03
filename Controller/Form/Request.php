@@ -40,6 +40,11 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_requestHelper;
 
     /**
+     * @var \Crypt_AES
+     */
+    protected $_crypt;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
@@ -47,7 +52,8 @@ class Request extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Model\Config $config,
         Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
-        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
+        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
+        \Crypt_AES $crypt
     )
     {
         parent::__construct($context);
@@ -56,6 +62,7 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_suiteHelper = $suiteHelper;
         $this->_suiteLogger = $suiteLogger;
         $this->_requestHelper = $requestHelper;
+        $this->_crypt = $crypt;
 
         $this->_quote = $this->_getCheckoutSession()->getQuote();
     }
@@ -141,12 +148,10 @@ class Request extends \Magento\Framework\App\Action\Action
             }
         }
 
-        ksort($data);
-
-        //** add PKCS5 padding to the text to be encypted
-        $pkcs5Data = $this->_addPKCS5Padding($preCryptString);
-
-        $crypt = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $encrypted_password, $pkcs5Data, MCRYPT_MODE_CBC, $encrypted_password);
+        $this->_crypt->setBlockLength(128);
+        $this->_crypt->setKey($encrypted_password);
+        $this->_crypt->setIV($encrypted_password);
+        $crypt = $this->_crypt->encrypt($preCryptString);
 
         return "@" . bin2hex($crypt);
     }
@@ -157,20 +162,6 @@ class Request extends \Magento\Framework\App\Action\Action
         }else{
             return \Ebizmarts\SagePaySuite\Model\Config::URL_FORM_REDIRECT_TEST;
         }
-    }
-
-    //** PHP's mcrypt does not have built in PKCS5 Padding, so we use this
-    protected function _addPKCS5Padding($input) {
-        $blocksize = 16;
-        $padding = "";
-
-        // Pad input to an even block size boundary
-        $padlength = $blocksize - (strlen($input) % $blocksize);
-        for ($i = 1; $i <= $padlength; $i++) {
-            $padding .= chr($padlength);
-        }
-
-        return $input . $padding;
     }
 
     protected function _getCheckoutSession()

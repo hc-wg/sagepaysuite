@@ -77,7 +77,7 @@ class Failure extends \Magento\Framework\App\Action\Action
 
         } catch (\Exception $e) {
             //$this->messageManager->addError(__('We can\'t place the order. Please try again.'));
-            //$this->_logger->critical($e);
+            $this->_logger->critical($e);
             //$this->_redirect('*/*/review');
             //$this->_redirectToCartAndShowError('We can\'t place the order. Please try again.');
         }

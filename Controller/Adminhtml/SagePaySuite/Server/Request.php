@@ -307,7 +307,7 @@ class Request extends \Magento\Backend\App\AbstractAction
 
             //parse response
             $data = preg_split('/^\r?$/m', $data, 2);
-            $data = explode(chr(13), $data[1]);
+            $data = explode('\n', $data[1]);
             $response_data = [];
             for($i=0;$i<count($data);$i++){
                 if(!empty($data[$i])){
