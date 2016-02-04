@@ -10,5 +10,8 @@
         <route id="adminhtml">
             <module name="Ebizmarts_SagePaySuite" before="Magento_Backend" />
         </route>
+        <route id="sagepaysuite" frontName="sagepaysuite">
+            <module name="Ebizmarts_SagePaySuite" before="Magento_Backend" />
+        </route>
     </router>
 </config>

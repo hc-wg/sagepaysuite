@@ -6,11 +6,28 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+
 /**
  *
  */
 class Token extends \Magento\Framework\Model\AbstractModel
 {
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Api\Post
+     */
+    protected $_postApi;
+
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Config
+     */
+    protected $_config;
 
     /**
      * @param \Magento\Framework\Model\Context $context
@@ -22,11 +39,20 @@ class Token extends \Magento\Framework\Model\AbstractModel
     public function __construct(
         \Magento\Framework\Model\Context $context,
         \Magento\Framework\Registry $registry,
+        Logger $suiteLogger,
+        \Psr\Log\LoggerInterface $logger,
+        \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
+        \Ebizmarts\SagePaySuite\Model\Config $config,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
     ) {
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
+
+        $this->_suiteLogger = $suiteLogger;
+        $this->_logger = $logger;
+        $this->_postApi = $postApi;
+        $this->_config = $config;
     }
 
     /**
@@ -92,8 +118,49 @@ class Token extends \Magento\Framework\Model\AbstractModel
      * @return void
      */
     public function deleteToken(){
+
+        //delete from sagepay
+        $this->_deleteFromSagePay();
+
         if($this->getId()){
             $this->delete();
+        }
+    }
+
+    protected function _deleteFromSagePay()
+    {
+        try {
+
+            if(empty($this->getVendorname()) || empty($this->getToken())){
+                //missing data to proceed
+                return;
+            }
+
+            //generate delete POST request
+            $data = array();
+            $data["VPSProtocol"] = $this->_config->getVPSProtocol();
+            $data["TxType"] = "REMOVETOKEN";
+            $data["Vendor"] = $this->getVendorname();
+            $data["Token"] = $this->getToken();
+
+            //send POST to Sage Pay
+            $this->_postApi->sendPost($data,
+                $this->getRemoveServiceURL(),
+                array("OK")
+            );
+
+        }catch (\Exception $e)
+        {
+            $this->_logger->critical($e);
+            //we do not show any error message to frontend
+        }
+    }
+
+    public function getRemoveServiceURL(){
+        if($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE){
+            return \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_LIVE;
+        }else{
+            return \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_TEST;
         }
     }
 

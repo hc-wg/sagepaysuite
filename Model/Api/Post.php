@@ -148,7 +148,7 @@ class Post
 
             //parse response
             $data = preg_split('/^\r?$/m', $data, 2);
-            $data = explode('\n', $data[1]);
+            $data = explode(PHP_EOL, $data[1]);
 
             for ($i = 0; $i < count($data); $i++) {
                 if (!empty($data[$i])) {

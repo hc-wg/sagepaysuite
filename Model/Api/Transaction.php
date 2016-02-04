@@ -12,7 +12,7 @@ class Transaction
 {
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\ReportingApi
+     * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
      */
     private $_reportingApi;
 
@@ -45,7 +45,7 @@ class Transaction
      */
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Ebizmarts\SagePaySuite\Model\Api\ReportingApi $reportingApi,
+        \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi,
         \Ebizmarts\SagePaySuite\Model\Api\SharedApi $sharedApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         Logger $suiteLogger
@@ -58,21 +58,13 @@ class Transaction
         $this->_suiteLogger = $suiteLogger;
     }
 
-    public function getTransactionDetails($vpstxid) {
-
-        $params = '<vpstxid>' . $vpstxid . '</vpstxid>';
-        $xml          = $this->_reportingApi->createXml('getTransactionDetail', $params);
-        $api_response = $this->_reportingApi->executeRequest($xml);
-        return $this->_reportingApi->handleApiErrors($api_response);
-    }
-
     /**
      * @param String $vpstxid
      * @param \Magento\Payment\Model\InfoInterface $payment
      */
     public function voidTransaction($vpstxid){
 
-        $transaction = $this->getTransactionDetails($vpstxid);
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
 
         $data['VPSProtocol'] = $this->_config->getVPSProtocol();
         $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_VOID;
@@ -100,7 +92,7 @@ class Transaction
 
     public function refundTransaction($vpstxid, $amount, $order_id){
 
-        $transaction = $this->getTransactionDetails($vpstxid);
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
 
         $data['VPSProtocol'] = $this->_config->getVPSProtocol();
         $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND;
@@ -132,7 +124,7 @@ class Transaction
 
     public function releaseTransaction($vpstxid,$amount)
     {
-        $transaction = $this->getTransactionDetails($vpstxid);
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
 
         $data['VPSProtocol'] = $this->_config->getVPSProtocol();
         $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_RELEASE;
@@ -161,7 +153,7 @@ class Transaction
 
     public function authorizeTransaction($vpstxid,$amount,$order_id)
     {
-        $transaction = $this->getTransactionDetails($vpstxid);
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
 
         $data['VPSProtocol'] = $this->_config->getVPSProtocol();
         $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE;

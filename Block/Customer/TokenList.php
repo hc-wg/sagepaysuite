@@ -19,16 +19,6 @@ class TokenList extends \Magento\Framework\View\Element\Template
     protected $currentCustomer;
 
     /**
-     * @var \Magento\Downloadable\Model\ResourceModel\Link\Purchased\CollectionFactory
-     */
-    protected $_linksFactory;
-
-    /**
-     * @var \Magento\Downloadable\Model\ResourceModel\Link\Purchased\Item\CollectionFactory
-     */
-    protected $_itemsFactory;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
     protected $_config;
@@ -41,23 +31,17 @@ class TokenList extends \Magento\Framework\View\Element\Template
     /**
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Magento\Customer\Helper\Session\CurrentCustomer $currentCustomer
-     * @param \Magento\Downloadable\Model\ResourceModel\Link\Purchased\CollectionFactory $linksFactory
-     * @param \Magento\Downloadable\Model\ResourceModel\Link\Purchased\Item\CollectionFactory $itemsFactory
      * @param array $data
      */
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         \Magento\Customer\Helper\Session\CurrentCustomer $currentCustomer,
-        \Magento\Downloadable\Model\ResourceModel\Link\Purchased\CollectionFactory $linksFactory,
-        \Magento\Downloadable\Model\ResourceModel\Link\Purchased\Item\CollectionFactory $itemsFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
         array $data = []
     ) {
         parent::__construct($context, $data);
         $this->currentCustomer = $currentCustomer;
-        $this->_linksFactory = $linksFactory;
-        $this->_itemsFactory = $itemsFactory;
         $this->_config = $config;
         $this->_tokenModel = $tokenModel;
 
