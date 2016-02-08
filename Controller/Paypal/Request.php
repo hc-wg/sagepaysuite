@@ -107,7 +107,7 @@ class Request extends \Magento\Framework\App\Action\Action
 
     protected function _getCallbackUrl()
     {
-        $url = $this->_url->getUrl('*/*/callback', array(
+        $url = $this->_url->getUrl('*/*/processing', array(
             '_secure' => true,
             '_store' => $this->_quote->getStoreId()
         ));
