@@ -12,7 +12,7 @@
             <block class="Magento\Backend\Block\Widget\Grid" name="sagepaysuite.reports.tokens.grid" as="grid">
                 <arguments>
                     <argument name="id" xsi:type="string">tokensGrid</argument>
-                    <argument name="dataSource" xsi:type="object">Ebizmarts\SagePaySuite\Model\ResourceModel\Token\Collection</argument>
+                    <argument name="dataSource" xsi:type="object">Ebizmarts\SagePaySuite\Model\ResourceModel\TokenReport\Collection</argument>
                     <argument name="default_sort" xsi:type="string">id</argument>
                     <argument name="default_dir" xsi:type="string">DESC</argument>
                     <argument name="save_parameters_in_session" xsi:type="string">1</argument>

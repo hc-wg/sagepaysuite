@@ -140,12 +140,9 @@ class Reporting
     }
 
     /**
-     * Handle logical errors
-     *
-     * @param array $response
-     * @return void
-     * @throws \Ebizmarts\SagePaySuite\Model\Api\ProcessableException|\Magento\Framework\Exception\LocalizedException
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @param $response
+     * @return mixed
+     * @throws
      */
     protected function _handleApiErrors($response)
     {
@@ -187,6 +184,13 @@ class Reporting
     {
         $params = '';
         $xml = $this->_createXml('getTokenCount', $params);
+        return $this->_handleApiErrors($this->_executeRequest($xml));
+    }
+
+    public function getFraudScreenDetail($vpstxid)
+    {
+        $params = '<vpstxid>' . $vpstxid . '</vpstxid>';
+        $xml = $this->_createXml('getFraudScreenDetail', $params);
         return $this->_handleApiErrors($this->_executeRequest($xml));
     }
 

@@ -115,6 +115,14 @@ class Config implements ConfigInterface
     const T3STATUS_HOLD = 'HOLD';
     const T3STATUS_REJECT = 'REJECT';
 
+    /**
+     * SagePay ReD Score Statuses
+     */
+    const ReDSTATUS_ACCEPT = 'ACCEPT';
+    const ReDSTATUS_DENY = 'DENY';
+    const ReDSTATUS_CHALLENGE = 'CHALLENGE';
+    const ReDSTATUS_NOTCHECKED = 'NOTCHECKED';
+
     /*
      * Max tokens per customer
      */

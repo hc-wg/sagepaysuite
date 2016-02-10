@@ -15,9 +15,9 @@ class Cron
     protected $_resource;
 
     /**
-     * \Ebizmarts\SagePaySuite\Model\Api\Transaction
+     * \Ebizmarts\SagePaySuite\Model\Api\Reporting
      */
-    protected $_transactionsApi;
+    protected $_reportingApi;
 
     /**
      * Logging instance
@@ -40,14 +40,14 @@ class Cron
      */
     public function __construct(
         \Magento\Framework\App\ResourceConnection $resource,
-        \Ebizmarts\SagePaySuite\Model\Api\Transaction $transactionsApi,
+        \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
         \Magento\Sales\Api\OrderPaymentRepositoryInterface $orderPaymentRepository,
         \Magento\Framework\ObjectManagerInterface $objectManager
     )
     {
         $this->_resource = $resource;
-        $this->_transactionsApi = $transactionsApi;
+        $this->_reportingApi = $reportingApi;
         $this->_suiteLogger = $suiteLogger;
         $this->_orderPaymentRepository = $orderPaymentRepository;
         $this->_objectManager = $objectManager;
@@ -124,7 +124,7 @@ class Cron
 
     public function checkFraud()
     {
-        //$this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON, "Running Fraud checks...");
+        $this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON, "Running Fraud checks...");
 
         $transactionTableName = $this->_resource->getTableName('sales_payment_transaction');
         $connection = $this->_resource->getConnection();
@@ -145,10 +145,10 @@ class Cron
 
             $transaction = $this->_objectManager->get('\Magento\Sales\Model\Order\Payment\Transaction')->load($trnArray["transaction_id"]);
 
-            //$this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,$transaction);
+            $sagepayVpsTxId = $transaction->getTxnId();
 
             try {
-                $sagepayVpsTxId = $transaction->getTxnId();
+
                 $payment = $this->_orderPaymentRepository->get($transaction->getPaymentId());
                 if (is_null($payment)) {
                     throw new LocalizedException(__('Payment not found for this transaction'));
@@ -169,34 +169,62 @@ class Cron
                 }
 
                 //get transaction data from sagepay
-                $response = $this->_transactionsApi->getTransactionDetails($sagepayVpsTxId);
+                $response = $this->_reportingApi->getFraudScreenDetail($sagepayVpsTxId);
 
-                if (!empty($response) && isset($response->t3maction)) {
+                if (!empty($response) && isset($response->errorcode) && $response->errorcode == "0000") {
 
-                    $trmaction = (string)$response->t3maction;
-                    $t3mscore = (string)$response->t3mscore;
+                    $fraudscreenrecommendation = (string)$response->fraudscreenrecommendation;
+                    $fraudid = (string)$response->fraudid;
+                    $fraudcode = (string)$response->fraudcode;
+                    $fraudcodedetail = (string)$response->fraudcodedetail;
+                    $fraudprovidername = (string)$response->fraudprovidername;
+                    $rules = (string)$response->rules;
 
-
-                    if ($trmaction != \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT)
+                    if ($fraudscreenrecommendation != \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT &&
+                        $fraudscreenrecommendation != \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_NOTCHECKED)
                     {
+
                         //process fraud action
                         //@toDo
 
-                        $transaction->setSagepaysuiteFraudCheck(1);
+                        $transaction->setSagepaysuiteFraudCheck(1)->save();
+
+                        /**
+                         * save fraud information in the payment as the transaction
+                         * additional info of the transactions doesn't seem to be working
+                         */
+                        $payment->setAdditionalInformation("fraudscreenrecommendation", (string)$fraudscreenrecommendation)
+                            ->setAdditionalInformation("fraudid", (string)$fraudid)
+                            ->setAdditionalInformation("fraudcode", (string)$fraudcode)
+                            ->setAdditionalInformation("fraudcodedetail", (string)$fraudcodedetail)
+                            ->setAdditionalInformation("fraudprovidername", (string)$fraudprovidername)
+                            ->setAdditionalInformation("fraudrules", (string)$rules)
+                            ->save();
+
+                        $this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
+                            array("VPSTxId" => $sagepayVpsTxId,
+                                "fraudscreenrecommendation" => $fraudscreenrecommendation,
+                                "fraudid" => $fraudid,
+                                "fraudcode" => $fraudcode,
+                                "fraudcodedetail" => $fraudcodedetail,
+                                "fraudprovidername" => $fraudprovidername,
+                                "fraudrules" => $rules
+                            )
+                        );
+                    }else{
+
+                        //save the "not checked" opr "no result" status
+                        $payment->setAdditionalInformation("fraudscreenrecommendation", (string)$fraudscreenrecommendation)
+                            ->save();
+
+                        $this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
+                            array("VPSTxId" => $sagepayVpsTxId,
+                                "fraudscreenrecommendation" => $fraudscreenrecommendation
+                            )
+                        );
                     }
-
-                    /**
-                     * save fraud information in the payment as the transaction
-                     * additional info of the transactions doesn't seem to be working
-                     */
-                    $payment->setAdditionalInformation("t3maction", (string)$trmaction)
-                        ->setAdditionalInformation("t3mscore", (string)$t3mscore)
-                        ->save();
-
-                    $this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
-                        array("VPSTxId" => $sagepayVpsTxId,
-                            "Result" => $trmaction)
-                    );
+                }else{
+                    $this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,"ERROR");
                 }
 
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {

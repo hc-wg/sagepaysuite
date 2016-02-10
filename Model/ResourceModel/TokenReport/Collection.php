@@ -7,7 +7,7 @@
 /**
  * Resource collection for report rows
  */
-namespace Ebizmarts\SagePaySuite\Model\ResourceModel\Token;
+namespace Ebizmarts\SagePaySuite\Model\ResourceModel\TokenReport;
 
 class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
 {
