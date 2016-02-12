@@ -427,6 +427,26 @@ class Config implements ConfigInterface
         }
     }
 
+    public function getAutoInvoiceFraudPassed()
+    {
+        $config_value = $this->_scopeConfig->getValue(
+            $this->_getAdvancedConfigPath("fraud_autoinvoice"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+        return $config_value;
+    }
+
+    public function getNotifyFraudResult()
+    {
+        $config_value = $this->_scopeConfig->getValue(
+            $this->_getAdvancedConfigPath("fraud_notify"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+        return $config_value;
+    }
+
     public function getPaypalBillingAgreement()
     {
         return $this->getValue("billing_agreement");

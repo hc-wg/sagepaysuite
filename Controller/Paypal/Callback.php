@@ -142,6 +142,7 @@ class Callback extends \Magento\Framework\App\Action\Action
             $payment->setAdditionalInformation('statusDetail', $completion_response["StatusDetail"]);
             $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
             $payment->setAdditionalInformation('mode', $this->_config->getMode());
+            $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
 
             $order = $this->_checkoutHelper->placeOrder();
             $quoteId = $this->_quote->getId();

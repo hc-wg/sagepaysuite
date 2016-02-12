@@ -42,7 +42,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param Number $order_id
      * @param String $action
      */
-    public function generateVendorTxCode($order_id, $action=\Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT){
+    public function generateVendorTxCode($order_id="", $action=\Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT){
 
         $prefix = "";
         switch($action){

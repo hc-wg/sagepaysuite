@@ -9,10 +9,10 @@ namespace Ebizmarts\SagePaySuite\Model\Config\Source;
 use Magento\Framework\Option\ArrayInterface;
 
 /**
- * Class Mode
+ * Class FraudNotify
  * @package Ebizmarts\SagePaySuite\Model\Config\Source
  */
-class Mode implements ArrayInterface
+class FraudNotify implements ArrayInterface
 {
     /**
      * {@inheritdoc}
@@ -21,12 +21,16 @@ class Mode implements ArrayInterface
     {
         return [
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::MODE_TEST,
-                'label' => __('Test'),
+                'value' => "disabled",
+                'label' => __('Disabled'),
             ],
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
-                'label' => __('Live')
+                'value' => "medium_risk",
+                'label' => __('Medium and high risk transactions')
+            ],
+            [
+                'value' => "high_risk",
+                'label' => __('High risk transactions only')
             ]
         ];
     }
