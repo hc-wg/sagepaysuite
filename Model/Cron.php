@@ -247,40 +247,40 @@ class Cron
                             }
 
                             //send notification email
-                            if ((string)$this->_config->getNotifyFraudResult() != 'disabled') {
-                                if (((string)$this->_config->getNotifyFraudResult() == "medium_risk" &&
-                                        ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY ||
-                                            $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_CHALLENGE ||
-                                            $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT ||
-                                            $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD))
-                                    ||
-                                    ((string)$this->_config->getNotifyFraudResult() == "high_risk" &&
-                                        ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY ||
-                                            $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT))
-                                ) {
-                                    $template = "sagepaysuite_fraud_notification";
-                                    $transport = $this->_mailTransportBuilder->setTemplateIdentifier($template)
-                                        ->addTo($this->scopeConfig->getValue('trans_email/ident_sales/email', \Magento\Store\Model\ScopeInterface::SCOPE_STORE))
-                                        ->setFrom($this->scopeConfig->getValue("contact/email/sender_email_identity", \Magento\Store\Model\ScopeInterface::SCOPE_STORE))
-                                        ->setTemplateOptions(['area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
-                                            'store' => Store::DEFAULT_STORE_ID])
-                                        ->setTemplateVars([
-                                            'transaction_id' => $transaction->getTransactionId(),
-                                            'order_id' => $payment->getOrder()->getIncrementId(),
-//                                            'order_url' => $this->_urlBuilder->getUrl('sales/order/view/',array('order_id'=>$payment->getOrder()->getEntityId())),
-                                            'vps_tx_id' => $sagepayVpsTxId,
-                                            'fraud_id' => $fraudid,
-                                            'recommendation' => $fraudscreenrecommendation,
-                                            'detail' => $fraudcodedetail,
-                                            'provider' => $fraudprovidername,
-                                            'rules' => $rules
-                                        ])
-                                        ->getTransport();
-                                    $transport->sendMessage();
-
-                                    $logData["Notification"] = "Email sent to " . $this->scopeConfig->getValue('trans_email/ident_sales/email', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-                                }
-                            }
+//                            if ((string)$this->_config->getNotifyFraudResult() != 'disabled') {
+//                                if (((string)$this->_config->getNotifyFraudResult() == "medium_risk" &&
+//                                        ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY ||
+//                                            $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_CHALLENGE ||
+//                                            $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT ||
+//                                            $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD))
+//                                    ||
+//                                    ((string)$this->_config->getNotifyFraudResult() == "high_risk" &&
+//                                        ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY ||
+//                                            $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT))
+//                                ) {
+//                                    $template = "sagepaysuite_fraud_notification";
+//                                    $transport = $this->_mailTransportBuilder->setTemplateIdentifier($template)
+//                                        ->addTo($this->scopeConfig->getValue('trans_email/ident_sales/email', \Magento\Store\Model\ScopeInterface::SCOPE_STORE))
+//                                        ->setFrom($this->scopeConfig->getValue("contact/email/sender_email_identity", \Magento\Store\Model\ScopeInterface::SCOPE_STORE))
+//                                        ->setTemplateOptions(['area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
+//                                            'store' => Store::DEFAULT_STORE_ID])
+//                                        ->setTemplateVars([
+//                                            'transaction_id' => $transaction->getTransactionId(),
+//                                            'order_id' => $payment->getOrder()->getIncrementId(),
+////                                            'order_url' => $this->_urlBuilder->getUrl('sales/order/view/',array('order_id'=>$payment->getOrder()->getEntityId())),
+//                                            'vps_tx_id' => $sagepayVpsTxId,
+//                                            'fraud_id' => $fraudid,
+//                                            'recommendation' => $fraudscreenrecommendation,
+//                                            'detail' => $fraudcodedetail,
+//                                            'provider' => $fraudprovidername,
+//                                            'rules' => $rules
+//                                        ])
+//                                        ->getTransport();
+//                                    $transport->sendMessage();
+//
+//                                    $logData["Notification"] = "Email sent to " . $this->scopeConfig->getValue('trans_email/ident_sales/email', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+//                                }
+//                            }
                             /**
                              * END process fraud actions
                              */

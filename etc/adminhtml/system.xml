@@ -55,11 +55,11 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>sagepaysuite/advanced/fraud_autoinvoice</config_path>
                     </field>
-                    <field id="fraud_notify" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Notify Fraud Result</label>
-                        <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\FraudNotify</source_model>
-                        <config_path>sagepaysuite/advanced/fraud_notify</config_path>
-                    </field>
+                    <!--<field id="fraud_notify" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">-->
+                        <!--<label>Notify Fraud Result</label>-->
+                        <!--<source_model>Ebizmarts\SagePaySuite\Model\Config\Source\FraudNotify</source_model>-->
+                        <!--<config_path>sagepaysuite/advanced/fraud_notify</config_path>-->
+                    <!--</field>-->
                 </group>
                 <group id="sagepaysuiteform" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sage Pay FORM Integration</label>
