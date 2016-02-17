@@ -40,7 +40,6 @@ class Token extends \Magento\Framework\Model\AbstractModel
         \Magento\Framework\Model\Context $context,
         \Magento\Framework\Registry $registry,
         Logger $suiteLogger,
-        \Psr\Log\LoggerInterface $logger,
         \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
@@ -50,7 +49,7 @@ class Token extends \Magento\Framework\Model\AbstractModel
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
 
         $this->_suiteLogger = $suiteLogger;
-        $this->_logger = $logger;
+        $this->_logger = $context->getLogger();
         $this->_postApi = $postApi;
         $this->_config = $config;
     }

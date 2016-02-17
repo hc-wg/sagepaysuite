@@ -55,27 +55,21 @@ class Delete extends \Magento\Framework\App\Action\Action
         $this->_tokenModel = $tokenModel;
         $this->_customerSession = $customerSession;
 
-        $this->_isCustomerArea = false;
-
-        $postData = $this->getRequest();
-        $postData = preg_split('/^\r?$/m', $postData, 2);
-        $postData = json_decode(trim($postData[1]));
-        if (!is_null($postData) && isset($postData->token_id)) {
-            $this->_tokenId = $postData->token_id;
-        }
+        $this->_isCustomerArea = true;
     }
 
     public function execute()
     {
         try {
-            if (empty($this->_tokenId)) {
-                //try get parameter, might be comming from the customer area
-                if(!empty($this->getRequest()->getParam("token_id"))){
-                    $this->_tokenId = $this->getRequest()->getParam("token_id");
-                    $this->_isCustomerArea = true;
-                }else {
-                    throw new \Magento\Framework\Validator\Exception(__('Unable to delete token: Invalid token id.'));
+
+            //get token id
+            if (!empty($this->getRequest()->getParam("token_id"))) {
+                $this->_tokenId = $this->getRequest()->getParam("token_id");
+                if (!empty($this->getRequest()->getParam("checkout"))) {
+                    $this->_isCustomerArea = false;
                 }
+            } else {
+                throw new \Magento\Framework\Validator\Exception(__('Unable to delete token: Invalid token id.'));
             }
 
             $token = $this->_tokenModel->loadToken($this->_tokenId);
@@ -119,9 +113,11 @@ class Delete extends \Magento\Framework\App\Action\Action
             if ($responseContent["success"] == true) {
                 $this->messageManager->addSuccess(__('Token deleted successfully.'));
                 $this->_redirect('sagepaysuite/customer/tokens');
+                return true;
             } else {
                 $this->messageManager->addError(__('Something went wrong: ' . $responseContent["error_message"]));
                 $this->_redirect('sagepaysuite/customer/tokens');
+                return false;
             }
         } else {
             $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);

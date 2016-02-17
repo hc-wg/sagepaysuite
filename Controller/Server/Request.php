@@ -79,7 +79,6 @@ class Request extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
-        \Magento\Quote\Model\QuoteManagement $quoteManagement,
         Logger $suiteLogger,
         \Psr\Log\LoggerInterface $logger,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
@@ -93,7 +92,6 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_suiteHelper = $suiteHelper;
         $this->_postApi = $postApi;
         $this->_quote = $this->_getCheckoutSession()->getQuote();
-        $this->_quoteManagement = $quoteManagement;
         $this->_suiteLogger = $suiteLogger;
         $this->_logger = $logger;
         $this->_checkoutHelper = $checkoutHelper;
