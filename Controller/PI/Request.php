@@ -127,6 +127,7 @@ class Request extends \Magento\Framework\App\Action\Action
                 $payment->setCcType($this->_postData->card_type);
                 $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
                 $payment->setAdditionalInformation('mode', $this->_config->getMode());
+                $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
 
                 //save order with pending payment
                 $order = $this->_checkoutHelper->placeOrder();

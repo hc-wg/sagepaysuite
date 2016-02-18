@@ -6,6 +6,10 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Config\Source;
 
+/**
+ * Class Cctype
+ * @package Ebizmarts\SagePaySuite\Model\Config\Source
+ */
 class Cctype extends \Magento\Payment\Model\Source\Cctype
 {
     public function getAllowedTypes()

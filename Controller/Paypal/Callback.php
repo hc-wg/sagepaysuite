@@ -111,9 +111,8 @@ class Callback extends \Magento\Framework\App\Action\Action
             //log response
             $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $this->_postData);
 
-            if (!empty($this->_postData) && isset($this->_postData->Status) && $this->_postData->Status == "PAYPALOK") {
-                // response OK
-            } else {
+            if (empty($this->_postData) || !isset($this->_postData->Status) || $this->_postData->Status != "PAYPALOK")
+            {
                 if (!empty($this->_postData) && isset($this->_postData->StatusDetail)) {
                     throw new LocalizedException("Can not place PayPal order: " . $this->_postData->StatusDetail);
                 } else {
@@ -143,6 +142,7 @@ class Callback extends \Magento\Framework\App\Action\Action
             $payment->setAdditionalInformation('statusDetail', $completion_response["StatusDetail"]);
             $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
             $payment->setAdditionalInformation('mode', $this->_config->getMode());
+            $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
 
             $order = $this->_checkoutHelper->placeOrder();
             $quoteId = $this->_quote->getId();

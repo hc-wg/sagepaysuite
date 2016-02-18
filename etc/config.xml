@@ -19,6 +19,8 @@
             </global>
             <advanced>
                 <threedsecure>UseMSPSetting</threedsecure>
+                <fraud_autoinvoice>0</fraud_autoinvoice>
+                <!--<fraud_notify>high_risk</fraud_notify>-->
             </advanced>
         </sagepaysuite>
         <payment>

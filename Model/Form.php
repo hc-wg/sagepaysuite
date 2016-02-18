@@ -134,9 +134,9 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     protected $_config;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\Transaction
+     * @var \Ebizmarts\SagePaySuite\Model\Api\Shared
      */
-    protected $_transactionsApi;
+    protected $_sharedApi;
 
 
     /**
@@ -150,7 +150,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         \Magento\Payment\Helper\Data $paymentData,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Payment\Model\Method\Logger $logger,
-        \Ebizmarts\SagePaySuite\Model\Api\Transaction $transactionsApi,
+        \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
@@ -174,7 +174,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         $this->_suiteHelper = $suiteHelper;
         $this->_transactionFactory = $transactionFactory;
         //$this->_messageManager = $context->getMessageManager();
-        $this->_transactionsApi = $transactionsApi;
+        $this->_sharedApi = $sharedApi;
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
     }
@@ -230,13 +230,14 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         if($payment->getLastTransId()) {
             try {
                 $transactionId = $payment->getLastTransId();
+                $paymentAction = $payment->getAdditionalInformation('paymentAction') ? $payment->getAdditionalInformation('paymentAction') : $this->_config->getSagepayPaymentAction();
 
-                if($this->_config->getSagepayPaymentAction() == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER){
+                if($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER){
                     $action = 'releasing';
-                    $result = $this->_transactionsApi->releaseTransaction($transactionId, $amount);
-                }elseif($this->_config->getSagepayPaymentAction() == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE){
+                    $result = $this->_sharedApi->releaseTransaction($transactionId, $amount);
+                }elseif($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE){
                     $action = 'authorizing';
-                    $result = $this->_transactionsApi->authorizeTransaction($transactionId, $amount, $payment->getOrder()->getIncrementId());
+                    $result = $this->_sharedApi->authorizeTransaction($transactionId, $amount, $payment->getOrder()->getIncrementId());
                 }
 
                 $payment->setIsTransactionClosed(1);
@@ -269,7 +270,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
             $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
             $order = $payment->getOrder();
 
-            $result = $this->_transactionsApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
+            $result = $this->_sharedApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
             $result = $result["data"];
 
             $payment->setIsTransactionClosed(1)

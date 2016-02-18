@@ -43,7 +43,7 @@ class Logger extends \Monolog\Logger
             $message = (string)$message;
 
         } catch (\Exception $e) {
-            $message = "INVALID MESSAGE: " . gettype($message);
+            $message = "INVALID MESSAGE";
         }
 
         $message .= "\n\n";

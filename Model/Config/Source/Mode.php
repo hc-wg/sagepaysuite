@@ -9,8 +9,8 @@ namespace Ebizmarts\SagePaySuite\Model\Config\Source;
 use Magento\Framework\Option\ArrayInterface;
 
 /**
- *
- * Sage Pay Suite mode select
+ * Class Mode
+ * @package Ebizmarts\SagePaySuite\Model\Config\Source
  */
 class Mode implements ArrayInterface
 {

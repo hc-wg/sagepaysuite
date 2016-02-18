@@ -9,7 +9,7 @@ namespace Ebizmarts\SagePaySuite\Model\Api;
 /**
  * Sage Pay Reporting API parent class
  */
-class ReportingApi
+class Reporting
 {
 
     /**
@@ -37,7 +37,8 @@ class ReportingApi
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config
-    ) {
+    )
+    {
         $this->_config = $config;
         $this->_curlFactory = $curlFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
@@ -48,13 +49,14 @@ class ReportingApi
      *
      * @param string $xml description
      */
-    public function executeRequest($xml) {
+    protected function _executeRequest($xml)
+    {
 
         $curl = $this->_curlFactory->create();
 
         $curl->setConfig(
             [
-                'timeout'  => 120,
+                'timeout' => 120,
                 'verifypeer' => false,
                 'verifyhost' => 2
             ]
@@ -85,11 +87,12 @@ class ReportingApi
     /**
      * Returns url for each enviroment according the configuration.
      */
-    protected function _getServiceUrl() {
+    protected function _getServiceUrl()
+    {
 
-        if($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE ){
+        if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_LIVE;
-        }else{
+        } else {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_TEST;
         }
     }
@@ -100,14 +103,14 @@ class ReportingApi
      * @param string $command Param request to the API.
      * @return string MD5 hash signature.
      */
-    protected function _getXmlSignature($command, $params) {
+    protected function _getXmlSignature($command, $params)
+    {
 
         $xml = '<command>' . $command . '</command>';
         $xml .= '<vendor>' . $this->_config->getVendorname() . '</vendor>';
         $xml .= '<user>' . $this->_config->getReportingApiUser() . '</user>';
         $xml .= $params;
         $xml .= '<password>' . $this->_config->getReportingApiPassword() . '</password>';
-
 
         return md5($xml);
     }
@@ -116,10 +119,11 @@ class ReportingApi
      * Creates the xml file to be used into the request.
      *
      * @param string $command API command.
-     * @param string $params  Parameters used for each command.
+     * @param string $params Parameters used for each command.
      * @return string Xml string to be used into the API connection.
      */
-    public function createXml($command, $params = null) {
+    protected function _createXml($command, $params = null)
+    {
         $xml = '';
         $xml .= '<vspaccess>';
         $xml .= '<command>' . $command . '</command>';
@@ -136,40 +140,58 @@ class ReportingApi
     }
 
     /**
-     * Handle logical errors
-     *
-     * @param array $response
-     * @return void
-     * @throws \Ebizmarts\SagePaySuite\Model\Api\ProcessableException|\Magento\Framework\Exception\LocalizedException
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @param $response
+     * @return mixed
+     * @throws
      */
-    public function handleApiErrors($response)
+    protected function _handleApiErrors($response)
     {
         $exceptionPhrase = "Invalid response from Sage Pay API.";
         $exceptionCode = 0;
 
         if (!empty($response)) {
-            if(!array_key_exists("errorcode",$response) || $response->errorcode == '0000'){
+            if (!array_key_exists("errorcode", $response) || $response->errorcode == '0000') {
 
                 //this is a successfull response
                 return $response;
 
-            }else{
+            } else {
 
                 //there was an error
                 $exceptionCode = $response->errorcode;
-                if(array_key_exists("error",$response)) {
+                if (array_key_exists("error", $response)) {
                     $exceptionPhrase = $response->error;
                 }
             }
         }
 
         $exception = $this->_apiExceptionFactory->create([
-                'phrase' => __($exceptionPhrase),
-                'code' => $exceptionCode
-            ]);
+            'phrase' => __($exceptionPhrase),
+            'code' => $exceptionCode
+        ]);
 
         throw $exception;
+    }
+
+    public function getTransactionDetails($vpstxid)
+    {
+        $params = '<vpstxid>' . $vpstxid . '</vpstxid>';
+        $xml = $this->_createXml('getTransactionDetail', $params);
+        return $this->_handleApiErrors($this->_executeRequest($xml));
+    }
+
+    public function getTokenCount()
+    {
+        $params = '';
+        $xml = $this->_createXml('getTokenCount', $params);
+        return $this->_handleApiErrors($this->_executeRequest($xml));
+    }
+
+    public function getFraudScreenDetail($vpstxid)
+    {
+        $params = '<vpstxid>' . $vpstxid . '</vpstxid>';
+        $xml = $this->_createXml('getFraudScreenDetail', $params);
+        return $this->_handleApiErrors($this->_executeRequest($xml));
     }
 
 }

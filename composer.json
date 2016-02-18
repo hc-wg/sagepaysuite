@@ -5,13 +5,25 @@
         "php": "5.5.*"
     },
     "type": "magento2-module",
-    "version": "0.0.1",
-    "extra": {
-        "map": [
-            [
-                "*",
-                "Ebizmarts/SagePaySuite"
-            ]
-        ]
-    }
+    "version": "1.1.2",
+    "autoload": {
+        "psr-4": {"Ebizmarts\\SagePaySuite\\":""},
+        "files": ["registration.php"]
+    },
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "support": {
+        "email": "info@ebizmarts.com",
+        "wiki": "http://wiki.ebizmarts.com",
+        "forum": "http://ebizmarts.com/forums/view/2"
+    },
+    "authors": [
+        {
+            "name": "Ebizmarts Corp",
+            "email": "info@ebizmarts.com",
+            "homepage": "http://ebizmarts.com"
+        }
+    ]
 }

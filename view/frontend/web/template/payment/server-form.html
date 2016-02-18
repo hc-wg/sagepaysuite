@@ -26,6 +26,7 @@
         <!-- ko if: (customerHasTokens())-->
         <div id="sagepaysuiteserver-tokens" class="sagepaysuite-tokens">
             <div class="token-list">
+                <div class="message warning message-max-tokens" style="display: none;">You are currently using all your credit card token slots.</div>
                 <!-- ko foreach: {data: getCustomerTokens()} -->
                 <div data-bind="attr: { 'id': $parent.getCode() + '-tokenrow-' + id }" class="token-row">
                     <input type="radio"

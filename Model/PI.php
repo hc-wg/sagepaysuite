@@ -108,9 +108,9 @@ class PI extends \Magento\Payment\Model\Method\Cc
     protected $_pirestapi;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\Transaction
+     * @var \Ebizmarts\SagePaySuite\Model\Api\Shared
      */
-    protected $_transactionsApi;
+    protected $_sharedApi;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
@@ -141,7 +141,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      * @param \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate
      * @param Config $config
      * @param PIRestApi $pirestapi
-     * @param Api\Transaction $transactionsApi
+     * @param Api\Transaction $sharedApi
      * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
      * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
      * @param \Magento\Framework\App\RequestInterface $request
@@ -166,7 +166,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         PIRestApi $pirestapi,
-        \Ebizmarts\SagePaySuite\Model\Api\Transaction $transactionsApi,
+        \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Magento\Framework\App\RequestInterface $request,
@@ -198,7 +198,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $this->productMetaData = $productMetaData;
         $this->regionFactory = $regionFactory;
         $this->_pirestapi = $pirestapi;
-        $this->_transactionsApi = $transactionsApi;
+        $this->_sharedApi = $sharedApi;
         $this->_suiteHelper = $suiteHelper;
         $this->_transactionFactory = $transactionFactory;
         //$this->_messageManager = $context->getMessageManager();
@@ -264,7 +264,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
             $order = $payment->getOrder();
 
-            $result = $this->_transactionsApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
+            $result = $this->_sharedApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
             $result = $result["data"];
 
             $payment->setIsTransactionClosed(1)
@@ -297,7 +297,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
         try {
 
-            $result = $this->_transactionsApi->voidTransaction($transaction_id);
+            $result = $this->_sharedApi->voidTransaction($transaction_id);
             $result = $result["data"];
 
             //create void transaction

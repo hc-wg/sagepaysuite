@@ -256,7 +256,7 @@ class Notify extends \Magento\Framework\App\Action\Action
             //Unset data
             $this->_checkoutSession->unsLastRealOrderId();
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Mage::logException($e);
         }
     }

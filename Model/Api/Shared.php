@@ -9,9 +9,9 @@ namespace Ebizmarts\SagePaySuite\Model\Api;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 /**
- * Sage Pay Reporting API parent class
+ * Sage Pay Shared API
  */
-class SharedApi
+class Shared
 {
 
     /**
@@ -37,6 +37,16 @@ class SharedApi
     protected $_suiteLogger;
 
     /**
+     * @var \Ebizmarts\SagePaySuite\Helper\Data
+     */
+    protected $_suiteHelper;
+
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
+     */
+    private $_reportingApi;
+
+    /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
      * @param ApiExceptionFactory $apiExceptionFactory
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
@@ -45,12 +55,16 @@ class SharedApi
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
+        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi,
         Logger $suiteLogger
     ) {
         $this->_config = $config;
         $this->_curlFactory = $curlFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
         $this->_suiteLogger = $suiteLogger;
+        $this->_suiteHelper = $suiteHelper;
+        $this->_reportingApi = $reportingApi;
     }
 
     /**
@@ -58,7 +72,7 @@ class SharedApi
      *
      * @param string $xml description
      */
-    public function executeRequest($action, $data)
+    protected function _executeRequest($action, $data)
     {
         $url = $this->_getServiceUrl($action);
 
@@ -90,7 +104,7 @@ class SharedApi
         $response_data = [];
         if($response_status == 200){
             $data = preg_split('/^\r?$/m', $data, 2);
-            $data = explode(chr(13), $data[1]);
+            $data = explode(PHP_EOL, $data[1]);
             for($i=0;$i<count($data);$i++){
                 if(!empty($data[$i])){
                     $aux = explode("=",trim($data[$i]));
@@ -150,7 +164,7 @@ class SharedApi
         }
     }
 
-    public function handleApiErrors($response)
+    protected function _handleApiErrors($response)
     {
         $exceptionPhrase = "Invalid response from Sage Pay API.";
         $exceptionCode = 0;
@@ -178,5 +192,127 @@ class SharedApi
         ]);
 
         throw $exception;
+    }
+
+    public function voidTransaction($vpstxid){
+
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
+
+        $data['VPSProtocol'] = $this->_config->getVPSProtocol();
+        $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_VOID;
+        $data['Vendor'] = $this->_config->getVendorname();
+        $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode();
+        $data['VPSTxId'] = (string)$transaction->vpstxid;
+        $data['SecurityKey'] = (string)$transaction->securitykey;
+        $data['TxAuthNo'] = (string)$transaction->vpsauthcode;
+
+        //log request
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
+
+        $response = $this->_executeRequest(
+            \Ebizmarts\SagePaySuite\Model\Config::ACTION_VOID,
+            $data
+        );
+
+        $api_response = $this->_handleApiErrors($response);
+
+        //log response
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $api_response);
+
+        return $api_response;
+    }
+
+    public function refundTransaction($vpstxid, $amount, $order_id){
+
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
+
+        $data['VPSProtocol'] = $this->_config->getVPSProtocol();
+        $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND;
+        $data['Vendor'] = $this->_config->getVendorname();
+        $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($order_id,\Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND);
+        $data['Amount'] = number_format($amount, 2, '.', '');
+        $data['Currency'] = (string)$transaction->currency;
+        $data['Description'] = "Refund issued from magento.";
+        $data['RelatedVPSTxId'] = (string)$transaction->vpstxid;
+        $data['RelatedVendorTxCode'] = (string)$transaction->vendortxcode;
+        $data['RelatedSecurityKey'] = (string)$transaction->securitykey;
+        $data['RelatedTxAuthNo'] = (string)$transaction->vpsauthcode;
+
+        //log request
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
+
+        $response = $this->_executeRequest(
+            \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND,
+            $data
+        );
+
+        $api_response = $this->_handleApiErrors($response);
+
+        //log response
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $api_response);
+
+        return $api_response;
+    }
+
+    public function releaseTransaction($vpstxid,$amount)
+    {
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
+
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $transaction);
+
+        $data['VPSProtocol'] = $this->_config->getVPSProtocol();
+        $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_RELEASE;
+        $data['Vendor'] = $this->_config->getVendorname();
+        $data['VendorTxCode'] = (string)$transaction->vendortxcode;
+        $data['VPSTxId'] = (string)$transaction->vpstxid;
+        $data['SecurityKey'] = (string)$transaction->securitykey;
+        $data['TxAuthNo'] = (string)$transaction->vpsauthcode;
+        $data['ReleaseAmount'] = number_format($amount, 2, '.', '');
+
+        //log request
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
+
+        $response = $this->_executeRequest(
+            \Ebizmarts\SagePaySuite\Model\Config::ACTION_RELEASE,
+            $data
+        );
+
+        $api_response = $this->_handleApiErrors($response);
+
+        //log response
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $api_response);
+
+        return $api_response;
+    }
+
+    public function authorizeTransaction($vpstxid,$amount,$order_id)
+    {
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
+
+        $data['VPSProtocol'] = $this->_config->getVPSProtocol();
+        $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE;
+        $data['Vendor'] = $this->_config->getVendorname();
+        $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($order_id,\Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE);
+        $data['Amount'] = number_format($amount, 2, '.', '');
+        $data['Description'] = "Authorize transaction from Magento";
+        $data['RelatedVPSTxId'] = (string)$transaction->vpstxid;
+        $data['RelatedVendorTxCode'] = (string)$transaction->vendortxcode;
+        $data['RelatedSecurityKey'] = (string)$transaction->securitykey;
+        $data['RelatedTxAuthNo'] = (string)$transaction->vpsauthcode;
+
+        //log request
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
+
+        $response = $this->_executeRequest(
+            \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE,
+            $data
+        );
+
+        $api_response = $this->_handleApiErrors($response);
+
+        //log response
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $api_response);
+
+        return $api_response;
     }
 }
