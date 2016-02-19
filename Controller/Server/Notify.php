@@ -86,7 +86,8 @@ class Notify extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Checkout\Model\Session $checkoutSession,
-        \Ebizmarts\SagePaySuite\Model\Token $tokenModel
+        \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
+        \Magento\Quote\Model\Quote $quote
     )
     {
         parent::__construct($context);
@@ -100,13 +101,18 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_logger = $logger;
         $this->_checkoutSession = $checkoutSession;
         $this->_tokenModel = $tokenModel;
+        $this->_quote = $quote;
 
-        $this->_postData = $this->getRequest()->getPost();
-        $this->_quote = $this->_objectManager->get('\Magento\Quote\Model\Quote')->load($this->getRequest()->getParam("quoteid"));
+//        $this->_postData = $this->getRequest()->getPost();
+//        $this->_quote = $this->_objectManager->get('\Magento\Quote\Model\Quote')->load($this->getRequest()->getParam("quoteid"));
     }
 
     public function execute()
     {
+        //get data from request
+        $this->_postData = $this->getRequest()->getPost();
+        $this->_quote = $this->_quote->load($this->getRequest()->getParam("quoteid"));
+
         //log response
         $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $this->_postData);
 
@@ -139,9 +145,11 @@ class Notify extends \Magento\Framework\App\Action\Action
                 $payment->setCcExpMonth(substr($this->_postData->ExpiryDate, 0, 2));
                 $payment->setCcExpYear(substr($this->_postData->ExpiryDate, 2));
                 $payment->save();
+            }else{
+                throw new \Magento\Framework\Validator\Exception(__('Invalid transaction id'));
             }
 
-            if(isset($this->_postData->Token)){
+            if (isset($this->_postData->Token)) {
                 //save token
 
                 $this->_tokenModel->saveToken($order->getCustomerId(),
@@ -206,7 +214,7 @@ class Notify extends \Magento\Framework\App\Action\Action
 
                 return $this->_returnOk();
 
-            } elseif ($status == "PENDING") { //Transaction in PENDING state (this is just for Euro Payments)
+            } elseif ($status == "PENDING") { //Transaction in PENDING state (this is just for Euro Payments which are not yet available in this version)
 
                 //@ToDo
                 return $this->_returnInvalid("Order was not saved, please try another payment method");
@@ -219,22 +227,23 @@ class Notify extends \Magento\Framework\App\Action\Action
                 return $this->_returnInvalid("Payment was not accepted, please try another payment method");
             }
 
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
+        {
             $this->_logger->critical($apiException);
 
             //cancel pending payment order
             $this->_cancelOrder($order);
 
-            return $this->_returnInvalid("Something went wrong while authorizing payment: " . $apiException->getUserMessage());
+            return $this->_returnInvalid("Something went wrong: " . $apiException->getUserMessage());
 
-        } catch (\Exception $e) {
+        } catch (\Exception $e)
+        {
             $this->_logger->critical($e);
 
             //cancel pending payment order
             $this->_cancelOrder($order);
 
-            return $this->_returnInvalid("Something went wrong while authorizing payment: " . $e->getMessage());
+            return $this->_returnInvalid("Something went wrong: " . $e->getMessage());
         }
     }
 
@@ -244,11 +253,10 @@ class Notify extends \Magento\Framework\App\Action\Action
             $order->cancel()->save();
 
             //restore quote
-            if ($this->_quote->getId())
-            {
-                $this->_quote->setIsActive(1)
-                    ->setReservedOrderId(NULL)
-                    ->save();
+            if ($this->_quote->getId()) {
+                $this->_quote->setIsActive(1);
+                $this->_quote->setReservedOrderId(NULL);
+                $this->_quote->save();
 
                 $this->_checkoutSession->replaceQuote($this->_quote);
             }
@@ -272,8 +280,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_orderSender->send($this->_order);
 
         //create transaction record
-        switch($this->_config->getSagepayPaymentAction())
-        {
+        switch ($this->_config->getSagepayPaymentAction()) {
             case \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT:
                 $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
                 $closed = true;
@@ -292,18 +299,18 @@ class Notify extends \Magento\Framework\App\Action\Action
                 break;
         }
 
-        $transaction = $this->_transactionFactory->create()
-            ->setOrderPaymentObject($payment)
-            ->setTxnId($transactionId)
-            ->setOrderId($this->_order->getEntityId())
-            ->setTxnType($action)
-            ->setPaymentId($payment->getId());
+        $transaction = $this->_transactionFactory->create();
+        $transaction->setOrderPaymentObject($payment);
+        $transaction->setTxnId($transactionId);
+        $transaction->setOrderId($this->_order->getEntityId());
+        $transaction->setTxnType($action);
+        $transaction->setPaymentId($payment->getId());
         $transaction->setIsClosed($closed);
         $transaction->save();
 
         //update invoice transaction id
         $invoices = $this->_order->getInvoiceCollection();
-        if ($invoices->count()) {
+        if (!empty($invoices)) {
             foreach ($invoices as $_invoice) {
                 $_invoice->setTransactionId($payment->getLastTransId());
                 $_invoice->save();
@@ -352,8 +359,8 @@ class Notify extends \Magento\Framework\App\Action\Action
     protected function _returnInvalid($message = 'Invalid transaction, please try another payment method')
     {
         $strResponse = 'Status=INVALID' . "\r\n";
-        $strResponse .= 'RedirectURL=' . $this->_getFailedRedirectUrl($message) . "\r\n";
         $strResponse .= 'StatusDetail=' . $message . "\r\n";
+        $strResponse .= 'RedirectURL=' . $this->_getFailedRedirectUrl($message) . "\r\n";
 
         $this->getResponse()->setHeader('Content-type', 'text/plain');
         $this->getResponse()->setBody($strResponse);
