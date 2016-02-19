@@ -72,6 +72,16 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_tokenModel;
 
     /**
+     * @var \Magento\Checkout\Model\Session
+     */
+    protected $_checkoutSession;
+
+    /**
+     * @var \Magento\Customer\Model\Session
+     */
+    protected $_customerSession;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
@@ -83,7 +93,9 @@ class Request extends \Magento\Framework\App\Action\Action
         \Psr\Log\LoggerInterface $logger,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
-        \Ebizmarts\SagePaySuite\Model\Token $tokenModel
+        \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Customer\Model\Session $customerSession
     )
     {
         parent::__construct($context);
@@ -91,22 +103,25 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
         $this->_suiteHelper = $suiteHelper;
         $this->_postApi = $postApi;
-        $this->_quote = $this->_getCheckoutSession()->getQuote();
+        $this->_checkoutSession = $checkoutSession;
+        $this->_customerSession = $customerSession;
+        $this->_quote = $this->_checkoutSession->getQuote();
         $this->_suiteLogger = $suiteLogger;
         $this->_logger = $logger;
         $this->_checkoutHelper = $checkoutHelper;
         $this->_requestHelper = $requestHelper;
         $this->_tokenModel = $tokenModel;
-
-        $postData = $this->getRequest();
-        $postData = preg_split('/^\r?$/m', $postData, 2);
-        $postData = json_decode(trim($postData[1]));
-        $this->_postData = $postData;
     }
 
     public function execute()
     {
         try {
+
+            //parse POST data
+            $postData = $this->getRequest();
+            $postData = preg_split('/^\r?$/m', $postData, 2);
+            $postData = json_decode(trim($postData[1]));
+            $this->_postData = $postData;
 
             //prepare quote
             $this->_quote->collectTotals();
@@ -116,7 +131,6 @@ class Request extends \Magento\Framework\App\Action\Action
             $request = $this->_generateRequest();
 
             //send POST to Sage Pay
-            //$post_response = $this->_handleApiErrors($this->_sendPost($request));
             $post_response = $this->_postApi->sendPost($request,
                 $this->_getServiceURL(),
                 array("OK")
@@ -124,7 +138,7 @@ class Request extends \Magento\Framework\App\Action\Action
 
             //set payment info for save order
             $transactionId = $post_response["data"]["VPSTxId"];
-            $transactionId = str_replace("}","",str_replace("{","",$transactionId));
+            $transactionId = str_replace("}", "", str_replace("{", "", $transactionId));
             $payment = $this->_quote->getPayment();
             $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
 
@@ -151,21 +165,22 @@ class Request extends \Magento\Framework\App\Action\Action
 
             $this->_logger->critical($apiException);
 
+            echo $apiException->getUserMessage();
+
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong while generating the Sage Pay request: ' . $apiException->getUserMessage()),
             ];
-            //$this->messageManager->addError(__('Something went wrong while generating the Sage Pay request: ' . $apiException->getUserMessage()));
-
         } catch (\Exception $e) {
 
             $this->_logger->critical($e);
+
+            echo $e->getMessage();
 
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong while generating the Sage Pay request: ' . $e->getMessage()),
             ];
-            //$this->messageManager->addError(__('Something went wrong while generating the Sage Pay request: ' . $e->getMessage()));
         }
 
         $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
@@ -188,25 +203,13 @@ class Request extends \Magento\Framework\App\Action\Action
     /**
      * @return string
      */
-    private function _getServiceURL(){
-        if($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE){
+    protected function _getServiceURL()
+    {
+        if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_LIVE;
-        }else{
+        } else {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_TEST;
         }
-    }
-
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCheckoutSession()
-    {
-        return $this->_objectManager->get('Magento\Checkout\Model\Session');
-    }
-
-    protected function _getCustomerSession()
-    {
-        return $this->_objectManager->get('Magento\Customer\Model\Session');
     }
 
     /**
@@ -228,25 +231,22 @@ class Request extends \Magento\Framework\App\Action\Action
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
 
         //token
-        if($this->_postData->save_token == true &&
-            !empty($this->_getCustomerSession()->getCustomerDataObject()) &&
+        if ($this->_postData->save_token == true &&
+            !empty($this->_customerSession->getCustomerDataObject()) &&
             !$this->_tokenModel->isCustomerUsingMaxTokenSlots(
-                $this->_getCustomerSession()->getCustomerDataObject()->getId(),
+                $this->_customerSession->getCustomerDataObject()->getId(),
                 $this->_config->getVendorname()
-            ))
-        {
+            )
+        ) {
             //save token
             $data["CreateToken"] = 1;
-        }else{
-            if(!is_null($this->_postData->token))
-            {
+        } else {
+            if (!is_null($this->_postData->token)) {
                 //use token
                 $data["StoreToken"] = 1;
                 $data["Token"] = $this->_postData->token;
             }
         }
-
-
 
         //not mandatory
 //        BillingAddress2

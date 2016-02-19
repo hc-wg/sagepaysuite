@@ -18,21 +18,13 @@ class DataTest extends \PHPUnit_Framework_TestCase
      */
     protected $dataHelper;
 
-    /**
-     * @var \Magento\Store\Model\StoreManagerInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $storeManagerMock;
-
     protected function setUp()
     {
         $helper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
 
-        $this->storeManagerMock = $this->getMockBuilder('Magento\Store\Model\StoreManagerInterface')
-            ->getMockForAbstractClass();
-
         $this->dataHelper = $helper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Data',
-            ['storeManager' => $this->storeManagerMock]
+            []
         );
     }
 

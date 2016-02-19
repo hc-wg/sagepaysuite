@@ -6,7 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Token;
 
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
 class DeleteTest extends \PHPUnit_Framework_TestCase
@@ -32,11 +31,6 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
     protected $responseMock;
 
     /**
-     * @var CustomerSession|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $customerSessionMock;
-
-    /**
      * @var \Magento\Framework\App\Response\RedirectInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $redirectMock;
@@ -48,16 +42,6 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $suiteLoggerMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Logger\Logger')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->customerSessionMock = $this
-            ->getMockBuilder('Magento\Customer\Model\Session')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\App\RequestInterface')
             ->getMockForAbstractClass();
@@ -114,10 +98,6 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
             ->method('getResultFactory')
             ->will($this->returnValue($resultFactoryMock));
 
-        $loggerMock = $this->getMockBuilder('Psr\Log\LoggerInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $this->tokenModelMock->expects($this->any())
             ->method('loadToken')
             ->will($this->returnValue($this->tokenModelMock));
@@ -131,10 +111,7 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
             'Ebizmarts\SagePaySuite\Controller\Token\Delete',
             [
                 'context' => $contextMock,
-                'logger' => $loggerMock,
-                'suiteLogger' => $suiteLoggerMock,
                 'tokenModel' => $this->tokenModelMock,
-                'customerSession' => $this->customerSessionMock,
             ]
         );
     }

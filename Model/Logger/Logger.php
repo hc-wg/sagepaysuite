@@ -40,13 +40,17 @@ class Logger extends \Monolog\Logger
                 $message = json_encode($message,JSON_PRETTY_PRINT);
             }
 
+            if(!empty(json_last_error())){
+                $message = (string)json_last_error();
+            }
+
             $message = (string)$message;
 
         } catch (\Exception $e) {
             $message = "INVALID MESSAGE";
         }
 
-        $message .= "\n\n";
+        $message .= "\r\n";
 
         return $this->addRecord($logType, $message, array());
     }
