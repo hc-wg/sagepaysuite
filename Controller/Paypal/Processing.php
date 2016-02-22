@@ -35,12 +35,12 @@ class Processing extends \Magento\Framework\App\Action\Action
      */
     public function execute()
     {
-        $this->getResponse()->setBody(
-            $this->_view->getLayout()->createBlock(
-                'Ebizmarts\SagePaySuite\Block\Paypal\Processing')
-                ->setData(
-                    ["paypal_post"=>$this->getRequest()->getPost()]
-            )->toHtml()
-        );
+        $body = $this->_view->getLayout()->createBlock(
+            'Ebizmarts\SagePaySuite\Block\Paypal\Processing')
+            ->setData(
+                ["paypal_post"=>$this->getRequest()->getPost()]
+            )->toHtml();
+
+        $this->getResponse()->setBody($body);
     }
 }
