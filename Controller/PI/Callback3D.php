@@ -16,7 +16,7 @@ class Callback3D extends \Magento\Framework\App\Action\Action
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
-    protected $_pirest;
+    protected $_pirestapi;
 
     /**
      * Logging instance
@@ -30,9 +30,9 @@ class Callback3D extends \Magento\Framework\App\Action\Action
     protected $_orderFactory;
 
     /**
-     * @var OrderSender
+     * @var \Ebizmarts\SagePaySuite\Helper\Checkout
      */
-    protected $_orderSender;
+    protected $_checkoutHelper;
 
     /**
      * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
@@ -49,7 +49,12 @@ class Callback3D extends \Magento\Framework\App\Action\Action
      */
     protected $_logger;
 
-    protected $_postData;
+    /**
+     * @var \Magento\Checkout\Model\Session
+     */
+    protected $_checkoutSession;
+
+    protected $_transactionId;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -61,45 +66,44 @@ class Callback3D extends \Magento\Framework\App\Action\Action
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirest,
+        \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirestapi,
         Logger $suiteLogger,
         \Magento\Sales\Model\OrderFactory $orderFactory,
-        OrderSender $orderSender,
+        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Psr\Log\LoggerInterface $logger
+        \Psr\Log\LoggerInterface $logger,
+        \Magento\Checkout\Model\Session $checkoutSession
     )
     {
         parent::__construct($context);
 
-        $this->_pirest = $pirest;
+        $this->_pirestapi = $pirestapi;
         $this->_suiteLogger = $suiteLogger;
         $this->_orderFactory = $orderFactory;
-        $this->_orderSender = $orderSender;
+        $this->_checkoutHelper = $checkoutHelper;
         $this->_transactionFactory = $transactionFactory;
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
         $this->_logger = $logger;
-
-        $this->_postData = $this->getRequest()->getPost();;
+        $this->_checkoutSession = $checkoutSession;
     }
 
     public function execute()
     {
-        //log response
-        //$this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $this->_postData);
-
         try {
+            //get POST data
+            $postData = $this->getRequest()->getPost();
 
             //submit 3D secure
-            $paRes = $this->_postData->PaRes;
-            $transactionId = $this->getRequest()->getParam("transactionId");
-            $submit3D_result = $this->_pirest->submit3D($paRes,$transactionId);
+            $paRes = $postData->PaRes;
+            $this->_transactionId = $this->getRequest()->getParam("transactionId");
+            $submit3D_result = $this->_pirestapi->submit3D($paRes, $this->_transactionId);
 
-            if (isset($submit3D_result->status) && $submit3D_result->status == "Authenticated"){
+            if (isset($submit3D_result->status) && $submit3D_result->status == "Authenticated") {
 
                 //request transaction details to confirm payment
-                $transaction_details_result = $this->_pirest->transactionDetails($transactionId);
+                $transaction_details_result = $this->_pirestapi->transactionDetails($this->_transactionId);
 
                 //log transaction details response
                 $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $transaction_details_result);
@@ -107,20 +111,18 @@ class Callback3D extends \Magento\Framework\App\Action\Action
                 $this->_confirmPayment($transaction_details_result);
 
                 $this->_redirect('checkout/onepage/success');
-
             } else {
-
                 $this->messageManager->addError("Invalid 3D secure authentication.");
                 $this->_redirect('checkout/cart');
             }
 
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
+        {
             $this->_logger->critical($apiException);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->_redirect('checkout/cart');
-
-
-        } catch (\Exception $e) {
+        } catch (\Exception $e)
+        {
             $this->_logger->critical($e);
             $this->messageManager->addError("Something went wrong while authenticating 3D secure: " . $e->getMessage());
             $this->_redirect('checkout/cart');
@@ -131,13 +133,12 @@ class Callback3D extends \Magento\Framework\App\Action\Action
     {
 
         if ($response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
-
-            $transactionId = $this->getRequest()->getParam("transactionId");
-            $order = $this->_orderFactory->create()->load($this->getRequest()->getParam("orderId"));
+            $orderId = $this->getRequest()->getParam("orderId");
+            $order = $this->_orderFactory->create()->load($orderId);
             $quoteId = $this->getRequest()->getParam("quoteId");
 
-            if (!empty($order)) {
-
+            if (!empty($order))
+            {
                 //set additional payment info
                 $payment = $order->getPayment();
                 $payment->setAdditionalInformation('statusCode', $response->statusCode);
@@ -150,11 +151,10 @@ class Callback3D extends \Magento\Framework\App\Action\Action
                 $order->place()->save();
 
                 //send email
-                $this->_orderSender->send($order);
+                $this->_checkoutHelper->sendOrderEmail($order);
 
                 //create transaction record
-                switch($this->_config->getSagepayPaymentAction())
-                {
+                switch ($this->_config->getSagepayPaymentAction()) {
                     case \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT:
                         $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
                         $closed = true;
@@ -164,18 +164,18 @@ class Callback3D extends \Magento\Framework\App\Action\Action
                         $closed = true;
                         break;
                 }
-                $transaction = $this->_transactionFactory->create()
-                    ->setOrderPaymentObject($payment)
-                    ->setTxnId($transactionId)
-                    ->setOrderId($order->getEntityId())
-                    ->setTxnType($action)
-                    ->setPaymentId($payment->getId());
+                $transaction = $this->_transactionFactory->create();
+                $transaction->setOrderPaymentObject($payment);
+                $transaction->setTxnId($this->_transactionId);
+                $transaction->setOrderId($order->getEntityId());
+                $transaction->setTxnType($action);
+                $transaction->setPaymentId($payment->getId());
                 $transaction->setIsClosed($closed);
                 $transaction->save();
 
                 //update invoice transaction id
                 $invoices = $order->getInvoiceCollection();
-                if($invoices->count()){
+                if (!empty($invoices)) {
                     foreach ($invoices as $_invoice) {
                         $_invoice->setTransactionId($payment->getLastTransId());
                         $_invoice->save();
@@ -183,27 +183,18 @@ class Callback3D extends \Magento\Framework\App\Action\Action
                 }
 
                 //prepare session to success page
-                $this->_getCheckoutSession()->clearHelperData();
-                $this->_getCheckoutSession()->setLastQuoteId($quoteId)
-                    ->setLastSuccessQuoteId($quoteId);
-                $this->_getCheckoutSession()->setLastOrderId($order->getId())
-                    ->setLastRealOrderId($order->getIncrementId())
-                    ->setLastOrderStatus($order->getStatus());
+                $this->_checkoutSession->clearHelperData();
+                $this->_checkoutSession->setLastQuoteId($quoteId);
+                $this->_checkoutSession->setLastSuccessQuoteId($quoteId);
+                $this->_checkoutSession->setLastOrderId($order->getId());
+                $this->_checkoutSession->setLastRealOrderId($order->getIncrementId());
+                $this->_checkoutSession->setLastOrderStatus($order->getStatus());
 
             } else {
-                throw new \Magento\Framework\Validator\Exception(__('Unable to save order, please use another payment method.'));
+                throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
             }
         } else {
-            throw new \Magento\Framework\Validator\Exception(__('Invalid Sage Pay response, please use another payment method.'));
+            throw new \Magento\Framework\Validator\Exception(__('Invalid Sage Pay response'));
         }
     }
-
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCheckoutSession()
-    {
-        return $this->_objectManager->get('Magento\Checkout\Model\Session');
-    }
-
 }
