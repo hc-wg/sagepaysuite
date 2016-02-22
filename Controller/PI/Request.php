@@ -9,7 +9,7 @@ namespace Ebizmarts\SagePaySuite\Controller\PI;
 
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Ebizmarts\SagePaySuite\Model\Api\PIRestApi;
+use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 
 
 class Request extends \Magento\Framework\App\Action\Action
@@ -42,7 +42,7 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_logger;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRestApi
+     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
     protected $_pirestapi;
 
@@ -62,6 +62,11 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_customerSession;
 
     /**
+     * @var \Magento\Checkout\Model\Session
+     */
+    protected $_checkoutSession;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
@@ -69,9 +74,10 @@ class Request extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         Logger $suiteLogger,
-        PIRestApi $pirestapi,
+        PIRest $pirestapi,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Customer\Model\Session $customerSession,
+        \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
     )
     {
@@ -79,22 +85,23 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
         $this->_suiteHelper = $suiteHelper;
-        $this->_quote = $this->_getCheckoutSession()->getQuote();
         $this->_suiteLogger = $suiteLogger;
         $this->_pirestapi = $pirestapi;
         $this->_logger = $logger;
         $this->_checkoutHelper = $checkoutHelper;
         $this->_customerSession = $customerSession;
-
-        $postData = $this->getRequest();
-        $postData = preg_split('/^\r?$/m', $postData, 2);
-        $postData = json_decode(trim($postData[1]));
-        $this->_postData = $postData;
+        $this->_checkoutSession = $checkoutSession;
+        $this->_quote = $this->_getCheckoutSession()->getQuote();
     }
 
     public function execute()
     {
         try {
+            //get POST data
+            $postData = $this->getRequest();
+            $postData = preg_split('/^\r?$/m', $postData, 2);
+            $postData = json_decode(trim($postData[1]));
+            $this->_postData = $postData;
 
             //prepare quote
             $this->_quote->collectTotals();
@@ -108,7 +115,8 @@ class Request extends \Magento\Framework\App\Action\Action
             $post_response = $this->_pirestapi->capture($request);
 
             if ($post_response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS ||
-                $post_response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS) {
+                $post_response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS
+            ) {
 
                 //set payment info for save order
                 $transactionId = $post_response->transactionId;
@@ -118,7 +126,7 @@ class Request extends \Magento\Framework\App\Action\Action
                 $payment->setAdditionalInformation('statusCode', $post_response->statusCode);
                 $payment->setAdditionalInformation('statusDetail', $post_response->statusDetail);
                 $payment->setAdditionalInformation('vendorTxCode', $vendorTxCode);
-                if(isset($post_response->{'3DSecure'})) {
+                if (isset($post_response->{'3DSecure'})) {
                     $payment->setAdditionalInformation('threeDStatus', $post_response->{'3DSecure'}->status);
                 }
                 $payment->setCcLast4($this->_postData->card_last4);
@@ -132,14 +140,14 @@ class Request extends \Magento\Framework\App\Action\Action
                 //save order with pending payment
                 $order = $this->_checkoutHelper->placeOrder();
 
-                if($order){
+                if ($order) {
                     $payment = $order->getPayment();
                     $payment->setTransactionId($transactionId);
                     $payment->setLastTransId($transactionId);
                     $payment->save();
 
                     //invoice
-                    if($post_response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS){
+                    if ($post_response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
                         $payment->getMethodInstance()->markAsInitialized();
                         $order->place()->save();
 
@@ -149,15 +157,14 @@ class Request extends \Magento\Framework\App\Action\Action
                         //prepare session to success page
                         $this->_getCheckoutSession()->clearHelperData();
                         //set last successful quote
-                        $this->_getCheckoutSession()->setLastQuoteId($this->_quote->getId())
-                            ->setLastSuccessQuoteId($this->_quote->getId());
-                        $this->_getCheckoutSession()->setLastOrderId($order->getId())
-                                ->setLastRealOrderId($order->getIncrementId())
-                                ->setLastOrderStatus($order->getStatus());
+                        $this->_getCheckoutSession()->setLastQuoteId($this->_quote->getId());
+                        $this->_getCheckoutSession()->setLastSuccessQuoteId($this->_quote->getId());
+                        $this->_getCheckoutSession()->setLastOrderId($order->getId());
+                        $this->_getCheckoutSession()->setLastRealOrderId($order->getIncrementId());
+                        $this->_getCheckoutSession()->setLastOrderStatus($order->getStatus());
                     }
-
-                }else{
-                    throw new \Magento\Framework\Validator\Exception(__('Unable to save order, please use another payment method.'));
+                } else {
+                    throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
                 }
 
                 //additional details required for callback URL
@@ -167,21 +174,22 @@ class Request extends \Magento\Framework\App\Action\Action
                 //prepare response
                 $responseContent = [
                     'success' => true,
-                    'response' => $post_response
+                    'response' => (array)$post_response
                 ];
-
-            }  else {
+            } else {
                 throw new \Magento\Framework\Validator\Exception(__('Invalid Sage Pay response, please use another payment method.'));
             }
 
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
+        {
             $this->_logger->critical($apiException);
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $apiException->getUserMessage()),
             ];
 
-        } catch (\Exception $e) {
+        } catch (\Exception $e)
+        {
             $this->_logger->critical($e);
             $responseContent = [
                 'success' => false,
@@ -202,11 +210,12 @@ class Request extends \Magento\Framework\App\Action\Action
         return $this->_customerSession;
     }
 
-    protected function _generateRequest($vendorTxCode){
+    protected function _generateRequest($vendorTxCode)
+    {
 
         $billing_address = $this->_quote->getBillingAddress();
-        $shipping_address = $this->_quote->getShippingAddress();
-        $customer_data = $this->_getCustomerSession()->getCustomerDataObject();
+//        $shipping_address = $this->_quote->getShippingAddress();
+//        $customer_data = $this->_getCustomerSession()->getCustomerDataObject();
 
         $data = [
             'transactionType' => $this->_config->getSagepayPaymentAction(),
@@ -248,6 +257,6 @@ class Request extends \Magento\Framework\App\Action\Action
      */
     protected function _getCheckoutSession()
     {
-        return $this->_objectManager->get('Magento\Checkout\Model\Session');
+        return $this->_checkoutSession;
     }
 }

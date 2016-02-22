@@ -9,7 +9,7 @@ namespace Ebizmarts\SagePaySuite\Model;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\ResourceModel\Order\Payment\Transaction\CollectionFactory as TransactionCollectionFactory;
 use Magento\Payment\Model\InfoInterface;
-use Ebizmarts\SagePaySuite\Model\Api\PIRestApi;
+use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 use Magento\Sales\Model\Order\Payment\Transaction as PaymentTransaction;
 
 /**
@@ -103,7 +103,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
     protected $regionFactory;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRestApi
+     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
     protected $_pirestapi;
 
@@ -140,7 +140,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      * @param \Magento\Framework\Module\ModuleListInterface $moduleList
      * @param \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate
      * @param Config $config
-     * @param PIRestApi $pirestapi
+     * @param PIRest $pirestapi
      * @param Api\Transaction $sharedApi
      * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
      * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
@@ -165,7 +165,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         \Magento\Framework\Module\ModuleListInterface $moduleList,
         \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        PIRestApi $pirestapi,
+        PIRest $pirestapi,
         \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,

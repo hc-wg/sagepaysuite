@@ -71,7 +71,6 @@ class Notify extends \Magento\Framework\App\Action\Action
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
-     * @param \Ebizmarts\SagePaySuite\Model\Api\PIRestApi $pirest
      * @param Logger $suiteLogger
      * @param \Magento\Sales\Model\OrderFactory $orderFactory
      * @param OrderSender $orderSender

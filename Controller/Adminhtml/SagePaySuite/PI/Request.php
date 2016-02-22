@@ -9,7 +9,7 @@ namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\SagePaySuite\PI;
 
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Ebizmarts\SagePaySuite\Model\Api\PIRestApi;
+use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 
 
 class Request extends \Magento\Backend\App\AbstractAction
@@ -42,7 +42,7 @@ class Request extends \Magento\Backend\App\AbstractAction
     protected $_logger;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRestApi
+     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
     protected $_pirestapi;
 
@@ -74,7 +74,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         Logger $suiteLogger,
-        PIRestApi $pirestapi,
+        PIRest $pirestapi,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Customer\Model\Session $customerSession,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,

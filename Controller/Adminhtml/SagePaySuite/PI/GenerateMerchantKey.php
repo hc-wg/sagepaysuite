@@ -13,17 +13,17 @@ use Magento\Framework\Controller\ResultFactory;
 class GenerateMerchantKey extends \Magento\Backend\App\AbstractAction
 {
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRestApi
+     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
     protected $_pirest;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
-     * @param \Ebizmarts\SagePaySuite\Model\Api\PIRestApi $pirest
+     * @param \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirest
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
-        \Ebizmarts\SagePaySuite\Model\Api\PIRestApi $pirest
+        \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirest
     )
     {
         parent::__construct($context);

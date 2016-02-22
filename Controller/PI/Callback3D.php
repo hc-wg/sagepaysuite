@@ -14,7 +14,7 @@ class Callback3D extends \Magento\Framework\App\Action\Action
 {
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRestApi
+     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
     protected $_pirest;
 
@@ -53,7 +53,7 @@ class Callback3D extends \Magento\Framework\App\Action\Action
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
-     * @param \Ebizmarts\SagePaySuite\Model\Api\PIRestApi $pirest
+     * @param \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirest
      * @param Logger $suiteLogger
      * @param \Magento\Sales\Model\OrderFactory $orderFactory
      * @param OrderSender $orderSender
@@ -61,7 +61,7 @@ class Callback3D extends \Magento\Framework\App\Action\Action
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Ebizmarts\SagePaySuite\Model\Api\PIRestApi $pirest,
+        \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirest,
         Logger $suiteLogger,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         OrderSender $orderSender,

@@ -11,7 +11,7 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 /**
  * Sage Pay PI REST API
  */
-class PIRestApi
+class PIRest
 {
 
     const ACTION_GENERATE_MERCHANT_KEY = 'merchant-session-keys';
@@ -41,8 +41,6 @@ class PIRestApi
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
     protected $_suiteLogger;
-
-
 
     /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
@@ -216,13 +214,21 @@ class PIRestApi
         } else {
 
             $error_code = 0;
-            $error_msg = "Unable to capture Sage Pay transaction, please try another payment method.";
+            $error_msg = "Unable to capture Sage Pay transaction";
 
-            if(isset($result["data"]->code)){
-                $error_code = $result["data"]->code;
+            $errors = $result["data"];
+            if(isset($errors->errors) && count($errors->errors) > 0){
+                $errors = $errors->errors[0];
             }
-            if(isset($result["data"]->description)){
-                $error_msg = $result["data"]->description;
+
+            if(isset($errors->code)){
+                $error_code = $errors->code;
+            }
+            if(isset($errors->description)){
+                $error_msg = $errors->description;
+            }
+            if(isset($errors->property)){
+                $error_msg .= ': ' . $errors->property;
             }
 
             $exception = $this->_apiExceptionFactory->create([
