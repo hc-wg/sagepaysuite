@@ -138,9 +138,27 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     protected $_sharedApi;
 
+    /**
+     * @var \Crypt_AES
+     */
+    protected $_crypt;
 
     /**
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     * @param \Magento\Framework\Model\Context $context
+     * @param \Magento\Framework\Registry $registry
+     * @param \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory
+     * @param \Magento\Framework\Api\AttributeValueFactory $customAttributeFactory
+     * @param \Magento\Payment\Helper\Data $paymentData
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param \Magento\Payment\Model\Method\Logger $logger
+     * @param Api\Shared $sharedApi
+     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+     * @param Config $config
+     * @param \Crypt_AES $crypt
+     * @param Payment\TransactionFactory $transactionFactory
+     * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
+     * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
+     * @param array $data
      */
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -153,11 +171,13 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Config $config,
+        \Crypt_AES $crypt,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
-    ) {
+    )
+    {
         parent::__construct(
             $context,
             $registry,
@@ -173,7 +193,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
 
         $this->_suiteHelper = $suiteHelper;
         $this->_transactionFactory = $transactionFactory;
-        //$this->_messageManager = $context->getMessageManager();
+        $this->_crypt = $crypt;
         $this->_sharedApi = $sharedApi;
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
@@ -227,15 +247,15 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     {
         $action = "with";
 
-        if($payment->getLastTransId()) {
+        if ($payment->getLastTransId()) {
             try {
                 $transactionId = $payment->getLastTransId();
                 $paymentAction = $payment->getAdditionalInformation('paymentAction') ? $payment->getAdditionalInformation('paymentAction') : $this->_config->getSagepayPaymentAction();
 
-                if($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER){
+                if ($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER) {
                     $action = 'releasing';
                     $result = $this->_sharedApi->releaseTransaction($transactionId, $amount);
-                }elseif($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE){
+                } elseif ($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE) {
                     $action = 'authorizing';
                     $result = $this->_sharedApi->authorizeTransaction($transactionId, $amount, $payment->getOrder()->getIncrementId());
                 }
@@ -245,11 +265,11 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
 
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
                 $this->_logger->critical($apiException);
-                throw new LocalizedException(__('There was an error ' . $action .' Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
+                throw new LocalizedException(__('There was an error ' . $action . ' Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
 
             } catch (\Exception $e) {
                 $this->_logger->critical($e);
-                throw new LocalizedException(__('There was an error ' . $action .' Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
+                throw new LocalizedException(__('There was an error ' . $action . ' Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
             }
         }
         return $this;
@@ -318,5 +338,40 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     public function getConfigPaymentAction()
     {
         return $this->_config->getPaymentAction();
+    }
+
+    public function decodeSagePayResponse($crypt)
+    {
+        if (empty($crypt)) {
+            throw new LocalizedException(__('Invalid response from Sage Pay'));
+        } else {
+            $strDecoded = $this->decryptSagePayResponse($crypt);
+            $responseRaw = explode('&', $strDecoded);
+            $response = array();
+
+            for ($i = 0; $i < count($responseRaw); $i++) {
+                $strField = explode('=', $responseRaw[$i]);
+                $response[$strField[0]] = $strField[1];
+            }
+            return $response;
+        }
+    }
+
+    public function decryptSagePayResponse($strIn)
+    {
+        $cryptPass = $this->_config->getFormEncryptedPassword();
+
+        //** remove the first char which is @ to flag this is AES encrypted
+        $strIn = substr($strIn, 1);
+
+        //** HEX decoding
+        $strIn = pack('H*', $strIn);
+
+        $this->_crypt->setBlockLength(128);
+        $this->_crypt->setKey($cryptPass);
+        $this->_crypt->setIV($cryptPass);
+        $decoded = $this->_crypt->decrypt($strIn);
+
+        return $decoded;
     }
 }

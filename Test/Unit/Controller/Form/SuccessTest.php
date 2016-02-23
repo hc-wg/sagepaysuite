@@ -17,7 +17,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     const TEST_VPSTXID = 'F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F';
 
     /**
-     * @var /Ebizmarts\SagePaySuite\Controller\Paypal\Callback
+     * @var /Ebizmarts\SagePaySuite\Controller\Form\Success
      */
     protected $formSuccessController;
 
@@ -40,6 +40,11 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
      * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $orderMock;
+
+    /**
+     * @var Ebizmarts\SagePaySuite\Helper\Checkout|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected $checkoutHelperMock;
 
     protected function setUp()
     {
@@ -120,23 +125,24 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($transactionMock));
 
-        $checkoutHelperMock = $this
+        $this->checkoutHelperMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Checkout')
             ->disableOriginalConstructor()
             ->getMock();
-        $checkoutHelperMock->expects($this->any())
-            ->method('placeOrder')
-            ->will($this->returnValue($this->orderMock));
 
-        $cryptMock = $this
-            ->getMockBuilder('Crypt_AES')
+        $formModelMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Form')
             ->disableOriginalConstructor()
             ->getMock();
-        $cryptMock->expects($this->any())
-            ->method('decrypt')
-            ->will($this->returnValue("decodedCrypt=true&VPSTxId={" . self::TEST_VPSTXID . "}" .
-                "&CardType=VISA&Last4Digits=0006&StatusDetail=OK_STATUS_DETAIL" .
-                "&VendorTxCode=100000001-2016-12-12-12346789"));
+        $formModelMock->expects($this->any())
+            ->method('decodeSagePayResponse')
+            ->will($this->returnValue([
+                "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
+                "CardType" => "VISA",
+                "Last4Digits" => "0006",
+                "StatusDetail" => "OK_STATUS_DETAIL",
+                "VendorTxCode" => "100000001-2016-12-12-12346789"
+            ]));
 
         $objectManagerHelper = new ObjectManagerHelper($this);
         $this->formSuccessController = $objectManagerHelper->getObject(
@@ -145,19 +151,18 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
                 'context' => $contextMock,
                 'config' => $configMock,
                 'checkoutSession' => $checkoutSessionMock,
-                'checkoutHelper' => $checkoutHelperMock,
+                'checkoutHelper' => $this->checkoutHelperMock,
                 'transactionFactory' => $transactionFactoryMock,
-                'crypt' => $cryptMock
+                'formModel' => $formModelMock
             ]
         );
     }
 
     public function testExecuteSUCCESS()
     {
-        $this->requestMock->expects($this->once())
-            ->method('getParam')
-            ->with('crypt')
-            ->will($this->returnValue("213354325435454542354324532"));
+        $this->checkoutHelperMock->expects($this->any())
+            ->method('placeOrder')
+            ->will($this->returnValue($this->orderMock));
 
         $this->_expectRedirect("checkout/onepage/success");
         $this->formSuccessController->execute();
@@ -165,10 +170,9 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteERROR()
     {
-        $this->requestMock->expects($this->once())
-            ->method('getParam')
-            ->with('crypt')
-            ->will($this->returnValue("fdsfds87dfs87dfs78dfs"));
+        $this->checkoutHelperMock->expects($this->any())
+            ->method('placeOrder')
+            ->will($this->returnValue(NULL));
 
         $this->_expectRedirect("checkout/cart");
         $this->formSuccessController->execute();

@@ -53,9 +53,9 @@ class Success extends \Magento\Framework\App\Action\Action
     protected $_suiteLogger;
 
     /**
-     * @var \Crypt_AES
+     * @var \Ebizmarts\SagePaySuite\Model\Form
      */
-    protected $_crypt;
+    protected $_formModel;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -66,7 +66,7 @@ class Success extends \Magento\Framework\App\Action\Action
      * @param Logger $suiteLogger
      * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
      * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
-     * @param \Crypt_AES $crypt
+     * @param \Ebizmarts\SagePaySuite\Model\Form $formModel
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -77,7 +77,7 @@ class Success extends \Magento\Framework\App\Action\Action
         Logger $suiteLogger,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Crypt_AES $crypt
+        \Ebizmarts\SagePaySuite\Model\Form $formModel
     )
     {
         parent::__construct($context);
@@ -89,20 +89,22 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_checkoutSession = $checkoutSession;
         $this->_checkoutHelper = $checkoutHelper;
         $this->_suiteLogger = $suiteLogger;
-        $this->_crypt = $crypt;
+        $this->_formModel = $formModel;
     }
 
     /**
      * FORM success callback
-     *
-     * @return void
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws Magento\Framework\Exception\LocalizedException
      */
     public function execute()
     {
         try {
 
-            $response = $this->_decodeSagePayResponse($this->getRequest()->getParam("crypt"));
+            //decode response
+            $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
+            if (!array_key_exists("VPSTxId", $response)) {
+                throw new \Magento\Framework\Exception\LocalizedException('Invalid response from Sage Pay');
+            }
 
             //log response
             $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $response);
@@ -149,6 +151,8 @@ class Success extends \Magento\Framework\App\Action\Action
 
                 //send email
                 $this->_checkoutHelper->sendOrderEmail($order);
+            }else{
+                throw new \Magento\Framework\Exception\LocalizedException('Can not create order');
             }
 
             $payment = $order->getPayment();
@@ -202,7 +206,7 @@ class Success extends \Magento\Framework\App\Action\Action
         } catch (\Exception $e)
         {
             $this->_logger->critical($e);
-            $this->_redirectToCartAndShowError('We can\'t place the order.');
+            $this->_redirectToCartAndShowError('Your payment was successful but the order was NOT created, please contact administration: ' . $e->getMessage());
         }
     }
 
@@ -218,44 +222,4 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_redirect('checkout/cart');
     }
 
-    protected function _decodeSagePayResponse($crypt)
-    {
-        if (empty($crypt)) {
-            $this->_redirectToCartAndShowError('Invalid response from SagePay, please contact our support team to rectify payment.');
-        } else {
-            $strDecoded = $this->_decrypt($crypt);
-
-            $responseRaw = explode('&', $strDecoded);
-            $response = array();
-
-            for ($i = 0; $i < count($responseRaw); $i++) {
-                $strField = explode('=', $responseRaw[$i]);
-                $response[$strField[0]] = $strField[1];
-            }
-
-            if (!array_key_exists("VPSTxId", $response)) {
-                $this->_redirectToCartAndShowError('Invalid response from SagePay, please contact our support team to rectify payment.');
-            } else {
-                return $response;
-            }
-        }
-    }
-
-    protected function _decrypt($strIn)
-    {
-        $cryptPass = $this->_config->getFormEncryptedPassword();
-
-        //** remove the first char which is @ to flag this is AES encrypted
-        $strIn = substr($strIn, 1);
-
-        //** HEX decoding
-        $strIn = pack('H*', $strIn);
-
-        $this->_crypt->setBlockLength(128);
-        $this->_crypt->setKey($cryptPass);
-        $this->_crypt->setIV($cryptPass);
-        $decoded = $this->_crypt->decrypt($strIn);
-
-        return $decoded;
-    }
 }
