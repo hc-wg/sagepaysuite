@@ -117,6 +117,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
 
         $transactionFactoryMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
+            ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
         $transactionFactoryMock->expects($this->any())
