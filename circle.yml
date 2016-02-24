@@ -8,7 +8,7 @@ dependencies:
     - unzip -qq 2.0.2.zip
     - mkdir -p magento2-2.0.2/app/code/Ebizmarts/SagePaySuite
     - cp -r Block Controller Helper Model Setup Test etc view registration.php magento2-2.0.2/app/code/Ebizmarts/SagePaySuite
-    - wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
+    - cd magento2-2.0.2 && wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
     - cp phpunit_config.xml magento2-2.0.2/dev/tests/unit/
     - cd magento2-2.0.2 && composer install
 
