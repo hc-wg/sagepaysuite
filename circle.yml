@@ -16,5 +16,4 @@ dependencies:
 
 test:
   override:
-    - magento2-2.0.2/vendor/bin/phpunit -c magento2-2.0.2/dev/tests/unit/phpunit_config.xml
     - magento2-2.0.2/vendor/bin/phpunit -c magento2-2.0.2/dev/tests/unit/phpunit_config.xml --coverage-text
