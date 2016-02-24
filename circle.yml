@@ -6,26 +6,11 @@ dependencies:
   override:
     - wget https://github.com/magento/magento2/archive/2.0.2.zip
     - unzip -qq 2.0.2.zip
-    #- cd magento2-2.0.2/
     - mkdir -p magento2-2.0.2/app/code/Ebizmarts/SagePaySuite
-    - pwd
-    - ls -la
-    - cp -r Block/ magento2-2.0.2/app/code/Ebizmarts/SagePaySuite
-    - cp -r Controller/ magento2-2.0.2/app/code/Ebizmarts/SagePaySuite
-    - cp -r Helper/ magento2-2.0.2/app/code/Ebizmarts/SagePaySuite
-    - cp -r Model/ magento2-2.0.2/app/code/Ebizmarts/SagePaySuite
-    - cp -r Setup/ magento2-2.0.2/app/code/Ebizmarts/SagePaySuite
-    - cp -r Test/ magento2-2.0.2/app/code/Ebizmarts/SagePaySuite
-    - cp -r etc/ magento2-2.0.2/app/code/Ebizmarts/SagePaySuite
-    - cp -r view/ magento2-2.0.2/app/code/Ebizmarts/SagePaySuite
-    - cp registration.php magento2-2.0.2/app/code/Ebizmarts/SagePaySuite
-    - pwd
-    - ls -la
+    - cp -r Block Controller Helper Model Setup Test etc view registration.php magento2-2.0.2/app/code/Ebizmarts/SagePaySuite
     - wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
     - cp phpunit_config.xml magento2-2.0.2/dev/tests/unit/
-    - cd magento2-2.0.2
-    - composer install
-    - cd ..
+    - cd magento2-2.0.2 && composer install
 
 test:
   override:
