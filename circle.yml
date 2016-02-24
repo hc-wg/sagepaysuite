@@ -3,6 +3,8 @@ machine:
     version: 5.5.11
 
 dependencies:
+  pre:
+    - sed -i 's/^;//' ~/.phpenv/versions/$(phpenv global)/etc/conf.d/xdebug.ini
   override:
     - wget https://github.com/magento/magento2/archive/2.0.2.zip
     - unzip -qq 2.0.2.zip
