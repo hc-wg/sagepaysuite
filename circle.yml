@@ -1,16 +1,26 @@
-dist: trusty
-language: php
-php:
-  - 5.5
-  - 5.6
-  - 7.0
+machine:
+  php:
+    version: 5.5.11
 
-script:
-  - wget https://github.com/magento/magento2/archive/2.0.2.zip
-  - unzip -qq 2.0.2.zip
-  - cd magento2-2.0.2/
-  - wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
-  - composer require ebizmarts/magento2-mandrill:dev-develop
-  - /bin/cp ../phpunit_config.xml dev/tests/unit/
-  - ./vendor/bin/phpunit -c dev/tests/unit/phpunit_config.xml
-  - ./vendor/bin/phpunit -c dev/tests/unit/phpunit_config.xml --coverage-text
+dependencies:
+  override:
+    - wget https://github.com/magento/magento2/archive/2.0.2.zip
+    - unzip -qq 2.0.2.zip
+    - cd magento2-2.0.2/
+    - mkdir -p app/code/Ebizmarts/SagePaySuite
+    - cp -r ../Block/ app/code/Ebizmarts/SagePaySuite
+    - cp -r ../Controller/ app/code/Ebizmarts/SagePaySuite
+    - cp -r ../Helper/ app/code/Ebizmarts/SagePaySuite
+    - cp -r ../Model/ app/code/Ebizmarts/SagePaySuite
+    - cp -r ../Setup/ app/code/Ebizmarts/SagePaySuite
+    - cp -r ../Test/ app/code/Ebizmarts/SagePaySuite
+    - cp -r ../etc/ app/code/Ebizmarts/SagePaySuite
+    - cp -r ../view/ app/code/Ebizmarts/SagePaySuite
+    - cp ../registration.php app/code/Ebizmarts/SagePaySuite
+    - wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
+    - cp ../phpunit_config.xml dev/tests/unit/
+
+test:
+  override:
+    - ./vendor/bin/phpunit -c dev/tests/unit/phpunit_config.xml
+    - ./vendor/bin/phpunit -c dev/tests/unit/phpunit_config.xml --coverage-text
