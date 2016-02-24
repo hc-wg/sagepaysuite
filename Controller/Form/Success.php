@@ -27,7 +27,7 @@ class Success extends \Magento\Framework\App\Action\Action
     protected $_logger;
 
     /**
-     * @var \Magento\Framework\DB\TransactionFactory
+     * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
      */
     protected $_transactionFactory;
 
@@ -75,7 +75,7 @@ class Success extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Psr\Log\LoggerInterface $logger,
         Logger $suiteLogger,
-        \Magento\Framework\DB\TransactionFactory $transactionFactory,
+        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Model\Form $formModel
     )

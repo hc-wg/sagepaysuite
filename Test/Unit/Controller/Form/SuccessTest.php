@@ -117,13 +117,10 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-//        $transactionFactoryMock = $this
-//            ->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
-//            ->disableOriginalConstructor()
-//            ->getMock();
-        $transactionFactoryMock = $this->getMockBuilder('\Magento\Framework\DB\TransactionFactory')
+        $transactionFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
+            ->setMethods(['create'])
             ->disableOriginalConstructor()
-//            ->setMethods(['create'])
             ->getMock();
         $transactionFactoryMock->expects($this->any())
             ->method('create')
