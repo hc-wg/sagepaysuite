@@ -138,6 +138,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
         $orderFactoryMock = $this
             ->getMockBuilder('Magento\Sales\Model\OrderFactory')
+            ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
         $orderFactoryMock->expects($this->once())

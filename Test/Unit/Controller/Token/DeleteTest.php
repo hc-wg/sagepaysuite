@@ -83,6 +83,7 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($this->redirectMock));
 
         $resultFactoryMock = $this->getMockBuilder('Magento\Framework\Controller\ResultFactory')
+            ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
 

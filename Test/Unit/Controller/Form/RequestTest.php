@@ -86,6 +86,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $resultFactoryMock = $this->getMockBuilder('Magento\Framework\Controller\ResultFactory')
+            ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
         $resultFactoryMock->expects($this->any())
