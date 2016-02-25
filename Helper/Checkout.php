@@ -71,9 +71,9 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
         \Magento\Framework\DataObject\Copy $objectCopyService,
         \Magento\Checkout\Model\Session $checkoutSession
-    ) {
+    )
+    {
         parent::__construct($context);
-
         $this->_quoteManagement = $quoteManagement;
         $this->orderSender = $orderSender;
         $this->_customerSession = $customerSession;
@@ -82,32 +82,17 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
         $this->_customerRepository = $customerRepository;
         $this->_dataObjectHelper = $dataObjectHelper;
         $this->_checkoutSession = $checkoutSession;
-        $this->_quote = $this->_getCheckoutSession()->getQuote();
-    }
-
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCheckoutSession()
-    {
-        return $this->_checkoutSession;
-    }
-
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCustomerSession()
-    {
-        return $this->_customerSession;
+        $this->_quote = $this->_checkoutSession->getQuote();
     }
 
     /**
      * Place order manually from default checkout
-     * 
+     *
      * @return \Magento\Sales\Model\Order
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function placeOrder(){
+    public function placeOrder()
+    {
 
         switch ($this->_getCheckoutMethod()) {
             case \Magento\Checkout\Model\Type\Onepage::METHOD_GUEST:
@@ -139,7 +124,7 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected function _getCheckoutMethod()
     {
-        if ($this->_getCustomerSession()->isLoggedIn()) {
+        if ($this->_customerSession->isLoggedIn()) {
             return \Magento\Checkout\Model\Type\Onepage::METHOD_CUSTOMER;
         }
         if (!$this->_quote->getCheckoutMethod()) {
@@ -161,10 +146,11 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $quote = $this->_quote;
 
-        $quote->setCustomerId(null)
-            ->setCustomerEmail($quote->getBillingAddress()->getEmail())
-            ->setCustomerIsGuest(true)
-            ->setCustomerGroupId(GroupInterface::NOT_LOGGED_IN_ID);
+        $quote->setCustomerId(null);
+        $quote->setCustomerEmail($quote->getBillingAddress()->getEmail());
+        $quote->setCustomerIsGuest(true);
+        $quote->setCustomerGroupId(GroupInterface::NOT_LOGGED_IN_ID);
+
         return $this;
     }
 
@@ -187,7 +173,8 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
             $dataArray,
             '\Magento\Customer\Api\Data\CustomerInterface'
         );
-        $quote->setCustomer($customer)->setCustomerId(true);
+        $quote->setCustomer($customer);
+        $quote->setCustomerId(true);
 
         $customerBillingData->setIsDefaultBilling(true);
 
@@ -206,7 +193,7 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
             $customerBillingData->setIsDefaultShipping(true);
         }
         $billing->setCustomerAddressData($customerBillingData);
-        // TODO : Eventually need to remove this legacy hack
+
         // Add billing address to quote since customer Data Object does not hold address information
         $quote->addCustomerAddress($customerBillingData);
     }
@@ -223,7 +210,7 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
         $billing = $quote->getBillingAddress();
         $shipping = $quote->isVirtual() ? null : $quote->getShippingAddress();
 
-        $customer = $this->_customerRepository->getById($this->_getCustomerSession()->getCustomerId());
+        $customer = $this->_customerRepository->getById($this->_customerSession->getCustomerId());
         $hasDefaultBilling = (bool)$customer->getDefaultBilling();
         $hasDefaultShipping = (bool)$customer->getDefaultShipping();
 
@@ -258,7 +245,8 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * @param $order
      */
-    public function sendOrderEmail($order){
+    public function sendOrderEmail($order)
+    {
         $this->orderSender->send($order);
     }
 

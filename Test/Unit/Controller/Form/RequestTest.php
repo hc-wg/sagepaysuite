@@ -51,7 +51,6 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      */
     protected $_configMock;
 
-
     protected function setUp()
     {
         $quoteMock = $this
