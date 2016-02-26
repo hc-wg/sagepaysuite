@@ -4,14 +4,6 @@
  * See LICENSE.txt for license details.
  */
 
-namespace Ebizmarts\SagePaySuite\Model;
-
-function save()
-{
-    echo "Aaaaaaaa";
-    //set a dummy construct to avoid DB initialization;
-}
-
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
 class TokenTest extends \PHPUnit_Framework_TestCase
@@ -145,18 +137,6 @@ class TokenTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             'testebizmarts',
             $token->getVendorname()
-        );
-    }
-
-    public function testLoadToken2()
-    {
-        $this->resourceMock->expects($this->any())
-            ->method('getTokenById')
-            ->will($this->returnValue(NULL));
-
-        $this->assertEquals(
-            NULL,
-            $this->tokenModel->loadToken(1)
         );
     }
 
