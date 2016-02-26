@@ -122,11 +122,6 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
     protected $_transactionFactory;
 
     /**
-     * @var \Magento\Framework\Message\ManagerInterface
-     */
-    protected $_messageManager;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
     protected $_config;
