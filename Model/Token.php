@@ -9,7 +9,7 @@ namespace Ebizmarts\SagePaySuite\Model;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 /**
- *
+ * Sage Pay Token class
  */
 class Token extends \Magento\Framework\Model\AbstractModel
 {
@@ -45,9 +45,9 @@ class Token extends \Magento\Framework\Model\AbstractModel
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
-    ) {
+    )
+    {
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
-
         $this->_suiteLogger = $suiteLogger;
         $this->_logger = $context->getLogger();
         $this->_postApi = $postApi;
@@ -76,20 +76,21 @@ class Token extends \Magento\Framework\Model\AbstractModel
      * @param $vendorname
      * @return $this
      */
-    public function saveToken($customerId,$token,$ccType,$ccLast4,$ccExpMonth,$ccExpYear,$vendorname){
+    public function saveToken($customerId, $token, $ccType, $ccLast4, $ccExpMonth, $ccExpYear, $vendorname)
+    {
 
-        if(empty($customerId)) {
+        if (empty($customerId)) {
             return $this;
         }
 
-        $this->setCustomerId($customerId)
-            ->setToken($token)
-            ->setCcType($ccType)
-            ->setCcLast4($ccLast4)
-            ->setCcExpMonth($ccExpMonth)
-            ->setCcExpYear($ccExpYear)
-            ->setVendorname($vendorname)
-            ->save();
+        $this->setCustomerId($customerId);
+        $this->setToken($token);
+        $this->setCcType($ccType);
+        $this->setCcLast4($ccLast4);
+        $this->setCcExpMonth($ccExpMonth);
+        $this->setCcExpYear($ccExpYear);
+        $this->setVendorname($vendorname);
+        $this->save();
 
         return $this;
     }
@@ -101,36 +102,38 @@ class Token extends \Magento\Framework\Model\AbstractModel
      * @param $vendorname
      * @return array
      */
-    public function getCustomerTokens($customerId,$vendorname){
-        if(!empty($customerId)){
+    public function getCustomerTokens($customerId, $vendorname)
+    {
+        if (!empty($customerId)) {
             $this->setData([]);
-            $this->getResource()->getCustomerTokens($this,$customerId,$vendorname);
+            $this->getResource()->getCustomerTokens($this, $customerId, $vendorname);
             return $this->_data;
         }
         return array();
     }
 
     /**
-     * Delete token from db
-     *
-     * @param $tokenId
-     * @return void
+     * Delete token from db and Sage Pay
      */
-    public function deleteToken(){
+    public function deleteToken()
+    {
 
         //delete from sagepay
         $this->_deleteFromSagePay();
 
-        if($this->getId()){
+        if ($this->getId()) {
             $this->delete();
         }
     }
 
+    /**
+     * delete token using Sage Pay API
+     */
     protected function _deleteFromSagePay()
     {
         try {
 
-            if(empty($this->getVendorname()) || empty($this->getToken())){
+            if (empty($this->getVendorname()) || empty($this->getToken())) {
                 //missing data to proceed
                 return;
             }
@@ -144,21 +147,21 @@ class Token extends \Magento\Framework\Model\AbstractModel
 
             //send POST to Sage Pay
             $this->_postApi->sendPost($data,
-                $this->getRemoveServiceURL(),
+                $this->_getRemoveServiceURL(),
                 array("OK")
             );
 
-        }catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             $this->_logger->critical($e);
             //we do not show any error message to frontend
         }
     }
 
-    public function getRemoveServiceURL(){
-        if($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE){
+    protected function _getRemoveServiceURL()
+    {
+        if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_LIVE;
-        }else{
+        } else {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_TEST;
         }
     }
@@ -173,7 +176,7 @@ class Token extends \Magento\Framework\Model\AbstractModel
     {
         $token = $this->getResource()->getTokenById($tokenId);
 
-        if(is_null($token)){
+        if (is_null($token)) {
             return null;
         }
 
@@ -195,11 +198,11 @@ class Token extends \Magento\Framework\Model\AbstractModel
      * Checks whether the token is owned by the customer
      *
      * @param $customerId
-     * @param $tokenId
      * @return bool
      */
-    public function isOwnedByCustomer($customerId){
-        if(empty($customerId) || empty($this->getId())){
+    public function isOwnedByCustomer($customerId)
+    {
+        if (empty($customerId) || empty($this->getId())) {
             return false;
         }
         return $this->getResource()->isTokenOwnedByCustomer($customerId, $this->getId());
@@ -211,12 +214,13 @@ class Token extends \Magento\Framework\Model\AbstractModel
      * @param $customerId
      * @return bool
      */
-    public function isCustomerUsingMaxTokenSlots($customerId,$vendorname){
-        if(empty($customerId)){
+    public function isCustomerUsingMaxTokenSlots($customerId, $vendorname)
+    {
+        if (empty($customerId)) {
             return true;
         }
         $this->setData([]);
-        $this->getResource()->getCustomerTokens($this,$customerId,$vendorname);
+        $this->getResource()->getCustomerTokens($this, $customerId, $vendorname);
         return count($this->_data) >= \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER;
     }
 
