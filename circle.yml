@@ -17,3 +17,5 @@ dependencies:
 test:
   override:
     - magento2-2.0.2/vendor/bin/phpunit -c magento2-2.0.2/dev/tests/unit/phpunit_config.xml --coverage-text
+  post:
+    - cd magento2-2.0.2 && composer require --prefer-source --no-interaction "squizlabs/php_codesniffer=*" magento-ecg/coding-standard && vendor/squizlabs/php_codesniffer/scripts/phpcs --config-set installed_paths vendor/magento-ecg/coding-standard && ./vendor/squizlabs/php_codesniffer/scripts/phpcs -n --standard="EcgM2" ./app/code/Ebizmarts/SagePaySuite;
