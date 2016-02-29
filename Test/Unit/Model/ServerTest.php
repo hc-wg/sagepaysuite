@@ -216,21 +216,10 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
     public function testCancel()
     {
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('getState')
-            ->will($this->returnValue(\Magento\Sales\Model\Order::STATE_PROCESSING));
-
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
 
         $this->serverModel->setInfoInstance($paymentMock);
 

@@ -266,9 +266,9 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function cancel(\Magento\Payment\Model\InfoInterface $payment)
     {
-        if ($this->canVoid()) {
-            //$this->void($payment);
-        }
+//        if ($this->canVoid()) {
+//            $this->void($payment);
+//        }
         return parent::cancel($payment);
     }
 
@@ -280,14 +280,10 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function canVoid()
     {
-        try {
-            $payment = $this->getInfoInstance();
-            $order = $payment->getOrder();
-            if($order->getState() == \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT){
-                return false;
-            }
-        } catch (\Exception $e) {
-
+        $payment = $this->getInfoInstance();
+        $order = $payment->getOrder();
+        if ($order->getState() == \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
+            return false;
         }
 
         return $this->_canVoid;

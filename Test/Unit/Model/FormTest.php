@@ -175,7 +175,6 @@ class FormTest extends \PHPUnit_Framework_TestCase
             ->with(self::TEST_VPSTXID,100,1000001);
 
         $this->formModel->refund($paymentMock,100);
-
     }
 
     public function testRefundERROR()
@@ -213,7 +212,6 @@ class FormTest extends \PHPUnit_Framework_TestCase
             'There was an error refunding Sage Pay transaction ' . self::TEST_VPSTXID . ': Error in Refunding',
             $response
         );
-
     }
 
     public function testDecodeSagePayResponse()
@@ -226,7 +224,6 @@ class FormTest extends \PHPUnit_Framework_TestCase
             ],
             $this->formModel->decodeSagePayResponse(self::TEST_RESPONSE_HASH)
         );
-
     }
 
     public function testGetConfigPaymentAction(){
