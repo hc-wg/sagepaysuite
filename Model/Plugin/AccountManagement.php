@@ -9,40 +9,44 @@ namespace Ebizmarts\SagePaySuite\Model\Plugin;
 class AccountManagement
 {
     /**
-     * @var \Magento\Framework\ObjectManagerInterface
+     * @var \Magento\Quote\Model\QuoteFactory
      */
-    protected $_objectManager;
+    protected $_quoteFactory;
+
+    /**
+     * @var \Magento\Checkout\Model\Session
+     */
+    protected $_checkoutSession;
 
     /**
      * AccountManagement constructor.
-     * @param \Magento\Framework\ObjectManagerInterface $objectManager
+     *
+     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
+     * @param \Magento\Checkout\Model\Session $checkoutSession
      */
     public function __construct(
-        \Magento\Framework\ObjectManagerInterface $objectManager
+        \Magento\Quote\Model\QuoteFactory $quoteFactory,
+        \Magento\Checkout\Model\Session $checkoutSession
     )
     {
-        $this->_objectManager = $objectManager;
+        $this->_quoteFactory = $quoteFactory;
+        $this->_checkoutSession = $checkoutSession;
     }
 
-    public function aroundIsEmailAvailable(\Magento\Customer\Model\AccountManagement $accountManagement,\Closure $proceed,$customerEmail,$websiteId=null)
+    public function aroundIsEmailAvailable(\Magento\Customer\Model\AccountManagement $accountManagement,
+                                           \Closure $proceed,$customerEmail,$websiteId=null)
     {
         $ret = $proceed($customerEmail,$websiteId);
-        $session = $this->_getSession();
-        if($session)
+        if($this->_checkoutSession)
         {
-            $quoteId = $session->getQuoteId();
+            $quoteId = $this->_checkoutSession->getQuoteId();
             if($quoteId) {
-                $quote = $this->_objectManager->get('\Magento\Quote\Model\Quote')->load($quoteId);
+                $quote = $this->_quoteFactory->create()->load($quoteId);
                 $quote->setCustomerEmail($customerEmail);
                 $quote->setUpdatedAt(date('Y-m-d H:i:s'));
                 $quote->save();
             }
         }
         return $ret;
-    }
-
-    protected function _getSession()
-    {
-        return $this->_objectManager->get('Magento\Checkout\Model\Session');
     }
 }
