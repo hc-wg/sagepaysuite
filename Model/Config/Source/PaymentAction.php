@@ -21,17 +21,14 @@ class PaymentAction implements ArrayInterface
     {
         return [
             [
-                //'value' => \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE,
                 'value' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT,
                 'label' => __('Payment - Authorize and Capture'),
             ],
             [
-                //'value' => \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE,
                 'value' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER,
                 'label' => __('Defer - Authorize Only'),
             ],
             [
-                //'value' => \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE,
                 'value' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE,
                 'label' => __('Authorize - Authorize Only'),
             ]
