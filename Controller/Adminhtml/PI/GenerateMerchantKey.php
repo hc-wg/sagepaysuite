@@ -4,7 +4,7 @@
  * See LICENSE.txt for license details.
  */
 
-namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\SagePaySuite\PI;
+namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\PI;
 
 
 use Magento\Framework\Controller\ResultFactory;

@@ -4,8 +4,6 @@
  * See LICENSE.txt for license details.
  */
 
-// @codingStandardsIgnoreFile
-
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
 use Magento\Framework\Exception\LocalizedException;
@@ -22,12 +20,9 @@ class ApiException extends LocalizedException
     const INVALID_USER_AUTH = '0008';
     const INVALID_TRANSACTION_STATE = '5004';
 
-
     /**
-     * Constructor
-     *
-     * @param \Magento\Framework\Phrase $phrase
-     * @param Magento\Framework\Exception\LocalizedException $cause
+     * @param Phrase $phrase
+     * @param LocalizedException|null $cause
      * @param int $code
      */
     public function __construct(Phrase $phrase, LocalizedException $cause = null, $code = 0)

@@ -13,12 +13,10 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
  */
 class PIRest
 {
-
     const ACTION_GENERATE_MERCHANT_KEY = 'merchant-session-keys';
     const ACTION_CAPTURE_TRANSACTION = 'transactions';
     const ACTION_SUBMIT_3D = '3d-secure';
     const ACTION_TRANSACTION_DETAILS = 'transaction_details';
-
 
     /**
      * @var \Magento\Framework\HTTP\Adapter\CurlFactory
@@ -44,8 +42,9 @@ class PIRest
 
     /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
+     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param ApiExceptionFactory $apiExceptionFactory
+     * @param Logger $suiteLogger
      */
     public function __construct(
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
@@ -167,6 +166,12 @@ class PIRest
         }
     }
 
+    /**
+     * Make POST request to ask for merchant key
+     *
+     * @return mixed
+     * @throws
+     */
     public function generateMerchantKey()
     {
         $jsonBody = json_encode(array("vendorName" => $this->_config->getVendorname()));
@@ -190,6 +195,13 @@ class PIRest
         }
     }
 
+    /**
+     * Make capture payment request
+     *
+     * @param $payment_request
+     * @return mixed
+     * @throws
+     */
     public function capture($payment_request)
     {
         //log request
@@ -240,6 +252,14 @@ class PIRest
         }
     }
 
+    /**
+     * Submit 3D result via POST
+     *
+     * @param $paRes
+     * @param $vpsTxId
+     * @return mixed
+     * @throws
+     */
     public function submit3D($paRes, $vpsTxId)
     {
         $jsonBody = json_encode(array("paRes" => $paRes));
@@ -270,6 +290,13 @@ class PIRest
         }
     }
 
+    /**
+     * GET transaction details
+     *
+     * @param $vpsTxId
+     * @return mixed
+     * @throws
+     */
     public function transactionDetails($vpsTxId)
     {
 
