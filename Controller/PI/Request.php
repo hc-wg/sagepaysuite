@@ -91,7 +91,7 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_checkoutHelper = $checkoutHelper;
         $this->_customerSession = $customerSession;
         $this->_checkoutSession = $checkoutSession;
-        $this->_quote = $this->_getCheckoutSession()->getQuote();
+        $this->_quote = $this->_checkoutSession->getQuote();
     }
 
     public function execute()
@@ -155,13 +155,13 @@ class Request extends \Magento\Framework\App\Action\Action
                         $this->_checkoutHelper->sendOrderEmail($order);
 
                         //prepare session to success page
-                        $this->_getCheckoutSession()->clearHelperData();
+                        $this->_checkoutSession->clearHelperData();
                         //set last successful quote
-                        $this->_getCheckoutSession()->setLastQuoteId($this->_quote->getId());
-                        $this->_getCheckoutSession()->setLastSuccessQuoteId($this->_quote->getId());
-                        $this->_getCheckoutSession()->setLastOrderId($order->getId());
-                        $this->_getCheckoutSession()->setLastRealOrderId($order->getIncrementId());
-                        $this->_getCheckoutSession()->setLastOrderStatus($order->getStatus());
+                        $this->_checkoutSession->setLastQuoteId($this->_quote->getId());
+                        $this->_checkoutSession->setLastSuccessQuoteId($this->_quote->getId());
+                        $this->_checkoutSession->setLastOrderId($order->getId());
+                        $this->_checkoutSession->setLastRealOrderId($order->getIncrementId());
+                        $this->_checkoutSession->setLastOrderStatus($order->getStatus());
                     }
                 } else {
                     throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
@@ -202,14 +202,6 @@ class Request extends \Magento\Framework\App\Action\Action
         return $resultJson;
     }
 
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCustomerSession()
-    {
-        return $this->_customerSession;
-    }
-
     protected function _generateRequest($vendorTxCode)
     {
 
@@ -242,21 +234,9 @@ class Request extends \Magento\Framework\App\Action\Action
         ];
 
         if ($billing_address->getCountryId() == "US") {
-            $state = $billing_address->getRegionCode();
-            if (strlen($state) > 2) {
-                $state = "CA"; //hardcoded as the code is not working correctly
-            }
-            $data["billingAddress"]["state"] = $state;
+            $data["billingAddress"]["state"] = substr($billing_address->getRegionCode(), 0, 2);
         }
 
         return $data;
-    }
-
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCheckoutSession()
-    {
-        return $this->_checkoutSession;
     }
 }

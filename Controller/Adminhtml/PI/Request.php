@@ -6,15 +6,12 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\PI;
 
-
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 
-
 class Request extends \Magento\Backend\App\AbstractAction
 {
-
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
@@ -62,12 +59,26 @@ class Request extends \Magento\Backend\App\AbstractAction
     protected $_customerSession;
 
     /**
+     * @var \Magento\Checkout\Model\Session
+     */
+    protected $_checkoutSession;
+
+    /**
      * @var \Magento\Quote\Model\QuoteManagement
      */
     protected $_quoteManagement;
 
     /**
-     * @param \Magento\Framework\App\Action\Context $context
+     * @param \Magento\Backend\App\Action\Context $context
+     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+     * @param Logger $suiteLogger
+     * @param PIRest $pirestapi
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Magento\Customer\Model\Session $customerSession
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
+     * @param \Magento\Quote\Model\QuoteManagement $quoteManagement
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
@@ -77,6 +88,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         PIRest $pirestapi,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Customer\Model\Session $customerSession,
+        \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Magento\Quote\Model\QuoteManagement $quoteManagement
     )
@@ -85,19 +97,21 @@ class Request extends \Magento\Backend\App\AbstractAction
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
         $this->_suiteHelper = $suiteHelper;
-        $this->_quote = $this->_getCheckoutSession()->getQuote();
         $this->_suiteLogger = $suiteLogger;
         $this->_pirestapi = $pirestapi;
         $this->_logger = $logger;
         $this->_checkoutHelper = $checkoutHelper;
         $this->_customerSession = $customerSession;
+        $this->_checkoutSession = $checkoutSession;
         $this->_quoteManagement = $quoteManagement;
-        $this->_postData = $this->getRequest()->getPost();
+        $this->_quote = $this->_checkoutSession->getQuote();
     }
 
     public function execute()
     {
         try {
+            //parse POST data
+            $this->_postData = $this->getRequest()->getPost();
 
             //prepare quote
             $this->_quote->collectTotals();
@@ -132,12 +146,7 @@ class Request extends \Magento\Backend\App\AbstractAction
                 $payment->setAdditionalInformation('mode', $this->_config->getMode());
 
                 //save order with pending payment
-                //$order = $this->_checkoutHelper->placeOrder();
                 $order = $this->_quoteManagement->submit($this->_quote);
-
-                if (!$order) {
-                    throw new \Magento\Framework\Exception\LocalizedException(__('Can not save order. Please try another payment option.'));
-                }
 
                 if ($order) {
                     $payment = $order->getPayment();
@@ -164,11 +173,11 @@ class Request extends \Magento\Backend\App\AbstractAction
                     ];
 
                 } else {
-                    throw new \Magento\Framework\Validator\Exception(__('Unable to save order, please use another payment method.'));
+                    throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order.'));
                 }
 
             } else {
-                throw new \Magento\Framework\Validator\Exception(__('Invalid Sage Pay response, please use another payment method.'));
+                throw new \Magento\Framework\Validator\Exception(__('Invalid Sage Pay response.'));
             }
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
@@ -191,20 +200,10 @@ class Request extends \Magento\Backend\App\AbstractAction
         return $resultJson;
     }
 
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCustomerSession()
-    {
-        return $this->_customerSession;
-    }
-
     protected function _generateRequest($vendorTxCode)
     {
 
         $billing_address = $this->_quote->getBillingAddress();
-        $shipping_address = $this->_quote->getShippingAddress();
-        $customer_data = $this->_getCustomerSession()->getCustomerDataObject();
 
         $data = [
             'transactionType' => $this->_config->getSagepayPaymentAction(),
@@ -231,21 +230,9 @@ class Request extends \Magento\Backend\App\AbstractAction
         ];
 
         if ($billing_address->getCountryId() == "US") {
-            $state = $billing_address->getRegionCode();
-            if (strlen($state) > 2) {
-                $state = "CA"; //hardcoded as the code is not working correctly
-            }
-            $data["billingAddress"]["state"] = $state;
+            $data["billingAddress"]["state"] = substr($billing_address->getRegionCode(), 0, 2);
         }
 
         return $data;
-    }
-
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCheckoutSession()
-    {
-        return $this->_objectManager->get('Magento\Backend\Model\Session\Quote');
     }
 }

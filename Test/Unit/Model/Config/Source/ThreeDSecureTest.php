@@ -17,12 +17,13 @@ class ThreeDSecureTest extends \PHPUnit_Framework_TestCase
     {
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $this->threedSecureModel = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Model\Config\Source\ThreeDSecure',
+            '\Ebizmarts\SagePaySuite\Model\Config\Source\ThreeDSecure',
             []
         );
     }
 
-    public function testToOptionArray(){
+    public function testToOptionArray()
+    {
         $this->assertEquals(
             [
                 'value' => \Ebizmarts\SagePaySuite\Model\Config::MODE_3D_DEFAULT,

@@ -6,9 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\PI;
 
-
 use Magento\Framework\Controller\ResultFactory;
-
 
 class GenerateMerchantKey extends \Magento\Backend\App\AbstractAction
 {
@@ -18,24 +16,21 @@ class GenerateMerchantKey extends \Magento\Backend\App\AbstractAction
     protected $_pirest;
 
     /**
-     * @param \Magento\Framework\App\Action\Context $context
+     * @param \Magento\Backend\App\Action\Context $context
      * @param \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirest
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
-        \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirest
+        \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirestapi
     )
     {
         parent::__construct($context);
-
-        $this->_pirest = $pirest;
+        $this->_pirest = $pirestapi;
     }
 
     public function execute()
     {
-
         try {
-
             $responseContent = [
                 'success' => true,
                 'merchant_session_key' => $this->_pirest->generateMerchantKey(),
@@ -52,9 +47,9 @@ class GenerateMerchantKey extends \Magento\Backend\App\AbstractAction
         } catch (\Exception $e) {
             $responseContent = [
                 'success' => false,
-                'error_message' => __('Something went wrong while generating the merchant session key.'),
+                'error_message' => __('Something went wrong: ' . $e->getMessage()),
             ];
-            $this->messageManager->addError(__('Something went wrong while generating the merchant session key.'));
+            $this->messageManager->addError(__('Something went wrong: ' . $e->getMessage()));
         }
 
         $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
