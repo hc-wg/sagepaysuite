@@ -111,6 +111,11 @@ class Request extends \Magento\Framework\App\Action\Action
         $data = array();
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
         $data['Amount'] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
+
+        if($this->_config->getSendBasket()) {
+            $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
+        }
+
         $data['Currency'] = $this->_quote->getQuoteCurrencyCode();
         $data['Description'] = "Magento transaction";
         $data['SuccessURL'] = $this->_url->getUrl('*/*/success');
@@ -126,7 +131,6 @@ class Request extends \Magento\Framework\App\Action\Action
         //populate address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
 
-//        $data['BasketXML'] = $basket;
 //        $data['AllowGiftAid'] = (int)$this->getConfigData('allow_gift_aid');
 //        $data['ApplyAVSCV2']  = $this->getConfigData('avscv2');
 //        $data['Apply3DSecure']  = $this->getConfigData('avscv2');

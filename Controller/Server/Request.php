@@ -220,6 +220,11 @@ class Request extends \Magento\Framework\App\Action\Action
         $data["Vendor"] = $this->_config->getVendorname();
         $data["VendorTxCode"] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
         $data["Amount"] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
+
+        if($this->_config->getSendBasket()) {
+            $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
+        }
+
         $data["Currency"] = $this->_quote->getQuoteCurrencyCode();
         $data["Description"] = "Magento transaction";
         $data["NotificationURL"] = $this->_getNotificationUrl();

@@ -55,6 +55,16 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>sagepaysuite/advanced/fraud_autoinvoice</config_path>
                     </field>
+                    <field id="send_basket" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Send basket contents</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>sagepaysuite/advanced/send_basket</config_path>
+                    </field>
+                    <field id="basket_format" translate="label" type="select" sortOrder="26" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Basket format</label>
+                        <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\BasketFormat</source_model>
+                        <config_path>sagepaysuite/advanced/basket_format</config_path>
+                    </field>
                     <!--<field id="fraud_notify" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">-->
                         <!--<label>Notify Fraud Result</label>-->
                         <!--<source_model>Ebizmarts\SagePaySuite\Model\Config\Source\FraudNotify</source_model>-->
@@ -246,6 +256,11 @@
                         <label>Billing Agreement</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/sagepaysuitepaypal/billing_agreement</config_path>
+                    </field>
+                    <field id="force_xml" translate="label" type="select" sortOrder="27" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Force XML basket</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/sagepaysuitepaypal/force_xml</config_path>
                     </field>
                     <field id="sort_order" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Sort Order</label>
