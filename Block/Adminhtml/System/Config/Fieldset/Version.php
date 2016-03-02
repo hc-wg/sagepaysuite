@@ -20,10 +20,11 @@ class Version extends \Magento\Backend\Block\Template implements \Magento\Framew
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
     protected $_suiteHelper;
+
     /**
      * @param \Magento\Backend\Block\Template\Context $context
      * @param \Magento\Framework\App\ProductMetadataInterface $productMetaData
-     * @param \Magento\Framework\Module\ModuleList\Loader $loader
+     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
      * @param array $data
      */
     public function __construct(

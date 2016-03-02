@@ -9,7 +9,6 @@ namespace Ebizmarts\SagePaySuite\Block\Paypal;
 
 class Processing extends \Magento\Framework\View\Element\Template
 {
-
     protected function _toHtml()
     {
         $html = '<html><head><title>PayPal - Processing payment...</title></head><body>';

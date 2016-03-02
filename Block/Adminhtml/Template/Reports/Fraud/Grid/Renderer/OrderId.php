@@ -46,7 +46,6 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
         $link = $this->getUrl('sales/order/view/',array('order_id'=>$order->getEntityId()));
 
         return '<a href="' . $link . '">' . $orderId . '</a>';
-
     }
 
 }

@@ -24,8 +24,11 @@ class FraudNotifyTest extends \PHPUnit_Framework_TestCase
 
     public function testToOptionArray(){
         $this->assertEquals(
-            true,
-            true
+            [
+                'value' => "disabled",
+                'label' => __('Disabled'),
+            ],
+            $this->fraudNotifyModel->toOptionArray()[0]
         );
     }
 }
