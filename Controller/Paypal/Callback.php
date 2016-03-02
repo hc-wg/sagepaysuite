@@ -93,35 +93,30 @@ class Callback extends \Magento\Framework\App\Action\Action
         $this->_checkoutHelper = $checkoutHelper;
         $this->_suiteLogger = $suiteLogger;
         $this->_postApi = $postApi;
-
-        $this->_postData = $this->getRequest()->getPost();
-        $this->_quote = $this->_getCheckoutSession()->getQuote();
+        $this->_quote = $this->_checkoutSession->getQuote();
     }
 
     /**
-     * FORM success callback
-     *
-     * @return void
+     * Paypal callback
+     * @throws LocalizedException
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function execute()
     {
         try {
+            //get POST data
+            $this->_postData = $this->getRequest()->getPost();
 
             //log response
             $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $this->_postData);
 
-            if (empty($this->_postData) || !isset($this->_postData->Status) || $this->_postData->Status != "PAYPALOK")
-            {
+            if (empty($this->_postData) || !isset($this->_postData->Status) || $this->_postData->Status != "PAYPALOK") {
                 if (!empty($this->_postData) && isset($this->_postData->StatusDetail)) {
-                    throw new LocalizedException("Can not place PayPal order: " . $this->_postData->StatusDetail);
+                    throw new \Magento\Framework\Exception\LocalizedException(__("Can not place PayPal order: " . $this->_postData->StatusDetail));
                 } else {
-                    throw new LocalizedException("Can not place PayPal order, please try another payment method");
+                    throw new \Magento\Framework\Exception\LocalizedException(__("Can not place PayPal order, please try another payment method"));
                 }
             }
-
-            //toDo
-            //update shipping from paypal and other data
 
             //send COMPLETION post to sagepay
             $completion_response = $this->_sendCompletionPost()["data"];
@@ -148,13 +143,15 @@ class Callback extends \Magento\Framework\App\Action\Action
             $quoteId = $this->_quote->getId();
 
             //prepare session to success or cancellation page
-            $this->_getCheckoutSession()->clearHelperData();
-            $this->_getCheckoutSession()->setLastQuoteId($quoteId)->setLastSuccessQuoteId($quoteId);
+            $this->_checkoutSession->clearHelperData();
+            $this->_checkoutSession->setLastQuoteId($quoteId);
+            $this->_checkoutSession->setLastSuccessQuoteId($quoteId);
+
             //an order may be created
             if ($order) {
-                $this->_getCheckoutSession()->setLastOrderId($order->getId())
-                    ->setLastRealOrderId($order->getIncrementId())
-                    ->setLastOrderStatus($order->getStatus());
+                $this->_checkoutSession->setLastOrderId($order->getId());
+                $this->_checkoutSession->setLastRealOrderId($order->getIncrementId());
+                $this->_checkoutSession->setLastOrderStatus($order->getStatus());
 
                 //send email
                 $this->_checkoutHelper->sendOrderEmail($order);
@@ -186,18 +183,18 @@ class Callback extends \Magento\Framework\App\Action\Action
             }
 
             //create transaction record
-            $transaction = $this->_transactionFactory->create()
-                ->setOrderPaymentObject($payment)
-                ->setTxnId($transactionId)
-                ->setOrderId($order->getEntityId())
-                ->setTxnType($action)
-                ->setPaymentId($payment->getId());
+            $transaction = $this->_transactionFactory->create();
+            $transaction->setOrderPaymentObject($payment);
+            $transaction->setTxnId($transactionId);
+            $transaction->setOrderId($order->getEntityId());
+            $transaction->setTxnType($action);
+            $transaction->setPaymentId($payment->getId());
             $transaction->setIsClosed($closed);
             $transaction->save();
 
             //update invoice transaction id
             $invoices = $order->getInvoiceCollection();
-            if ($invoices->count()) {
+            if (!empty($invoices)) {
                 foreach ($invoices as $_invoice) {
                     $_invoice->setTransactionId($payment->getLastTransId());
                     $_invoice->save();
@@ -208,9 +205,10 @@ class Callback extends \Magento\Framework\App\Action\Action
 
             return;
 
-        } catch (\Exception $e) {
+        } catch (\Exception $e)
+        {
             $this->_logger->critical($e);
-            $this->_redirectToCartAndShowError('We can\'t place the order. Please try another payment method. ' . $e->getMessage());
+            $this->_redirectToCartAndShowError('We can\'t place the order: ' . $e->getMessage());
         }
     }
 
@@ -243,20 +241,7 @@ class Callback extends \Magento\Framework\App\Action\Action
         $this->_redirect('checkout/cart');
     }
 
-    protected function _getCheckoutSession()
-    {
-        return $this->_checkoutSession;
-    }
-
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCustomerSession()
-    {
-        return $this->_customerSession;
-    }
-
-    private function _getServiceURL()
+    protected function _getServiceURL()
     {
         if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_PAYPAL_COMPLETION_LIVE;

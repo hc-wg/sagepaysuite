@@ -6,80 +6,74 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Form;
 
-use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 class Failure extends \Magento\Framework\App\Action\Action
 {
-
-    /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
-     */
-    protected $_config;
-
-    /**
-     * Checkout data
-     *
-     * @var \Magento\Checkout\Helper\Data
-     */
-    protected $_checkoutData;
-
-    protected $_quote;
-
-    /**
-     * @var \Magento\Quote\Model\QuoteManagement
-     */
-    protected $quoteManagement;
-
-    /**
-     * @var OrderSender
-     */
-    protected $orderSender;
-
     /**
      * @var \Psr\Log\LoggerInterface
      */
     protected $_logger;
 
     /**
+     * Logging instance
+     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     */
+    protected $_suiteLogger;
+
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Form
+     */
+    protected $_formModel;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
+     * @param Logger $suiteLogger
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Ebizmarts\SagePaySuite\Model\Form $formModel
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Magento\Checkout\Helper\Data $checkoutData,
-        \Magento\Quote\Model\QuoteManagement $quoteManagement,
-        OrderSender $orderSender,
-        \Psr\Log\LoggerInterface $logger
+        \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
+        \Psr\Log\LoggerInterface $logger,
+        \Ebizmarts\SagePaySuite\Model\Form $formModel
     )
     {
         parent::__construct($context);
-        $this->_config = $config;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
-        $this->_checkoutData = $checkoutData;
-        $this->quoteManagement = $quoteManagement;
-        $this->orderSender = $orderSender;
+        $this->_suiteLogger = $suiteLogger;
         $this->_logger = $logger;
+        $this->_formModel = $formModel;
     }
 
     /**
-     * FORM success callback
-     *
-     * @return void
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws Magento\Framework\Exception\LocalizedException
      */
     public function execute()
     {
         try {
 
-            $this->_redirect('checkout/onepage/failure');
+            //decode response
+            $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
+            if (!array_key_exists("Status", $response) || !array_key_exists("StatusDetail", $response)) {
+                throw new \Magento\Framework\Exception\LocalizedException('Invalid response from Sage Pay');
+            }
+
+            //log response
+            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $response);
+
+            $statusDetail = $response["StatusDetail"];
+            $statusDetail = explode(" : ",$statusDetail);
+            $statusDetail = $statusDetail[1];
+
+            $this->messageManager->addError($response["Status"] . ": " . $statusDetail);
+            $this->_redirect('checkout/cart');
 
             return;
 
-        } catch (\Exception $e) {
-            //$this->messageManager->addError(__('We can\'t place the order. Please try again.'));
+        } catch (\Exception $e)
+        {
+            $this->messageManager->addError($e->getMessage());
             $this->_logger->critical($e);
-            //$this->_redirect('*/*/review');
-            //$this->_redirectToCartAndShowError('We can\'t place the order. Please try again.');
         }
     }
 }

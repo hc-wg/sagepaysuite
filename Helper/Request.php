@@ -52,7 +52,6 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         //not mandatory
 //        $data['BillingAddress2']   = ($this->getConfigData('mode') == 'test') ? 88 : $this->ss($billing->getStreet(2), 100);
 
-
         //mandatory
         $data['DeliverySurname']    = substr($shipping_address->getLastname(), 0, 20);
         $data['DeliveryFirstnames'] = substr($shipping_address->getFirstname(), 0, 20);

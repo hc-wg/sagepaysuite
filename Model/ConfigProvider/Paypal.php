@@ -46,11 +46,12 @@ class Paypal implements ConfigProviderInterface
             return [];
         }
 
-        return ['payment' => [
-            'ebizmarts_sagepaysuitepaypal' => [
-                'licensed' => $this->_suiteHelper->verify()
-            ],
-        ]
+        return [
+            'payment' => [
+                'ebizmarts_sagepaysuitepaypal' => [
+                    'licensed' => $this->_suiteHelper->verify()
+                ],
+            ]
         ];
     }
 }

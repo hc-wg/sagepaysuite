@@ -14,12 +14,10 @@ class Logger extends \Monolog\Logger
      * SagePaySuite log files
      */
     const LOG_REQUEST = 'Request';
-    const LOG_SERVER_NOTIFY = 'SERVER_Notify';
     const LOG_CRON = 'Cron';
 
     protected static $levels = array(
         self::LOG_REQUEST => 'Request',
-        self::LOG_SERVER_NOTIFY => 'SERVER_Notify',
         self::LOG_CRON => 'Cron'
     );
 
@@ -40,13 +38,17 @@ class Logger extends \Monolog\Logger
                 $message = json_encode($message,JSON_PRETTY_PRINT);
             }
 
+            if(!empty(json_last_error())){
+                $message = (string)json_last_error();
+            }
+
             $message = (string)$message;
 
         } catch (\Exception $e) {
             $message = "INVALID MESSAGE";
         }
 
-        $message .= "\n\n";
+        $message .= "\r\n";
 
         return $this->addRecord($logType, $message, array());
     }

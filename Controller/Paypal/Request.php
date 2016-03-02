@@ -45,6 +45,16 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_requestHelper;
 
     /**
+     * @var \Magento\Customer\Model\Session
+     */
+    protected $_customerSession;
+
+    /**
+     * @var \Magento\Checkout\Model\Session
+     */
+    protected $_checkoutSession;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
@@ -53,7 +63,9 @@ class Request extends \Magento\Framework\App\Action\Action
         Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
-        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
+        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Customer\Model\Session $customerSession
     )
     {
         parent::__construct($context);
@@ -63,8 +75,9 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_suiteLogger = $suiteLogger;
         $this->_postApi = $postApi;
         $this->_requestHelper = $requestHelper;
-
-        $this->_quote = $this->_getCheckoutSession()->getQuote();
+        $this->_customerSession = $customerSession;
+        $this->_checkoutSession = $checkoutSession;
+        $this->_quote = $this->_checkoutSession->getQuote();
     }
 
     public function execute()
@@ -84,7 +97,6 @@ class Request extends \Magento\Framework\App\Action\Action
                 array("PPREDIRECT"),
                 'Invalid response from PayPal'
             );
-            //$post_response = $this->_handleApiErrors($this->_sendPost($request));
 
             //prepare response
             $responseContent = [
@@ -117,122 +129,13 @@ class Request extends \Magento\Framework\App\Action\Action
         return $url;
     }
 
-    private function _getServiceURL(){
+    protected function _getServiceURL(){
         if($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE){
             return \Ebizmarts\SagePaySuite\Model\Config::URL_DIRECT_POST_LIVE;
         }else{
             return \Ebizmarts\SagePaySuite\Model\Config::URL_DIRECT_POST_TEST;
         }
     }
-
-    protected function _getCheckoutSession()
-    {
-        return $this->_objectManager->get('Magento\Checkout\Model\Session');
-    }
-
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCustomerSession()
-    {
-        return $this->_objectManager->get('Magento\Customer\Model\Session');
-    }
-
-//    protected function _handleApiErrors($response)
-//    {
-//        $exceptionPhrase = "Invalid response from Sage Pay";
-//        $exceptionCode = 0;
-//
-//        if($response["status"] == 200){
-//
-//            if (!empty($response) && array_key_exists("data",$response)) {
-//                if(array_key_exists("Status",$response["data"]) && $response["data"]["Status"] == 'PPREDIRECT'){
-//
-//                    //this is a successfull response
-//                    return $response;
-//
-//                }else{
-//
-//                    //there was an error
-//                    $detail = explode(":",$response["data"]["StatusDetail"]);
-//                    $exceptionCode = trim($detail[0]);
-//                    $exceptionPhrase = trim($detail[1]);
-//                }
-//            }
-//        }
-//
-//        $exception = $this->_apiExceptionFactory->create([
-//            'phrase' => __($exceptionPhrase),
-//            'code' => $exceptionCode
-//        ]);
-//        throw $exception;
-//    }
-//
-//    protected function _sendPost ($postData){
-//
-//        $curl = $this->_curlFactory->create();
-//        $url = $this->_getServiceURL();
-//
-//        $post_data_string = '';
-//        foreach ($postData as $_key => $_val) {
-//            $post_data_string .= $_key . '=' . urlencode(mb_convert_encoding($_val, 'ISO-8859-1', 'UTF-8')) . '&';
-//        }
-//
-//        //log request
-//        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$postData);
-//
-//        $curl->setConfig(
-//            [
-//                'timeout' => 120,
-//                'verifypeer' => false,
-//                'verifyhost' => 2
-//            ]
-//        );
-//
-//        $curl->write(\Zend_Http_Client::POST,
-//            $url,
-//            '1.0',
-//            [],
-//            $post_data_string);
-//        $data = $curl->read();
-//
-//        $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
-//        $curl->close();
-//
-//        //log response
-//        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$data);
-//
-//        $response_data = [];
-//        if($response_status == 200){
-//
-//            //parse response
-//            $data = preg_split('/^\r?$/m', $data, 2);
-//            $data = explode(chr(13), $data[1]);
-//
-//            for($i=0;$i<count($data);$i++){
-//                if(!empty($data[$i])){
-//                    $aux = explode("=",trim($data[$i]));
-//                    if(count($aux) == 2){
-//                        $response_data[$aux[0]] = $aux[1];
-//                    }else{
-//                        if(count($aux) > 2){
-//                            $response_data[$aux[0]] = $aux[1];
-//                            for($j=2;$j<count($aux);$j++){
-//                                $response_data[$aux[0]] .= "=" . $aux[$j];
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        $response = [
-//            "status" => $response_status,
-//            "data" => $response_data
-//        ];
-//
-//        return $response;
-//    }
 
     /**
      * return array
@@ -256,21 +159,6 @@ class Request extends \Magento\Framework\App\Action\Action
 
         //address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
-
-//        $data["BillingSurname"] = substr($billing_address->getLastname(), 0, 20);
-//        $data["BillingFirstnames"] = substr($billing_address->getFirstname(), 0, 20);
-//        $data["BillingAddress1"] = substr($billing_address->getStreetLine(1), 0, 100);
-//        $data["BillingCity"] = substr($billing_address->getCity(), 0,  40);
-//        $data["BillingState"] = substr($billing_address->getRegionCode(), 0, 2);
-//        $data["BillingPostCode"] = substr($billing_address->getPostcode(), 0, 10);
-//        $data["BillingCountry"] = substr($billing_address->getCountryId(), 0, 2);
-//        $data["DeliverySurname"] = substr($shipping_address->getLastname(), 0, 20);
-//        $data["DeliveryFirstnames"] = substr($shipping_address->getFirstname(), 0, 20);
-//        $data["DeliveryAddress1"] = substr($shipping_address->getStreetLine(1), 0, 100);
-//        $data["DeliveryCity"] = substr($shipping_address->getCity(), 0,  40);
-//        $data["DeliveryState"] = substr($shipping_address->getRegionCode(), 0, 2);
-//        $data["DeliveryPostCode"] = substr($shipping_address->getPostcode(), 0, 10);
-//        $data["DeliveryCountry"] = substr($shipping_address->getCountryId(), 0, 2);
 
         $data["PayPalCallbackURL"] = $this->_getCallbackUrl();
         $data["BillingAgreement"] = (int)$this->_config->getPaypalBillingAgreement();

@@ -4,8 +4,6 @@
  * See LICENSE.txt for license details.
  */
 
-// @codingStandardsIgnoreFile
-
 namespace Ebizmarts\SagePaySuite\Block\Customer;
 
 /**
@@ -47,15 +45,6 @@ class TokenList extends \Magento\Framework\View\Element\Template
 
         $this->setItems($this->_tokenModel->getCustomerTokens($this->currentCustomer->getCustomerId(),
             $this->_config->getVendorname()));
-    }
-
-    /**
-     *
-     * @return $this
-     */
-    protected function _prepareLayout()
-    {
-        return parent::_prepareLayout();
     }
 
     /**

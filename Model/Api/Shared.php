@@ -68,9 +68,11 @@ class Shared
     }
 
     /**
-     * Makes the Curl call and returns the response.
+     * Executes curl request
      *
-     * @param string $xml description
+     * @param $action
+     * @param $data
+     * @return array
      */
     protected function _executeRequest($action, $data)
     {
@@ -90,6 +92,7 @@ class Shared
         foreach ($data as $_key => $_val) {
             $postData .= $_key . '=' . urlencode(mb_convert_encoding($_val, 'ISO-8859-1', 'UTF-8')) . '&';
         }
+
         $curl->write(\Zend_Http_Client::POST,
             $url,
             '1.0',
@@ -121,6 +124,7 @@ class Shared
             "status" => $response_status,
             "data" => $response_data
         ];
+
         return $response;
     }
 

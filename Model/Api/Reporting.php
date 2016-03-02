@@ -45,13 +45,11 @@ class Reporting
     }
 
     /**
-     * Makes the Curl call and returns the xml response.
-     *
-     * @param string $xml description
+     * @param $xml
+     * @return bool|\SimpleXMLElement
      */
     protected function _executeRequest($xml)
     {
-
         $curl = $this->_curlFactory->create();
 
         $curl->setConfig(
@@ -89,7 +87,6 @@ class Reporting
      */
     protected function _getServiceUrl()
     {
-
         if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_LIVE;
         } else {
@@ -146,21 +143,25 @@ class Reporting
      */
     protected function _handleApiErrors($response)
     {
+        //parse xml as object
+        $response = (object)((array) $response);
+
         $exceptionPhrase = "Invalid response from Sage Pay API.";
         $exceptionCode = 0;
 
         if (!empty($response)) {
-            if (!array_key_exists("errorcode", $response) || $response->errorcode == '0000') {
+            if (is_array($response) && !array_key_exists("errorcode", $response) || $response->errorcode == '0000') {
 
                 //this is a successfull response
                 return $response;
 
-            } else {
-
-                //there was an error
-                $exceptionCode = $response->errorcode;
-                if (array_key_exists("error", $response)) {
-                    $exceptionPhrase = $response->error;
+            } else { //there was an error
+                if(is_array($response) && array_key_exists("errorcode", $response))
+                {
+                    $exceptionCode = $response->errorcode;
+                    if (array_key_exists("error", $response)) {
+                        $exceptionPhrase = $response->error;
+                    }
                 }
             }
         }
@@ -173,6 +174,13 @@ class Reporting
         throw $exception;
     }
 
+    /**
+     * This command returns all information held in Sage Pay about the specified transaction.
+     *
+     * @param $vpstxid
+     * @return mixed
+     * @throws
+     */
     public function getTransactionDetails($vpstxid)
     {
         $params = '<vpstxid>' . $vpstxid . '</vpstxid>';
@@ -180,6 +188,12 @@ class Reporting
         return $this->_handleApiErrors($this->_executeRequest($xml));
     }
 
+    /**
+     * This command returns the number of tokens the vendor currently has.
+     *
+     * @return mixed
+     * @throws
+     */
     public function getTokenCount()
     {
         $params = '';
@@ -187,6 +201,15 @@ class Reporting
         return $this->_handleApiErrors($this->_executeRequest($xml));
     }
 
+    /**
+     * This command returns the fraud screening details for a particular transaction.
+     * The recommendation is returned along with details of the specific fraud rules
+     * triggered by the transaction.
+     *
+     * @param $vpstxid
+     * @return mixed
+     * @throws
+     */
     public function getFraudScreenDetail($vpstxid)
     {
         $params = '<vpstxid>' . $vpstxid . '</vpstxid>';

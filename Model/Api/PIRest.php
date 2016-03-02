@@ -11,14 +11,12 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 /**
  * Sage Pay PI REST API
  */
-class PIRestApi
+class PIRest
 {
-
     const ACTION_GENERATE_MERCHANT_KEY = 'merchant-session-keys';
     const ACTION_CAPTURE_TRANSACTION = 'transactions';
     const ACTION_SUBMIT_3D = '3d-secure';
     const ACTION_TRANSACTION_DETAILS = 'transaction_details';
-
 
     /**
      * @var \Magento\Framework\HTTP\Adapter\CurlFactory
@@ -42,12 +40,11 @@ class PIRestApi
      */
     protected $_suiteLogger;
 
-
-
     /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
+     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param ApiExceptionFactory $apiExceptionFactory
+     * @param Logger $suiteLogger
      */
     public function __construct(
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
@@ -169,6 +166,12 @@ class PIRestApi
         }
     }
 
+    /**
+     * Make POST request to ask for merchant key
+     *
+     * @return mixed
+     * @throws
+     */
     public function generateMerchantKey()
     {
         $jsonBody = json_encode(array("vendorName" => $this->_config->getVendorname()));
@@ -192,6 +195,13 @@ class PIRestApi
         }
     }
 
+    /**
+     * Make capture payment request
+     *
+     * @param $payment_request
+     * @return mixed
+     * @throws
+     */
     public function capture($payment_request)
     {
         //log request
@@ -216,13 +226,21 @@ class PIRestApi
         } else {
 
             $error_code = 0;
-            $error_msg = "Unable to capture Sage Pay transaction, please try another payment method.";
+            $error_msg = "Unable to capture Sage Pay transaction";
 
-            if(isset($result["data"]->code)){
-                $error_code = $result["data"]->code;
+            $errors = $result["data"];
+            if(isset($errors->errors) && count($errors->errors) > 0){
+                $errors = $errors->errors[0];
             }
-            if(isset($result["data"]->description)){
-                $error_msg = $result["data"]->description;
+
+            if(isset($errors->code)){
+                $error_code = $errors->code;
+            }
+            if(isset($errors->description)){
+                $error_msg = $errors->description;
+            }
+            if(isset($errors->property)){
+                $error_msg .= ': ' . $errors->property;
             }
 
             $exception = $this->_apiExceptionFactory->create([
@@ -234,6 +252,14 @@ class PIRestApi
         }
     }
 
+    /**
+     * Submit 3D result via POST
+     *
+     * @param $paRes
+     * @param $vpsTxId
+     * @return mixed
+     * @throws
+     */
     public function submit3D($paRes, $vpsTxId)
     {
         $jsonBody = json_encode(array("paRes" => $paRes));
@@ -264,6 +290,13 @@ class PIRestApi
         }
     }
 
+    /**
+     * GET transaction details
+     *
+     * @param $vpsTxId
+     * @return mixed
+     * @throws
+     */
     public function transactionDetails($vpsTxId)
     {
 

@@ -7,26 +7,11 @@
 namespace Ebizmarts\SagePaySuite\Block;
 
 /**
- * SagePay payment info block
+ * Sage Pay payment info block
  * Uses default templates
  */
 class Info extends \Magento\Payment\Block\Info\Cc
 {
-
-    /**
-     * @param \Magento\Framework\View\Element\Template\Context $context
-     * @param \Magento\Payment\Model\Config $paymentConfig
-     * @param array $data
-     */
-    public function __construct(
-        \Magento\Framework\View\Element\Template\Context $context,
-        \Magento\Payment\Model\Config $paymentConfig,
-        array $data = []
-    )
-    {
-        parent::__construct($context, $paymentConfig, $data);
-    }
-
     /**
      * Prepare SagePay-specific payment information
      *

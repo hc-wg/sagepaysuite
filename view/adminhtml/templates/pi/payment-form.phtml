@@ -4,8 +4,6 @@
  * See LICENSE.txt for license details.
  */
 
-// @codingStandardsIgnoreFile
-
 $_code = $block->getMethodCode();
 $_config = $this->helper('Ebizmarts\SagePaySuite\Helper\Data')->getSagePayConfig();
 ?>
@@ -76,8 +74,8 @@ $_config = $this->helper('Ebizmarts\SagePaySuite\Helper\Data')->getSagePayConfig
 
         var sagepaysuitepi_config = {
             "url": {
-                "generateMerchantKey" : '<?php echo $this->getUrl('admin/sagePaySuite_pI/generateMerchantKey', []); ?>',
-                "request" : '<?php echo $this->getUrl('admin/sagePaySuite_pI/request', []); ?>'
+                "generateMerchantKey" : '<?php echo $this->getUrl('sagepaysuite/pi/generateMerchantKey', []); ?>',
+                "request" : '<?php echo $this->getUrl('sagepaysuite/pi/request', []); ?>'
             },
             "mode": '<?php echo $_config->getMode(); ?>'
         };

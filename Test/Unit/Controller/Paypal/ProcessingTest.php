@@ -1,0 +1,112 @@
+<?php
+/**
+ * Copyright © 2015 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+
+namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Paypal;
+
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
+
+class ProcessingTest extends \PHPUnit_Framework_TestCase
+{
+
+    /**
+     * @var /Ebizmarts\SagePaySuite\Controller\Paypal\Processing
+     */
+    protected $paypalProcessingController;
+
+    /**
+     * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected $requestMock;
+
+    /**
+     * @var Http|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected $responseMock;
+
+    protected function setUp()
+    {
+        $this->responseMock = $this
+            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+
+        $this->requestMock = $this
+            ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->requestMock->expects($this->once())
+            ->method('getPost')
+            ->will($this->returnValue((object)[
+                "Status" => "OK",
+                "Var1" => "1",
+                "Var2" => "2",
+            ]));
+
+        $blockMock = $this
+            ->getMockBuilder('Magento\Framework\View\Element\Template')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $blockMock->expects($this->once())
+            ->method('setData')
+            ->willReturnSelf();
+        $blockMock->expects($this->once())
+            ->method('toHtml')
+            ->willReturn("processing_block");
+        $layoutMock = $this
+            ->getMockBuilder('Magento\Framework\View\LayoutInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $layoutMock->expects($this->once())
+            ->method('createBlock')
+            ->will($this->returnValue($blockMock));
+        $viewMock = $this
+            ->getMockBuilder('Magento\Framework\App\ViewInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $viewMock->expects($this->once())
+            ->method('getLayout')
+            ->will($this->returnValue($layoutMock));
+
+
+        $contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $contextMock->expects($this->any())
+            ->method('getRequest')
+            ->will($this->returnValue($this->requestMock));
+        $contextMock->expects($this->any())
+            ->method('getResponse')
+            ->will($this->returnValue($this->responseMock));
+        $contextMock->expects($this->any())
+            ->method('getView')
+            ->will($this->returnValue($viewMock));
+
+        $objectManagerHelper = new ObjectManagerHelper($this);
+        $this->paypalProcessingController = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\Paypal\Processing',
+            [
+                'context' => $contextMock
+            ]
+        );
+    }
+
+    public function testExecute()
+    {
+        $this->_expectSetBody(
+            'processing_block'
+        );
+
+        $this->paypalProcessingController->execute();
+    }
+
+    /**
+     * @param $body
+     */
+    protected function _expectSetBody($body)
+    {
+        $this->responseMock->expects($this->atLeastOnce())
+            ->method('setBody')
+            ->with($body);
+    }
+}

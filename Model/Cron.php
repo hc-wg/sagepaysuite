@@ -54,7 +54,26 @@ class Cron
     protected $scopeConfig;
 
     /**
+     * @var \Magento\Sales\Model\OrderFactory
+     */
+    protected $_orderFactory;
+
+    /**
+     * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
+     */
+    protected $_transactionFactory;
+
+    /**
      * @param \Magento\Framework\App\ResourceConnection $resource
+     * @param Api\Reporting $reportingApi
+     * @param Logger\Logger $suiteLogger
+     * @param \Magento\Sales\Api\OrderPaymentRepositoryInterface $orderPaymentRepository
+     * @param \Magento\Framework\ObjectManagerInterface $objectManager
+     * @param Config $config
+     * @param \Magento\Framework\Mail\Template\TransportBuilder $mailTransportBuilder
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param \Magento\Sales\Model\OrderFactory $orderFactory
+     * @param Order\Payment\TransactionFactory $transactionFactory
      */
     public function __construct(
         \Magento\Framework\App\ResourceConnection $resource,
@@ -64,7 +83,9 @@ class Cron
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Magento\Framework\Mail\Template\TransportBuilder $mailTransportBuilder,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \Magento\Sales\Model\OrderFactory $orderFactory,
+        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
     )
     {
         $this->_resource = $resource;
@@ -75,6 +96,8 @@ class Cron
         $this->_config = $config;
         $this->_mailTransportBuilder = $mailTransportBuilder;
         $this->scopeConfig = $scopeConfig;
+        $this->_orderFactory = $orderFactory;
+        $this->_transactionFactory = $transactionFactory;
     }
 
     /**
@@ -82,13 +105,13 @@ class Cron
      */
     public function cancelPendingPaymentOrders()
     {
-
         //$this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON, "Running cancel pending payments...");
 
         $ordersTableName = $this->_resource->getTableName('sales_order');
         $connection = $this->_resource->getConnection();
 
-        $select = $connection->select()->from($ordersTableName)
+        $select = $connection->select()
+            ->from($ordersTableName)
             ->where(
                 'state=?',
                 \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT
@@ -100,17 +123,15 @@ class Cron
 
         foreach ($connection->fetchAll($select) as $orderArray) {
 
-            $order = $this->_objectManager->get('\Magento\Sales\Model\Order')->load($orderArray["entity_id"]);
-
+            $order = $this->_orderFactory->create()->load($orderArray["entity_id"]);
             $orderId = $order->getEntityId();
 
             try {
                 $payment = $order->getPayment();
                 if (!is_null($payment) && !empty($payment->getLastTransId())) {
 
-                    $transaction = $this->_objectManager->get('\Magento\Sales\Model\Order\Payment\Transaction')->load($payment->getLastTransId());
+                    $transaction = $this->_transactionFactory->create()->load($payment->getLastTransId());
                     if (empty($transaction->getId())) {
-
                         /**
                          * CANCEL ORDER AS THERE IS NO TRANSACTION ASSOCIATED
                          */
@@ -133,7 +154,6 @@ class Cron
                             "Result" => "ERROR : No payment found.")
                     );
                 }
-
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
                 $this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
                     array("OrderId" => $orderId,
@@ -160,7 +180,8 @@ class Cron
         $transactionTableName = $this->_resource->getTableName('sales_payment_transaction');
         $connection = $this->_resource->getConnection();
 
-        $select = $connection->select()->from($transactionTableName)
+        $select = $connection->select()
+            ->from($transactionTableName)
             ->where(
                 'sagepaysuite_fraud_check=0'
             )->where(
@@ -174,7 +195,7 @@ class Cron
 
         foreach ($connection->fetchAll($select) as $trnArray) {
 
-            $transaction = $this->_objectManager->get('\Magento\Sales\Model\Order\Payment\Transaction')->load($trnArray["transaction_id"]);
+            $transaction = $this->_transactionFactory->create()->load($trnArray["transaction_id"]);
 
             $sagepayVpsTxId = $transaction->getTxnId();
             $logData = array("VPSTxId" => $sagepayVpsTxId);
@@ -221,12 +242,14 @@ class Cron
                             if ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT ||
                                 $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY
                             ) {
-                                $payment->setIsFraudDetected(true)->save();
-                                $payment->getOrder()->setStatus(Order::STATUS_FRAUD)->save();
+                                $payment->setIsFraudDetected(true);
+                                $payment->getOrder()->setStatus(Order::STATUS_FRAUD);
+                                $payment->save();
                             }
 
                             //mark as checked
-                            $transaction->setSagepaysuiteFraudCheck(1)->save();
+                            $transaction->setSagepaysuiteFraudCheck(1);
+                            $transaction->save();
 
                             /**
                              * process fraud actions
@@ -241,8 +264,11 @@ class Cron
                             ) {
                                 //create invoice
                                 $invoice = $payment->getOrder()->prepareInvoice();
-                                $invoice->register()->capture()->save();
-                                $payment->getOrder()->addRelatedObject($invoice)->save();
+                                $invoice->register();
+                                $invoice->capture();
+                                $invoice->save();
+                                $payment->getOrder()->addRelatedObject($invoice);
+                                $payment->save();
                                 $logData["Action"] = "Captured online, invoice #" . $invoice->getId() . " generated.";
                             }
 
@@ -289,13 +315,13 @@ class Cron
                              * save fraud information in the payment as the transaction
                              * additional info of the transactions doesn't seem to be working
                              */
-                            $payment->setAdditionalInformation("fraudscreenrecommendation", (string)$fraudscreenrecommendation)
-                                ->setAdditionalInformation("fraudid", (string)$fraudid)
-                                ->setAdditionalInformation("fraudcode", (string)$fraudcode)
-                                ->setAdditionalInformation("fraudcodedetail", (string)$fraudcodedetail)
-                                ->setAdditionalInformation("fraudprovidername", (string)$fraudprovidername)
-                                ->setAdditionalInformation("fraudrules", (string)$rules)
-                                ->save();
+                            $payment->setAdditionalInformation("fraudscreenrecommendation", (string)$fraudscreenrecommendation);
+                            $payment->setAdditionalInformation("fraudid", (string)$fraudid);
+                            $payment->setAdditionalInformation("fraudcode", (string)$fraudcode);
+                            $payment->setAdditionalInformation("fraudcodedetail", (string)$fraudcodedetail);
+                            $payment->setAdditionalInformation("fraudprovidername", (string)$fraudprovidername);
+                            $payment->setAdditionalInformation("fraudrules", (string)$rules);
+                            $payment->save();
 
                             $logData["fraudscreenrecommendation"] = $fraudscreenrecommendation;
                             $logData["fraudid"] = $fraudid;
@@ -307,8 +333,8 @@ class Cron
                         } else {
 
                             //save the "not checked" or "no result" status
-                            $payment->setAdditionalInformation("fraudscreenrecommendation", (string)$fraudscreenrecommendation)
-                                ->save();
+                            $payment->setAdditionalInformation("fraudscreenrecommendation", (string)$fraudscreenrecommendation);
+                            $payment->save();
 
                             $logData["fraudscreenrecommendation"] = $fraudscreenrecommendation;
                         }

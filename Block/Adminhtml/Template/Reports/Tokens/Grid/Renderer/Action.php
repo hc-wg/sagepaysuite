@@ -26,12 +26,6 @@ class Action extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Action
             'caption' => __('Delete'),
         ];
 
-//        $actions[] = [
-//            'url' => $this->getUrl('adminhtml/*/preview', ['id' => $row->getId()]),
-//            'popup' => false,
-//            'caption' => __('Verify'),
-//        ];
-
         $this->getColumn()->setActions($actions);
 
         return parent::render($row);
