@@ -345,4 +345,55 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             $this->configModel->getNotifyFraudResult()
         );
     }
+
+    public function testGetAllowedCcTypes()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
+
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL.'/cctypes',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn("VI,MC");
+
+        $this->assertEquals(
+            "VI,MC",
+            $this->configModel->getAllowedCcTypes()
+        );
+    }
+
+    public function testGetAreSpecificCountriesAllowed()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
+
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL.'/allowspecific',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn(0);
+
+        $this->assertEquals(
+            0,
+            $this->configModel->getAreSpecificCountriesAllowed()
+        );
+    }
+
+    public function testGetSpecificCountries()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
+
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL.'/specificcountry',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn("UY,US");
+
+        $this->assertEquals(
+            "UY,US",
+            $this->configModel->getSpecificCountries()
+        );
+    }
 }

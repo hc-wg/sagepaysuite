@@ -59,57 +59,6 @@ class PITest extends \PHPUnit_Framework_TestCase
         );
     }
 
-//    public function testAssignData()
-//    {
-//        $paymentMock = $this
-//            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-//            ->disableOriginalConstructor()
-//            ->getMock();
-//        $paymentMock->expects($this->once())
-//            ->method('setCcType')
-//            ->willReturnSelf();
-//        $paymentMock->expects($this->once())
-//            ->method('setCcOwner')
-//            ->willReturnSelf();
-//        $paymentMock->expects($this->once())
-//            ->method('setCcLast4')
-//            ->willReturnSelf();
-//        $paymentMock->expects($this->once())
-//            ->method('setCcNumber')
-//            ->willReturnSelf();
-//        $paymentMock->expects($this->once())
-//            ->method('setCcCid')
-//            ->willReturnSelf();
-//        $paymentMock->expects($this->once())
-//            ->method('setCcExpMonth')
-//            ->willReturnSelf();
-//        $paymentMock->expects($this->once())
-//            ->method('setCcExpYear')
-//            ->willReturnSelf();
-//        $paymentMock->expects($this->once())
-//            ->method('setCcSsIssue')
-//            ->willReturnSelf();
-//        $paymentMock->expects($this->once())
-//            ->method('setCcSsStartMonth')
-//            ->willReturnSelf();
-//        $paymentMock->expects($this->once())
-//            ->method('setCcSsStartYear')
-//            ->willReturnSelf();
-//
-//        $dataMock = $this
-//            ->getMockBuilder('Magento\Framework\DataObject')
-//            ->disableOriginalConstructor()
-//            ->getMock();
-//        $dataMock->expects($this->any())
-//            ->method('getData');
-//
-//        $paymentMock->expects($this->exactly(3))
-//            ->method('setAdditionalInformation');
-//
-//        $this->piModel->setInfoInstance($paymentMock);
-//        $this->piModel->assignData($dataMock);
-//    }
-
     public function testMarkAsInitialized()
     {
         $this->piModel->markAsInitialized();
@@ -145,9 +94,9 @@ class PITest extends \PHPUnit_Framework_TestCase
 
         $this->sharedApiMock->expects($this->once())
             ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID,100,1000001);
+            ->with(self::TEST_VPSTXID, 100, 1000001);
 
-        $this->piModel->refund($paymentMock,100);
+        $this->piModel->refund($paymentMock, 100);
 
     }
 
@@ -172,12 +121,12 @@ class PITest extends \PHPUnit_Framework_TestCase
         $exception = new \Exception("Error in Refunding");
         $this->sharedApiMock->expects($this->once())
             ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID,100,1000001)
+            ->with(self::TEST_VPSTXID, 100, 1000001)
             ->willThrowException($exception);
 
         $response = "";
         try {
-            $this->piModel->refund($paymentMock,100);
+            $this->piModel->refund($paymentMock, 100);
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $response = $e->getMessage();
         }
@@ -255,7 +204,7 @@ class PITest extends \PHPUnit_Framework_TestCase
 
         $stateMock = $this
             ->getMockBuilder('Magento\Framework\DataObject')
-            ->setMethods(["offsetExists","offsetGet","offsetSet","offsetUnset","setStatus","setIsNotified"])
+            ->setMethods(["offsetExists", "offsetGet", "offsetSet", "offsetUnset", "setStatus", "setIsNotified"])
             ->disableOriginalConstructor()
             ->getMock();
         $stateMock->expects($this->once())
@@ -266,12 +215,65 @@ class PITest extends \PHPUnit_Framework_TestCase
             ->with(false);
 
         $this->piModel->setInfoInstance($paymentMock);
-        $this->piModel->initialize("",$stateMock);
+        $this->piModel->initialize("", $stateMock);
     }
 
-    public function testGetConfigPaymentAction(){
+    public function testGetConfigPaymentAction()
+    {
         $this->configMock->expects($this->once())
             ->method('getPaymentAction');
         $this->piModel->getConfigPaymentAction();
+    }
+
+    public function testValidate()
+    {
+        $addressMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote\Address')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $addressMock->expects($this->once())
+            ->method('getCountryId')
+            ->willReturn("US");
+
+        $orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->expects($this->once())
+            ->method('getBillingAddress')
+            ->willReturn($addressMock);
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock->expects($this->once())
+            ->method('getCcType')
+            ->will($this->returnValue("VI"));
+        $paymentMock->expects($this->once())
+            ->method('getOrder')
+            ->will($this->returnValue($orderMock));
+
+        $this->configMock->expects($this->once())
+            ->method('getAllowedCcTypes')
+            ->willReturn("MC,MI");
+        $this->configMock->expects($this->once())
+            ->method('getAreSpecificCountriesAllowed')
+            ->willReturn(1);
+        $this->configMock->expects($this->once())
+            ->method('getSpecificCountries')
+            ->willReturn('US,UY,UK');
+
+        $this->piModel->setInfoInstance($paymentMock);
+
+        try {
+            $this->piModel->validate();
+            $this->assertTrue(false);
+        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+            $this->assertEquals(
+                __('This credit card type is not allowed for this payment method'),
+                $e->getMessage()
+            );
+        }
     }
 }

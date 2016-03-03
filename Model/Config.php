@@ -413,4 +413,19 @@ class Config implements ConfigInterface
     {
         return $this->getValue("billing_agreement");
     }
+
+    public function getAllowedCcTypes()
+    {
+        return $this->getValue("cctypes");
+    }
+
+    public function getAreSpecificCountriesAllowed()
+    {
+        return $this->getValue("allowspecific");
+    }
+
+    public function getSpecificCountries()
+    {
+        return $this->getValue("specificcountry");
+    }
 }

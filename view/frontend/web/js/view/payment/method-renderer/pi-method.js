@@ -3,7 +3,6 @@
  * See LICENSE.txt for license details.
  */
 
-
 /*browser:true*/
 /*global define*/
 define(
@@ -27,9 +26,9 @@ define(
                 $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
             }
 
-            if(piConfig && !piConfig.mode && piConfig.mode == 'live'){
+            if (piConfig && !piConfig.mode && piConfig.mode == 'live') {
                 var sagepayjs = require(['sagepayjs_live']);
-            }else{
+            } else {
                 var sagepayjs = require(['sagepayjs_test']);
             }
         });
@@ -108,7 +107,7 @@ define(
                             //console.log(status, response);
 
                             if (status === 201) {
-                                self.creditCardType = response.cardType;
+                                self.creditCardType = self.parseCCType(response.cardType);
                                 self.creditCardExpYear = document.getElementById(self.getCode() + '_expiration_yr').value;
                                 self.creditCardExpMonth = document.getElementById(self.getCode() + '_expiration').value;
                                 self.creditCardLast4 = document.getElementById(self.getCode() + '_cc_number').value.slice(-4);
@@ -120,12 +119,22 @@ define(
                                     self.placeTransaction();
 
                                 } catch (err) {
+                                    self.showPaymentError("Unable to initialize Sage Pay payment method, please use another payment method.");
                                     console.log(err);
-                                    alert("Unable to initialize Sage Pay payment method, please use another payment method.");
                                 }
 
                             } else {
-                                self.showPaymentError(response.error.message);
+                                var errorMessage = "Unable to initialize Sage Pay payment method, please use another payment method.";
+                                console.log(response);
+                                if (response.responseJSON) {
+                                    response = response.responseJSON;
+                                }
+                                if (response && response.error && response.error.message) {
+                                    errorMessage = response.error.message;
+                                } else if (response && response.errors && response.errors[0] && response.errors[0].clientMessage) {
+                                    errorMessage = response.errors[0].clientMessage;
+                                }
+                                self.showPaymentError(errorMessage);
                             }
                         });
                     } catch (err) {
@@ -133,6 +142,32 @@ define(
                         //errorProcessor.process(err);
                         alert("Unable to initialize Sage Pay payment method, please use another payment method.");
                     }
+                }
+            },
+
+            parseCCType: function (cctype) {
+                switch (cctype) {
+                    case 'Visa':
+                        return "VI";
+                        break;
+                    case 'MasterCard':
+                        return "MC";
+                        break;
+                    case 'Maestro':
+                        return "MI";
+                        break;
+                    case 'AmericanExpress':
+                        return "AE";
+                        break;
+                    case 'Diners':
+                        return "DN";
+                        break;
+                    case 'JCB':
+                        return "JCB";
+                        break;
+                    default:
+                        return cctype;
+                        break;
                 }
             },
 
@@ -158,7 +193,7 @@ define(
 
                         if (response.success) {
 
-                            if(response.response.status == "Ok"){
+                            if (response.response.status == "Ok") {
 
                                 /**
                                  * transaction authenticated, redirect to success
@@ -166,13 +201,13 @@ define(
 
                                 window.location.replace(url.build('checkout/onepage/success/'));
 
-                            }else if(response.response.status == "3DAuth"){
+                            } else if (response.response.status == "3DAuth") {
 
                                 /**
                                  * 3D secure authentication required
                                  */
 
-                                //add transactionId param to callback
+                                    //add transactionId param to callback
                                 callbackUrl += "?transactionId=" + response.response.transactionId +
                                     "&orderId=" + response.response.orderId +
                                     "&quoteId=" + response.response.quoteId;
@@ -181,14 +216,14 @@ define(
                                 //iframe.setAttribute("name",self.getCode() + '-3Dsecure-iframe')
                                 var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
                                 //form3D.setAttribute('target',self.getCode() + '-3Dsecure-iframe');
-                                form3D.setAttribute('action',response.response.acsUrl);
+                                form3D.setAttribute('action', response.response.acsUrl);
                                 form3D.elements[0].setAttribute('value', response.response.paReq);
                                 form3D.elements[1].setAttribute('value', callbackUrl);
                                 form3D.elements[2].setAttribute('value', response.response.transactionId);
                                 //self.createModal(iframe);
                                 form3D.submit();
 
-                            }else{
+                            } else {
                                 console.log(response);
                                 self.showPaymentError("Invalid Sage Pay response, please use another payment method.");
                             }
@@ -207,7 +242,7 @@ define(
             /**
              * Create 3D modal
              */
-            createModal: function(element) {
+            createModal: function (element) {
                 //this.modalWindow = element;
                 var options = {
                     'type': 'popup',

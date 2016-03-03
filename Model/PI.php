@@ -179,7 +179,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
     /**
      * Set initialized flag to capture payment
      */
-    public function markAsInitialized(){
+    public function markAsInitialized()
+    {
         $this->_isInitializeNeeded = false;
     }
 
@@ -260,7 +261,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function cancel(InfoInterface $payment)
     {
-        if($this->canVoid()){
+        if ($this->canVoid()) {
             $this->void($payment);
         }
         return $this;
@@ -297,5 +298,37 @@ class PI extends \Magento\Payment\Model\Method\Cc
     public function getConfigPaymentAction()
     {
         return $this->config->getPaymentAction();
+    }
+
+    /**
+     * Validate CC type and country allowed
+     *
+     * @return $this
+     * @throws LocalizedException
+     */
+    public function validate()
+    {
+        $info = $this->getInfoInstance();
+        $errorMsg = false;
+
+        //validate  country
+        if ($this->config->getAreSpecificCountriesAllowed() == 1) {
+            $availableCountries = explode(',', $this->config->getSpecificCountries());
+            if (!in_array($info->getOrder()->getBillingAddress()->getCountryId(), $availableCountries)) {
+                $errorMsg = __('You can\'t use the payment type you selected to make payments to the billing country.');
+            }
+        }
+
+        //check allowed card types
+        $availableTypes = explode(',', $this->config->getAllowedCcTypes());
+        if (!in_array($info->getCcType(), $availableTypes)) {
+            $errorMsg = __('This credit card type is not allowed for this payment method: ' . $this->config->getAllowedCcTypes() . "    " . $info->getCcType());
+        }
+
+        if ($errorMsg) {
+            throw new \Magento\Framework\Exception\LocalizedException($errorMsg);
+        }
+
+        return $this;
     }
 }
