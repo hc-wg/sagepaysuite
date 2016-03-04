@@ -163,7 +163,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue([
                 "status" => 200,
                 "data" => [
-                    "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
+                    "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
+                    "SecurityKey" => "f65da87fds7fs8"
                 ]
             ]));
 
@@ -205,7 +206,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             'response' => [
                 "status" => 200,
                 "data" => [
-                    "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
+                    "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
+                    'SecurityKey' => 'f65da87fds7fs8'
                 ]
             ]
         ]);

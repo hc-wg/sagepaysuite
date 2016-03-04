@@ -146,7 +146,7 @@ define(
             openSERVERModal: function (nextURL)
             {
                 this.modal = $("<iframe class='sagepaysuiteserver_embed_iframe' src='" + nextURL + "'></iframe>").modal({
-                    modalClass: 'sagepaysuite-modal',
+                    modalClass: 'sagepaysuiteserver-modal',
                     title: "Sage Pay Secure Gateway",
                     type: 'slide',
                     responsive: true,

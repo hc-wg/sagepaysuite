@@ -101,9 +101,6 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_checkoutSession = $checkoutSession;
         $this->_tokenModel = $tokenModel;
         $this->_quote = $quote;
-
-//        $this->_postData = $this->getRequest()->getPost();
-//        $this->_quote = $this->_objectManager->get('\Magento\Quote\Model\Quote')->load($this->getRequest()->getParam("quoteid"));
     }
 
     public function execute()
@@ -119,23 +116,52 @@ class Notify extends \Magento\Framework\App\Action\Action
 
             //find quote with GET param
             if (empty($this->_quote->getId())) {
-                return $this->_returnInvalid("Unable to find quote, please try another payment method");
+                return $this->_returnInvalid("Unable to find quote");
             }
 
             //find order with quote id
             $order = $this->_orderFactory->create()->loadByIncrementId($this->_quote->getReservedOrderId());
             if (is_null($order) || is_null($order->getId())) {
-                return $this->_returnInvalid("Order was not found, please try another payment method");
+                return $this->_returnInvalid("Order was not found");
             }
             $this->_order = $order;
 
             //get some vars from POST
-            $txType = $this->_postData->TxType;
             $status = $this->_postData->Status;
             $transactionId = str_replace("{", "", str_replace("}", "", $this->_postData->VPSTxId)); //strip brackets
 
-            //update payment details
             $payment = $order->getPayment();
+
+            //validate hash
+            $localMd5Hash = md5(
+                $this->_postData->VPSTxId .
+                $this->_postData->VendorTxCode .
+                $this->_postData->Status .
+                property_exists($this->_postData, 'TxAuthNo') === TRUE ? $this->_postData->TxAuthNo : '' .
+                strtolower($payment->getAdditionalInformation('vendorname')) .
+                $this->_postData->AVSCV2 .
+                $payment->getAdditionalInformation('securityKey') .
+                $this->_postData->AddressResult .
+                $this->_postData->PostCodeResult .
+                $this->_postData->CV2Result .
+                $this->_postData->GiftAid .
+                $this->_postData->{'3DSecureStatus'} .
+                property_exists($this->_postData, 'CAVV') === TRUE ? $this->_postData->CAVV : '' .
+                $this->_postData->AddressStatus .
+                $this->_postData->PayerStatus .
+                $this->_postData->CardType .
+                $this->_postData->Last4Digits .
+                property_exists($this->_postData, 'DeclineCode') === TRUE ? $this->_postData->DeclineCode : '' .
+                $this->_postData->ExpiryDate .
+                property_exists($this->_postData, 'FraudResponse') === TRUE ? $this->_postData->FraudResponse : '' .
+                property_exists($this->_postData, 'BankAuthCode') === TRUE ? $this->_postData->BankAuthCode : ''
+            );
+
+            if (strtoupper($localMd5Hash) != $this->_postData->VPSSignature) {
+                throw new \Magento\Framework\Validator\Exception(__('Invalid VPS Signature'));
+            }
+
+            //update payment details
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
                 $payment->setAdditionalInformation('statusDetail', $this->_postData->StatusDetail);
                 $payment->setAdditionalInformation('threeDStatus', $this->_postData->{'3DSecureStatus'});
@@ -144,7 +170,7 @@ class Notify extends \Magento\Framework\App\Action\Action
                 $payment->setCcExpMonth(substr($this->_postData->ExpiryDate, 0, 2));
                 $payment->setCcExpYear(substr($this->_postData->ExpiryDate, 2));
                 $payment->save();
-            }else{
+            } else {
                 throw new \Magento\Framework\Validator\Exception(__('Invalid transaction id'));
             }
 
@@ -226,8 +252,7 @@ class Notify extends \Magento\Framework\App\Action\Action
                 return $this->_returnInvalid("Payment was not accepted, please try another payment method");
             }
 
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
-        {
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
 
             //cancel pending payment order
@@ -235,8 +260,7 @@ class Notify extends \Magento\Framework\App\Action\Action
 
             return $this->_returnInvalid("Something went wrong: " . $apiException->getUserMessage());
 
-        } catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             $this->_logger->critical($e);
 
             //cancel pending payment order
@@ -315,14 +339,6 @@ class Notify extends \Magento\Framework\App\Action\Action
                 $_invoice->save();
             }
         }
-    }
-
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCheckoutSession()
-    {
-        return $this->_checkoutSession;
     }
 
     protected function _returnAbort()

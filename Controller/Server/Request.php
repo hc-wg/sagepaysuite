@@ -153,6 +153,7 @@ class Request extends \Magento\Framework\App\Action\Action
             $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
             $payment->setAdditionalInformation('mode', $this->_config->getMode());
             $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
+            $payment->setAdditionalInformation('securityKey', $post_response["data"]["SecurityKey"]);
             $payment->save();
 
             //prepare response

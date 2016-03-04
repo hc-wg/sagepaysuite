@@ -7,7 +7,7 @@
     max-width: 100px;
 }
 
-#sagepaysuiteserver_embed_iframe {
+.sagepaysuiteserver_embed_iframe {
     width: 100%;
     min-height: 1100px;
     border: 0;
@@ -76,6 +76,16 @@
     border: 0;
 }
 
+.sagepaysuiteserver-modal .action-close,
 .sagepaysuite-modal .action-close {
     display: none;
 }
+
+.sagepaysuiteserver-modal .modal-header {
+    display: none;
+}
+
+.sagepaysuiteserver-modal .modal-content {
+    padding: 0 !important;
+}
+
