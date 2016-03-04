@@ -46,6 +46,11 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
      */
     protected $orderMock;
 
+    /**
+     * @var \Magento\Framework\UrlInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected $urlBuilderMock;
+
     protected function setUp()
     {
         $piModelMock = $this
@@ -63,6 +68,11 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
         $checkoutSessionMock = $this
             ->getMockBuilder('Magento\Checkout\Model\Session')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->urlBuilderMock = $this
+            ->getMockBuilder('Magento\Framework\UrlInterface')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -103,6 +113,9 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
         $contextMock->expects($this->any())
             ->method('getMessageManager')
             ->will($this->returnValue($messageManagerMock));
+        $contextMock->expects($this->any())
+            ->method('getUrl')
+            ->will($this->returnValue($this->urlBuilderMock));
 
         $configMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
@@ -188,7 +201,12 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
             ->method('load')
             ->willReturnSelf();
 
-        $this->_expectRedirect("checkout/onepage/success");
+        $this->_expectSetBody(
+            '<script>window.top.location.href = "'
+            . $this->urlBuilderMock->getUrl('checkout/onepage/success', array('_secure' => true))
+            . '";</script>'
+        );
+
         $this->piCallback3DController->execute();
     }
 
@@ -198,17 +216,22 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
             ->method('load')
             ->willReturn(NULL);
 
-        $this->_expectRedirect("checkout/cart");
+        $this->_expectSetBody(
+            '<script>window.top.location.href = "'
+            . $this->urlBuilderMock->getUrl('checkout/cart', array('_secure' => true))
+            . '";</script>'
+        );
+
         $this->piCallback3DController->execute();
     }
 
     /**
-     * @param string $path
+     * @param $body
      */
-    protected function _expectRedirect($path)
+    protected function _expectSetBody($body)
     {
-        $this->redirectMock->expects($this->once())
-            ->method('redirect')
-            ->with($this->anything(), $path, []);
+        $this->responseMock->expects($this->once())
+            ->method('setBody')
+            ->with($body);
     }
 }
