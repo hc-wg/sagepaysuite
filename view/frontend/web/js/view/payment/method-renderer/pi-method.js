@@ -36,6 +36,7 @@ define(
         return Component.extend({
             placeOrderHandler: null,
             validateHandler: null,
+            modal: null,
             defaults: {
                 template: 'Ebizmarts_SagePaySuite/payment/pi-form',
                 creditCardType: '',
@@ -60,6 +61,8 @@ define(
             preparePayment: function () {
                 var self = this;
                 self.resetPaymentErrors();
+
+                //self.open3DModal();
 
                 fullScreenLoader.startLoader();
 
@@ -214,14 +217,16 @@ define(
 
                                 //var iframe = document.createElement("IFRAME");
                                 //iframe.setAttribute("name",self.getCode() + '-3Dsecure-iframe')
+                                self.open3DModal();
                                 var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
-                                //form3D.setAttribute('target',self.getCode() + '-3Dsecure-iframe');
+                                form3D.setAttribute('target',self.getCode() + '-3Dsecure-iframe');
                                 form3D.setAttribute('action', response.response.acsUrl);
                                 form3D.elements[0].setAttribute('value', response.response.paReq);
                                 form3D.elements[1].setAttribute('value', callbackUrl);
                                 form3D.elements[2].setAttribute('value', response.response.transactionId);
-                                //self.createModal(iframe);
                                 form3D.submit();
+
+                                fullScreenLoader.stopLoader();
 
                             } else {
                                 console.log(response);
@@ -242,16 +247,18 @@ define(
             /**
              * Create 3D modal
              */
-            createModal: function (element) {
-                //this.modalWindow = element;
-                var options = {
-                    'type': 'popup',
-                    'modalClass': 'sagepaysuite-3D-modal',
-                    'responsive': true,
-                    'innerScroll': true,
-                    'trigger': '.show-modal',
-                };
-                modal(options, element);
+            open3DModal: function ()
+            {
+                this.modal = $('<iframe id="' + this.getCode() + '-3Dsecure-iframe" name="' + this.getCode() + '-3Dsecure-iframe"></iframe>').modal({
+                    modalClass: 'sagepaysuite-modal',
+                    title: "Sage Pay 3D Secure Authentication",
+                    type: 'slide',
+                    responsive: true,
+                    clickableOverlay: false,
+                    closeOnEscape: false,
+                    buttons: []
+                });
+                this.modal.modal('openModal');
             },
 
             /**

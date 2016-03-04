@@ -103,15 +103,17 @@ define(
 
                                 if (response.success) {
 
-                                    self.hideOtherPaymentOptions();
+                                    //self.hideOtherPaymentOptions();
 
-                                    $('#sagepaysuiteserver-actions-toolbar').css('display', 'none');
-                                    $('#payment_form_sagepaysuiteserver .payment-method-note').css('display', 'none');
-                                    $('#' + self.getCode() + '-tokens').css('display', 'none');
+                                    //$('#sagepaysuiteserver-actions-toolbar').css('display', 'none');
+                                    //$('#payment_form_sagepaysuiteserver .payment-method-note').css('display', 'none');
+                                    //$('#' + self.getCode() + '-tokens').css('display', 'none');
 
 
-                                    $('#sagepaysuiteserver_embed_iframe_container').html("<iframe class='main-iframe' src='" +
-                                        response.response.data.NextURL + "'></iframe>");
+                                    //$('#sagepaysuiteserver_embed_iframe_container').html("<iframe class='main-iframe' src='" +
+                                    //    response.response.data.NextURL + "'></iframe>");
+
+                                    self.openSERVERModal(response.response.data.NextURL);
 
                                     fullScreenLoader.stopLoader();
 
@@ -138,40 +140,21 @@ define(
                     $('#' + this.getCode() + '-tokens .token-list .message-max-tokens').hide();
                 }
             },
-            hideOtherPaymentOptions: function()
+            /**
+             * Create SERVER modal
+             */
+            openSERVERModal: function (nextURL)
             {
-                /**
-                 *
-                 * At this point the order was already saved so we need to
-                 * disable other payment options and possible quote alterations
-                 *
-                 */
-
-                //hide other payment methods
-                $('.payment-method').each(function() {
-                    if(!$(this).hasClass("_active")){
-                        $(this).hide();
-                    }
+                this.modal = $("<iframe class='sagepaysuiteserver_embed_iframe' src='" + nextURL + "'></iframe>").modal({
+                    modalClass: 'sagepaysuite-modal',
+                    title: "Sage Pay Secure Gateway",
+                    type: 'slide',
+                    responsive: true,
+                    clickableOverlay: false,
+                    closeOnEscape: false,
+                    buttons: []
                 });
-
-                //hide other payment options
-                $('.payment-option').each(function() {
-                    $(this).hide();
-                });
-
-                //disable checkout navigation
-                $('.opc-progress-bar-item').each(function() {
-                    if(!$(this).hasClass("_active")){
-                        $(this).find("span").css('display','none');
-                    }
-                });
-
-                //disable edit shipping options
-                $('.action-edit').each(function() {
-                    $(this).hide();
-                });
-                $('#billing-address-same-as-shipping-' + this.getCode()).prop('disabled',true);
-
+                this.modal.modal('openModal');
             },
             showPaymentError: function (message) {
 

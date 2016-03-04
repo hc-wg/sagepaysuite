@@ -311,7 +311,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $info = $this->getInfoInstance();
         $errorMsg = false;
 
-        //validate  country
+        //validate country
         if ($this->config->getAreSpecificCountriesAllowed() == 1) {
             $availableCountries = explode(',', $this->config->getSpecificCountries());
             if (!in_array($info->getOrder()->getBillingAddress()->getCountryId(), $availableCountries)) {
