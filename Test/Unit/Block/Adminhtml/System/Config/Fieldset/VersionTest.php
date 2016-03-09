@@ -19,7 +19,7 @@ class VersionTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Data')
             ->disableOriginalConstructor()
             ->getMock();
-        $suiteHelperMock->expects($this->once())
+        $suiteHelperMock->expects($this->any())
             ->method('getVersion')
             ->will($this->returnValue('1.0.0'));
 
@@ -37,6 +37,14 @@ class VersionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             '1.0.0',
             $this->versionBlock->getVersion()
+        );
+    }
+
+    public function testGetPxParams()
+    {
+        $this->assertEquals(
+            'ext=Sage Pay Suite M2;1.0.0&mage=Magento ;&ctrl=9bd1cea438e2b7a1ff1bb82a8664b553',
+            $this->versionBlock->getPxParams()
         );
     }
 }

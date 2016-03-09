@@ -166,8 +166,6 @@ class Request extends \Magento\Framework\App\Action\Action
 
             $this->_logger->critical($apiException);
 
-            echo $apiException->getUserMessage();
-
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong while generating the Sage Pay request: ' . $apiException->getUserMessage()),
@@ -175,8 +173,6 @@ class Request extends \Magento\Framework\App\Action\Action
         } catch (\Exception $e) {
 
             $this->_logger->critical($e);
-
-            echo $e->getMessage();
 
             $responseContent = [
                 'success' => false,
