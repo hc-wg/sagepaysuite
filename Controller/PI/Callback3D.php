@@ -110,7 +110,9 @@ class Callback3D extends \Magento\Framework\App\Action\Action
 
                 $this->_confirmPayment($transaction_details_result);
 
-                //$this->_redirect('checkout/onepage/success');
+                //remove order pre-saved flag from checkout
+                $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
+
                 //redirect to success via javascript
                 $this->_javascriptRedirect('checkout/onepage/success');
 

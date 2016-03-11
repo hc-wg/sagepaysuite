@@ -145,23 +145,31 @@ class Request extends \Magento\Framework\App\Action\Action
             //save order with pending payment
             $order = $this->_checkoutHelper->placeOrder();
 
-            //set payment data
-            $payment = $order->getPayment();
-            $payment->setTransactionId($transactionId);
-            $payment->setLastTransId($transactionId);
-            $payment->setAdditionalInformation('vendorTxCode', $this->_assignedVendorTxCode);
-            $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
-            $payment->setAdditionalInformation('mode', $this->_config->getMode());
-            $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
-            $payment->setAdditionalInformation('securityKey', $post_response["data"]["SecurityKey"]);
-            $payment->save();
+            if($order)
+            {
+                //set pre-saved order flag in checkout session
+                $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", $order->getId());
 
-            //prepare response
-            $responseContent = [
-                'success' => true,
-                'response' => $post_response
-            ];
+                //set payment data
+                $payment = $order->getPayment();
+                $payment->setTransactionId($transactionId);
+                $payment->setLastTransId($transactionId);
+                $payment->setAdditionalInformation('vendorTxCode', $this->_assignedVendorTxCode);
+                $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
+                $payment->setAdditionalInformation('mode', $this->_config->getMode());
+                $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
+                $payment->setAdditionalInformation('securityKey', $post_response["data"]["SecurityKey"]);
+                $payment->save();
 
+                //prepare response
+                $responseContent = [
+                    'success' => true,
+                    'response' => $post_response
+                ];
+
+            }else {
+                throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
+            }
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
 
             $this->_logger->critical($apiException);

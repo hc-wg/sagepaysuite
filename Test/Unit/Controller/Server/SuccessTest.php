@@ -74,6 +74,13 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
         $quoteMock->expects($this->once())
             ->method('load')
             ->willReturnSelf();
+        $quoteFactoryMock = $this->getMockBuilder('\Magento\Quote\Model\QuoteFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(["create"])
+            ->getMock();
+        $quoteFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($quoteMock);
 
         $orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
@@ -98,7 +105,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             [
                 'context' => $contextMock,
                 'orderFactory' => $orderFactoryMock,
-                'quote' => $quoteMock,
+                'quoteFactory' => $quoteFactoryMock,
                 'checkoutSession' => $checkoutSessionMock,
             ]
         );

@@ -275,7 +275,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         try {
             $order->cancel()->save();
 
-            //restore quote
+            //recover quote
             if ($this->_quote->getId()) {
                 $this->_quote->setIsActive(1);
                 $this->_quote->setReservedOrderId(NULL);

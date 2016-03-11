@@ -141,6 +141,10 @@ class Request extends \Magento\Framework\App\Action\Action
                 $order = $this->_checkoutHelper->placeOrder();
 
                 if ($order) {
+
+                    //set pre-saved order flag in checkout session
+                    $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", $order->getId());
+
                     $payment = $order->getPayment();
                     $payment->setTransactionId($transactionId);
                     $payment->setLastTransId($transactionId);

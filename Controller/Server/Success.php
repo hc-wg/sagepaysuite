@@ -35,9 +35,9 @@ class Success extends \Magento\Framework\App\Action\Action
     protected $_orderFactory;
 
     /**
-     * @var \Magento\Quote\Model\Quote
+     * @var \Magento\Quote\Model\QuoteFactory
      */
-    protected $_quote;
+    protected $_quoteFactory;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -45,7 +45,7 @@ class Success extends \Magento\Framework\App\Action\Action
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Magento\Sales\Model\OrderFactory $orderFactory
-     * @param \Magento\Quote\Model\Quote $quote
+     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -53,7 +53,7 @@ class Success extends \Magento\Framework\App\Action\Action
         \Psr\Log\LoggerInterface $logger,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Quote\Model\Quote $quote
+        \Magento\Quote\Model\QuoteFactory $quoteFactory
     )
     {
         parent::__construct($context);
@@ -62,14 +62,14 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_logger = $logger;
         $this->_checkoutSession = $checkoutSession;
         $this->_orderFactory = $orderFactory;
-        $this->_quote = $quote;
+        $this->_quoteFactory = $quoteFactory;
     }
 
     public function execute()
     {
         try {
 
-            $quote = $this->_quote->load($this->getRequest()->getParam("quoteid"));
+            $quote = $this->_quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
             $order = $this->_orderFactory->create()->loadByIncrementId($quote->getReservedOrderId());
 
             //prepare session to success page
@@ -79,6 +79,9 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->_checkoutSession->setLastOrderId($order->getId());
             $this->_checkoutSession->setLastRealOrderId($order->getIncrementId());
             $this->_checkoutSession->setLastOrderStatus($order->getStatus());
+
+            //remove order pre-saved flag from checkout
+            $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
 
         } catch (\Exception $e) {
             $this->_logger->critical($e);
