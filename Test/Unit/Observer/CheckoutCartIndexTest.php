@@ -76,7 +76,7 @@ class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
 
         $objectManagerHelper = new ObjectManagerHelper($this);
         $this->checkoutCartIndexObserver = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Observer\CheckoutCartIndex',
+            '\Ebizmarts\SagePaySuite\Observer\CheckoutCartIndex',
             [
                 'orderFactory' => $orderFactoryMock,
                 'quoteFactory' => $quoteFactoryMock,
