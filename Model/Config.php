@@ -10,6 +10,7 @@ use Magento\Payment\Model\Method\ConfigInterface;
 use Magento\Payment\Model\MethodInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 /**
  * Class Config to handle all sagepay integrations configs
@@ -57,27 +58,11 @@ class Config implements ConfigInterface
     const MODE_3D_IGNORE = 'ForceIgnoringRules';
 
     /**
-     * SagePay Vars map
+     * Currency settings
      */
-    const VAR_VendorTxCode = 'VendorTxCode';
-    const VAR_VPSTxId = 'VPSTxId';
-    const VAR_Status = 'Status';
-    const VAR_StatusDetail = 'StatusDetail';
-    const VAR_TxAuthNo = 'TxAuthNo';
-    const VAR_AVSCV2 = 'AVSCV2';
-    const VAR_AddressResult = 'AddressResult';
-    const VAR_PostCodeResult = 'PostCodeResult';
-    const VAR_CV2Result = 'CV2Result';
-    const VAR_GiftAid = 'GiftAid';
-    const VAR_3DSecureStatus = '3DSecureStatus';
-    const VAR_CAVV = 'CAVV';
-    const VAR_CardType = 'CardType';
-    const VAR_Last4Digits = 'Last4Digits';
-    const VAR_DeclineCode = 'DeclineCode';
-    const VAR_ExpiryDate = 'ExpiryDate';
-    const VAR_Amount = 'Amount';
-    const VAR_BankAuthCode = 'BankAuthCode';
-    const VAR_Crypt = 'crypt';
+    const CURRENCY_BASE = "base_currency";
+    const CURRENCY_STORE = "store_currency";
+    const CURRENCY_SWITCHER = "switcher_currency";
 
     /**
      * SagePay URLs
@@ -159,13 +144,31 @@ class Config implements ConfigInterface
     protected $_sourceCountry;
 
     /**
+     * Store manager
+     *
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
+    protected $_storeManager;
+
+    /**
+     * Logging instance
+     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     */
+    protected $_suiteLogger;
+
+    /**
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      */
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger
     )
     {
         $this->_scopeConfig = $scopeConfig;
+        $this->_storeManager = $storeManager;
+        $this->_suiteLogger = $suiteLogger;
+        $this->getCurrencyCode();
     }
 
     /**
@@ -197,7 +200,7 @@ class Config implements ConfigInterface
      */
     public function getValue($key, $storeId = null)
     {
-        if(is_null($storeId)){
+        if (is_null($storeId)) {
             $storeId = $this->_storeId;
         }
 
@@ -427,5 +430,41 @@ class Config implements ConfigInterface
     public function getSpecificCountries()
     {
         return $this->getValue("specificcountry");
+    }
+
+    public function getCurrencyCode()
+    {
+        $currency_settings = $this->_scopeConfig->getValue(
+            $this->_getGlobalConfigPath("currency"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+
+        //store base currency as default
+        $currency = $this->_storeManager->getStore()->getBaseCurrencyCode();
+
+        switch ($currency_settings) {
+
+            //store default display currency
+            case \Ebizmarts\SagePaySuite\Model\Config::CURRENCY_STORE:
+                $currency = $this->_storeManager->getStore()->getDefaultCurrencyCode();
+                break;
+
+            //frontend currency switcher
+            case \Ebizmarts\SagePaySuite\Model\Config::CURRENCY_SWITCHER:
+                $currency = $this->_storeManager->getStore()->getCurrentCurrencyCode();
+                break;
+        }
+
+        return $currency;
+    }
+
+    public function getCurrencyConfig()
+    {
+        return $this->_scopeConfig->getValue(
+            $this->_getGlobalConfigPath("currency"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
     }
 }

@@ -121,9 +121,7 @@ class Request extends \Magento\Framework\App\Action\Action
 
         $data = array();
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
-        $data['Amount'] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
-        $data['Currency'] = $this->_quote->getQuoteCurrencyCode();
-        $data['Description'] = "Magento transaction";
+        $data['Description'] = $this->_requestHelper->getOrderDescription();
         $data['SuccessURL'] = $this->_url->getUrl('*/*/success');
         $data['FailureURL'] = $this->_url->getUrl('*/*/failure');
 
@@ -133,6 +131,9 @@ class Request extends \Magento\Framework\App\Action\Action
 //        $data['VendorEMail']
 //        $data['SendEMail']
 //        $data['EmailMessage']
+
+        //populate payment amount information
+        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
 
         //populate address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));

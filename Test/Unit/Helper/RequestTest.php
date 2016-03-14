@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
+use Ebizmarts\SagePaySuite\Model\Config;
+
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
     /**
@@ -13,13 +15,25 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      */
     protected $requestHelper;
 
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Config
+     */
+    protected $_configMock;
+
     protected function setUp()
     {
+        $this->_configMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
 
         $this->requestHelper = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Request',
-            []
+            [
+                'config' => $this->_configMock
+            ]
         );
     }
 
@@ -128,5 +142,84 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 ]
             ]
         ];
+    }
+
+    /**
+     * @dataProvider populatePaymentAmountDataProvider
+     */
+    public function testPopulatePaymentAmount($data)
+    {
+        $this->_configMock->expects($this->once())
+            ->method('getCurrencyCode')
+            ->will($this->returnValue($data['currency']));
+        $this->_configMock->expects($this->once())
+            ->method('getCurrencyConfig')
+            ->will($this->returnValue($data['currency_setting']));
+
+        $quoteMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote')
+            ->setMethods(["getBaseGrandTotal","getGrandTotal"])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $quoteMock->expects($this->once())
+            ->method('getBaseGrandTotal')
+            ->willReturn("100");
+        $quoteMock->expects($this->any())
+            ->method('getGrandTotal')
+            ->will($this->returnValue(200));
+
+        $result = $data["result"];
+
+        $this->assertEquals(
+            $result,
+            $this->requestHelper->populatePaymentAmount($quoteMock, $data['isRestRequest'])
+        );
+    }
+
+    public function populatePaymentAmountDataProvider()
+    {
+        return [
+            'test with PI base' => [
+                [
+                    'currency_setting' => Config::CURRENCY_BASE,
+                    'isRestRequest' => true,
+                    'currency' => 'USD',
+                    'result' => [
+                        'amount' => 10000,
+                        'currency' => 'USD'
+                    ]
+                ]
+            ],
+            'test with PI switcher' => [
+                [
+                    'currency_setting' => Config::CURRENCY_SWITCHER,
+                    'isRestRequest' => true,
+                    'currency' => 'EUR',
+                    'result' => [
+                        'amount' => 20000,
+                        'currency' => 'EUR'
+                    ]
+                ]
+            ],
+            'test without PI base' => [
+                [
+                    'currency_setting' => Config::CURRENCY_BASE,
+                    'isRestRequest' => false,
+                    'currency' => 'USD',
+                    'result' => [
+                        'Amount' => 100.00,
+                        'Currency' => 'USD'
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    public function testGetOrderDescription()
+    {
+        $this->assertEquals(
+            __("Online MOTO transaction."),
+            $this->requestHelper->getOrderDescription(true)
+        );
     }
 }

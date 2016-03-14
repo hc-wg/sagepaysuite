@@ -69,6 +69,12 @@ class Request extends \Magento\Backend\App\AbstractAction
     protected $_quoteManagement;
 
     /**
+     * Sage Pay Suite Request Helper
+     * @var \Ebizmarts\SagePaySuite\Helper\Request
+     */
+    protected $_requestHelper;
+
+    /**
      * @param \Magento\Backend\App\Action\Context $context
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
      * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
@@ -79,6 +85,7 @@ class Request extends \Magento\Backend\App\AbstractAction
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
      * @param \Magento\Quote\Model\QuoteManagement $quoteManagement
+     * @param \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
@@ -90,7 +97,8 @@ class Request extends \Magento\Backend\App\AbstractAction
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Magento\Quote\Model\QuoteManagement $quoteManagement
+        \Magento\Quote\Model\QuoteManagement $quoteManagement,
+        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
     )
     {
         parent::__construct($context);
@@ -104,6 +112,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         $this->_customerSession = $customerSession;
         $this->_checkoutSession = $checkoutSession;
         $this->_quoteManagement = $quoteManagement;
+        $this->_requestHelper = $requestHelper;
         $this->_quote = $this->_checkoutSession->getQuote();
     }
 
@@ -214,9 +223,7 @@ class Request extends \Magento\Backend\App\AbstractAction
                 ]
             ],
             'vendorTxCode' => $vendorTxCode,
-            'amount' => $this->_quote->getGrandTotal() * 100,
-            'currency' => $this->_quote->getQuoteCurrencyCode(),
-            'description' => "Magento MOTO transaction.",
+            'description' => $this->_requestHelper->getOrderDescription(true),
             'customerFirstName' => $billing_address->getFirstname(),
             'customerLastName' => $billing_address->getLastname(),
             'billingAddress' => [
@@ -228,6 +235,9 @@ class Request extends \Magento\Backend\App\AbstractAction
             'entryMethod' => "Ecommerce",
             'apply3DSecure' => 'Disable'
         ];
+
+        //populate payment amount information
+        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote,true));
 
         if ($billing_address->getCountryId() == "US") {
             $data["billingAddress"]["state"] = substr($billing_address->getRegionCode(), 0, 2);

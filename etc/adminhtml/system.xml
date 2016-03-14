@@ -28,6 +28,11 @@
                         <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\Mode</source_model>
                         <config_path>sagepaysuite/global/mode</config_path>
                     </field>
+                    <field id="currency" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Currency</label>
+                        <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\Currency</source_model>
+                        <config_path>sagepaysuite/global/currency</config_path>
+                    </field>
                     <field id="token" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Save Credit Card Tokens</label>
                         <comment><![CDATA[Customer's credit card will be saved as a secure token for quick access in the future. Your merchant account needs to have this feature enabled.]]></comment>
