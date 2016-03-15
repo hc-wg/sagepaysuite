@@ -147,6 +147,7 @@ class Request extends \Magento\Framework\App\Action\Action
         $data["TxType"] = $this->_config->getSagepayPaymentAction();
         $data["Vendor"] = $this->_config->getVendorname();
         $data["VendorTxCode"] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
+        $data["Description"] = $this->_requestHelper->getOrderDescription();
         $data["Amount"] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
 
         if($this->_config->isSendBasket()) {
@@ -156,6 +157,9 @@ class Request extends \Magento\Framework\App\Action\Action
         $data["Currency"] = $this->_quote->getQuoteCurrencyCode();
         $data["Description"] = "Magento transaction";
         $data["CardType"] = "PAYPAL";
+
+        //populate payment amount information
+        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
 
         //address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));

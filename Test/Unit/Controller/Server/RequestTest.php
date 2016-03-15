@@ -153,6 +153,12 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $requestHelperMock->expects($this->any())
             ->method('populateAddressInformation')
             ->will($this->returnValue(array()));
+        $requestHelperMock->expects($this->any())
+            ->method('populatePaymentAmount')
+            ->will($this->returnValue(array()));
+        $requestHelperMock->expects($this->any())
+            ->method('getOrderDescription')
+            ->will($this->returnValue("description"));
 
         $postApiMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Post')
@@ -163,7 +169,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue([
                 "status" => 200,
                 "data" => [
-                    "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
+                    "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
+                    "SecurityKey" => "f65da87fds7fs8"
                 ]
             ]));
 
@@ -205,7 +212,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             'response' => [
                 "status" => 200,
                 "data" => [
-                    "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
+                    "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
+                    'SecurityKey' => 'f65da87fds7fs8'
                 ]
             ]
         ]);

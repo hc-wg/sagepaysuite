@@ -110,22 +110,30 @@ class Callback3D extends \Magento\Framework\App\Action\Action
 
                 $this->_confirmPayment($transaction_details_result);
 
-                $this->_redirect('checkout/onepage/success');
+                //remove order pre-saved flag from checkout
+                $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
+
+                //redirect to success via javascript
+                $this->_javascriptRedirect('checkout/onepage/success');
+
             } else {
                 $this->messageManager->addError("Invalid 3D secure authentication.");
-                $this->_redirect('checkout/cart');
+                $this->_javascriptRedirect('checkout/cart');
+                //$this->_redirect('checkout/cart');
             }
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
         {
             $this->_logger->critical($apiException);
             $this->messageManager->addError($apiException->getUserMessage());
-            $this->_redirect('checkout/cart');
+            //$this->_redirect('checkout/cart');
+            $this->_javascriptRedirect('checkout/cart');
         } catch (\Exception $e)
         {
             $this->_logger->critical($e);
-            $this->messageManager->addError("Something went wrong while authenticating 3D secure: " . $e->getMessage());
-            $this->_redirect('checkout/cart');
+            $this->messageManager->addError("Something went wrong: " . $e->getMessage());
+            //$this->_redirect('checkout/cart');
+            $this->_javascriptRedirect('checkout/cart');
         }
     }
 

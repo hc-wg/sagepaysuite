@@ -67,7 +67,22 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_checkoutSession;
 
     /**
+     * Sage Pay Suite Request Helper
+     * @var \Ebizmarts\SagePaySuite\Helper\Request
+     */
+    protected $_requestHelper;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
+     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+     * @param Logger $suiteLogger
+     * @param PIRest $pirestapi
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Magento\Customer\Model\Session $customerSession
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
+     * @param \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -78,7 +93,8 @@ class Request extends \Magento\Framework\App\Action\Action
         \Psr\Log\LoggerInterface $logger,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Checkout\Model\Session $checkoutSession,
-        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
+        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
+        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
     )
     {
         parent::__construct($context);
@@ -91,6 +107,7 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_checkoutHelper = $checkoutHelper;
         $this->_customerSession = $customerSession;
         $this->_checkoutSession = $checkoutSession;
+        $this->_requestHelper = $requestHelper;
         $this->_quote = $this->_checkoutSession->getQuote();
     }
 
@@ -141,6 +158,10 @@ class Request extends \Magento\Framework\App\Action\Action
                 $order = $this->_checkoutHelper->placeOrder();
 
                 if ($order) {
+
+                    //set pre-saved order flag in checkout session
+                    $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", $order->getId());
+
                     $payment = $order->getPayment();
                     $payment->setTransactionId($transactionId);
                     $payment->setLastTransId($transactionId);
@@ -218,9 +239,7 @@ class Request extends \Magento\Framework\App\Action\Action
                 ]
             ],
             'vendorTxCode' => $vendorTxCode,
-            'amount' => $this->_quote->getGrandTotal() * 100,
-            'currency' => $this->_quote->getQuoteCurrencyCode(),
-            'description' => "Magento transaction.",
+            'description' => $this->_requestHelper->getOrderDescription(),
             'customerFirstName' => $billing_address->getFirstname(),
             'customerLastName' => $billing_address->getLastname(),
             'billingAddress' => [
@@ -232,6 +251,9 @@ class Request extends \Magento\Framework\App\Action\Action
             'entryMethod' => "Ecommerce",
             'apply3DSecure' => $this->_config->get3Dsecure()
         ];
+
+        //populate payment amount information
+        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote,true));
 
         if ($billing_address->getCountryId() == "US") {
             $data["billingAddress"]["state"] = substr($billing_address->getRegionCode(), 0, 2);

@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use Ebizmarts\SagePaySuite\Model\Config;
+
 class ConfigTest extends \PHPUnit_Framework_TestCase
 {
     /**
@@ -25,11 +27,34 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $storerMock = $this
+            ->getMockBuilder('Magento\Store\Model\Store')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storerMock->expects($this->any())
+            ->method("getBaseCurrencyCode")
+            ->willReturn("USD");
+        $storerMock->expects($this->any())
+            ->method("getDefaultCurrencyCode")
+            ->willReturn("EUR");
+        $storerMock->expects($this->any())
+            ->method("getCurrentCurrencyCode")
+            ->willReturn("GBP");
+
+        $storeManagerMock = $this
+            ->getMockBuilder('Magento\Store\Model\StoreManagerInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storeManagerMock->expects($this->any())
+            ->method("getStore")
+            ->willReturn($storerMock);
+
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $this->configModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Config',
             [
-                'scopeConfig' => $this->scopeConfigMock
+                'scopeConfig' => $this->scopeConfigMock,
+                'storeManager' => $storeManagerMock
             ]
         );
     }
@@ -40,7 +65,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM.'/active',
+            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM . '/active',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
                 NULL)
             ->willReturn(true);
@@ -68,7 +93,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/'.$data["code"].'/payment_action',
+            ->with('payment/' . $data["code"] . '/payment_action',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
                 NULL)
             ->willReturn($data["expect"]);
@@ -108,7 +133,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/'.$data["code"].'/payment_action',
+            ->with('payment/' . $data["code"] . '/payment_action',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
                 NULL)
             ->willReturn($data["expect"]);
@@ -199,7 +224,8 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testGetTokenEnabled(){
+    public function testGetTokenEnabled()
+    {
 
     }
 
@@ -209,7 +235,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM.'/encrypted_password',
+            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM . '/encrypted_password',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
                 NULL)
             ->willReturn('345jh345hj45');
@@ -256,7 +282,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI.'/password',
+            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI . '/password',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
                 NULL)
             ->willReturn('fd67sf8ds6f78ds6f78ds');
@@ -273,7 +299,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI.'/key',
+            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI . '/key',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
                 NULL)
             ->willReturn('fd7s6f87ds6f78ds6f78dsf8ds76f7ds8f687dsf8');
@@ -331,7 +357,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL.'/billing_agreement',
+            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/billing_agreement',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
                 NULL)
             ->willReturn(false);
@@ -347,7 +373,6 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
 
         $this->scopeConfigMock->expects($this->once())
-        $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
             ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL.'/billing_agreement',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
@@ -395,6 +420,114 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             'medium_risk',
             $this->configModel->getNotifyFraudResult()
+        );
+    }
+
+    public function testGetAllowedCcTypes()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
+
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/cctypes',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn("VI,MC");
+
+        $this->assertEquals(
+            "VI,MC",
+            $this->configModel->getAllowedCcTypes()
+        );
+    }
+
+    public function testGetAreSpecificCountriesAllowed()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
+
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/allowspecific',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn(0);
+
+        $this->assertEquals(
+            0,
+            $this->configModel->getAreSpecificCountriesAllowed()
+        );
+    }
+
+    public function testGetSpecificCountries()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
+
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/specificcountry',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn("UY,US");
+
+        $this->assertEquals(
+            "UY,US",
+            $this->configModel->getSpecificCountries()
+        );
+    }
+
+    /**
+     * @dataProvider getCurrencyCodeDataProvider
+     */
+    public function testGetCurrencyCode($data)
+    {
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with('sagepaysuite/global/currency',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn($data["currency_setting"]);
+
+        $this->assertEquals(
+            $data["expects"],
+            $this->configModel->getCurrencyCode()
+        );
+    }
+
+    public function getCurrencyCodeDataProvider()
+    {
+        return [
+            "test base" => [
+                [
+                    "currency_setting" => Config::CURRENCY_BASE,
+                    "expects" => "USD"
+                ]
+            ],
+            "test display" => [
+                [
+                    "currency_setting" => Config::CURRENCY_STORE,
+                    "expects" => "EUR"
+                ]
+            ],
+            "test switcher" => [
+                [
+                    "currency_setting" => Config::CURRENCY_SWITCHER,
+                    "expects" => "GBP"
+                ]
+            ]
+        ];
+    }
+
+    public function testCetCurrencyConfig()
+    {
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with('sagepaysuite/global/currency',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn(Config::CURRENCY_BASE);
+
+        $this->assertEquals(
+            Config::CURRENCY_BASE,
+            $this->configModel->getCurrencyConfig()
         );
     }
 

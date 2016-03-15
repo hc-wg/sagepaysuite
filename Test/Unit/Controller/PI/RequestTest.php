@@ -171,6 +171,17 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $requestHelperMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Request')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $requestHelperMock->expects($this->any())
+            ->method('populatePaymentAmount')
+            ->will($this->returnValue(array()));
+        $requestHelperMock->expects($this->any())
+            ->method('getOrderDescription')
+            ->will($this->returnValue("description"));
+
         $objectManagerHelper = new ObjectManagerHelper($this);
         $this->piRequestController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\PI\Request',
@@ -180,7 +191,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 'suiteHelper' => $suiteHelperMock,
                 'pirestapi' => $pirestapiMock,
                 'checkoutSession' => $checkoutSessionMock,
-                'checkoutHelper' => $this->checkoutHelperMock
+                'checkoutHelper' => $this->checkoutHelperMock,
+                'requestHelper' => $requestHelperMock
             ]
         );
     }

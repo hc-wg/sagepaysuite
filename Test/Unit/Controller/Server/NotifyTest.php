@@ -187,6 +187,15 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "CardType" => "VISA",
                 "Last4Digits" => "0006",
                 "ExpiryDate" => "0222",
+                "VendorTxCode" => "10000000001-2015-12-12-123456",
+                "AVSCV2" => "OK",
+                "AddressResult" => "OK",
+                "PostCodeResult" => "OK",
+                "CV2Result" => "OK",
+                "GiftAid" => "0",
+                "AddressStatus" => "OK",
+                "PayerStatus" => "OK",
+                "VPSSignature" => 'D41D8CD98F00B204E9800998ECF8427E'
             ]));
 
         $this->_expectSetBody(
@@ -211,6 +220,15 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "CardType" => "VISA",
                 "Last4Digits" => "0006",
                 "ExpiryDate" => "0222",
+                "VendorTxCode" => "10000000001-2015-12-12-123456",
+                "AVSCV2" => "OK",
+                "AddressResult" => "OK",
+                "PostCodeResult" => "OK",
+                "CV2Result" => "OK",
+                "GiftAid" => "0",
+                "AddressStatus" => "OK",
+                "PayerStatus" => "OK",
+                "VPSSignature" => 'D41D8CD98F00B204E9800998ECF8427E'
             ]));
 
         $this->_expectSetBody(
@@ -235,6 +253,16 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "CardType" => "VISA",
                 "Last4Digits" => "0006",
                 "ExpiryDate" => "0222",
+                "ExpiryDate" => "0222",
+                "VendorTxCode" => "10000000001-2015-12-12-123456",
+                "AVSCV2" => "OK",
+                "AddressResult" => "OK",
+                "PostCodeResult" => "OK",
+                "CV2Result" => "OK",
+                "GiftAid" => "0",
+                "AddressStatus" => "OK",
+                "PayerStatus" => "OK",
+                "VPSSignature" => 'D41D8CD98F00B204E9800998ECF8427E'
             ]));
 
         $this->_expectSetBody(

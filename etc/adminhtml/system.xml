@@ -28,13 +28,20 @@
                         <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\Mode</source_model>
                         <config_path>sagepaysuite/global/mode</config_path>
                     </field>
+                    <field id="currency" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Currency</label>
+                        <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\Currency</source_model>
+                        <config_path>sagepaysuite/global/currency</config_path>
+                    </field>
                     <field id="token" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Save Credit Card Tokens</label>
+                        <comment><![CDATA[Customer's credit card will be saved as a secure token for quick access in the future. Your merchant account needs to have this feature enabled.]]></comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>sagepaysuite/global/token</config_path>
                     </field>
                     <field id="reporting_user" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Reporting API User</label>
+                        <comment><![CDATA[Your merchant's credentials, same as the ones to access Sage Pay's dashboard.]]></comment>
                         <config_path>sagepaysuite/global/reporting_user</config_path>
                     </field>
                     <field id="reporting_password" translate="label" type="obscure" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -47,11 +54,13 @@
                     <label>Advanced Settings</label>
                     <field id="threedsecure" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>3D Secure Authentication</label>
+                        <comment><![CDATA[The 3D Secure configuration is also declared in Sage Pay's dashboard and will be overwritten by this setting.]]></comment>
                         <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\ThreeDSecure</source_model>
                         <config_path>sagepaysuite/advanced/threedsecure</config_path>
                     </field>
                     <field id="fraud_autoinvoice" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Auto-Invoice Authorized Orders With Low Risk Of Fraud</label>
+                        <label>Auto-invoice Authorized Orders with Low Risk of Fraud</label>
+                        <comment><![CDATA[If payment action is to DEFER or AUTHORIZE the orders will be automatically invoiced by a cron if the risk of fraud is low.]]></comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>sagepaysuite/advanced/fraud_autoinvoice</config_path>
                     </field>
@@ -80,6 +89,7 @@
                     </field>
                     <field id="payment_action" translate="label" type="select" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Payment Action</label>
+                        <comment><![CDATA[Details of all possible payment actions can be found <a target="_blank" href="http://www.sagepay.co.uk/support/12/36/transaction-types">here</a>.]]></comment>
                         <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\PaymentAction</source_model>
                         <config_path>payment/sagepaysuiteform/payment_action</config_path>
                     </field>
@@ -132,6 +142,7 @@
                     </field>
                     <field id="payment_action" translate="label" type="select" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Payment Action</label>
+                        <comment><![CDATA[WARNING: This integration is still in beta state and only PAYMENT option is currently available.]]></comment>
                         <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\PaymentAction</source_model>
                         <config_path>payment/sagepaysuitepi/payment_action</config_path>
                     </field>
@@ -193,6 +204,7 @@
                     </field>
                     <field id="payment_action" translate="label" type="select" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Payment Action</label>
+                        <comment><![CDATA[Details of all possible payment actions can be found <a target="_blank" href="http://www.sagepay.co.uk/support/12/36/transaction-types">here</a>.]]></comment>
                         <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\PaymentAction</source_model>
                         <config_path>payment/sagepaysuiteserver/payment_action</config_path>
                     </field>
@@ -240,6 +252,7 @@
                     </field>
                     <field id="payment_action" translate="label" type="select" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Payment Action</label>
+                        <comment><![CDATA[Details of all possible payment actions can be found <a target="_blank" href="http://www.sagepay.co.uk/support/12/36/transaction-types">here</a>.]]></comment>
                         <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\PaymentAction</source_model>
                         <config_path>payment/sagepaysuitepaypal/payment_action</config_path>
                     </field>

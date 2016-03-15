@@ -135,6 +135,12 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $requestHelperMock->expects($this->any())
             ->method('populateAddressInformation')
             ->will($this->returnValue(array()));
+        $requestHelperMock->expects($this->any())
+            ->method('populatePaymentAmount')
+            ->will($this->returnValue(array()));
+        $requestHelperMock->expects($this->any())
+            ->method('getOrderDescription')
+            ->will($this->returnValue("description"));
 
         $cryptMock = $this
             ->getMockBuilder('Crypt_AES')

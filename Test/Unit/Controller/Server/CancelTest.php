@@ -8,12 +8,12 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Server;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class SuccessTest extends \PHPUnit_Framework_TestCase
+class CancelTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Delete
+     * @var \Ebizmarts\SagePaySuite\Controller\Server\Cancel
      */
-    protected $serverSuccessController;
+    protected $serverCancelController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
@@ -37,18 +37,22 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-
-        $checkoutSessionMock = $this
-            ->getMockBuilder('\Magento\Checkout\Model\Session')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\App\RequestInterface')
             ->getMockForAbstractClass();
+        $this->requestMock->expects($this->once())
+            ->method('getParam')
+            ->willReturn("Error message");
 
         $this->responseMock = $this
             ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+
+        $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $messageManagerMock->expects($this->once())
+            ->method('addError')
+            ->will($this->returnValue($this->requestMock));
 
         $this->urlBuilderMock = $this
             ->getMockBuilder('Magento\Framework\UrlInterface')
@@ -65,48 +69,17 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->method('getResponse')
             ->will($this->returnValue($this->responseMock));
         $contextMock->expects($this->any())
+            ->method('getMessageManager')
+            ->will($this->returnValue($messageManagerMock));
+        $contextMock->expects($this->any())
             ->method('getUrl')
             ->will($this->returnValue($this->urlBuilderMock));
 
-        $quoteMock = $this->getMockBuilder('\Magento\Quote\Model\Quote')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $quoteMock->expects($this->once())
-            ->method('load')
-            ->willReturnSelf();
-        $quoteFactoryMock = $this->getMockBuilder('\Magento\Quote\Model\QuoteFactory')
-            ->disableOriginalConstructor()
-            ->setMethods(["create"])
-            ->getMock();
-        $quoteFactoryMock->expects($this->once())
-            ->method('create')
-            ->willReturn($quoteMock);
-
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('loadByIncrementId')
-            ->willReturnSelf();
-
-        $orderFactoryMock = $this
-            ->getMockBuilder('Magento\Sales\Model\OrderFactory')
-            ->setMethods(['create'])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderFactoryMock->expects($this->once())
-            ->method('create')
-            ->will($this->returnValue($orderMock));
-
         $objectManagerHelper = new ObjectManagerHelper($this);
-        $this->serverSuccessController = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Controller\Server\Success',
+        $this->serverCancelController = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\Server\Cancel',
             [
-                'context' => $contextMock,
-                'orderFactory' => $orderFactoryMock,
-                'quoteFactory' => $quoteFactoryMock,
-                'checkoutSession' => $checkoutSessionMock,
+                'context' => $contextMock
             ]
         );
     }
@@ -115,11 +88,10 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     {
         $this->_expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/onepage/success', array('_secure' => true))
             . '";</script>'
         );
 
-        $this->serverSuccessController->execute();
+        $this->serverCancelController->execute();
     }
 
     /**

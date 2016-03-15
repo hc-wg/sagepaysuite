@@ -121,6 +121,7 @@ class Request extends \Magento\Framework\App\Action\Action
 
         $data = array();
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
+        $data['Description'] = $this->_requestHelper->getOrderDescription();
         $data['Amount'] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
 
         if($this->_config->isSendBasket()) {
@@ -139,9 +140,13 @@ class Request extends \Magento\Framework\App\Action\Action
 //        $data['SendEMail']
 //        $data['EmailMessage']
 
+        //populate payment amount information
+        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
+
         //populate address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
 
+//        $data['BasketXML'] = $basket;
 //        $data['AllowGiftAid'] = (int)$this->getConfigData('allow_gift_aid');
 //        $data['ApplyAVSCV2']  = $this->getConfigData('avscv2');
 //        $data['Apply3DSecure']  = $this->getConfigData('avscv2');

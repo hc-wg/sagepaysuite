@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
+use Ebizmarts\SagePaySuite\Model\Config;
+
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
     /**
@@ -14,53 +16,23 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     protected $requestHelper;
 
     /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $scopeConfigMock;
-
-    /**
-     * @var \Magento\Quote\Model\Quote|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $quoteMock;
-
-    /**
-     * @var \Magento\Quote\Model\Quote\Address|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $addressMock;
-
-    /**
-     * @var \Magento\Quote\Model\ResourceModel\Quote\Item\Collection|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $itemsCollectionMock;
+    protected $_configMock;
 
     protected function setUp()
     {
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-
-        $this->scopeConfigMock = $this
+        $this->_configMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->quoteMock = $this
-            ->getMockBuilder('Magento\Quote\Model\Quote')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->addressMock = $this
-            ->getMockBuilder('Magento\Quote\Model\Quote\Address')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-//        $this->itemsCollectionMock = $this
-//            ->getMockBuilder('Magento\Quote\Model\ResourceModel\Quote\Item\Collection')
-//            ->disableOriginalConstructor()
-//            ->getMock();
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
 
         $this->requestHelper = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Request',
             [
-                'config' => $this->scopeConfigMock
+                'config' => $this->_configMock
             ]
         );
     }
@@ -70,39 +42,47 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      */
     public function testPopulateAddressInformation($data)
     {
-        $this->addressMock->expects($this->any())
+        $addressMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote\Address')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $addressMock->expects($this->any())
             ->method('getLastname')
             ->will($this->returnValue($data["lastname"]));
-        $this->addressMock->expects($this->any())
+        $addressMock->expects($this->any())
             ->method('getFirstname')
             ->will($this->returnValue($data["firstname"]));
-        $this->addressMock->expects($this->any())
+        $addressMock->expects($this->any())
             ->method('getStreetLine')
             ->will($this->returnValue($data["streetline"]));
-        $this->addressMock->expects($this->any())
+        $addressMock->expects($this->any())
             ->method('getCity')
             ->will($this->returnValue($data["city"]));
-        $this->addressMock->expects($this->any())
+        $addressMock->expects($this->any())
             ->method('getPostcode')
             ->will($this->returnValue($data["postcode"]));
-        $this->addressMock->expects($this->any())
+        $addressMock->expects($this->any())
             ->method('getCountryId')
             ->will($this->returnValue($data["country"]));
-        $this->addressMock->expects($this->any())
+        $addressMock->expects($this->any())
             ->method('getRegionCode')
             ->will($this->returnValue($data["state"]));
 
-        $this->quoteMock->expects($this->any())
+        $quoteMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $quoteMock->expects($this->any())
             ->method('isVirtual')
             ->will($this->returnValue(true));
-        $this->quoteMock->expects($this->any())
+        $quoteMock->expects($this->any())
             ->method('getBillingAddress')
-            ->will($this->returnValue($this->addressMock));
+            ->will($this->returnValue($addressMock));
 
         $result = $data["result"];
 
         $this->assertEquals($result,
-            $this->requestHelper->populateAddressInformation($this->quoteMock)
+            $this->requestHelper->populateAddressInformation($quoteMock)
         );
     }
 
@@ -162,6 +142,85 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 ]
             ]
         ];
+    }
+
+    /**
+     * @dataProvider populatePaymentAmountDataProvider
+     */
+    public function testPopulatePaymentAmount($data)
+    {
+        $this->_configMock->expects($this->once())
+            ->method('getCurrencyCode')
+            ->will($this->returnValue($data['currency']));
+        $this->_configMock->expects($this->once())
+            ->method('getCurrencyConfig')
+            ->will($this->returnValue($data['currency_setting']));
+
+        $quoteMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote')
+            ->setMethods(["getBaseGrandTotal","getGrandTotal"])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $quoteMock->expects($this->once())
+            ->method('getBaseGrandTotal')
+            ->willReturn("100");
+        $quoteMock->expects($this->any())
+            ->method('getGrandTotal')
+            ->will($this->returnValue(200));
+
+        $result = $data["result"];
+
+        $this->assertEquals(
+            $result,
+            $this->requestHelper->populatePaymentAmount($quoteMock, $data['isRestRequest'])
+        );
+    }
+
+    public function populatePaymentAmountDataProvider()
+    {
+        return [
+            'test with PI base' => [
+                [
+                    'currency_setting' => Config::CURRENCY_BASE,
+                    'isRestRequest' => true,
+                    'currency' => 'USD',
+                    'result' => [
+                        'amount' => 10000,
+                        'currency' => 'USD'
+                    ]
+                ]
+            ],
+            'test with PI switcher' => [
+                [
+                    'currency_setting' => Config::CURRENCY_SWITCHER,
+                    'isRestRequest' => true,
+                    'currency' => 'EUR',
+                    'result' => [
+                        'amount' => 20000,
+                        'currency' => 'EUR'
+                    ]
+                ]
+            ],
+            'test without PI base' => [
+                [
+                    'currency_setting' => Config::CURRENCY_BASE,
+                    'isRestRequest' => false,
+                    'currency' => 'USD',
+                    'result' => [
+                        'Amount' => 100.00,
+                        'Currency' => 'USD'
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    public function testGetOrderDescription()
+    {
+        $this->assertEquals(
+            __("Online MOTO transaction."),
+            $this->requestHelper->getOrderDescription(true)
+        );
     }
 
 //    public function populateBasketInformationDataProvider()
