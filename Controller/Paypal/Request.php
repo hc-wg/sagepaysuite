@@ -148,14 +148,11 @@ class Request extends \Magento\Framework\App\Action\Action
         $data["Vendor"] = $this->_config->getVendorname();
         $data["VendorTxCode"] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
         $data["Description"] = $this->_requestHelper->getOrderDescription();
-        $data["Amount"] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
 
         if($this->_config->isSendBasket()) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote, $this->_config->isPaypalForceXml()));
         }
 
-        $data["Currency"] = $this->_quote->getQuoteCurrencyCode();
-        $data["Description"] = "Magento transaction";
         $data["CardType"] = "PAYPAL";
 
         //populate payment amount information
