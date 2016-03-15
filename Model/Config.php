@@ -112,6 +112,13 @@ class Config implements ConfigInterface
     const ReDSTATUS_CHALLENGE = 'CHALLENGE';
     const ReDSTATUS_NOTCHECKED = 'NOTCHECKED';
 
+
+    /**
+     * Basket Formats
+     */
+    const BASKETFORMAT_Sage50 = 'Sage50';
+    const BASKETFORMAT_XML = 'xml';
+
     /*
      * Max tokens per customer
      */
@@ -466,5 +473,30 @@ class Config implements ConfigInterface
             ScopeInterface::SCOPE_STORE,
             $this->_storeId
         );
+    }
+
+    public function isSendBasket()
+    {
+        $config_value = $this->_scopeConfig->getValue(
+            $this->_getAdvancedConfigPath("send_basket"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+        return $config_value;
+    }
+
+    public function getBasketFormat()
+    {
+        $config_value = $this->_scopeConfig->getValue(
+            $this->_getAdvancedConfigPath("basket_format"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+        return $config_value;
+    }
+
+    public function isPaypalForceXml()
+    {
+        return $this->getValue("force_xml");
     }
 }

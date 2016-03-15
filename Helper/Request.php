@@ -101,6 +101,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         $basketFormat = $this->_config->getBasketFormat();
+        $force_xml = $this->_config->isPaypalForceXml();
 
         if($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML || $force_xml == true) {
             $_basket = $this->_getBasketXml($quote);
@@ -533,4 +534,8 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 //        return $options;
 //    }
 
+    public function getOrderDescription($isMOTO = false)
+    {
+        return $isMOTO ? __("Online MOTO transaction.") : __("Online transaction.");
+    }
 }
