@@ -45,6 +45,16 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_crypt;
 
     /**
+     * @var \Magento\Customer\Model\Session
+     */
+    protected $_customerSession;
+
+    /**
+     * @var \Magento\Checkout\Model\Session
+     */
+    protected $_checkoutSession;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
@@ -53,7 +63,9 @@ class Request extends \Magento\Framework\App\Action\Action
         Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
-        \Crypt_AES $crypt
+        \Crypt_AES $crypt,
+        \Magento\Customer\Model\Session $customerSession,
+        \Magento\Checkout\Model\Session $checkoutSession
     )
     {
         parent::__construct($context);
@@ -63,18 +75,17 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_suiteLogger = $suiteLogger;
         $this->_requestHelper = $requestHelper;
         $this->_crypt = $crypt;
-
-        $this->_quote = $this->_getCheckoutSession()->getQuote();
+        $this->_customerSession = $customerSession;
+        $this->_checkoutSession = $checkoutSession;
+        $this->_quote = $this->_checkoutSession->getQuote();
     }
 
     public function execute()
     {
-
         try {
-
             $this->_quote->collectTotals();
             $this->_quote->reserveOrderId();
-            $this->_quote->save();
+            //$this->_quote->save();
 
             $responseContent = [
                 'success' => true,
@@ -88,9 +99,9 @@ class Request extends \Magento\Framework\App\Action\Action
         }  catch (\Exception $e) {
             $responseContent = [
                 'success' => false,
-                'error_message' => __('Something went wrong while generating the Sage Pay form request: ' . $e->getMessage()),
+                'error_message' => __('Something went wrong: ' . $e->getMessage()),
             ];
-            $this->messageManager->addError(__('Something went wrong while generating the Sage Pay form request: ' . $e->getMessage()));
+            $this->messageManager->addError(__('Something went wrong: ' . $e->getMessage()));
         }
 
         $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
@@ -98,7 +109,7 @@ class Request extends \Magento\Framework\App\Action\Action
         return $resultJson;
     }
 
-    private function _generateFormCrypt(){
+    protected function _generateFormCrypt(){
 
         $encrypted_password = $this->_config->getFormEncryptedPassword();
 
@@ -106,11 +117,16 @@ class Request extends \Magento\Framework\App\Action\Action
             throw new \Magento\Framework\Exception\LocalizedException(__('Invalid FORM encrypted password.'));
         }
 
-        $customer_data = $this->_getCustomerSession()->getCustomerDataObject();
+        //$customer_data = $this->_getCustomerSession()->getCustomerDataObject();
 
         $data = array();
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
         $data['Amount'] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
+
+        if($this->_config->isSendBasket()) {
+            $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
+        }
+
         $data['Currency'] = $this->_quote->getQuoteCurrencyCode();
         $data['Description'] = "Magento transaction";
         $data['SuccessURL'] = $this->_url->getUrl('*/*/success');
@@ -126,7 +142,6 @@ class Request extends \Magento\Framework\App\Action\Action
         //populate address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
 
-//        $data['BasketXML'] = $basket;
 //        $data['AllowGiftAid'] = (int)$this->getConfigData('allow_gift_aid');
 //        $data['ApplyAVSCV2']  = $this->getConfigData('avscv2');
 //        $data['Apply3DSecure']  = $this->getConfigData('avscv2');
@@ -156,24 +171,11 @@ class Request extends \Magento\Framework\App\Action\Action
         return "@" . bin2hex($crypt);
     }
 
-    private function _getServiceURL(){
+    protected function _getServiceURL(){
         if($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE){
             return \Ebizmarts\SagePaySuite\Model\Config::URL_FORM_REDIRECT_LIVE;
         }else{
             return \Ebizmarts\SagePaySuite\Model\Config::URL_FORM_REDIRECT_TEST;
         }
-    }
-
-    protected function _getCheckoutSession()
-    {
-        return $this->_objectManager->get('Magento\Checkout\Model\Session');
-    }
-
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCustomerSession()
-    {
-        return $this->_objectManager->get('Magento\Customer\Model\Session');
     }
 }

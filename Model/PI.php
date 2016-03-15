@@ -9,7 +9,7 @@ namespace Ebizmarts\SagePaySuite\Model;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\ResourceModel\Order\Payment\Transaction\CollectionFactory as TransactionCollectionFactory;
 use Magento\Payment\Model\InfoInterface;
-use Ebizmarts\SagePaySuite\Model\Api\PIRestApi;
+use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 use Magento\Sales\Model\Order\Payment\Transaction as PaymentTransaction;
 
 /**
@@ -83,27 +83,17 @@ class PI extends \Magento\Payment\Model\Method\Cc
     protected $_canRefundInvoicePartial = true;
 
     /**
+     * @var bool
+     */
+    protected $_isInitializeNeeded = true;
+
+    /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
     protected $config;
 
     /**
-     * @var TransactionCollectionFactory
-     */
-    protected $salesTransactionCollectionFactory;
-
-    /**
-     * @var \Magento\Framework\App\ProductMetadataInterface
-     */
-    protected $productMetaData;
-
-    /**
-     * @var \Magento\Directory\Model\RegionFactory
-     */
-    protected $regionFactory;
-
-    /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRestApi
+     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
     protected $_pirestapi;
 
@@ -118,18 +108,6 @@ class PI extends \Magento\Payment\Model\Method\Cc
     protected $_suiteHelper;
 
     /**
-     * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
-     */
-    protected $_transactionFactory;
-
-    /**
-     * @var \Magento\Framework\Message\ManagerInterface
-     */
-    protected $_messageManager;
-
-    protected $_isInitializeNeeded = true;
-
-    /**
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory
@@ -140,18 +118,12 @@ class PI extends \Magento\Payment\Model\Method\Cc
      * @param \Magento\Framework\Module\ModuleListInterface $moduleList
      * @param \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate
      * @param Config $config
-     * @param PIRestApi $pirestapi
-     * @param Api\Transaction $sharedApi
+     * @param PIRest $pirestapi
+     * @param Api\Shared $sharedApi
      * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
-     * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
-     * @param \Magento\Framework\App\RequestInterface $request
-     * @param TransactionCollectionFactory $salesTransactionCollectionFactory
-     * @param \Magento\Framework\App\ProductMetadataInterface $productMetaData
-     * @param \Magento\Directory\Model\RegionFactory $regionFactory
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
      * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
      * @param array $data
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
 
@@ -165,14 +137,9 @@ class PI extends \Magento\Payment\Model\Method\Cc
         \Magento\Framework\Module\ModuleListInterface $moduleList,
         \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        PIRestApi $pirestapi,
+        PIRest $pirestapi,
         \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
-        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
-        \Magento\Framework\App\RequestInterface $request,
-        TransactionCollectionFactory $salesTransactionCollectionFactory,
-        \Magento\Framework\App\ProductMetadataInterface $productMetaData,
-        \Magento\Directory\Model\RegionFactory $regionFactory,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
@@ -194,14 +161,9 @@ class PI extends \Magento\Payment\Model\Method\Cc
         );
         $this->config = $config;
         $this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
-        $this->salesTransactionCollectionFactory = $salesTransactionCollectionFactory;
-        $this->productMetaData = $productMetaData;
-        $this->regionFactory = $regionFactory;
         $this->_pirestapi = $pirestapi;
         $this->_sharedApi = $sharedApi;
         $this->_suiteHelper = $suiteHelper;
-        $this->_transactionFactory = $transactionFactory;
-        //$this->_messageManager = $context->getMessageManager();
     }
 
     public function assignData(\Magento\Framework\DataObject $data)
@@ -217,35 +179,9 @@ class PI extends \Magento\Payment\Model\Method\Cc
     /**
      * Set initialized flag to capture payment
      */
-    public function markAsInitialized(){
+    public function markAsInitialized()
+    {
         $this->_isInitializeNeeded = false;
-    }
-
-    /**
-     * Authorizes specified amount
-     *
-     * @param InfoInterface $payment
-     * @param float $amount
-     * @return $this
-     * @throws LocalizedException
-     */
-    public function authorize(InfoInterface $payment, $amount)
-    {
-        return parent::authorize($payment, $amount);
-    }
-
-    /**
-     * Captures specified amount
-     *
-     * @param InfoInterface $payment
-     * @param float $amount
-     * @return $this
-     * @throws LocalizedException
-     */
-    public function capture(InfoInterface $payment, $amount)
-    {
-        //$payment->setIsTransactionClosed(true);
-        return $this;
     }
 
     /**
@@ -267,9 +203,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $result = $this->_sharedApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
             $result = $result["data"];
 
-            $payment->setIsTransactionClosed(1)
-                ->setShouldCloseParentTransaction(1);
-
+            $payment->setIsTransactionClosed(1);
+            $payment->setShouldCloseParentTransaction(1);
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
@@ -277,7 +212,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
         } catch (\Exception $e) {
             $this->_logger->critical($e);
-            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId));
+            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
         }
 
         return $this;
@@ -298,28 +233,12 @@ class PI extends \Magento\Payment\Model\Method\Cc
         try {
 
             $result = $this->_sharedApi->voidTransaction($transaction_id);
-            $result = $result["data"];
-
-            //create void transaction
-            //not for now
-//            $refundTransaction = $this->_transactionFactory->create()
-//                ->setOrderPaymentObject($payment)
-//                ->setTxnId($result["VPSTxId"])
-//                ->setParentTxnId($transaction_id)
-//                ->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_REFUND)
-//                ->setPaymentId($payment->getId());
-//
-//            $refundTransaction->save();
-//            $refundTransaction->setIsClosed(true);
-
-            //$this->_messageManager->addSuccess(__("Sage Pay transaction " . $transaction_id . " successfully voided."));
-
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
 
             if ($apiException->getCode() == \Ebizmarts\SagePaySuite\Model\Api\ApiException::INVALID_TRANSACTION_STATE) {
                 //unable to void transaction
-                throw new LocalizedException(__('Unable to VOID Sage Pay transaction ' . $transaction_id . ', you will need to refund it instead.'));
+                throw new LocalizedException(__('Unable to VOID Sage Pay transaction ' . $transaction_id . ': ' . $apiException->getUserMessage()));
             } else {
                 $this->_logger->critical($apiException);
                 throw $apiException;
@@ -327,7 +246,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
         } catch (\Exception $e) {
             $this->_logger->critical($e);
-            throw new LocalizedException(__('There was an error voiding transaction ' . $transaction_id));
+            throw new LocalizedException(__('Unable to VOID Sage Pay transaction ' . $transaction_id . ': ' . $e->getMessage()));
         }
 
         return $this;
@@ -342,47 +261,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function cancel(InfoInterface $payment)
     {
-        if($this->canVoid()){
+        if ($this->canVoid()) {
             $this->void($payment);
-        }
-        return $this;
-    }
-
-    /**
-     * Check whether payment method is applicable to quote
-     *
-     * @param \Magento\Quote\Api\Data\CartInterface|null $quote
-     * @return bool
-     */
-    public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
-    {
-        return parent::isAvailable($quote);
-    }
-
-    /**
-     * @return bool
-     */
-    public function canVoid()
-    {
-        return $this->_canVoid;
-    }
-
-    /**
-     * Validate data
-     *
-     * @return $this
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
-    public function validate()
-    {
-        $info = $this->getInfoInstance();
-        if ($info instanceof \Magento\Sales\Model\Order\Payment) {
-            $billingCountry = $info->getOrder()->getBillingAddress()->getCountryId();
-        } else {
-            $billingCountry = $info->getQuote()->getBillingAddress()->getCountryId();
-        }
-        if (!$this->config->canUseForCountry($billingCountry)) {
-            throw new LocalizedException(__('Selected payment type is not allowed for billing country.'));
         }
         return $this;
     }
@@ -418,5 +298,37 @@ class PI extends \Magento\Payment\Model\Method\Cc
     public function getConfigPaymentAction()
     {
         return $this->config->getPaymentAction();
+    }
+
+    /**
+     * Validate CC type and country allowed
+     *
+     * @return $this
+     * @throws LocalizedException
+     */
+    public function validate()
+    {
+        $info = $this->getInfoInstance();
+        $errorMsg = false;
+
+        //validate country
+        if ($this->config->getAreSpecificCountriesAllowed() == 1) {
+            $availableCountries = explode(',', $this->config->getSpecificCountries());
+            if (!in_array($info->getOrder()->getBillingAddress()->getCountryId(), $availableCountries)) {
+                $errorMsg = __('You can\'t use the payment type you selected to make payments to the billing country.');
+            }
+        }
+
+        //check allowed card types
+        $availableTypes = explode(',', $this->config->getAllowedCcTypes());
+        if (!in_array($info->getCcType(), $availableTypes)) {
+            $errorMsg = __('This credit card type is not allowed for this payment method');
+        }
+
+        if ($errorMsg) {
+            throw new \Magento\Framework\Exception\LocalizedException($errorMsg);
+        }
+
+        return $this;
     }
 }

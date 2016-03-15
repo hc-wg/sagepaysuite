@@ -22,7 +22,6 @@
             <argument name="name" xsi:type="string">SagePaySuiteLogger</argument>
             <argument name="handlers"  xsi:type="array">
                 <item name="Request" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\Request</item>
-                <item name="ServerNotify" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\ServerNotify</item>
                 <item name="Cron" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\Cron</item>
             </argument>
         </arguments>

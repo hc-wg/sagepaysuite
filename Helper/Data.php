@@ -29,18 +29,22 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Ebizmarts\SagePaySuite\Model\Config $config
     ) {
         parent::__construct($context);
-
         $this->_loader = $loader;
         $this->_config = $config;
     }
 
+    /**
+     * Get default sagepay config instance
+     * @return \Ebizmarts\SagePaySuite\Model\Config
+     */
     public function getSagePayConfig(){
         return $this->_config;
     }
 
     /**
-     * @param Number $order_id
-     * @param String $action
+     * @param string $order_id
+     * @param string $action
+     * @return string
      */
     public function generateVendorTxCode($order_id="", $action=\Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT){
 
@@ -57,14 +61,16 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return substr($prefix . $order_id . "-" . date('Y-m-d-His') . time(), 0, 40);
     }
 
+    /**
+     * Verify license
+     * @return bool
+     */
     public function verify()
     {
         $domain = preg_replace("/^http:\/\//", "", $this->_config->getStoreDomain());
         $domain = preg_replace("/^https:\/\//", "",$domain);
         $domain = preg_replace("/^www\./", "", $domain);
         $domain = preg_replace("/\/$/", "", $domain);
-        //$domain = preg_replace("/^www\./", "", $_SERVER['HTTP_HOST']);
-
         $version = explode('.',$this->getVersion());
         $module = 'Ebizmarts_SagePaySuite2';
         $md5 = md5($module . $version[0].'.'.$version[1] . $domain);
@@ -72,17 +78,27 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return ($key == $this->_config->getLicense());
     }
 
+    /**
+     * Get module version
+     * @return string
+     */
     public function getVersion()
     {
         $modules = $this->_loader->load();
-        $v = "";
-        if(isset($modules['Ebizmarts_SagePaySuite']))
+        $v = "UNKNOWN";
+
+        if(isset($modules['Ebizmarts_SagePaySuite']) && isset($modules['Ebizmarts_SagePaySuite']['setup_version']))
         {
             $v =$modules['Ebizmarts_SagePaySuite']['setup_version'];
         }
         return $v;
     }
 
+    /**
+     * Stripe transaction if from '-capture/-refund/etc' appends
+     * @param $transactionId
+     * @return mixed
+     */
     public function clearTransactionId($transactionId)
     {
         $suffixes = [

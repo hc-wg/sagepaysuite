@@ -53,21 +53,20 @@ class Success extends \Magento\Framework\App\Action\Action
     protected $_suiteLogger;
 
     /**
-     * @var \Crypt_AES
+     * @var \Ebizmarts\SagePaySuite\Model\Form
      */
-    protected $_crypt;
+    protected $_formModel;
 
     /**
-     * Success constructor.
      * @param \Magento\Framework\App\Action\Context $context
      * @param \Magento\Customer\Model\Session $customerSession
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
-     * @param \Magento\Checkout\Helper\Data $checkoutData
-     * @param \Magento\Quote\Model\QuoteManagement $quoteManagement
-     * @param OrderSender $orderSender
      * @param \Psr\Log\LoggerInterface $logger
+     * @param Logger $suiteLogger
      * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
+     * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
+     * @param \Ebizmarts\SagePaySuite\Model\Form $formModel
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -78,7 +77,7 @@ class Success extends \Magento\Framework\App\Action\Action
         Logger $suiteLogger,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Crypt_AES $crypt
+        \Ebizmarts\SagePaySuite\Model\Form $formModel
     )
     {
         parent::__construct($context);
@@ -90,30 +89,31 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_checkoutSession = $checkoutSession;
         $this->_checkoutHelper = $checkoutHelper;
         $this->_suiteLogger = $suiteLogger;
-        $this->_crypt = $crypt;
+        $this->_formModel = $formModel;
     }
 
     /**
      * FORM success callback
-     *
-     * @return void
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws Magento\Framework\Exception\LocalizedException
      */
     public function execute()
     {
         try {
 
-            $response = $this->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
+            //decode response
+            $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
+            if (!array_key_exists("VPSTxId", $response)) {
+                throw new \Magento\Framework\Exception\LocalizedException('Invalid response from Sage Pay');
+            }
 
             //log response
             $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $response);
 
-            $this->_quote = $this->_getCheckoutSession()->getQuote();
-
-            $this->_quote->save();
+            $this->_quote = $this->_checkoutSession->getQuote();
+            //$this->_quote->save();
 
             $transactionId = $response["VPSTxId"];
-            $transactionId = str_replace("{","",str_replace("}","",$transactionId)); //strip brackets
+            $transactionId = str_replace("{", "", str_replace("}", "", $transactionId)); //strip brackets
 
             //import payment info for save order
             $payment = $this->_quote->getPayment();
@@ -122,12 +122,12 @@ class Success extends \Magento\Framework\App\Action\Action
             $payment->setLastTransId($transactionId);
             $payment->setCcType($response["CardType"]);
             $payment->setCcLast4($response["Last4Digits"]);
-            if(array_key_exists("ExpiryDate",$response)){
-                $payment->setCcExpMonth(substr($response["ExpiryDate"],0,2));
-                $payment->setCcExpYear(substr($response["ExpiryDate"],2));
+            if (array_key_exists("ExpiryDate", $response)) {
+                $payment->setCcExpMonth(substr($response["ExpiryDate"], 0, 2));
+                $payment->setCcExpYear(substr($response["ExpiryDate"], 2));
             }
-            if(array_key_exists("3DSecureStatus",$response)){
-                $payment->setAdditionalInformation('threeDStatus',$response["3DSecureStatus"]);
+            if (array_key_exists("3DSecureStatus", $response)) {
+                $payment->setAdditionalInformation('threeDStatus', $response["3DSecureStatus"]);
             }
             $payment->setAdditionalInformation('statusDetail', $response["StatusDetail"]);
             $payment->setAdditionalInformation('vendorTxCode', $response["VendorTxCode"]);
@@ -139,16 +139,20 @@ class Success extends \Magento\Framework\App\Action\Action
             $quoteId = $this->_quote->getId();
 
             //prepare session to success or cancellation page
-            $this->_getCheckoutSession()->clearHelperData();
-            $this->_getCheckoutSession()->setLastQuoteId($quoteId)->setLastSuccessQuoteId($quoteId);
+            $this->_checkoutSession->clearHelperData();
+            $this->_checkoutSession->setLastQuoteId($quoteId);
+            $this->_checkoutSession->setLastSuccessQuoteId($quoteId);
+
             //an order may be created
             if ($order) {
-                $this->_getCheckoutSession()->setLastOrderId($order->getId())
-                    ->setLastRealOrderId($order->getIncrementId())
-                    ->setLastOrderStatus($order->getStatus());
+                $this->_checkoutSession->setLastOrderId($order->getId());
+                $this->_checkoutSession->setLastRealOrderId($order->getIncrementId());
+                $this->_checkoutSession->setLastOrderStatus($order->getStatus());
 
                 //send email
                 $this->_checkoutHelper->sendOrderEmail($order);
+            }else{
+                throw new \Magento\Framework\Exception\LocalizedException('Can not create order');
             }
 
             $payment = $order->getPayment();
@@ -157,8 +161,7 @@ class Success extends \Magento\Framework\App\Action\Action
             $payment->setIsTransactionClosed(1);
             $payment->save();
 
-            switch($this->_config->getSagepayPaymentAction())
-            {
+            switch ($this->_config->getSagepayPaymentAction()) {
                 case \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT:
                     $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
                     $closed = true;
@@ -178,18 +181,18 @@ class Success extends \Magento\Framework\App\Action\Action
             }
 
             //create transaction record
-            $transaction = $this->_transactionFactory->create()
-                ->setOrderPaymentObject($payment)
-                ->setTxnId($transactionId)
-                ->setOrderId($order->getEntityId())
-                ->setTxnType($action)
-                ->setPaymentId($payment->getId());
+            $transaction = $this->_transactionFactory->create();
+            $transaction->setOrderPaymentObject($payment);
+            $transaction->setTxnId($transactionId);
+            $transaction->setOrderId($order->getEntityId());
+            $transaction->setTxnType($action);
+            $transaction->setPaymentId($payment->getId());
             $transaction->setIsClosed($closed);
             $transaction->save();
 
             //update invoice transaction id
             $invoices = $order->getInvoiceCollection();
-            if($invoices->count()){
+            if (!empty($invoices)) {
                 foreach ($invoices as $_invoice) {
                     $_invoice->setTransactionId($payment->getLastTransId());
                     $_invoice->save();
@@ -200,9 +203,10 @@ class Success extends \Magento\Framework\App\Action\Action
 
             return;
 
-        } catch (\Exception $e) {
+        } catch (\Exception $e)
+        {
             $this->_logger->critical($e);
-            $this->_redirectToCartAndShowError('We can\'t place the order. Please try another payment method.');
+            $this->_redirectToCartAndShowError('Your payment was successful but the order was NOT created, please contact administration: ' . $e->getMessage());
         }
     }
 
@@ -216,58 +220,6 @@ class Success extends \Magento\Framework\App\Action\Action
     {
         $this->messageManager->addError($errorMessage);
         $this->_redirect('checkout/cart');
-    }
-
-    protected function decodeSagePayResponse($crypt){
-        if (empty($crypt)) {
-            $this->_redirectToCartAndShowError('Invalid response from SagePay, please contact our support team to rectify payment.');
-        }else{
-            $strDecoded = $this->decrypt($crypt);
-
-            $responseRaw = explode('&',$strDecoded);
-            $response = array();
-
-            for($i = 0;$i < count($responseRaw);$i++){
-                $strField = explode('=',$responseRaw[$i]);
-                $response[$strField[0]] = $strField[1];
-            }
-
-            if(!array_key_exists(\Ebizmarts\SagePaySuite\Model\Config::VAR_VPSTxId,$response)){
-                $this->_redirectToCartAndShowError('Invalid response from SagePay, please contact our support team to rectify payment.');
-            }else{
-                return $response;
-            }
-        }
-    }
-
-    public function decrypt($strIn) {
-        $cryptPass = $this->_config->getFormEncryptedPassword();
-
-        //** remove the first char which is @ to flag this is AES encrypted
-        $strIn = substr($strIn, 1);
-
-        //** HEX decoding
-        $strIn = pack('H*', $strIn);
-
-        $this->_crypt->setBlockLength(128);
-        $this->_crypt->setKey($cryptPass);
-        $this->_crypt->setIV($cryptPass);
-        $decoded = $this->_crypt->decrypt($strIn);
-
-        return $decoded;
-    }
-
-    protected function _getCheckoutSession()
-    {
-        return $this->_checkoutSession;
-    }
-
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCustomerSession()
-    {
-        return $this->_customerSession;
     }
 
 }

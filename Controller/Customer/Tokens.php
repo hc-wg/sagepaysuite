@@ -4,8 +4,6 @@
  * See LICENSE.txt for license details.
  */
 
-// @codingStandardsIgnoreFile
-
 namespace Ebizmarts\SagePaySuite\Controller\Customer;
 
 use Magento\Framework\App\RequestInterface;

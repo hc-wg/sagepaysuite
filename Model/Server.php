@@ -12,14 +12,11 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Exception\LocalizedException;
 
 /**
- * SagePaySuite SERVER Module
- * @method \Magento\Quote\Api\Data\PaymentMethodExtensionInterface getExtensionAttributes()
- * @SuppressWarnings(PHPMD.TooManyFields)
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * Sage Pay Suite SERVER model
+ * @package Ebizmarts\SagePaySuite\Model
  */
 class Server extends \Magento\Payment\Model\Method\AbstractMethod
 {
-
     /**
      * @var string
      */
@@ -125,11 +122,6 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
     protected $_transactionFactory;
 
     /**
-     * @var \Magento\Framework\Message\ManagerInterface
-     */
-    protected $_messageManager;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
     protected $_config;
@@ -183,49 +175,13 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
     }
 
-
-    /**
-     * Check whether payment method can be used
-     * @param Quote|null $quote
-     * @return bool
-     */
-    public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
-    {
-        return parent::isAvailable($quote);
-    }
-
-    /**
-     * Authorize payment
-     *
-     * @param \Magento\Framework\Object|\Magento\Payment\Model\InfoInterface|Payment $payment
-     * @param float $amount
-     * @return $this
-     */
-    public function authorize(\Magento\Payment\Model\InfoInterface $payment, $amount)
-    {
-        return parent::authorize($payment, $amount);
-    }
-
-    /**
-     * Void payment
-     *
-     * @param \Magento\Framework\Object|\Magento\Payment\Model\InfoInterface|Payment $payment
-     * @return $this
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
-    public function void(\Magento\Payment\Model\InfoInterface $payment)
-    {
-        return parent::void($payment);
-    }
-
     /**
      * Capture payment
      *
-     * @param \Magento\Framework\Object|\Magento\Payment\Model\InfoInterface|Payment $payment
-     * @param float $amount
+     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param $amount
      * @return $this
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @throws LocalizedException
      */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
@@ -287,9 +243,8 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
             $result = $this->_sharedApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
             $result = $result["data"];
 
-            $payment->setIsTransactionClosed(1)
-                ->setShouldCloseParentTransaction(1);
-
+            $payment->setIsTransactionClosed(1);
+            $payment->setShouldCloseParentTransaction(1);
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
@@ -297,7 +252,7 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
 
         } catch (\Exception $e) {
             $this->_logger->critical($e);
-            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId));
+            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
         }
 
         return $this;
@@ -311,9 +266,9 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function cancel(\Magento\Payment\Model\InfoInterface $payment)
     {
-        if($this->canVoid()){
-            $this->void($payment);
-        }
+//        if ($this->canVoid()) {
+//            $this->void($payment);
+//        }
         return parent::cancel($payment);
     }
 
@@ -325,6 +280,12 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function canVoid()
     {
+        $payment = $this->getInfoInstance();
+        $order = $payment->getOrder();
+        if ($order->getState() == \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
+            return false;
+        }
+
         return $this->_canVoid;
     }
 

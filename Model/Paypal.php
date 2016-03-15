@@ -118,16 +118,6 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
     protected $_suiteHelper;
 
     /**
-     * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
-     */
-    protected $_transactionFactory;
-
-    /**
-     * @var \Magento\Framework\Message\ManagerInterface
-     */
-    protected $_messageManager;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
     protected $_config;
@@ -151,7 +141,6 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
         \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
@@ -170,55 +159,18 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
         );
 
         $this->_suiteHelper = $suiteHelper;
-        $this->_transactionFactory = $transactionFactory;
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
         $this->_sharedApi = $sharedApi;
     }
 
-
-    /**
-     * Check whether payment method can be used
-     * @param Quote|null $quote
-     * @return bool
-     */
-    public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
-    {
-        return parent::isAvailable($quote);
-    }
-
-    /**
-     * Authorize payment
-     *
-     * @param \Magento\Framework\Object|\Magento\Payment\Model\InfoInterface|Payment $payment
-     * @param float $amount
-     * @return $this
-     */
-    public function authorize(\Magento\Payment\Model\InfoInterface $payment, $amount)
-    {
-        return parent::authorize($payment, $amount);
-    }
-
-    /**
-     * Void payment
-     *
-     * @param \Magento\Framework\Object|\Magento\Payment\Model\InfoInterface|Payment $payment
-     * @return $this
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
-    public function void(\Magento\Payment\Model\InfoInterface $payment)
-    {
-        return parent::void($payment);
-    }
-
     /**
      * Capture payment
      *
-     * @param \Magento\Framework\Object|\Magento\Payment\Model\InfoInterface|Payment $payment
-     * @param float $amount
+     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param $amount
      * @return $this
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @throws LocalizedException
      */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
@@ -270,8 +222,8 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
             $result = $this->_sharedApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
             $result = $result["data"];
 
-            $payment->setIsTransactionClosed(1)
-                ->setShouldCloseParentTransaction(1);
+            $payment->setIsTransactionClosed(1);
+            $payment->setShouldCloseParentTransaction(1);
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
@@ -279,32 +231,10 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
 
         } catch (\Exception $e) {
             $this->_logger->critical($e);
-            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId));
+            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
         }
 
         return $this;
-    }
-
-    /**
-     * Cancel payment
-     *
-     * @param \Magento\Framework\Object|\Magento\Payment\Model\InfoInterface|Payment $payment
-     * @return $this
-     */
-    public function cancel(\Magento\Payment\Model\InfoInterface $payment)
-    {
-        return parent::cancel($payment);
-    }
-
-    /**
-     * Check void availability
-     * @return bool
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @internal param \Magento\Framework\Object $payment
-     */
-    public function canVoid()
-    {
-        return $this->_canVoid;
     }
 
     /**

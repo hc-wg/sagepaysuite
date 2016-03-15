@@ -205,6 +205,9 @@ class Request extends \Magento\Backend\App\AbstractAction
         $post_data["Vendor"] = $this->_config->getVendorname();
         $post_data["VendorTxCode"] = $this->_assignedVendorTxCode;
         $post_data["Amount"] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
+        if($this->_config->isSendBasket()) {
+            $post_data = array_merge($post_data, $this->_requestHelper->populateBasketInformation($this->_quote));
+        }
         $post_data["Currency"] = $this->_quote->getQuoteCurrencyCode();
         $post_data["Description"] = "Magento transaction";
         $post_data["NotificationURL"] = $this->_getNotificationUrl();

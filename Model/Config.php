@@ -16,6 +16,10 @@ use Magento\Store\Model\Store;
  */
 class Config implements ConfigInterface
 {
+    /**
+     * SagePay VPS protocol
+     */
+    const VPS_PROTOCOL = '3.00';
 
     /**
      * SagePaySuite Integration codes
@@ -123,6 +127,12 @@ class Config implements ConfigInterface
     const ReDSTATUS_CHALLENGE = 'CHALLENGE';
     const ReDSTATUS_NOTCHECKED = 'NOTCHECKED';
 
+    /**
+     * Basket Formats
+     */
+    const BASKETFORMAT_Sage50 = 'Sage50';
+    const BASKETFORMAT_XML = 'xml';
+
     /*
      * Max tokens per customer
      */
@@ -158,29 +168,10 @@ class Config implements ConfigInterface
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      */
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Directory\Model\Config\Source\Country $sourceCountry
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
     )
     {
         $this->_scopeConfig = $scopeConfig;
-        $this->_sourceCountry = $sourceCountry;
-    }
-
-    /**
-     * Method code setter
-     *
-     * @param string|MethodInterface $method
-     * @return $this
-     */
-    public function setMethod($method)
-    {
-        if ($method instanceof MethodInterface) {
-            $this->_methodCode = $method->getCode();
-            $this->_methodInstance = $method;
-        } elseif (is_string($method)) {
-            $this->_methodCode = $method;
-        }
-        return $this;
     }
 
     /**
@@ -199,18 +190,6 @@ class Config implements ConfigInterface
     public function getMethodCode()
     {
         return $this->_methodCode;
-    }
-
-    /**
-     * Store ID setter
-     *
-     * @param int $storeId
-     * @return $this
-     */
-    public function setStoreId($storeId)
-    {
-        $this->_storeId = (int)$storeId;
-        return $this;
     }
 
     /**
@@ -271,20 +250,9 @@ class Config implements ConfigInterface
         return $this->getValue("active");
     }
 
-    /**
-     * Check whether specified currency code is supported
-     *
-     * @param string $code
-     * @return bool
-     */
-    public function isCurrencyCodeSupported($code)
-    {
-        return true;
-    }
-
     public function getVPSProtocol()
     {
-        return "3.00";
+        return self::VPS_PROTOCOL;
     }
 
     public function getSagepayPaymentAction()
@@ -406,7 +374,7 @@ class Config implements ConfigInterface
      */
     public function setPathPattern($pathPattern)
     {
-
+        //dummy interface method not being used
     }
 
     public function get3Dsecure()
@@ -437,6 +405,26 @@ class Config implements ConfigInterface
         return $config_value;
     }
 
+    public function isSendBasket()
+    {
+        $config_value = $this->_scopeConfig->getValue(
+            $this->_getAdvancedConfigPath("send_basket"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+        return $config_value;
+    }
+
+    public function getBasketFormat()
+    {
+        $config_value = $this->_scopeConfig->getValue(
+            $this->_getAdvancedConfigPath("basket_format"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+        return $config_value;
+    }
+
     public function getNotifyFraudResult()
     {
         $config_value = $this->_scopeConfig->getValue(
@@ -450,6 +438,11 @@ class Config implements ConfigInterface
     public function getPaypalBillingAgreement()
     {
         return $this->getValue("billing_agreement");
+    }
+
+    public function isPaypalForceXml()
+    {
+        return $this->getValue("force_xml");
     }
 
     /**
@@ -468,5 +461,20 @@ class Config implements ConfigInterface
             }
         }
         return true;
+    }
+
+    public function getAllowedCcTypes()
+    {
+        return $this->getValue("cctypes");
+    }
+
+    public function getAreSpecificCountriesAllowed()
+    {
+        return $this->getValue("allowspecific");
+    }
+
+    public function getSpecificCountries()
+    {
+        return $this->getValue("specificcountry");
     }
 }

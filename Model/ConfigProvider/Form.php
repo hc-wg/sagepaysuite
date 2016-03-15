@@ -46,11 +46,12 @@ class Form implements ConfigProviderInterface
             return [];
         }
 
-        return ['payment' => [
-            'ebizmarts_sagepaysuiteform' => [
-                'licensed' => $this->_suiteHelper->verify()
-            ],
-        ]
+        return [
+            'payment' => [
+                'ebizmarts_sagepaysuiteform' => [
+                    'licensed' => $this->_suiteHelper->verify()
+                ],
+            ]
         ];
     }
 }

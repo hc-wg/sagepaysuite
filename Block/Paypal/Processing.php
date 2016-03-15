@@ -9,11 +9,8 @@ namespace Ebizmarts\SagePaySuite\Block\Paypal;
 
 class Processing extends \Magento\Framework\View\Element\Template
 {
-
     protected function _toHtml()
     {
-
-
         $html = '<html><head><title>PayPal - Processing payment...</title></head><body>';
         $html .= '<style>body {background-color: #F7F6F4;}' .
             ' .container {margin: 150px auto 350px; width: 50%; text-align: center;}' .
