@@ -72,6 +72,16 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_tokenModel;
 
     /**
+     * @var \Magento\Checkout\Model\Session
+     */
+    protected $_checkoutSession;
+
+    /**
+     * @var \Magento\Customer\Model\Session
+     */
+    protected $_customerSession;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
@@ -121,7 +131,6 @@ class Request extends \Magento\Framework\App\Action\Action
             $request = $this->_generateRequest();
 
             //send POST to Sage Pay
-            //$post_response = $this->_handleApiErrors($this->_sendPost($request));
             $post_response = $this->_postApi->sendPost($request,
                 $this->_getServiceURL(),
                 array("OK")
@@ -136,27 +145,34 @@ class Request extends \Magento\Framework\App\Action\Action
             //save order with pending payment
             $order = $this->_checkoutHelper->placeOrder();
 
-            //set payment data
-            $payment = $order->getPayment();
-            $payment->setTransactionId($transactionId);
-            $payment->setLastTransId($transactionId);
-            $payment->setAdditionalInformation('vendorTxCode', $this->_assignedVendorTxCode);
-            $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
-            $payment->setAdditionalInformation('mode', $this->_config->getMode());
-            $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
-            $payment->save();
+            if($order)
+            {
+                //set pre-saved order flag in checkout session
+                $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", $order->getId());
 
-            //prepare response
-            $responseContent = [
-                'success' => true,
-                'response' => $post_response
-            ];
+                //set payment data
+                $payment = $order->getPayment();
+                $payment->setTransactionId($transactionId);
+                $payment->setLastTransId($transactionId);
+                $payment->setAdditionalInformation('vendorTxCode', $this->_assignedVendorTxCode);
+                $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
+                $payment->setAdditionalInformation('mode', $this->_config->getMode());
+                $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
+                $payment->setAdditionalInformation('securityKey', $post_response["data"]["SecurityKey"]);
+                $payment->save();
 
+                //prepare response
+                $responseContent = [
+                    'success' => true,
+                    'response' => $post_response
+                ];
+
+            }else {
+                throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
+            }
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
 
             $this->_logger->critical($apiException);
-
-            echo $apiException->getUserMessage();
 
             $responseContent = [
                 'success' => false,
@@ -165,8 +181,6 @@ class Request extends \Magento\Framework\App\Action\Action
         } catch (\Exception $e) {
 
             $this->_logger->critical($e);
-
-            echo $e->getMessage();
 
             $responseContent = [
                 'success' => false,
@@ -204,19 +218,6 @@ class Request extends \Magento\Framework\App\Action\Action
     }
 
     /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCheckoutSession()
-    {
-        return $this->_objectManager->get('Magento\Checkout\Model\Session');
-    }
-
-    protected function _getCustomerSession()
-    {
-        return $this->_objectManager->get('Magento\Customer\Model\Session');
-    }
-
-    /**
      * return array
      */
     protected function _generateRequest()
@@ -226,20 +227,11 @@ class Request extends \Magento\Framework\App\Action\Action
         $data["TxType"] = $this->_config->getSagepayPaymentAction();
         $data["Vendor"] = $this->_config->getVendorname();
         $data["VendorTxCode"] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
-        $data["Amount"] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
-
-        if($this->_config->isSendBasket()) {
-            $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
-        }
-
-
-        if($this->_config->getSendBasket()) {
-            $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
-        }
-
-        $data["Currency"] = $this->_quote->getQuoteCurrencyCode();
-        $data["Description"] = "Magento transaction";
+        $data["Description"] = $this->_requestHelper->getOrderDescription();
         $data["NotificationURL"] = $this->_getNotificationUrl();
+
+        //populate payment amount information
+        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
 
         //address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
@@ -261,8 +253,6 @@ class Request extends \Magento\Framework\App\Action\Action
                 $data["Token"] = $this->_postData->token;
             }
         }
-
-
 
         //not mandatory
 //        BillingAddress2

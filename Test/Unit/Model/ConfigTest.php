@@ -350,7 +350,10 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             'Sage50',
-            $this->configModel->getBasketFormat()
+            $this->configModel->getBasketFormat());
+    }
+
+
     public function testGetPaypalBillingAgreement()
     {
         $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
@@ -368,43 +371,18 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testGetPaypalBillingAgreement()
-    {
-        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
-
-        $this->scopeConfigMock->expects($this->once())
-            ->method('getValue')
-            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL.'/billing_agreement',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
-            ->willReturn(false);
-
-        $this->assertEquals(
-            false,
-            $this->configModel->getPaypalBillingAgreement()
-        );
-    }
-
-    public function testGetPaypalForceXml()
+    public function testGetAutoInvoiceFraudPassed()
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('sagepaysuite/advanced/force_xml',
-    public function testIsPaypalForceXml()
-    {
-        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
-
-        $this->scopeConfigMock->expects($this->once())
-            ->method('getValue')
-            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL.'/force_xml',
+            ->with('sagepaysuite/advanced/fraud_autoinvoice',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
                 NULL)
             ->willReturn(true);
 
         $this->assertEquals(
             true,
-            $this->configModel->isPaypalForceXml()
-            $this->configModel->getPaypalForceXml()
+            $this->configModel->getAutoInvoiceFraudPassed()
         );
     }
 
@@ -528,57 +506,6 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             Config::CURRENCY_BASE,
             $this->configModel->getCurrencyConfig()
-        );
-    }
-
-    public function testGetAllowedCcTypes()
-    {
-        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
-
-        $this->scopeConfigMock->expects($this->any())
-            ->method('getValue')
-            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL.'/cctypes',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
-            ->willReturn("VI,MC");
-
-        $this->assertEquals(
-            "VI,MC",
-            $this->configModel->getAllowedCcTypes()
-        );
-    }
-
-    public function testGetAreSpecificCountriesAllowed()
-    {
-        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
-
-        $this->scopeConfigMock->expects($this->any())
-            ->method('getValue')
-            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL.'/allowspecific',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
-            ->willReturn(0);
-
-        $this->assertEquals(
-            0,
-            $this->configModel->getAreSpecificCountriesAllowed()
-        );
-    }
-
-    public function testGetSpecificCountries()
-    {
-        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
-
-        $this->scopeConfigMock->expects($this->any())
-            ->method('getValue')
-            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL.'/specificcountry',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
-            ->willReturn("UY,US");
-
-        $this->assertEquals(
-            "UY,US",
-            $this->configModel->getSpecificCountries()
         );
     }
 }
