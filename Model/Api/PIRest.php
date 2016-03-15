@@ -243,10 +243,6 @@ class PIRest
                 $error_msg .= ': ' . $errors->property;
             }
 
-            if(isset($errors->statusDetail)){
-                $error_msg = $errors->statusDetail;
-            }
-
             $exception = $this->_apiExceptionFactory->create([
                 'phrase' => __($error_msg),
                 'code' => $error_code

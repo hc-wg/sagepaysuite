@@ -72,16 +72,6 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_tokenModel;
 
     /**
-     * @var \Magento\Checkout\Model\Session
-     */
-    protected $_checkoutSession;
-
-    /**
-     * @var \Magento\Customer\Model\Session
-     */
-    protected $_customerSession;
-
-    /**
      * @param \Magento\Framework\App\Action\Context $context
      */
     public function __construct(
@@ -131,6 +121,7 @@ class Request extends \Magento\Framework\App\Action\Action
             $request = $this->_generateRequest();
 
             //send POST to Sage Pay
+            //$post_response = $this->_handleApiErrors($this->_sendPost($request));
             $post_response = $this->_postApi->sendPost($request,
                 $this->_getServiceURL(),
                 array("OK")
@@ -213,6 +204,19 @@ class Request extends \Magento\Framework\App\Action\Action
     }
 
     /**
+     * @return \Magento\Checkout\Model\Session
+     */
+    protected function _getCheckoutSession()
+    {
+        return $this->_objectManager->get('Magento\Checkout\Model\Session');
+    }
+
+    protected function _getCustomerSession()
+    {
+        return $this->_objectManager->get('Magento\Customer\Model\Session');
+    }
+
+    /**
      * return array
      */
     protected function _generateRequest()
@@ -225,6 +229,11 @@ class Request extends \Magento\Framework\App\Action\Action
         $data["Amount"] = number_format($this->_quote->getGrandTotal(), 2, '.', '');
 
         if($this->_config->isSendBasket()) {
+            $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
+        }
+
+
+        if($this->_config->getSendBasket()) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
         }
 
@@ -252,6 +261,8 @@ class Request extends \Magento\Framework\App\Action\Action
                 $data["Token"] = $this->_postData->token;
             }
         }
+
+
 
         //not mandatory
 //        BillingAddress2

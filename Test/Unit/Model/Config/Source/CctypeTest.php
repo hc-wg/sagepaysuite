@@ -24,7 +24,7 @@ class CctypeTest extends \PHPUnit_Framework_TestCase
 
     public function testGetAllowedTypes(){
         $this->assertEquals(
-            array('VI', 'MC', 'MI', 'AE', 'DN', 'JCB'),
+            array('VI', 'MC', 'AE', 'DI', 'JCB', 'OT'),
             $this->cctypeModel->getAllowedTypes()
         );
     }

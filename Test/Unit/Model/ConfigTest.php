@@ -325,14 +325,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             'Sage50',
             $this->configModel->getBasketFormat()
-        );
-    }
-
     public function testGetPaypalBillingAgreement()
     {
         $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
 
-        $this->scopeConfigMock->expects($this->once())
+        $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
             ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL.'/billing_agreement',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
@@ -345,6 +342,29 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testGetPaypalBillingAgreement()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
+
+        $this->scopeConfigMock->expects($this->once())
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with('payment/'.\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL.'/billing_agreement',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn(false);
+
+        $this->assertEquals(
+            false,
+            $this->configModel->getPaypalBillingAgreement()
+        );
+    }
+
+    public function testGetPaypalForceXml()
+    {
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with('sagepaysuite/advanced/force_xml',
     public function testIsPaypalForceXml()
     {
         $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
@@ -359,6 +379,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             true,
             $this->configModel->isPaypalForceXml()
+            $this->configModel->getPaypalForceXml()
         );
     }
 
