@@ -325,6 +325,35 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsSendBasket(){
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with('sagepaysuite/advanced/send_basket',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn(true);
+
+        $this->assertEquals(
+            true,
+            $this->configModel->isSendBasket()
+        );
+    }
+
+    public function testGetBasketFormat()
+    {
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with('sagepaysuite/advanced/basket_format',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn('Sage50');
+
+        $this->assertEquals(
+            'Sage50',
+            $this->configModel->getBasketFormat());
+    }
+
+
     public function testGetPaypalBillingAgreement()
     {
         $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);

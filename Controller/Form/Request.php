@@ -122,6 +122,11 @@ class Request extends \Magento\Framework\App\Action\Action
         $data = array();
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
         $data['Description'] = $this->_requestHelper->getOrderDescription();
+
+        if($this->_config->isSendBasket()) {
+            $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
+        }
+
         $data['SuccessURL'] = $this->_url->getUrl('*/*/success');
         $data['FailureURL'] = $this->_url->getUrl('*/*/failure');
 
