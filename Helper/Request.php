@@ -100,19 +100,19 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
             $data["Currency"] = $currencyCode;
         }
 
-        $basketFormat = $this->_config->getBasketFormat();
-
-        if($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML || $force_xml == true) {
-            $_basket = $this->_getBasketXml($quote);
-            if($this->_validateBasketXml($_basket)) {
-                $data['BasketXML'] = $_basket;
-            }
-        }elseif($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50) {
-            $data['Basket'] = $this->_getBasketSage50($quote);
-        }
-
         return $data;
     }
+
+//        $basketFormat = $this->_config->getBasketFormat();
+//
+//        if($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML || $force_xml == true) {
+//            $_basket = $this->_getBasketXml($quote);
+//            if($this->_validateBasketXml($_basket)) {
+//                $data['BasketXML'] = $_basket;
+//            }
+//        }elseif($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50) {
+//            $data['Basket'] = $this->_getBasketSage50($quote);
+//        }
 
     /**
      * @param $quote \Magento\Quote\Model\Quote
@@ -127,8 +127,6 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 //        $useBaseMoney = false; //true
 
         $itemsCollection = $quote->getItemsCollection();
-
-//        $this->_logger->addDebug(gettype($itemsCollection));
 
 //        $trnCurrency = (string)$this->getConfigData('trncurrency', $quote->getStoreId());
 //        if ($trnCurrency == 'store' or $trnCurrency == 'switcher') {
@@ -241,12 +239,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         //add total rows
         $basketString = count($basketArray) . $basketString;
 
-//        $this->_logger->addDebug(print_r(json_encode($basketArray), 1));
-//        $this->_logger->addDebug($basketString);
-//        $this->_logger->addDebug("Crush!");
-//        crush;
         return $basketString;
-
     }
 
     /**
@@ -255,21 +248,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected function _getBasketXml($quote)
     {
-
         $basket = new \SimpleXMLElement('<?xml version="1.0" encoding="utf-8" ?><basket />');
-
-//        if($this->_getIsAdmin()) {
-//
-//            $uname = trim(Mage::getSingleton('admin/session')->getUser()->getUsername());
-//
-//            $validAgent = preg_match_all("/[a-zA-Z0-9\s]+/", $uname, $matchesUname);
-//            if($validAgent !== 1) {
-//                $uname = implode("", $matchesUname[0]);
-//            }
-//
-//            //<agentId>
-//            $basket->addChildCData('agentId', substr($uname, 0, 16));
-//        }
 
         $discount = null;
 
@@ -499,38 +478,9 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         return $valid;
     }
 
-//    private function _isSkuDuplicatedInSageBasket($basketArray,$itemSku){
-//        for($i = 0;$i<count($basketArray);$i++){
-//            if(strpos($basketArray[$i]['item'], $itemSku) !== FALSE){
-//                return true;
-//                break;
-//            }
-//        }
-//        return false;
-//    }
-
-//    /**
-//     * Get product customize options
-//     *
-//     * @return array || false
-//     */
-//    protected function _getProductOptions($item) {
-//        $options = array();
-//
-//        //This HELPER does not exist on all Magento versions
-//        $helperClass = Mage::getConfig()->getHelperClassName('catalog/product_configuration');
-//        if (FALSE === class_exists($helperClass, FALSE)) {
-//            return $options;
-//        }
-//
-//        $helper = Mage::helper('catalog/product_configuration');
-//        if ($item->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
-//            $options = $helper->getCustomOptions($item);
-//        } elseif ($item->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
-//            $options = $helper->getConfigurableOptions($item);
-//        }
-//
-//        return $options;
-//    }
+    public function getOrderDescription($isMOTO = false)
+    {
+        return $isMOTO ? __("Online MOTO transaction.") : __("Online transaction.");
+    }
 
 }

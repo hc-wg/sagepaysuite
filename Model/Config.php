@@ -479,4 +479,29 @@ class Config implements ConfigInterface
         $methodCode == self::METHOD_FORM ||
         $methodCode == self::METHOD_SERVER;
     }
+
+    public function isSendBasket()
+    {
+        $config_value = $this->_scopeConfig->getValue(
+            $this->_getAdvancedConfigPath("send_basket"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+        return $config_value;
+    }
+
+    public function getBasketFormat()
+    {
+        $config_value = $this->_scopeConfig->getValue(
+            $this->_getAdvancedConfigPath("basket_format"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+        return $config_value;
+    }
+
+    public function isPaypalForceXml()
+    {
+        return $this->getValue("force_xml");
+    }
 }
