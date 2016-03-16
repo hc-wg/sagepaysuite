@@ -7,16 +7,14 @@
 namespace Ebizmarts\SagePaySuite\Block;
 
 /**
- * Sage Pay payment info block
- * Uses default templates
+ * Sage Pay generic payment info block
+ * Uses default template
  */
 class Info extends \Magento\Payment\Block\Info\Cc
 {
     /**
-     * Prepare SagePay-specific payment information
-     *
-     * @param \Magento\Framework\Object|array|null $transport
-     * @return \Magento\Framework\Object
+     * @param null $transport
+     * @return mixed
      */
     protected function _prepareSpecificInformation($transport = null)
     {
@@ -25,43 +23,18 @@ class Info extends \Magento\Payment\Block\Info\Cc
 
         $info = array();
         if ($payment->getCcExpMonth()) {
-            $info["Card Expiration Date"] = $payment->getCcExpMonth() . "/" . $payment->getCcExpYear();
+            $info["Credit Card Expiration"] = $payment->getCcExpMonth() . "/" . $payment->getCcExpYear();
         }
 
         //only backend details
-        if ($this->_appState->getAreaCode() === \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE){
-            if ($payment->getAdditionalInformation("vendorTxCode")) {
-                $info["VendorTxCode"] = $payment->getAdditionalInformation("vendorTxCode");
-            }
-            if ($payment->getLastTransId()) {
-                $info["VPSTxId"] = $payment->getLastTransId();
-            }
-            if ($payment->getAdditionalInformation("statusDetail")) {
-
-                $statusDetail = $payment->getAdditionalInformation("statusDetail");
-                if(strrpos($payment->getAdditionalInformation("statusDetail"), " : ") !== FALSE){
-                    $statusDetail = explode(" : ",$statusDetail);
-                    $statusDetail = $statusDetail[1];
-                }
-                $info["Status"] = $statusDetail;
-            }
-            if ($payment->getAdditionalInformation("threeDStatus")) {
-                $info["3D Status"] = $payment->getAdditionalInformation("threeDStatus");
-            }
-            if ($payment->getAdditionalInformation("moto")) {
-                $info["Source"] = "Backend Order";
-            }else{
-                $info["Source"] = "Frontend Order";
-            }
-
-            //fraud
-            if ($payment->getAdditionalInformation("t3maction")) {
-                $info["ThirdMan Action"] = $payment->getAdditionalInformation("t3maction");
-            }
-            if ($payment->getAdditionalInformation("t3mscore")) {
-                $info["ThirdMan Score"] = $payment->getAdditionalInformation("t3mscore");
-            }
-        }
+//        if ($this->_appState->getAreaCode() === \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE)
+//        {
+//            if ($payment->getAdditionalInformation("moto")) {
+//                $info["Source"] = "Backend Order";
+//            }else{
+//                $info["Source"] = "Frontend Order";
+//            }
+//        }
 
         return $transport->addData($info);
     }

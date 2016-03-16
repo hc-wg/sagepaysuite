@@ -49,7 +49,8 @@ class Form implements ConfigProviderInterface
         return [
             'payment' => [
                 'ebizmarts_sagepaysuiteform' => [
-                    'licensed' => $this->_suiteHelper->verify()
+                    'licensed' => $this->_suiteHelper->verify(),
+                    'mode' => $this->_suiteHelper->getSagePayConfig()->getMode()
                 ],
             ]
         ];

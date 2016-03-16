@@ -49,7 +49,8 @@ class Paypal implements ConfigProviderInterface
         return [
             'payment' => [
                 'ebizmarts_sagepaysuitepaypal' => [
-                    'licensed' => $this->_suiteHelper->verify()
+                    'licensed' => $this->_suiteHelper->verify(),
+                    'mode' => $this->_suiteHelper->getSagePayConfig()->getMode()
                 ],
             ]
         ];

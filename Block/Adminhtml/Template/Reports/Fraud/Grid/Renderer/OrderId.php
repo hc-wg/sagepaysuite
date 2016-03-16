@@ -41,11 +41,11 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
         $orderId = parent::render($row);
 
         //find order with quote id
-        $order = $this->_orderFactory->create()->loadByIncrementId($orderId);
+        $order = $this->_orderFactory->create()->load($orderId);
 
         $link = $this->getUrl('sales/order/view/',array('order_id'=>$order->getEntityId()));
 
-        return '<a href="' . $link . '">' . $orderId . '</a>';
+        return '<a href="' . $link . '">' . $order->getIncrementId() . '</a>';
     }
 
 }

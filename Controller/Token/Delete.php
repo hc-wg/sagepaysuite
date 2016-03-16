@@ -54,7 +54,6 @@ class Delete extends \Magento\Framework\App\Action\Action
         $this->_logger = $logger;
         $this->_tokenModel = $tokenModel;
         $this->_customerSession = $customerSession;
-
         $this->_isCustomerArea = true;
     }
 

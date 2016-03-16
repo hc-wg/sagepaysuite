@@ -45,12 +45,14 @@ class FormTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Data')
             ->disableOriginalConstructor()
             ->getMock();
+        $suiteHelperMock->expects($this->any())
+            ->method('getSagePayConfig')
+            ->willReturn($this->configMock);
 
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $this->formConfigProviderModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\ConfigProvider\Form',
             [
-                "config" => $this->configMock,
                 "paymentHelper" => $paymentHelperMock,
                 'suiteHelper' => $suiteHelperMock
             ]
@@ -63,7 +65,8 @@ class FormTest extends \PHPUnit_Framework_TestCase
             [
                 'payment' => [
                     'ebizmarts_sagepaysuiteform' => [
-                        'licensed' => NULL
+                        'licensed' => NULL,
+                        'mode' => null
                     ],
                 ]
             ],

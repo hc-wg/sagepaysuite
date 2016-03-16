@@ -20,7 +20,7 @@ class OrderIdTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $orderMock->expects($this->once())
-            ->method('loadByIncrementId')
+            ->method('load')
             ->willReturnSelf();
 
         $orderFactoryMock = $this

@@ -1,0 +1,82 @@
+<?php
+/**
+ * Copyright © 2015 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+
+/**
+ * @var \Ebizmarts\SagePaySuite\Block\Adminhtml\Order\View\Info $block
+ */
+
+$payment = $block->getPayment();
+
+?>
+
+<div class="admin__page-section-item-title" style="margin-top: 20px;">
+    <span class="title"><?php echo $block->escapeHtml(__('Sage Pay Information')); ?></span>
+
+    <div class="actions">
+        <a href="<?php echo $block->getSyncFromApiUrl(); ?>">
+            <?php echo $block->escapeHtml(__('Sync from API')); ?>
+        </a></div>
+</div>
+<div class="admin__page-section-item-content">
+    <div class="order-payment-additional order-payment-method-title">
+        <table class="data-table admin__table-secondary">
+            <tbody>
+            <?php if ($payment->getLastTransId()) { ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('VPSTxId')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($payment->getLastTransId()); ?></td>
+                </tr>
+            <?php } ?>
+            <?php if ($payment->getAdditionalInformation("vendorTxCode")) { ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('VendorTxCode')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("vendorTxCode")); ?></td>
+                </tr>
+            <?php } ?>
+            <?php if ($payment->getAdditionalInformation("statusDetail")) {
+                $statusDetail = $payment->getAdditionalInformation("statusDetail");
+                if (strrpos($payment->getAdditionalInformation("statusDetail"), " : ") !== FALSE) {
+                    $statusDetail = explode(" : ", $statusDetail);
+                    $statusDetail = $statusDetail[1];
+                }
+                ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('Status')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($statusDetail); ?></td>
+                </tr>
+            <?php } ?>
+            <?php if ($payment->getAdditionalInformation("threeDStatus")) { ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('3D Status')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("threeDStatus")); ?></td>
+                </tr>
+            <?php } ?>
+            <tr>
+                <th><?php echo $block->escapeHtml(__('Fraud Recommendation')); ?>:</th>
+                <td><?php if (empty($payment->getAdditionalInformation("fraudscreenrecommendation")) ||
+                        $payment->getAdditionalInformation("fraudscreenrecommendation") == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT ||
+                        $payment->getAdditionalInformation("fraudscreenrecommendation") == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_NOTCHECKED
+                    ) {
+                        echo $block->escapeHtml(__('Not enough information.'));
+                    } else {
+                        $html = $payment->getAdditionalInformation("fraudscreenrecommendation");
+                        switch ($html) {
+                            case \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_CHALLENGE:
+                            case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD:
+                                $html = '<span style="color:orange;">' . $html . '</span>';
+                                break;
+                            case \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY:
+                            case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT:
+                                $html = '<span style="color:red;">' . $html . '</span>';
+                                break;
+                        }
+                        echo $html;
+                    } ?></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -90,7 +90,8 @@ class ServerTest extends \PHPUnit_Framework_TestCase
                         'licensed' => NULL,
                         'token_enabled' => false,
                         'tokens' => NULL,
-                        'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER
+                        'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER,
+                        'mode' => null
                     ]
                 ]
             ],
@@ -113,7 +114,8 @@ class ServerTest extends \PHPUnit_Framework_TestCase
                         'tokens' => [
                             "token_id" => 1
                         ],
-                        'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER
+                        'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER,
+                        'mode' => null
                     ]
                 ]
             ],

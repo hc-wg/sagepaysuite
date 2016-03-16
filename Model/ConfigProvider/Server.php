@@ -84,7 +84,8 @@ class Server implements ConfigProviderInterface
                 'licensed' => $this->_suiteHelper->verify(),
                 'token_enabled' => $tokenEnabled,
                 'tokens' => $tokens,
-                'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER
+                'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER,
+                'mode' => $this->_config->getMode()
             ],
         ]
         ];

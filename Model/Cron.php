@@ -313,7 +313,7 @@ class Cron
 
                             /**
                              * save fraud information in the payment as the transaction
-                             * additional info of the transactions doesn't seem to be working
+                             * additional info of the transactions does not seem to be working
                              */
                             $payment->setAdditionalInformation("fraudscreenrecommendation", (string)$fraudscreenrecommendation);
                             $payment->setAdditionalInformation("fraudid", (string)$fraudid);

@@ -467,4 +467,16 @@ class Config implements ConfigInterface
             $this->_storeId
         );
     }
+
+    /**
+     * @param $methodCode
+     * @return bool
+     */
+    public function isSagePaySuiteMethod($methodCode)
+    {
+        return $methodCode == self::METHOD_PAYPAL ||
+        $methodCode == self::METHOD_PI ||
+        $methodCode == self::METHOD_FORM ||
+        $methodCode == self::METHOD_SERVER;
+    }
 }
