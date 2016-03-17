@@ -54,15 +54,35 @@ $payment = $block->getPayment();
                     <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("threeDStatus")); ?></td>
                 </tr>
             <?php } ?>
-            <tr>
-                <th><?php echo $block->escapeHtml(__('Fraud Recommendation')); ?>:</th>
-                <td><?php if (empty($payment->getAdditionalInformation("fraudscreenrecommendation")) ||
-                        $payment->getAdditionalInformation("fraudscreenrecommendation") == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT ||
-                        $payment->getAdditionalInformation("fraudscreenrecommendation") == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_NOTCHECKED
-                    ) {
-                        echo $block->escapeHtml(__('Not enough information.'));
-                    } else {
-                        $html = $payment->getAdditionalInformation("fraudscreenrecommendation");
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!--
+**************** FRAUD INFORMATION SECTION *******************
+-->
+
+<div class="admin__page-section-item-title" style="margin-top: 20px;">
+    <span class="title"><?php echo $block->escapeHtml(__('Fraud Information')); ?></span>
+</div>
+<div class="admin__page-section-item-content">
+    <div class="order-payment-additional order-payment-method-title">
+        <table class="data-table admin__table-secondary">
+            <tbody>
+            <?php if (empty($payment->getAdditionalInformation("fraudscreenrecommendation")) ||
+                $payment->getAdditionalInformation("fraudscreenrecommendation") == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT ||
+                $payment->getAdditionalInformation("fraudscreenrecommendation") == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_NOTCHECKED
+            ) { ?>
+                <tr>
+                    <td colspan="2">
+                        <?php echo $block->escapeHtml(__('Not enough information.')); ?>
+                    </td>
+                </tr>
+            <?php } else { ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('Fraud Recommendation')); ?>:</th>
+                    <td><?php $html = $payment->getAdditionalInformation("fraudscreenrecommendation");
                         switch ($html) {
                             case \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_CHALLENGE:
                             case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD:
@@ -74,8 +94,23 @@ $payment = $block->getPayment();
                                 break;
                         }
                         echo $html;
-                    } ?></td>
-            </tr>
+                        ?>
+                    </td>
+                </tr>
+                <?php if (!empty($payment->getAdditionalInformation("fraudprovidername"))) { ?>
+                    <tr>
+                        <th><?php echo $block->escapeHtml(__('Provider')); ?>:</th>
+                        <td><?php if($payment->getAdditionalInformation("fraudprovidername") == "ReD"){
+                                $html = '<img style="height: 20px;" src="' . $block->getViewFileUrl('Ebizmarts_SagePaySuite::images/red_logo.png') . '">';
+                            }else{
+                                $html = '<span><img style="height: 20px;vertical-align: text-top;" src="' . $block->getViewFileUrl('Ebizmarts_SagePaySuite::images/t3m_logo.png') . '"> T3M</span>';
+                            }
+                            echo $html;
+                            ?>
+                        </td>
+                    </tr>
+                <?php } ?>
+            <?php } ?>
             </tbody>
         </table>
     </div>

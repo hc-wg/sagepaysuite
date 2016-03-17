@@ -60,6 +60,14 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
+     * @param \Magento\Quote\Model\QuoteManagement $quoteManagement
+     * @param OrderSender $orderSender
+     * @param \Magento\Customer\Model\Session $customerSession
+     * @param \Magento\Checkout\Helper\Data $checkoutData
+     * @param \Magento\Framework\Api\DataObjectHelper $dataObjectHelper
+     * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
+     * @param \Magento\Framework\DataObject\Copy $objectCopyService
+     * @param \Magento\Checkout\Model\Session $checkoutSession
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,

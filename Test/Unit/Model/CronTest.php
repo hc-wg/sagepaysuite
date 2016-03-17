@@ -14,11 +14,6 @@ class CronTest extends \PHPUnit_Framework_TestCase
     protected $cronModel;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $reportingApiMock;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $configMock;
@@ -43,15 +38,20 @@ class CronTest extends \PHPUnit_Framework_TestCase
      */
     protected $orderPaymentRepositoryMock;
 
+    /**
+     * @var Ebizmarts\SagePaySuite\Helper\Fraud|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected $fraudHelper;
+
     protected function setUp()
     {
-        $this->configMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
+        $this->fraudHelper = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Fraud')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->reportingApiMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Reporting')
+        $this->configMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -107,11 +107,11 @@ class CronTest extends \PHPUnit_Framework_TestCase
             'Ebizmarts\SagePaySuite\Model\Cron',
             [
                 "config" => $this->configMock,
-                "reportingApi" => $this->reportingApiMock,
                 "resource" => $resourceMock,
                 "orderFactory" => $this->orderFactoryMock,
                 "transactionFactory" => $this->transactionFactoryMock,
-                "orderPaymentRepository" => $this->orderPaymentRepositoryMock
+                "orderPaymentRepository" => $this->orderPaymentRepositoryMock,
+                "fraudHelper" => $this->fraudHelper
             ]
         );
     }
@@ -214,12 +214,6 @@ class CronTest extends \PHPUnit_Framework_TestCase
         $transactionMock2->expects($this->once())
             ->method('load')
             ->willReturnSelf();
-        $transactionMock2->expects($this->once())
-            ->method('getTxnType')
-            ->willReturn(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH);
-        $transactionMock2->expects($this->any())
-            ->method('getIsTransactionClosed')
-            ->willReturn(false);
 
         $this->transactionFactoryMock->expects($this->at(0))
             ->method('create')
@@ -237,65 +231,17 @@ class CronTest extends \PHPUnit_Framework_TestCase
             ->method('get')
             ->will($this->returnValue($paymentMock));
 
-        $this->reportingApiMock->expects($this->at(0))
-            ->method('getFraudScreenDetail')
-            ->will($this->returnValue((object)[
-                "errorcode" => "0000",
-                "fraudscreenrecommendation" => \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT,
-                "fraudid" => "12345",
-                "fraudcode" => "765",
-                "fraudcodedetail" => "Fraud card",
-                "fraudprovidername" => "ReD",
-                "rules" => "",
-
-            ]));
-
-        $this->reportingApiMock->expects($this->at(1))
-            ->method('getFraudScreenDetail')
-            ->will($this->returnValue((object)[
-                "errorcode" => "0000",
-                "fraudscreenrecommendation" => \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_OK,
-                "fraudid" => "12345",
-                "fraudcode" => "765",
-                "fraudcodedetail" => "Fraud card",
-                "fraudprovidername" => "ReD",
-                "rules" => "",
-
-            ]));
-
-        $invoiceMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Invoice')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $invoiceMock->expects($this->once())
-            ->method('register');
-        $invoiceMock->expects($this->once())
-            ->method('capture');
-
         $orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
             ->disableOriginalConstructor()
             ->getMock();
-        $orderMock->expects($this->once())
-            ->method('setStatus')
-            ->with(\Magento\Sales\Model\Order::STATUS_FRAUD);
-        $orderMock->expects($this->once())
-            ->method('prepareInvoice')
-            ->willReturn($invoiceMock);
 
         $paymentMock->expects($this->any())
             ->method('getOrder')
             ->willReturn($orderMock);
-        $paymentMock->expects($this->once())
-            ->method('setIsFraudDetected')
-            ->with(true);
 
-        $this->configMock->expects($this->at(0))
-            ->method('getAutoInvoiceFraudPassed')
-            ->willReturn(false);
-        $this->configMock->expects($this->at(1))
-            ->method('getAutoInvoiceFraudPassed')
-            ->willReturn(true);
+        $this->fraudHelper->expects($this->exactly(2))
+            ->method("processFraudInformation");
 
         $this->cronModel->checkFraud();
     }

@@ -23,6 +23,10 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected $_suiteLogger;
 
+    /**
+     * @param Config $config
+     * @param Logger $suiteLogger
+     */
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger
@@ -103,22 +107,30 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         return $data;
     }
 
-//        $basketFormat = $this->_config->getBasketFormat();
-//
-//        if($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML || $force_xml == true) {
-//            $_basket = $this->_getBasketXml($quote);
-//            if($this->_validateBasketXml($_basket)) {
-//                $data['BasketXML'] = $_basket;
-//            }
-//        }elseif($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50) {
-//            $data['Basket'] = $this->_getBasketSage50($quote);
-//        }
+    public function populateBasketInformation($quote, $force_xml = false)
+    {
+        $data = array();
+
+        $basketFormat = $this->_config->getBasketFormat();
+
+        if ($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML || $force_xml == true) {
+            $_basket = $this->_getBasketXml($quote);
+            if ($this->_validateBasketXml($_basket)) {
+                $data['BasketXML'] = $_basket;
+            }
+        } elseif ($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50) {
+            $data['Basket'] = $this->_getBasketSage50($quote);
+        }
+
+        return $data;
+    }
 
     /**
      * @param $quote \Magento\Quote\Model\Quote
      * @return string
      */
-    protected function _getBasketSage50($quote) {
+    protected function _getBasketSage50($quote)
+    {
 
         $BASKET_SEP = ':';
         $BASKET_SEP_ESCAPE = '-';
@@ -142,12 +154,12 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 //                    continue;
 //                }
 
-                //Avoid configurables
-                if ($item->getParentItem()) {
-                    continue;
-                }
+            //Avoid configurables
+            if ($item->getParentItem()) {
+                continue;
+            }
 
-                $itemQty = $item->getQty();
+            $itemQty = $item->getQty();
 
 //               if($useBaseMoney){
 //                    $itemDiscount = $item->getBaseDiscountAmount() / $itemQty;
@@ -155,17 +167,17 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 //                    $itemValue = $item->getBasePriceInclTax() - $taxAmount - $itemDiscount;
 //
 //                }else{
-                    $itemDiscount = $item->getDiscountAmount() / $itemQty;
-                    $taxAmount = $item->getTaxAmount() / $itemQty;
-                    $itemValue = $item->getPriceInclTax() - $taxAmount - $itemDiscount;
+            $itemDiscount = $item->getDiscountAmount() / $itemQty;
+            $taxAmount = $item->getTaxAmount() / $itemQty;
+            $itemValue = $item->getPriceInclTax() - $taxAmount - $itemDiscount;
 //                }
 
-                $itemTotal = $itemValue + $taxAmount;
+            $itemTotal = $itemValue + $taxAmount;
 
-                //Options
+            //Options
 //                $options = $item->_getProductOptions();
 //
-                $_options = '';
+            $_options = '';
 //                if (count($options) > 0) {
 //                    foreach ($options as $opt) {
 //                        $this->_logger->addDebug($opt->toString());
@@ -174,36 +186,36 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 //                    $_options = '_' . substr($_options, 0, -1) . '_';
 //                }
 
-                $newItem = array(
-                    "item" => "",
-                    "qty" => 0,
-                    "item_value" => 0,
-                    "item_tax" => 0,
-                    "item_total" => 0,
-                    "line_total" => 0
-                );
+            $newItem = array(
+                "item" => "",
+                "qty" => 0,
+                "item_value" => 0,
+                "item_tax" => 0,
+                "item_total" => 0,
+                "line_total" => 0
+            );
 
-                //[SKU] Name
-                $newItem["item"] = str_replace($BASKET_SEP, $BASKET_SEP_ESCAPE, '[' . $this->_cleanSage50BasketString($item->getSku()) . '] ' . $this->_cleanSage50BasketString($item->getName()) . $this->_cleanSage50BasketString($_options));
+            //[SKU] Name
+            $newItem["item"] = str_replace($BASKET_SEP, $BASKET_SEP_ESCAPE, '[' . $this->_cleanSage50BasketString($item->getSku()) . '] ' . $this->_cleanSage50BasketString($item->getName()) . $this->_cleanSage50BasketString($_options));
 
-                //Quantity
-                $newItem["qty"] = $itemQty;
+            //Quantity
+            $newItem["qty"] = $itemQty;
 
-                //Item value
-                $newItem["item_value"] = $itemValue;
+            //Item value
+            $newItem["item_value"] = $itemValue;
 
-                //Item tax
-                $newItem["item_tax"] = number_format($taxAmount, 3);
+            //Item tax
+            $newItem["item_tax"] = number_format($taxAmount, 3);
 
-                //Item total
-                $newItem["item_total"] = $itemTotal;
+            //Item total
+            $newItem["item_total"] = $itemTotal;
 
-                //Line total
-                $newItem["line_total"] = $itemTotal * $itemQty;
+            //Line total
+            $newItem["line_total"] = $itemTotal * $itemQty;
 
-                //add item to array
-                $basketArray[] = $newItem;
-            }
+            //add item to array
+            $basketArray[] = $newItem;
+        }
 
         $shippingAddress = $quote->getShippingAddress();
         $shippingDescription = $shippingAddress->getShippingDescription();
@@ -215,24 +227,24 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 //            $deliveryAmount = $shippingAddress->getBaseShippingInclTax();
 //        }
 //        else {
-            $deliveryValue  = $shippingAddress->getShippingAmount();
-            $deliveryTax    = $shippingAddress->getShippingTaxAmount();
-            $deliveryAmount = $shippingAddress->getShippingInclTax();
+        $deliveryValue = $shippingAddress->getShippingAmount();
+        $deliveryTax = $shippingAddress->getShippingTaxAmount();
+        $deliveryAmount = $shippingAddress->getShippingInclTax();
 //        }
 
         //delivery item
-        $deliveryItem = array("item"=>str_replace($BASKET_SEP, $BASKET_SEP_ESCAPE, $this->_cleanSage50BasketString($deliveryName)),
-            "qty"=>1,
-            "item_value"=>$deliveryValue,
-            "item_tax"=>$deliveryTax,
-            "item_total"=>$deliveryAmount,
-            "line_total"=>$deliveryAmount);
+        $deliveryItem = array("item" => str_replace($BASKET_SEP, $BASKET_SEP_ESCAPE, $this->_cleanSage50BasketString($deliveryName)),
+            "qty" => 1,
+            "item_value" => $deliveryValue,
+            "item_tax" => $deliveryTax,
+            "item_total" => $deliveryAmount,
+            "line_total" => $deliveryAmount);
 
         $basketArray[] = $deliveryItem;
 
         //create basket string
         $basketString = '';
-        foreach ($basketArray as $item){
+        foreach ($basketArray as $item) {
             $basketString .= $BASKET_SEP . implode($BASKET_SEP, $item);
         }
 
@@ -350,30 +362,29 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
             //<recipientAdd1>
             $address1 = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getStreetLine(1)), 0, 100));
-            if(!empty($address1)) {
+            if (!empty($address1)) {
                 $node->addChild('recipientAdd1', $address1);
             }
 
             //<recipientAdd2>
-            if($shippingAdd->getStreet(2)) {
+            if ($shippingAdd->getStreet(2)) {
                 $recipientAdd2 = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getStreetLine(2)), 0, 100));
-                if(!empty($recipientAdd2)) {
+                if (!empty($recipientAdd2)) {
                     $node->addChild('recipientAdd2', $recipientAdd2);
                 }
             }
 
             //<recipientCity>
             $recipientCity = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getCity()), 0, 40));
-            if(!empty($recipientCity)) {
+            if (!empty($recipientCity)) {
                 $node->addChild('recipientCity', $recipientCity);
             }
 
             //<recipientState>
-            if($shippingAdd->getCountry() == 'US') {
+            if ($shippingAdd->getCountry() == 'US') {
                 if ($quote->getIsVirtual()) {
                     $node->addChild('recipientState', $this->_convertStringToSafeXMLChar(substr(trim($billingAdd->getRegionCode()), 0, 2)));
-                }
-                else {
+                } else {
                     $node->addChild('recipientState', $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getRegionCode()), 0, 2)));
                 }
             }
@@ -383,7 +394,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
             //<recipientPostCode>
             $_postCode = '000';
-            if($shippingAdd->getPostcode()) {
+            if ($shippingAdd->getPostcode()) {
                 $_postCode = $shippingAdd->getPostcode();
             }
             $node->addChild('recipientPostCode', $this->_convertStringToSafeXMLChar($this->_sanitizePostcode(substr(trim($_postCode), 0, 9))));
@@ -391,19 +402,18 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         //Sum up shipping totals when using SERVER with MAC
-        if($quote->getIsMultiShipping() && ($quote->getPayment()->getMethod() == 'sagepayserver') ) {
+        if ($quote->getIsMultiShipping() && ($quote->getPayment()->getMethod() == 'sagepayserver')) {
 
             $shippingInclTax = $shippingTaxAmount = 0.00;
 
             $addresses = $quote->getAllAddresses();
-            foreach($addresses as $address) {
-                $shippingInclTax   += $address->getShippingInclTax();
+            foreach ($addresses as $address) {
+                $shippingInclTax += $address->getShippingInclTax();
                 $shippingTaxAmount += $address->getShippingTaxAmount();
             }
 
-        }
-        else {
-            $shippingInclTax   = $shippingAdd->getShippingInclTax();
+        } else {
+            $shippingInclTax = $shippingAdd->getShippingInclTax();
             $shippingTaxAmount = $shippingAdd->getShippingTaxAmount();
         }
 
@@ -418,12 +428,12 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
         //<shippingFaxNo>
         $validFax = preg_match_all("/[a-zA-Z0-9\-\s\(\)\+]+/", trim($shippingAdd->getFax()), $matchesFax);
-        if($validFax === 1) {
+        if ($validFax === 1) {
             $basket->addChild('shippingFaxNo', substr(trim($shippingAdd->getFax()), 0, 20));
         }
 
         //Discounts
-        if(!is_null($discount) && $discount > 0.00) {
+        if (!is_null($discount) && $discount > 0.00) {
             $nodeDiscounts = $basket->addChild('discounts', '');
             $_discount = $nodeDiscounts->addChild('discount', '');
             $_discount->addChild('fixed', number_format($discount, 2, '.', ''));
@@ -435,21 +445,23 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
     }
 
-    protected function _cleanSage50BasketString($text) {
+    protected function _cleanSage50BasketString($text)
+    {
         $pattern = '|[^a-zA-Z0-9\-\._]+|';
         $text = preg_replace($pattern, '', $text);
         return $text;
     }
 
-    protected function _convertStringToSafeXMLChar($string){
+    protected function _convertStringToSafeXMLChar($string)
+    {
 
         $safe_regex = '/([a-zA-Z\s\d\+\'\"\/\\\&\:\,\.\-\{\}\@])/';
         $safe_string = "";
 
-        for($i = 0;$i<strlen($string);$i++){
-            if(preg_match($safe_regex,substr($string,$i,1)) != FALSE){
-                $safe_string .= substr($string,$i,1);
-            }else{
+        for ($i = 0; $i < strlen($string); $i++) {
+            if (preg_match($safe_regex, substr($string, $i, 1)) != FALSE) {
+                $safe_string .= substr($string, $i, 1);
+            } else {
                 $safe_string .= '-';
             }
         }
@@ -457,7 +469,8 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         return $safe_string;
     }
 
-    protected function _sanitizePostcode($text) {
+    protected function _sanitizePostcode($text)
+    {
         return preg_replace("/[^a-zA-Z0-9-\s]/", "", $text);
     }
 
@@ -467,11 +480,12 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @param string $basket
      * @return boolean
      */
-    protected function _validateBasketXml($basket) {
+    protected function _validateBasketXml($basket)
+    {
         $valid = true;
 
         //Validate max length
-        if(strlen($basket) > 20000) {
+        if (strlen($basket) > 20000) {
             $valid = false;
         }
 

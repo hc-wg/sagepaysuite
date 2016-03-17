@@ -110,9 +110,6 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-//        $paymentMock->expects($this->any())
-//            ->method('getMethodInstance')
-//            ->will($this->returnValue($piModelMock));
 
         $this->orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')

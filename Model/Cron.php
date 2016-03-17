@@ -18,11 +18,6 @@ class Cron
     protected $_resource;
 
     /**
-     * \Ebizmarts\SagePaySuite\Model\Api\Reporting
-     */
-    protected $_reportingApi;
-
-    /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
@@ -44,16 +39,6 @@ class Cron
     protected $_config;
 
     /**
-     * @var \Magento\Framework\Mail\Template\TransportBuilder
-     */
-    protected $_mailTransportBuilder;
-
-    /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     */
-    protected $scopeConfig;
-
-    /**
      * @var \Magento\Sales\Model\OrderFactory
      */
     protected $_orderFactory;
@@ -64,40 +49,39 @@ class Cron
     protected $_transactionFactory;
 
     /**
+     * @var \Ebizmarts\SagePaySuite\Helper\Fraud
+     */
+    protected $_fraudHelper;
+
+    /**
      * @param \Magento\Framework\App\ResourceConnection $resource
-     * @param Api\Reporting $reportingApi
      * @param Logger\Logger $suiteLogger
      * @param \Magento\Sales\Api\OrderPaymentRepositoryInterface $orderPaymentRepository
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param Config $config
-     * @param \Magento\Framework\Mail\Template\TransportBuilder $mailTransportBuilder
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Magento\Sales\Model\OrderFactory $orderFactory
      * @param Order\Payment\TransactionFactory $transactionFactory
+     * @param \Ebizmarts\SagePaySuite\Helper\Fraud $fraudHelper
      */
     public function __construct(
         \Magento\Framework\App\ResourceConnection $resource,
-        \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
         \Magento\Sales\Api\OrderPaymentRepositoryInterface $orderPaymentRepository,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Magento\Framework\Mail\Template\TransportBuilder $mailTransportBuilder,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
+        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
+        \Ebizmarts\SagePaySuite\Helper\Fraud $fraudHelper
     )
     {
         $this->_resource = $resource;
-        $this->_reportingApi = $reportingApi;
         $this->_suiteLogger = $suiteLogger;
         $this->_orderPaymentRepository = $orderPaymentRepository;
         $this->_objectManager = $objectManager;
         $this->_config = $config;
-        $this->_mailTransportBuilder = $mailTransportBuilder;
-        $this->scopeConfig = $scopeConfig;
         $this->_orderFactory = $orderFactory;
         $this->_transactionFactory = $transactionFactory;
+        $this->_fraudHelper = $fraudHelper;
     }
 
     /**
@@ -175,8 +159,6 @@ class Cron
      */
     public function checkFraud()
     {
-        //$this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON, "Running Fraud checks...");
-
         $transactionTableName = $this->_resource->getTableName('sales_payment_transaction');
         $connection = $this->_resource->getConnection();
 
@@ -196,9 +178,7 @@ class Cron
         foreach ($connection->fetchAll($select) as $trnArray) {
 
             $transaction = $this->_transactionFactory->create()->load($trnArray["transaction_id"]);
-
-            $sagepayVpsTxId = $transaction->getTxnId();
-            $logData = array("VPSTxId" => $sagepayVpsTxId);
+            $logData = array();
 
             try {
 
@@ -207,141 +187,9 @@ class Cron
                     throw new LocalizedException(__('Payment not found for this transaction'));
                 }
 
-                //flag test transactions (no actions taken with test orders)
-                if ($payment->getAdditionalInformation("mode") &&
-                    $payment->getAdditionalInformation("mode") == \Ebizmarts\SagePaySuite\Model\Config::MODE_TEST
-                ) {
-                    /**
-                     *  TEST TRANSACTION
-                     */
-                    $transaction->setSagepaysuiteFraudCheck(1)->save();
-                    $logData["Action"] = "Marked as TEST";
+                //process fraud information
+                $logData = $this->_fraudHelper->processFraudInformation($transaction,$payment);
 
-                } else {
-
-                    /**
-                     * LIVE TRANSACTION
-                     */
-
-                    //get transaction data from sagepay
-                    $response = $this->_reportingApi->getFraudScreenDetail($sagepayVpsTxId);
-
-                    if (!empty($response) && isset($response->errorcode) && $response->errorcode == "0000") {
-
-                        $fraudscreenrecommendation = (string)$response->fraudscreenrecommendation;
-                        $fraudid = (string)$response->fraudid;
-                        $fraudcode = (string)$response->fraudcode;
-                        $fraudcodedetail = (string)$response->fraudcodedetail;
-                        $fraudprovidername = (string)$response->fraudprovidername;
-                        $rules = (string)$response->rules;
-
-                        if ($fraudscreenrecommendation != \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT &&
-                            $fraudscreenrecommendation != \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_NOTCHECKED
-                        ) {
-                            //mark payment as fraud
-                            if ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT ||
-                                $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY
-                            ) {
-                                $payment->setIsFraudDetected(true);
-                                $payment->getOrder()->setStatus(Order::STATUS_FRAUD);
-                                $payment->save();
-                            }
-
-                            //mark as checked
-                            $transaction->setSagepaysuiteFraudCheck(1);
-                            $transaction->save();
-
-                            /**
-                             * process fraud actions
-                             */
-
-                            //auto-invoice authorized order for full amount if ACCEPT or OK
-                            if ((bool)$this->_config->getAutoInvoiceFraudPassed() == true &&
-                                $transaction->getTxnType() == \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH &&
-                                (bool)$transaction->getIsTransactionClosed() == false &&
-                                ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_ACCEPT ||
-                                    $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_OK)
-                            ) {
-                                //create invoice
-                                $invoice = $payment->getOrder()->prepareInvoice();
-                                $invoice->register();
-                                $invoice->capture();
-                                $invoice->save();
-                                $payment->getOrder()->addRelatedObject($invoice);
-                                $payment->save();
-                                $logData["Action"] = "Captured online, invoice #" . $invoice->getId() . " generated.";
-                            }
-
-                            //send notification email
-//                            if ((string)$this->_config->getNotifyFraudResult() != 'disabled') {
-//                                if (((string)$this->_config->getNotifyFraudResult() == "medium_risk" &&
-//                                        ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY ||
-//                                            $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_CHALLENGE ||
-//                                            $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT ||
-//                                            $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD))
-//                                    ||
-//                                    ((string)$this->_config->getNotifyFraudResult() == "high_risk" &&
-//                                        ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY ||
-//                                            $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT))
-//                                ) {
-//                                    $template = "sagepaysuite_fraud_notification";
-//                                    $transport = $this->_mailTransportBuilder->setTemplateIdentifier($template)
-//                                        ->addTo($this->scopeConfig->getValue('trans_email/ident_sales/email', \Magento\Store\Model\ScopeInterface::SCOPE_STORE))
-//                                        ->setFrom($this->scopeConfig->getValue("contact/email/sender_email_identity", \Magento\Store\Model\ScopeInterface::SCOPE_STORE))
-//                                        ->setTemplateOptions(['area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
-//                                            'store' => Store::DEFAULT_STORE_ID])
-//                                        ->setTemplateVars([
-//                                            'transaction_id' => $transaction->getTransactionId(),
-//                                            'order_id' => $payment->getOrder()->getIncrementId(),
-////                                            'order_url' => $this->_urlBuilder->getUrl('sales/order/view/',array('order_id'=>$payment->getOrder()->getEntityId())),
-//                                            'vps_tx_id' => $sagepayVpsTxId,
-//                                            'fraud_id' => $fraudid,
-//                                            'recommendation' => $fraudscreenrecommendation,
-//                                            'detail' => $fraudcodedetail,
-//                                            'provider' => $fraudprovidername,
-//                                            'rules' => $rules
-//                                        ])
-//                                        ->getTransport();
-//                                    $transport->sendMessage();
-//
-//                                    $logData["Notification"] = "Email sent to " . $this->scopeConfig->getValue('trans_email/ident_sales/email', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-//                                }
-//                            }
-                            /**
-                             * END process fraud actions
-                             */
-
-                            /**
-                             * save fraud information in the payment as the transaction
-                             * additional info of the transactions does not seem to be working
-                             */
-                            $payment->setAdditionalInformation("fraudscreenrecommendation", (string)$fraudscreenrecommendation);
-                            $payment->setAdditionalInformation("fraudid", (string)$fraudid);
-                            $payment->setAdditionalInformation("fraudcode", (string)$fraudcode);
-                            $payment->setAdditionalInformation("fraudcodedetail", (string)$fraudcodedetail);
-                            $payment->setAdditionalInformation("fraudprovidername", (string)$fraudprovidername);
-                            $payment->setAdditionalInformation("fraudrules", (string)$rules);
-                            $payment->save();
-
-                            $logData["fraudscreenrecommendation"] = $fraudscreenrecommendation;
-                            $logData["fraudid"] = $fraudid;
-                            $logData["fraudcode"] = $fraudcode;
-                            $logData["fraudcodedetail"] = $fraudcodedetail;
-                            $logData["fraudprovidername"] = $fraudprovidername;
-                            $logData["fraudrules"] = $rules;
-
-                        } else {
-
-                            //save the "not checked" or "no result" status
-                            $payment->setAdditionalInformation("fraudscreenrecommendation", (string)$fraudscreenrecommendation);
-                            $payment->save();
-
-                            $logData["fraudscreenrecommendation"] = $fraudscreenrecommendation;
-                        }
-                    } else {
-                        $logData["ERROR"] = "Invalid Response: " . (!empty($response) && isset($response->errorcode) ? $response->errorcode : "INVALID");
-                    }
-                }
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
                 $logData["ERROR"] = $apiException->getUserMessage();
 

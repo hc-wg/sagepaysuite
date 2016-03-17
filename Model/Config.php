@@ -118,6 +118,12 @@ class Config implements ConfigInterface
     const MAX_TOKENS_PER_CUSTOMER = 3;
 
     /**
+     * Basket Formats
+     */
+    const BASKETFORMAT_Sage50 = 'Sage50';
+    const BASKETFORMAT_XML = 'xml';
+
+    /**
      * Current payment method code
      *
      * @var string

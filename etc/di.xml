@@ -23,6 +23,7 @@
             <argument name="handlers"  xsi:type="array">
                 <item name="Request" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\Request</item>
                 <item name="Cron" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\Cron</item>
+                <item name="Exception" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\Exception</item>
             </argument>
         </arguments>
     </type>

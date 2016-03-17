@@ -15,10 +15,12 @@ class Logger extends \Monolog\Logger
      */
     const LOG_REQUEST = 'Request';
     const LOG_CRON = 'Cron';
+    const LOG_EXCEPTION = 'Exception';
 
     protected static $levels = array(
         self::LOG_REQUEST => 'Request',
-        self::LOG_CRON => 'Cron'
+        self::LOG_CRON => 'Cron',
+        self::LOG_EXCEPTION => 'Exception'
     );
 
     public function SageLog($logType, $message)

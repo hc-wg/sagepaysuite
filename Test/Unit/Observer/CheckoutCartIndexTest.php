@@ -15,7 +15,6 @@ class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
      */
     protected $checkoutCartIndexObserver;
 
-
     protected function setUp()
     {
 //        $checkoutSessionMock = $this
