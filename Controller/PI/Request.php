@@ -249,7 +249,8 @@ class Request extends \Magento\Framework\App\Action\Action
                 'country' => $billing_address->getCountryId()
             ],
             'entryMethod' => "Ecommerce",
-            'apply3DSecure' => $this->_config->get3Dsecure()
+            'apply3DSecure' => $this->_config->get3Dsecure(),
+            'applyAvsCvcCheck' => $this->_config->getAvsCvc()
         ];
 
         //populate payment amount information

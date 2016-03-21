@@ -143,12 +143,15 @@ class Request extends \Magento\Framework\App\Action\Action
         //populate address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
 
-//        $data['BasketXML'] = $basket;
-//        $data['AllowGiftAid'] = (int)$this->getConfigData('allow_gift_aid');
-//        $data['ApplyAVSCV2']  = $this->getConfigData('avscv2');
-//        $data['Apply3DSecure']  = $this->getConfigData('avscv2');
-//        $data['BillingAgreement']  = $this->getConfigData('avscv2');
-//        $data['BasketXML']  = $this->getConfigData('avscv2');
+        //3D rules
+        $data["Apply3DSecure"] = $this->_config->get3Dsecure();
+
+        //Avs/Cvc rules
+        $data["ApplyAVSCV2"] = $this->_config->getAvsCvc();
+
+        //gif aid
+        $data["AllowGiftAid"] = (int)$this->_config->isGiftAidEnabled();
+
 //        $data['CustomerXML']  = $this->getConfigData('avscv2');
 //        $data['SurchargeXML']  = $this->getConfigData('avscv2');
 //        $data['VendorData']  = $this->getConfigData('avscv2');

@@ -96,7 +96,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->with('payment/' . $data["code"] . '/payment_action',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
                 NULL)
-            ->willReturn($data["expect"]);
+            ->willReturn($data["payment_action"]);
 
         $this->assertEquals(
             $data["expect"],
@@ -136,11 +136,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->with('payment/' . $data["code"] . '/payment_action',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
                 NULL)
-            ->willReturn($data["expect"]);
+            ->willReturn($data["payment_action"]);
 
         $this->assertEquals(
             $data["expect"],
-            $this->configModel->getSagepayPaymentAction()
+            $this->configModel->getPaymentAction()
         );
     }
 
@@ -224,9 +224,42 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testGetTokenEnabled()
+    public function testIsTokenEnabled()
     {
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with('sagepaysuite/global/token',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn(true);
 
+        $this->assertEquals(
+            true,
+            $this->configModel->isTokenEnabled()
+        );
+    }
+
+    public function TestIsSagePaySuiteMethod()
+    {
+        $this->assertEquals(
+            true,
+            $this->configModel->isSagePaySuiteMethod(Config::METHOD_SERVER)
+        );
+
+        $this->assertEquals(
+            true,
+            $this->configModel->isSagePaySuiteMethod(Config::METHOD_PI)
+        );
+
+        $this->assertEquals(
+            true,
+            $this->configModel->isSagePaySuiteMethod(Config::METHOD_FORM)
+        );
+
+        $this->assertEquals(
+            true,
+            $this->configModel->isSagePaySuiteMethod(Config::METHOD_PAYPAL)
+        );
     }
 
     public function testGetFormEncryptedPassword()
@@ -310,18 +343,71 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testGet3Dsecure()
+    public function testGet3DsecurePI()
     {
-        $this->scopeConfigMock->expects($this->any())
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
+
+        $this->scopeConfigMock->expects($this->once())
             ->method('getValue')
             ->with('sagepaysuite/advanced/threedsecure',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
                 NULL)
-            ->willReturn('Disable');
+            ->willReturn(Config::MODE_3D_DISABLE);
 
         $this->assertEquals(
-            'Disable',
+            Config::MODE_3D_DISABLE,
             $this->configModel->get3Dsecure()
+        );
+    }
+
+    public function testGet3DsecureSERVER()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with('sagepaysuite/advanced/threedsecure',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn(Config::MODE_3D_DEFAULT);
+
+        $this->assertEquals(
+            '0',
+            $this->configModel->get3Dsecure()
+        );
+    }
+
+    public function testGetAvsCvcPI()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with('sagepaysuite/advanced/avscvc',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn(Config::MODE_AVSCVC_DISABLE);
+
+        $this->assertEquals(
+            Config::MODE_AVSCVC_DISABLE,
+            $this->configModel->getAvsCvc()
+        );
+    }
+
+    public function testGetAvsCvcSERVER()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with('sagepaysuite/advanced/avscvc',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn(Config::MODE_AVSCVC_DEFAULT);
+
+        $this->assertEquals(
+            '0',
+            $this->configModel->getAvsCvc()
         );
     }
 
@@ -506,6 +592,31 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             Config::CURRENCY_BASE,
             $this->configModel->getCurrencyConfig()
+        );
+    }
+
+    public function testIsGiftAidEnabled()
+    {
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with('sagepaysuite/advanced/giftaid',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                NULL)
+            ->willReturn(true);
+
+        $this->assertEquals(
+            true,
+            $this->configModel->isGiftAidEnabled()
+        );
+    }
+
+    public function testGetMethodCode()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
+
+        $this->assertEquals(
+            \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL,
+            $this->configModel->getMethodCode()
         );
     }
 }

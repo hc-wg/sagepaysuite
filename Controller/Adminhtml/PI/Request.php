@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\PI;
 
+use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Api\PIRest;
@@ -233,7 +234,8 @@ class Request extends \Magento\Backend\App\AbstractAction
                 'country' => $billing_address->getCountryId()
             ],
             'entryMethod' => "Ecommerce",
-            'apply3DSecure' => 'Disable'
+            'apply3DSecure' => Config::MODE_3D_DISABLE,
+            'applyAvsCvcCheck' => $this->_config->getAvsCvc()
         ];
 
         //populate payment amount information

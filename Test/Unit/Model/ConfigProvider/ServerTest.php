@@ -80,7 +80,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     public function testGetConfig()
     {
         $this->configMock->expects($this->once())
-            ->method('getTokenEnabled')
+            ->method('isTokenEnabled')
             ->willReturn(false);
 
         $this->assertEquals(
@@ -102,7 +102,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     public function testGetConfigWithToken()
     {
         $this->configMock->expects($this->once())
-            ->method('getTokenEnabled')
+            ->method('isTokenEnabled')
             ->willReturn(true);
 
         $this->assertEquals(

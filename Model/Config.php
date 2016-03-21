@@ -52,10 +52,18 @@ class Config implements ConfigInterface
     /**
      * 3D secure MODES
      */
-    const MODE_3D_DEFAULT = 'UseMSPSetting';
-    const MODE_3D_FORCE = 'Force';
-    const MODE_3D_DISABLE = 'Disable';
-    const MODE_3D_IGNORE = 'ForceIgnoringRules';
+    const MODE_3D_DEFAULT = 'UseMSPSetting'; // '0' for old integrations
+    const MODE_3D_FORCE = 'Force'; // '1' for old integrations
+    const MODE_3D_DISABLE = 'Disable'; // '2' for old integrations
+    const MODE_3D_IGNORE = 'ForceIgnoringRules'; // '3' for old integrations
+
+    /**
+     * AvsCvc MODES
+     */
+    const MODE_AVSCVC_DEFAULT = 'UseMSPSetting'; // '0' for old integrations
+    const MODE_AVSCVC_FORCE = 'Force'; // '1' for old integrations
+    const MODE_AVSCVC_DISABLE = 'Disable'; // '2' for old integrations
+    const MODE_AVSCVC_IGNORE = 'ForceIgnoringRules'; // '3' for old integrations
 
     /**
      * Currency settings
@@ -335,7 +343,7 @@ class Config implements ConfigInterface
         );
     }
 
-    public function getTokenEnabled()
+    public function isTokenEnabled()
     {
         return $this->_scopeConfig->getValue(
             $this->_getGlobalConfigPath("token"),
@@ -380,6 +388,10 @@ class Config implements ConfigInterface
         //dummy interface method not being used
     }
 
+    /**
+     * return 3D secure rules setting
+     * @return string
+     */
     public function get3Dsecure()
     {
         $config_value = $this->_scopeConfig->getValue(
@@ -388,13 +400,59 @@ class Config implements ConfigInterface
             $this->_storeId
         );
 
-        switch ($this->_methodCode) {
-            case self::METHOD_PI:
-                return $config_value;
-                break;
-            default:
-                return $config_value;
-                break;
+        if($this->_methodCode == self::METHOD_PI) {
+            return $config_value;
+        }else {
+            //for old integrations
+            switch($config_value)
+            {
+                case self::MODE_3D_FORCE:
+                    return '1';
+                    break;
+                case self::MODE_3D_DISABLE:
+                    return '2';
+                    break;
+                case self::MODE_3D_IGNORE:
+                    return '3';
+                    break;
+                default:
+                    return '0';
+                    break;
+            }
+        }
+    }
+
+    /**
+     * return AVS_CVC rules setting
+     * @return string
+     */
+    public function getAvsCvc()
+    {
+        $config_value = $this->_scopeConfig->getValue(
+            $this->_getAdvancedConfigPath("avscvc"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+
+        if($this->_methodCode == self::METHOD_PI) {
+            return $config_value;
+        }else {
+            //for old integrations
+            switch($config_value)
+            {
+                case self::MODE_AVSCVC_FORCE:
+                    return '1';
+                    break;
+                case self::MODE_AVSCVC_DISABLE:
+                    return '2';
+                    break;
+                case self::MODE_AVSCVC_IGNORE:
+                    return '3';
+                    break;
+                default:
+                    return '0';
+                    break;
+            }
         }
     }
 
@@ -509,5 +567,15 @@ class Config implements ConfigInterface
     public function isPaypalForceXml()
     {
         return $this->getValue("force_xml");
+    }
+
+    public function isGiftAidEnabled()
+    {
+        $config_value = $this->_scopeConfig->getValue(
+            $this->_getAdvancedConfigPath("giftaid"),
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeId
+        );
+        return $config_value;
     }
 }

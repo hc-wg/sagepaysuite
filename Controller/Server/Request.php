@@ -254,20 +254,23 @@ class Request extends \Magento\Framework\App\Action\Action
             }
         }
 
+        //3D rules
+        $data["Apply3DSecure"] = $this->_config->get3Dsecure();
+
+        //Avs/Cvc rules
+        $data["ApplyAVSCV2"] = $this->_config->getAvsCvc();
+
+        //gif aid
+        $data["AllowGiftAid"] = (int)$this->_config->isGiftAidEnabled();
+
         //not mandatory
 //        BillingAddress2
 //        BillingPhone
 //        DeliveryAddress2
 //        DeliveryPhone
 //        CustomerEMail
-//        Basket
-//        AllowGiftAid
-//        ApplyAVSCV2
-//        Apply3DSecure
 //        Profile
-//        BillingAgreement
 //        AccountType
-//        BasketXML
 //        CustomerXML
 //        SurchargeXML
 //        VendorData

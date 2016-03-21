@@ -68,7 +68,7 @@ class Server implements ConfigProviderInterface
         }
 
         //get tokens if enabled and cutomer is logged in
-        $tokenEnabled = (bool)$this->_config->getTokenEnabled();
+        $tokenEnabled = (bool)$this->_config->isTokenEnabled();
         $tokens = null;
         if($tokenEnabled){
             if(!empty($this->_customerSession->getCustomerId())) {

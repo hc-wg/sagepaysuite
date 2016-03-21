@@ -20,10 +20,11 @@
             </global>
             <advanced>
                 <threedsecure>UseMSPSetting</threedsecure>
+                <avscvc>UseMSPSetting</avscvc>
                 <fraud_autoinvoice>0</fraud_autoinvoice>
+                <!--<fraud_notify>high_risk</fraud_notify>-->
                 <send_basket>1</send_basket>
                 <basket_format>Sage50</basket_format>
-                <!--<fraud_notify>high_risk</fraud_notify>-->
             </advanced>
         </sagepaysuite>
         <payment>
