@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\ResourceModel\Order\Payment\Transaction\CollectionFactory as TransactionCollectionFactory;
 use Magento\Payment\Model\InfoInterface;
@@ -104,6 +105,11 @@ class PI extends \Magento\Payment\Model\Method\Cc
     protected $_suiteHelper;
 
     /**
+     * @var Logger
+     */
+    protected $_suiteLogger;
+
+    /**
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory
@@ -136,6 +142,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         PIRest $pirestapi,
         \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        Logger $suiteLogger,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
@@ -160,6 +167,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $this->_pirestapi = $pirestapi;
         $this->_sharedApi = $sharedApi;
         $this->_suiteHelper = $suiteHelper;
+        $this->_suiteLogger = $suiteLogger;
     }
 
     public function assignData(\Magento\Framework\DataObject $data)

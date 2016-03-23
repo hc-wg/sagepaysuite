@@ -118,7 +118,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $requestMock->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
-                "merchant_session_Key" => "12345",
+                "merchant_session_key" => "12345",
                 "card_identifier" => "12345",
                 "card_last4" => "0006",
                 "card_exp_month" => "02",

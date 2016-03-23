@@ -151,7 +151,7 @@ define([
                         //console.log(status, response);
 
                         if (status === 201) {
-                            self.creditCardType = response.cardType;
+                            self.creditCardType = self.parseCCType(response.cardType);
                             self.creditCardExpYear = document.getElementById(self.getCode() + '_expiration_yr').value;
                             self.creditCardExpMonth = document.getElementById(self.getCode() + '_expiration').value;
                             self.creditCardLast4 = document.getElementById(self.getCode() + '_cc_number').value.slice(-4);
@@ -209,6 +209,31 @@ define([
                 }
                 console.log(response);
             });
+        },
+        parseCCType: function (cctype) {
+            switch (cctype) {
+                case 'Visa':
+                    return "VI";
+                    break;
+                case 'MasterCard':
+                    return "MC";
+                    break;
+                case 'Maestro':
+                    return "MI";
+                    break;
+                case 'AmericanExpress':
+                    return "AE";
+                    break;
+                case 'Diners':
+                    return "DN";
+                    break;
+                case 'JCB':
+                    return "JCB";
+                    break;
+                default:
+                    return cctype;
+                    break;
+            }
         },
         getCode: function(){
             return this.options.code;

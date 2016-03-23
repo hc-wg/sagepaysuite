@@ -35,11 +35,6 @@ class Request extends \Magento\Backend\App\AbstractAction
     protected $_suiteLogger;
 
     /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $_logger;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
     protected $_pirestapi;
@@ -77,13 +72,12 @@ class Request extends \Magento\Backend\App\AbstractAction
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
-     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param Config $config
      * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
      * @param Logger $suiteLogger
      * @param PIRest $pirestapi
-     * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Customer\Model\Session $customerSession
-     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Magento\Backend\Model\Session\Quote $quoteSession
      * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
      * @param \Magento\Quote\Model\QuoteManagement $quoteManagement
      * @param \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
@@ -94,7 +88,6 @@ class Request extends \Magento\Backend\App\AbstractAction
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         Logger $suiteLogger,
         PIRest $pirestapi,
-        \Psr\Log\LoggerInterface $logger,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Backend\Model\Session\Quote $quoteSession,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
@@ -108,7 +101,6 @@ class Request extends \Magento\Backend\App\AbstractAction
         $this->_suiteHelper = $suiteHelper;
         $this->_suiteLogger = $suiteLogger;
         $this->_pirestapi = $pirestapi;
-        $this->_logger = $logger;
         $this->_checkoutHelper = $checkoutHelper;
         $this->_customerSession = $customerSession;
         $this->_quoteSession = $quoteSession;
@@ -160,16 +152,8 @@ class Request extends \Magento\Backend\App\AbstractAction
                 $order = $this->_quoteManagement->submit($this->_quote);
 
                 if ($order) {
-                    $payment = $order->getPayment();
-                    $payment->setTransactionId($transactionId);
-                    $payment->setLastTransId($transactionId);
-                    $payment->save();
 
-                    $payment->getMethodInstance()->markAsInitialized();
-                    $order->place()->save();
-
-                    //send email
-                    $this->_checkoutHelper->sendOrderEmail($order);
+                    $this->_confirmPayment($transactionId,$order);
 
                     //add success url to response
                     $route = 'sales/order/view';
@@ -191,15 +175,17 @@ class Request extends \Magento\Backend\App\AbstractAction
                 throw new \Magento\Framework\Validator\Exception(__('Invalid Sage Pay response.'));
             }
 
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->_logger->critical($apiException);
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
+        {
+            $this->_suiteLogger->logException($apiException);
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $apiException->getUserMessage()),
             ];
 
-        } catch (\Exception $e) {
-            $this->_logger->critical($e);
+        } catch (\Exception $e)
+        {
+            $this->_suiteLogger->logException($e);
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $e->getMessage()),
@@ -220,7 +206,7 @@ class Request extends \Magento\Backend\App\AbstractAction
             'transactionType' => $this->_config->getSagepayPaymentAction(),
             'paymentMethod' => [
                 'card' => [
-                    'merchantSessionKey' => $this->_postData->merchant_session_Key,
+                    'merchantSessionKey' => $this->_postData->merchant_session_key,
                     'cardIdentifier' => $this->_postData->card_identifier,
                 ]
             ],
@@ -247,5 +233,26 @@ class Request extends \Magento\Backend\App\AbstractAction
         }
 
         return $data;
+    }
+
+    protected function _confirmPayment($transactionId,$order)
+    {
+        $payment = $order->getPayment();
+        $payment->setTransactionId($transactionId);
+        $payment->setLastTransId($transactionId);
+
+        //leave transaction open in case defer or authorize
+        if($this->_config->getSagepayPaymentAction() == Config::ACTION_AUTHENTICATE ||
+            $this->_config->getSagepayPaymentAction() == Config::ACTION_DEFER){
+            $payment->setIsTransactionClosed(0);
+        }
+
+        $payment->save();
+
+        $payment->getMethodInstance()->markAsInitialized();
+        $order->place()->save();
+
+        //send email
+        $this->_checkoutHelper->sendOrderEmail($order);
     }
 }
