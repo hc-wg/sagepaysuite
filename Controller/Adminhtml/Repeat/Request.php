@@ -9,7 +9,6 @@ namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\Repeat;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 
 class Request extends \Magento\Backend\App\AbstractAction
 {

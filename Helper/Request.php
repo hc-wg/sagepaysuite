@@ -257,6 +257,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * @param $quote \Magento\Quote\Model\Quote
      * @return string
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     protected function _getBasketXml($quote)
     {

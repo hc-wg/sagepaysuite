@@ -32,9 +32,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     protected $responseMock;
 
     /**
-     * @var CheckoutSession|\PHPUnit_Framework_MockObject_MockObject
+     * @var QuoteSession|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $checkoutSessionMock;
+    protected $quoteSessionMock;
 
     /**
      * @var  \Magento\Quote\Model\QuoteManagement|\PHPUnit_Framework_MockObject_MockObject
@@ -88,11 +88,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('getBillingAddress')
             ->will($this->returnValue($addressMock));
 
-        $checkoutSessionMock = $this
-            ->getMockBuilder('Magento\Checkout\Model\Session')
+        $quoteSessionMock = $this
+            ->getMockBuilder('Magento\Backend\Model\Session\Quote')
             ->disableOriginalConstructor()
             ->getMock();
-        $checkoutSessionMock->expects($this->any())
+        $quoteSessionMock->expects($this->any())
             ->method('getQuote')
             ->will($this->returnValue($quoteMock));
 
@@ -207,7 +207,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 'config' => $configMock,
                 'suiteHelper' => $suiteHelperMock,
                 'pirestapi' => $pirestapiMock,
-                'checkoutSession' => $checkoutSessionMock,
+                'quoteSession' => $quoteSessionMock,
                 'quoteManagement' => $this->quoteManagementMock,
                 'requestHelper' => $requestHelperMock
             ]

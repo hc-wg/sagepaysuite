@@ -60,9 +60,9 @@ class Request extends \Magento\Backend\App\AbstractAction
     protected $_customerSession;
 
     /**
-     * @var \Magento\Checkout\Model\Session
+     * @var \Magento\Backend\Model\Session\Quote
      */
-    protected $_checkoutSession;
+    protected $_quoteSession;
 
     /**
      * @var \Magento\Quote\Model\QuoteManagement
@@ -96,7 +96,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         PIRest $pirestapi,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Customer\Model\Session $customerSession,
-        \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Backend\Model\Session\Quote $quoteSession,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Magento\Quote\Model\QuoteManagement $quoteManagement,
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
@@ -111,10 +111,10 @@ class Request extends \Magento\Backend\App\AbstractAction
         $this->_logger = $logger;
         $this->_checkoutHelper = $checkoutHelper;
         $this->_customerSession = $customerSession;
-        $this->_checkoutSession = $checkoutSession;
+        $this->_quoteSession = $quoteSession;
         $this->_quoteManagement = $quoteManagement;
         $this->_requestHelper = $requestHelper;
-        $this->_quote = $this->_checkoutSession->getQuote();
+        $this->_quote = $this->_quoteSession->getQuote();
     }
 
     public function execute()
