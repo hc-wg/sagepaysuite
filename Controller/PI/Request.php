@@ -234,7 +234,7 @@ class Request extends \Magento\Framework\App\Action\Action
             'transactionType' => $this->_config->getSagepayPaymentAction(),
             'paymentMethod' => [
                 'card' => [
-                    'merchantSessionKey' => $this->_postData->merchant_session_Key,
+                    'merchantSessionKey' => $this->_postData->merchant_session_key,
                     'cardIdentifier' => $this->_postData->card_identifier,
                 ]
             ],

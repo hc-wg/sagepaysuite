@@ -125,7 +125,8 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                         'fraudcode' => '765',
                         'fraudcodedetail' => 'Fraud card',
                         'fraudprovidername' => 'ReD',
-                        'fraudrules' => ''
+                        'fraudrules' => '',
+                        'Action' => 'Marked as FRAUD.'
                     ]
                 ]
             ],

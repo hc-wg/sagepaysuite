@@ -17,7 +17,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     const TEST_VPSTXID = 'F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F';
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Controller\AdminhtmlPI\Request
+     * @var \Ebizmarts\SagePaySuite\Controller\Adminhtml\PI\Request
      */
     protected $piRequestController;
 

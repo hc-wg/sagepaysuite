@@ -5,6 +5,7 @@
  */
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 /**
  * Sage Pay Reporting API parent class
@@ -29,6 +30,11 @@ class Reporting
     protected $_config;
 
     /**
+     * @var Logger
+     */
+    protected $_suiteLogger;
+
+    /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
      * @param ApiExceptionFactory $apiExceptionFactory
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
@@ -36,12 +42,14 @@ class Reporting
     public function __construct(
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
-        \Ebizmarts\SagePaySuite\Model\Config $config
+        \Ebizmarts\SagePaySuite\Model\Config $config,
+        Logger $suiteLogger
     )
     {
         $this->_config = $config;
         $this->_curlFactory = $curlFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
+        $this->_suiteLogger = $suiteLogger;
     }
 
     /**
@@ -144,26 +152,31 @@ class Reporting
     protected function _handleApiErrors($response)
     {
         //parse xml as object
-        $response = (object)((array) $response);
+        $response = (object)((array)$response);
 
         $exceptionPhrase = "Invalid response from Sage Pay API.";
         $exceptionCode = 0;
+        $validResponse = false;
 
         if (!empty($response)) {
-            if (is_array($response) && !array_key_exists("errorcode", $response) || $response->errorcode == '0000') {
+            if (is_object($response) && !array_key_exists("errorcode", $response) || $response->errorcode == '0000') {
 
                 //this is a successfull response
                 return $response;
 
             } else { //there was an error
-                if(is_array($response) && array_key_exists("errorcode", $response))
-                {
+                if (is_object($response) && array_key_exists("errorcode", $response)) {
                     $exceptionCode = $response->errorcode;
                     if (array_key_exists("error", $response)) {
                         $exceptionPhrase = $response->error;
+                        $validResponse = true;
                     }
                 }
             }
+        }
+
+        if(!$validResponse){
+            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$response);
         }
 
         $exception = $this->_apiExceptionFactory->create([

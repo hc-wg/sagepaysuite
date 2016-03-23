@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
+use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 /**
@@ -49,7 +50,10 @@ class Shared
     /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
      * @param ApiExceptionFactory $apiExceptionFactory
-     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param Config $config
+     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+     * @param Reporting $reportingApi
+     * @param Logger $suiteLogger
      */
     public function __construct(
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
@@ -117,7 +121,7 @@ class Shared
                 }
             }
         }else{
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
+            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, "INVALID RESPONSE FROM SAGE PAY: " . $response_status);
         }
 
         $response = [
@@ -162,9 +166,16 @@ class Shared
                     return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_AUTHORIZE_TEST;
                 }
                 break;
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT:
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED:
+                if($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE ){
+                    return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REPEAT_LIVE;
+                }else{
+                    return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REPEAT_TEST;
+                }
+                break;
             default:
                 return null;
-
         }
     }
 
@@ -172,6 +183,7 @@ class Shared
     {
         $exceptionPhrase = "Invalid response from Sage Pay API.";
         $exceptionCode = 0;
+        $validResponse = false;
 
         if (!empty($response) && array_key_exists("data",$response)) {
             if(array_key_exists("Status",$response["data"]) && $response["data"]["Status"] == 'OK'){
@@ -186,8 +198,13 @@ class Shared
                     $detail = explode(":",$response["data"]["StatusDetail"]);
                     $exceptionCode = trim($detail[0]);
                     $exceptionPhrase = trim($detail[1]);
+                    $validResponse = true;
                 }
             }
+        }
+
+        if(!$validResponse){
+            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$response);
         }
 
         $exception = $this->_apiExceptionFactory->create([
@@ -309,6 +326,39 @@ class Shared
 
         $response = $this->_executeRequest(
             \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE,
+            $data
+        );
+
+        $api_response = $this->_handleApiErrors($response);
+
+        //log response
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $api_response);
+
+        return $api_response;
+    }
+
+    public function repeatTransaction($vpstxid,$quote_data,$payment_action=Config::ACTION_REPEAT)
+    {
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
+
+        $data['VPSProtocol'] = $this->_config->getVPSProtocol();
+        $data['TxType'] = $payment_action;
+        $data['Vendor'] = $this->_config->getVendorname();
+
+        //populate quote data
+        $data = array_merge($data, $quote_data);
+
+        $data['Description'] = "Repeat transaction from Magento";
+        $data['RelatedVPSTxId'] = (string)$transaction->vpstxid;
+        $data['RelatedVendorTxCode'] = (string)$transaction->vendortxcode;
+        $data['RelatedSecurityKey'] = (string)$transaction->securitykey;
+        $data['RelatedTxAuthNo'] = (string)$transaction->vpsauthcode;
+
+        //log request
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
+
+        $response = $this->_executeRequest(
+            $payment_action,
             $data
         );
 

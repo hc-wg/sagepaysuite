@@ -56,6 +56,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             case \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE:
                 $prefix = "A";
                 break;
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT:
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED:
+                $prefix = "RT";
+                break;
         }
 
         return substr($prefix . $order_id . "-" . date('Y-m-d-His') . time(), 0, 40);
@@ -104,6 +108,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $suffixes = [
             '-' . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE,
             '-' . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_VOID,
+            '-' . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_REFUND,
         ];
         foreach ($suffixes as $suffix) {
             if (strpos($transactionId, $suffix) !== false) {

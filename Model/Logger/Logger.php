@@ -55,4 +55,12 @@ class Logger extends \Monolog\Logger
         return $this->addRecord($logType, $message, array());
     }
 
+    public function logException($exception)
+    {
+        $message = $exception->getMessage();
+        $message .= $exception->getTraceAsString();
+
+        return $this->addRecord(self::LOG_EXCEPTION, $message, array());
+    }
+
 }

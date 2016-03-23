@@ -29,6 +29,7 @@ class Config implements ConfigInterface
     const METHOD_PI = 'sagepaysuitepi';
     const METHOD_SERVER = 'sagepaysuiteserver';
     const METHOD_PAYPAL = 'sagepaysuitepaypal';
+    const METHOD_REPEAT = 'sagepaysuiterepeat';
 
     /**
      * Actions
@@ -40,6 +41,8 @@ class Config implements ConfigInterface
     const ACTION_VOID = 'VOID';
     const ACTION_REFUND = 'REFUND';
     const ACTION_RELEASE = 'RELEASE';
+    const ACTION_REPEAT = 'REPEAT';
+    const ACTION_REPEAT_DEFERRED = 'REPEATDEFERRED';
     const ACTION_AUTHORISE = 'AUTHORISE';
     const ACTION_POST = 'post';
 
@@ -89,6 +92,8 @@ class Config implements ConfigInterface
     const URL_SHARED_RELEASE_LIVE = 'https://live.sagepay.com/gateway/service/release.vsp';
     const URL_SHARED_AUTHORIZE_TEST = 'https://test.sagepay.com/gateway/service/authorise.vsp';
     const URL_SHARED_AUTHORIZE_LIVE = 'https://live.sagepay.com/gateway/service/authorise.vsp';
+    const URL_SHARED_REPEAT_TEST = 'https://test.sagepay.com/gateway/service/repeat.vsp';
+    const URL_SHARED_REPEAT_LIVE = 'https://live.sagepay.com/gateway/service/repeat.vsp';
     const URL_SERVER_POST_TEST = 'https://test.sagepay.com/gateway/service/vspserver-register.vsp';
     const URL_SERVER_POST_LIVE = 'https://live.sagepay.com/gateway/service/vspserver-register.vsp';
     const URL_DIRECT_POST_TEST = 'https://test.sagepay.com/gateway/service/vspdirect-register.vsp';
@@ -290,10 +295,12 @@ class Config implements ConfigInterface
 
         switch ($action) {
             case self::ACTION_PAYMENT:
+            case self::ACTION_REPEAT:
                 return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
                 break;
             case self::ACTION_DEFER:
             case self::ACTION_AUTHENTICATE:
+            case self::ACTION_REPEAT_DEFERRED:
                 return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE;
                 break;
             default:
@@ -541,7 +548,8 @@ class Config implements ConfigInterface
         return $methodCode == self::METHOD_PAYPAL ||
         $methodCode == self::METHOD_PI ||
         $methodCode == self::METHOD_FORM ||
-        $methodCode == self::METHOD_SERVER;
+        $methodCode == self::METHOD_SERVER ||
+        $methodCode == self::METHOD_REPEAT;
     }
 
     public function isSendBasket()

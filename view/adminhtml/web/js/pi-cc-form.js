@@ -185,7 +185,7 @@ define([
             var serviceUrl = sagepaysuitepi_config.url.request;
 
             var payload = {
-                merchant_session_Key: self.merchantSessionKey,
+                merchant_session_key: self.merchantSessionKey,
                 card_identifier: self.cardIdentifier,
                 card_type: self.creditCardType,
                 card_exp_month: self.creditCardExpMonth,

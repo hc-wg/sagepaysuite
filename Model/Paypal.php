@@ -13,8 +13,6 @@ use Magento\Framework\Exception\LocalizedException;
 
 /**
  * SagePaySuite Paypal integration
- * @SuppressWarnings(PHPMD.TooManyFields)
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
 {

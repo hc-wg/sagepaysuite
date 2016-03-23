@@ -265,4 +265,40 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             $this->sharedApiModel->authorizeTransaction("12345",100,1)
         );
     }
+
+    public function testRepeatTransaction()
+    {
+        $this->curlMock->expects($this->once())
+            ->method('read')
+            ->willReturn(
+                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
+                'Status=OK'. PHP_EOL .
+                'StatusDetail=OK STATUS'. PHP_EOL
+            );
+
+        $this->curlMock->expects($this->once())
+            ->method('getInfo')
+            ->willReturn(200);
+
+        $this->curlMock->expects($this->once())
+            ->method('write')
+            ->with(
+                \Zend_Http_Client::POST,
+                \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REPEAT_TEST,
+                '1.0',
+                [],
+                "VPSProtocol=&TxType=REPEAT&Vendor=&Description=Repeat+transaction+from+Magento&RelatedVPSTxId=12345&RelatedVendorTxCode=1000000001-2016-12-12-12345678&RelatedSecurityKey=fds87&RelatedTxAuthNo=879243978234&"
+            );
+
+        $this->assertEquals(
+            [
+                "status" => 200,
+                "data" => [
+                    'Status' => 'OK',
+                    'StatusDetail' => 'OK STATUS'
+                ]
+            ],
+            $this->sharedApiModel->repeatTransaction("12345",[])
+        );
+    }
 }

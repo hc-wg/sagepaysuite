@@ -111,6 +111,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
                         $payment->setIsFraudDetected(true);
                         $payment->getOrder()->setStatus(Order::STATUS_FRAUD);
                         $payment->save();
+                        $logData["Action"] = "Marked as FRAUD.";
                     }
 
                     //mark as checked

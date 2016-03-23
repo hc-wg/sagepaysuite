@@ -65,6 +65,14 @@
                 <title>PayPal</title>
                 <allowspecific>0</allowspecific>
             </sagepaysuitepaypal>
+            <sagepaysuiterepeat>
+                <active>0</active>
+                <model>Ebizmarts\SagePaySuite\Model\Repeat</model>
+                <payment_action>REPEAT</payment_action>
+                <order_status>pending</order_status>
+                <title>Sage Pay REPEAT</title>
+                <allowspecific>0</allowspecific>
+            </sagepaysuiterepeat>
         </payment>
     </default>
 </config>

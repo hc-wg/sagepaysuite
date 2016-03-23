@@ -9,7 +9,8 @@ var config = {
             sagepayjs_live: 'https://live.sagepay.com/api/v1/js/sagepay.js',
             sagepayjs_test: 'https://test.sagepay.com/api/v1/js/sagepay.js',
             sagepaysuitepiCcForm: 'Ebizmarts_SagePaySuite/js/pi-cc-form',
-            sagepaysuiteServerForm: 'Ebizmarts_SagePaySuite/js/server-form'
+            //sagepaysuiteServerForm: 'Ebizmarts_SagePaySuite/js/server-form',
+            sagepaysuiteRepeatForm: 'Ebizmarts_SagePaySuite/js/repeat-form'
         }
     }
 };

@@ -66,4 +66,22 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
             ]
         ];
     }
+
+    public function testLogException()
+    {
+        $exceptionMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\ApiException')
+            ->setMethods(['getMessage','getTraceAsString'])
+            ->disableOriginalConstructor()
+            ->getMock();
+//        $exceptionMock->expects($this->once())
+//            ->method('getMessage');
+//        $exceptionMock->expects($this->once())
+//            ->method('getTraceAsString');
+
+        $this->assertEquals(
+            false,
+            $this->loggerModel->logException($exceptionMock)
+        );
+    }
 }

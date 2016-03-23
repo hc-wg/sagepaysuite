@@ -13,9 +13,6 @@ use Magento\Framework\Exception\LocalizedException;
 
 /**
  * SagePaySuite FORM Module
- * @method \Magento\Quote\Api\Data\PaymentMethodExtensionInterface getExtensionAttributes()
- * @SuppressWarnings(PHPMD.TooManyFields)
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Form extends \Magento\Payment\Model\Method\AbstractMethod
 {

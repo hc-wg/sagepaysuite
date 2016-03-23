@@ -27,7 +27,7 @@ $payment = $block->getPayment();
             <?php if ($payment->getLastTransId()) { ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('VPSTxId')); ?>:</th>
-                    <td><?php echo $block->escapeHtml($payment->getLastTransId()); ?></td>
+                    <td><?php echo $block->escapeHtml($block->getSuiteHelper()->clearTransactionId($payment->getLastTransId())); ?></td>
                 </tr>
             <?php } ?>
             <?php if ($payment->getAdditionalInformation("vendorTxCode")) { ?>

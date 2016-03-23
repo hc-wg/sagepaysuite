@@ -14,10 +14,6 @@ use Magento\Sales\Model\Order\Payment\Transaction as PaymentTransaction;
 
 /**
  * Class PI
- * @package Ebizmarts\SagePaySuite\Model
- * @SuppressWarnings(PHPMD.TooManyFields)
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class PI extends \Magento\Payment\Model\Method\Cc
 {

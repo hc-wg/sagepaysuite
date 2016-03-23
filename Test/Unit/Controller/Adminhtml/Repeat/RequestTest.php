@@ -4,7 +4,7 @@
  * See LICENSE.txt for license details.
  */
 
-namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\PI;
+namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Adminhtml\Request;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
@@ -17,9 +17,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     const TEST_VPSTXID = 'F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F';
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Controller\PI\Request
+     * @var \Ebizmarts\SagePaySuite\Controller\Adminhtml\Repeat\Request
      */
-    protected $piRequestController;
+    protected $repeatRequestController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
@@ -32,14 +32,14 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     protected $responseMock;
 
     /**
-     * @var CheckoutSession|\PHPUnit_Framework_MockObject_MockObject
+     * @var QuoteSession|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $checkoutSessionMock;
+    protected $quoteSessionMock;
 
     /**
-     * @var  Ebizmarts\SagePaySuite\Helper\Checkout|\PHPUnit_Framework_MockObject_MockObject
+     * @var  \Magento\Quote\Model\QuoteManagement|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $checkoutHelperMock;
+    protected $quoteManagementMock;
 
     /**
      * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
@@ -53,8 +53,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $piModelMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\PI')
+        $repeatModelMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Repeat')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -64,7 +64,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $paymentMock->expects($this->any())
             ->method('getMethodInstance')
-            ->will($this->returnValue($piModelMock));
+            ->will($this->returnValue($repeatModelMock));
 
         $addressMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote\Address')
@@ -88,12 +88,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('getBillingAddress')
             ->will($this->returnValue($addressMock));
 
-
-        $checkoutSessionMock = $this
-            ->getMockBuilder('Magento\Checkout\Model\Session')
+        $quoteSessionMock = $this
+            ->getMockBuilder('Magento\Backend\Model\Session\Quote')
             ->disableOriginalConstructor()
             ->getMock();
-        $checkoutSessionMock->expects($this->any())
+        $quoteSessionMock->expects($this->any())
             ->method('getQuote')
             ->will($this->returnValue($quoteMock));
 
@@ -112,23 +111,36 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->willReturn($this->resultJson);
 
-        $contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')
+        $requestMock = $this
+            ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $requestMock->expects($this->once())
+            ->method('getPost')
+            ->will($this->returnValue((object)[
+                "vpstxid" => "12345"
+            ]));
+
+        $urlBuilderMock = $this
+            ->getMockBuilder('Magento\Framework\UrlInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $contextMock = $this->getMockBuilder('Magento\Backend\App\Action\Context')
             ->disableOriginalConstructor()
             ->getMock();
         $contextMock->expects($this->any())
             ->method('getRequest')
-            ->will($this->returnValue(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"merchant_session_key": "12345", "card_identifier":"12345", ' .
-                '"card_last4":"0006", "card_exp_month":"02", "card_exp_year":"22", ' .
-                '"card_type":"VISA"}'
-            ));
+            ->will($this->returnValue($requestMock));
         $contextMock->expects($this->any())
             ->method('getResponse')
             ->will($this->returnValue($this->responseMock));
         $contextMock->expects($this->any())
             ->method('getResultFactory')
             ->will($this->returnValue($resultFactoryMock));
+        $contextMock->expects($this->any())
+            ->method('getBackendUrl')
+            ->will($this->returnValue($urlBuilderMock));
 
         $configMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
@@ -143,16 +155,17 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('generateVendorTxCode')
             ->will($this->returnValue("10000001-2015-12-12-12-12345"));
 
-        $pirestapiMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\PIRest')
+        $sharedapiMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Shared')
             ->disableOriginalConstructor()
             ->getMock();
-        $pirestapiMock->expects($this->any())
-            ->method('capture')
-            ->will($this->returnValue((object)[
-                "statusCode" => \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS,
-                "transactionId" => self::TEST_VPSTXID,
-                "statusDetail" => 'OK Status'
+        $sharedapiMock->expects($this->any())
+            ->method('repeatTransaction')
+            ->will($this->returnValue([
+                "data" => [
+                    "VPSTxId" => self::TEST_VPSTXID,
+                    "StatusDetail" => 'OK Status'
+                ]
             ]));
 
         $this->orderMock = $this
@@ -166,8 +179,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('place')
             ->willReturnSelf();
 
-        $this->checkoutHelperMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Checkout')
+        $this->quoteManagementMock = $this
+            ->getMockBuilder('Magento\Quote\Model\QuoteManagement')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -179,19 +192,22 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('populatePaymentAmount')
             ->will($this->returnValue(array()));
         $requestHelperMock->expects($this->any())
+            ->method('populateAddressInformation')
+            ->will($this->returnValue(array()));
+        $requestHelperMock->expects($this->any())
             ->method('getOrderDescription')
             ->will($this->returnValue("description"));
 
         $objectManagerHelper = new ObjectManagerHelper($this);
-        $this->piRequestController = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Controller\PI\Request',
+        $this->repeatRequestController = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\Adminhtml\Repeat\Request',
             [
                 'context' => $contextMock,
                 'config' => $configMock,
                 'suiteHelper' => $suiteHelperMock,
-                'pirestapi' => $pirestapiMock,
-                'checkoutSession' => $checkoutSessionMock,
-                'checkoutHelper' => $this->checkoutHelperMock,
+                'sharedApi' => $sharedapiMock,
+                'quoteSession' => $quoteSessionMock,
+                'quoteManagement' => $this->quoteManagementMock,
                 'requestHelper' => $requestHelperMock
             ]
         );
@@ -199,36 +215,36 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteSUCCESS()
     {
-        $this->checkoutHelperMock->expects($this->any())
-            ->method('placeOrder')
+        $this->quoteManagementMock->expects($this->any())
+            ->method('submit')
             ->will($this->returnValue($this->orderMock));
 
         $this->_expectResultJson([
             "success" => true,
             'response' => [
-                "statusCode" => 0000,
-                "transactionId" => self::TEST_VPSTXID,
-                "statusDetail" => "OK Status",
-                "orderId" => NULL,
-                "quoteId" => NULL
+                "data" => [
+                    "VPSTxId" => self::TEST_VPSTXID,
+                    "StatusDetail" => "OK Status",
+                    "redirect" => NULL
+                ]
             ]
         ]);
 
-        $this->piRequestController->execute();
+        $this->repeatRequestController->execute();
     }
 
     public function testExecuteERROR()
     {
-        $this->checkoutHelperMock->expects($this->any())
-            ->method('placeOrder')
+        $this->quoteManagementMock->expects($this->any())
+            ->method('submit')
             ->will($this->returnValue(NULL));
 
         $this->_expectResultJson([
             "success" => false,
-            'error_message' => "Something went wrong: Unable to save Sage Pay order"
+            'error_message' => __("Something went wrong: Unable to save Sage Pay order.")
         ]);
 
-        $this->piRequestController->execute();
+        $this->repeatRequestController->execute();
     }
 
     /**
