@@ -100,15 +100,21 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
             $data["Currency"] = $currencyCode;
         }
 
-        $basketFormat = $this->_config->getBasketFormat();
-        $force_xml = $this->_config->isPaypalForceXml();
+        return $data;
+    }
 
-        if($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML || $force_xml == true) {
+    public function populateBasketInformation($quote, $force_xml = false)
+    {
+        $data = array();
+
+        $basketFormat = $this->_config->getBasketFormat();
+
+        if ($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML || $force_xml == true) {
             $_basket = $this->_getBasketXml($quote);
-            if($this->_validateBasketXml($_basket)) {
+            if ($this->_validateBasketXml($_basket)) {
                 $data['BasketXML'] = $_basket;
             }
-        }elseif($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50) {
+        } elseif ($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50) {
             $data['Basket'] = $this->_getBasketSage50($quote);
         }
 
@@ -129,16 +135,12 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
         $itemsCollection = $quote->getItemsCollection();
 
-//        $this->_logger->addDebug(gettype($itemsCollection));
-
 //        $trnCurrency = (string)$this->getConfigData('trncurrency', $quote->getStoreId());
 //        if ($trnCurrency == 'store' or $trnCurrency == 'switcher') {
 //            $useBaseMoney = false;
 //        }
 
         foreach ($itemsCollection as $item) {
-
-//            $this->_logger->addDebug(var_dump($itemsCollection));
 
 //                //Avoid duplicates SKUs on basket
 //                if ($this->_isSkuDuplicatedInSageBasket($basketArray,$this->_cleanSage50BasketString($item->getSku())) == true) {
@@ -215,16 +217,16 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 //        if($useBaseMoney) {
 //            $deliveryValue  = $shippingAddress->getBaseShippingAmount();
 //            $deliveryTax    = $shippingAddress->getBaseShippingTaxAmount();
-//            $deliveryAmount = $shippingAddress->getBaseShippingInclTax();
 //        }
 //        else {
             $deliveryValue  = $shippingAddress->getShippingAmount();
             $deliveryTax    = $shippingAddress->getShippingTaxAmount();
-            $deliveryAmount = $shippingAddress->getShippingInclTax();
 //        }
+        $deliveryAmount = $deliveryValue + $deliveryTax;
 
         //delivery item
-        $deliveryItem = array("item"=>str_replace($BASKET_SEP, $BASKET_SEP_ESCAPE, $this->_cleanSage50BasketString($deliveryName)),
+        $deliveryItem = array(
+            "item"=>str_replace($BASKET_SEP, $BASKET_SEP_ESCAPE, $this->_cleanSage50BasketString($deliveryName)),
             "qty"=>1,
             "item_value"=>$deliveryValue,
             "item_tax"=>$deliveryTax,
@@ -242,10 +244,6 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         //add total rows
         $basketString = count($basketArray) . $basketString;
 
-//        $this->_logger->addDebug(print_r(json_encode($basketArray), 1));
-//        $this->_logger->addDebug($basketString);
-//        $this->_logger->addDebug("Crush!");
-//        crush;
         return $basketString;
 
     }
@@ -258,21 +256,6 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
     {
 
         $basket = new \SimpleXMLElement('<?xml version="1.0" encoding="utf-8" ?><basket />');
-
-//        if($this->_getIsAdmin()) {
-//
-//            $uname = trim(Mage::getSingleton('admin/session')->getUser()->getUsername());
-//
-//            $validAgent = preg_match_all("/[a-zA-Z0-9\s]+/", $uname, $matchesUname);
-//            if($validAgent !== 1) {
-//                $uname = implode("", $matchesUname[0]);
-//            }
-//
-//            //<agentId>
-//            $basket->addChildCData('agentId', substr($uname, 0, 16));
-//        }
-
-        $discount = null;
 
         $shippingAdd = $quote->getShippingAddress();
         $billingAdd = $quote->getBillingAddress();
@@ -297,23 +280,21 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
                 $node->addChild('description', $this->_convertStringToSafeXMLChar(substr(implode("", $matchesDescription[0]), 0, 100)));
             }
 
+            //FIXME aca no esta entrando
             $validSku = preg_match_all("/[\p{L}0-9\s\-]+/", $item->getSku(), $matchesSku);
             if ($validSku === 1) {
                 //<productSku>
                 $node->addChild('productSku', substr($item->getSku(), 0, 12));
             }
 
+            //FIXME: aca no esta entrando
             //<productCode>
             $node->addChild('productCode', $item->getId());
 
             $itemQty = $item->getQty();
 
-            if ($item->getDiscountAmount()) {
-                $discount += $item->getDiscountAmount();
-            }
-
             $unitTaxAmount = number_format(($item->getTaxAmount() / $itemQty), 2, '.', '');
-            $unitNetAmount = number_format(($item->getPrice() + $item->getWeeeTaxAppliedAmount()), 2, '.', '');
+            $unitNetAmount = number_format($item->getPriceInclTax(), 2, '.', '');
             $unitGrossAmount = number_format($unitNetAmount + $unitTaxAmount, 2, '.', '');
             $totalGrossAmount = number_format($unitGrossAmount * $itemQty, 2, '.', '');
 
@@ -419,14 +400,14 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
             $addresses = $quote->getAllAddresses();
             foreach($addresses as $address) {
-                $shippingInclTax   += $address->getShippingInclTax();
                 $shippingTaxAmount += $address->getShippingTaxAmount();
+                $shippingInclTax   += $address->getShippingAmount() + $shippingTaxAmount;
             }
 
         }
         else {
-            $shippingInclTax   = $shippingAdd->getShippingInclTax();
             $shippingTaxAmount = $shippingAdd->getShippingTaxAmount();
+            $shippingInclTax   = $shippingAdd->getShippingAmount() + $shippingTaxAmount;
         }
 
         //<deliveryNetAmount>
@@ -442,13 +423,6 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         $validFax = preg_match_all("/[a-zA-Z0-9\-\s\(\)\+]+/", trim($shippingAdd->getFax()), $matchesFax);
         if($validFax === 1) {
             $basket->addChild('shippingFaxNo', substr(trim($shippingAdd->getFax()), 0, 20));
-        }
-
-        //Discounts
-        if(!is_null($discount) && $discount > 0.00) {
-            $nodeDiscounts = $basket->addChild('discounts', '');
-            $_discount = $nodeDiscounts->addChild('discount', '');
-            $_discount->addChild('fixed', number_format($discount, 2, '.', ''));
         }
 
         $xmlBasket = str_replace("\n", "", trim($basket->asXml()));
