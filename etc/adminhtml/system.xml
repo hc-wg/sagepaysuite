@@ -224,6 +224,12 @@
                         <label>Title</label>
                         <config_path>payment/sagepaysuiteserver/title</config_path>
                     </field>
+                    <field id="profile" translate="label" type="select" sortOrder="17" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Low Profile Enabled</label>
+                        <comment><![CDATA[A LOW profile returns the simplified payment pages which have only one step and minimal formatting. You will NOT be able to accept PayPal transactions or Local European Payments if enabled.]]></comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/sagepaysuiteserver/profile</config_path>
+                    </field>
                     <field id="order_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>New Order Status</label>
                         <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>

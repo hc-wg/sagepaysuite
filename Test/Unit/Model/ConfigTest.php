@@ -619,4 +619,14 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             $this->configModel->getMethodCode()
         );
     }
+
+    public function testIsServerLowProfileEnabled()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+
+        $this->assertEquals(
+            false,
+            $this->configModel->isServerLowProfileEnabled()
+        );
+    }
 }

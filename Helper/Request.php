@@ -44,9 +44,13 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
         $data = array();
 
+        //customer email
+        $data["CustomerEMail"] = $billing_address->getEmail();
+
         $data['BillingSurname'] = substr($billing_address->getLastname(), 0, 20);
         $data['BillingFirstnames'] = substr($billing_address->getFirstname(), 0, 20);
         $data['BillingAddress1'] = substr($billing_address->getStreetLine(1), 0, 100);
+        $data['BillingAddress2'] = substr($billing_address->getStreetLine(2), 0, 100);
         $data['BillingCity'] = substr($billing_address->getCity(), 0, 40);
         $data['BillingPostCode'] = substr($billing_address->getPostcode(), 0, 10);
         $data['BillingCountry'] = substr($billing_address->getCountryId(), 0, 2);
@@ -56,6 +60,8 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
             $data['BillingState'] = substr($billing_address->getRegionCode(), 0, 2);
         }
 
+        $data['BillingPhone'] = substr($billing_address->getTelephone(), 0, 20);
+
         //not mandatory
 //        $data['BillingAddress2']   = ($this->getConfigData('mode') == 'test') ? 88 : $this->ss($billing->getStreet(2), 100);
 
@@ -63,6 +69,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         $data['DeliverySurname'] = substr($shipping_address->getLastname(), 0, 20);
         $data['DeliveryFirstnames'] = substr($shipping_address->getFirstname(), 0, 20);
         $data['DeliveryAddress1'] = substr($shipping_address->getStreetLine(1), 0, 100);
+        $data['DeliveryAddress2'] = substr($shipping_address->getStreetLine(2), 0, 100);
         $data['DeliveryCity'] = substr($shipping_address->getCity(), 0, 40);
         $data['DeliveryPostCode'] = substr($shipping_address->getPostcode(), 0, 10);
         $data['DeliveryCountry'] = substr($shipping_address->getCountryId(), 0, 2);
@@ -70,6 +77,8 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         if ($data['DeliveryCountry'] == 'US') {
             $data['DeliveryState'] = substr($shipping_address->getRegionCode(), 0, 2);
         }
+
+        $data['DeliveryPhone'] = substr($shipping_address->getTelephone(), 0, 20);
 
         //not mandatory
 //        $data['DeliveryAddress2']   = ($this->getConfigData('mode') == 'test') ? 88 : $this->ss($billing->getStreet(2), 100);
@@ -497,5 +506,12 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $isMOTO ? __("Online MOTO transaction.") : __("Online transaction.");
     }
+
+    public function getReferrerId()
+    {
+        return "01bf51f9-0dcd-49dd-a07a-3b1f918c77d7";
+    }
+
+
 
 }

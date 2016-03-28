@@ -145,8 +145,7 @@ class Request extends \Magento\Framework\App\Action\Action
             //save order with pending payment
             $order = $this->_checkoutHelper->placeOrder();
 
-            if($order)
-            {
+            if ($order) {
                 //set pre-saved order flag in checkout session
                 $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", $order->getId());
 
@@ -167,7 +166,7 @@ class Request extends \Magento\Framework\App\Action\Action
                     'response' => $post_response
                 ];
 
-            }else {
+            } else {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
             }
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
@@ -222,6 +221,8 @@ class Request extends \Magento\Framework\App\Action\Action
      */
     protected function _generateRequest()
     {
+        $customer_data = $this->_customerSession->getCustomerDataObject();
+
         $data = array();
         $data["VPSProtocol"] = $this->_config->getVPSProtocol();
         $data["TxType"] = $this->_config->getSagepayPaymentAction();
@@ -229,6 +230,9 @@ class Request extends \Magento\Framework\App\Action\Action
         $data["VendorTxCode"] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
         $data["Description"] = $this->_requestHelper->getOrderDescription();
         $data["NotificationURL"] = $this->_getNotificationUrl();
+
+        //referrer id
+        $data["ReferrerID"] = $this->_requestHelper->getReferrerId();
 
         //populate payment amount information
         $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
@@ -238,9 +242,9 @@ class Request extends \Magento\Framework\App\Action\Action
 
         //token
         if ($this->_postData->save_token == true &&
-            !empty($this->_customerSession->getCustomerDataObject()) &&
+            !empty($customer_data) &&
             !$this->_tokenModel->isCustomerUsingMaxTokenSlots(
-                $this->_customerSession->getCustomerDataObject()->getId(),
+                $customer_data->getId(),
                 $this->_config->getVendorname()
             )
         ) {
@@ -263,11 +267,15 @@ class Request extends \Magento\Framework\App\Action\Action
         //gif aid
         $data["AllowGiftAid"] = (int)$this->_config->isGiftAidEnabled();
 
+        //Paypal billing agreement
+        $data["BillingAgreement"] = (int)$this->_config->getPaypalBillingAgreement();
+
+        //profile
+        if((bool)$this->_config->isServerLowProfileEnabled() == true){
+            $data["Profile"] = "LOW";
+        }
+
         //not mandatory
-//        BillingAddress2
-//        BillingPhone
-//        DeliveryAddress2
-//        DeliveryPhone
 //        CustomerEMail
 //        Profile
 //        AccountType

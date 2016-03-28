@@ -40,11 +40,6 @@ class Notify extends \Magento\Framework\App\Action\Action
     protected $_config;
 
     /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $_logger;
-
-    /**
      * @var \Magento\Checkout\Model\Session
      */
     protected $_checkoutSession;
@@ -83,7 +78,6 @@ class Notify extends \Magento\Framework\App\Action\Action
         OrderSender $orderSender,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Psr\Log\LoggerInterface $logger,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
         \Magento\Quote\Model\Quote $quote
@@ -97,7 +91,6 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_transactionFactory = $transactionFactory;
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
-        $this->_logger = $logger;
         $this->_checkoutSession = $checkoutSession;
         $this->_tokenModel = $tokenModel;
         $this->_quote = $quote;
@@ -133,31 +126,12 @@ class Notify extends \Magento\Framework\App\Action\Action
             $payment = $order->getPayment();
 
             //validate hash
-            $localMd5Hash = md5(
-                $this->_postData->VPSTxId .
-                $this->_postData->VendorTxCode .
-                $this->_postData->Status .
-                property_exists($this->_postData, 'TxAuthNo') === TRUE ? $this->_postData->TxAuthNo : '' .
-                strtolower($payment->getAdditionalInformation('vendorname')) .
-                $this->_postData->AVSCV2 .
-                $payment->getAdditionalInformation('securityKey') .
-                $this->_postData->AddressResult .
-                $this->_postData->PostCodeResult .
-                $this->_postData->CV2Result .
-                $this->_postData->GiftAid .
-                $this->_postData->{'3DSecureStatus'} .
-                property_exists($this->_postData, 'CAVV') === TRUE ? $this->_postData->CAVV : '' .
-                $this->_postData->AddressStatus .
-                $this->_postData->PayerStatus .
-                $this->_postData->CardType .
-                $this->_postData->Last4Digits .
-                property_exists($this->_postData, 'DeclineCode') === TRUE ? $this->_postData->DeclineCode : '' .
-                $this->_postData->ExpiryDate .
-                property_exists($this->_postData, 'FraudResponse') === TRUE ? $this->_postData->FraudResponse : '' .
-                property_exists($this->_postData, 'BankAuthCode') === TRUE ? $this->_postData->BankAuthCode : ''
-            );
+            $localMd5Hash = md5($this->_getVPSSignatureString($payment));
 
-            if (strtoupper($localMd5Hash) != $this->_postData->VPSSignature) {
+            if (strtoupper($localMd5Hash) != $this->_postData->VPSSignature)
+            {
+                //log full values for VPS signature
+                $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, "INVALID SIGNATURE: " . $this->_getVPSSignatureString($payment));
                 throw new \Magento\Framework\Validator\Exception(__('Invalid VPS Signature'));
             }
 
@@ -235,14 +209,24 @@ class Notify extends \Magento\Framework\App\Action\Action
 
             } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") { //Transaction succeeded or authenticated
 
-                $this->_confirmPayment($transactionId);
+                $sendEmail = true;
+                if($payment->getAdditionalInformation('euroPayment') == true){
+                    //don't send email if EURO PAYMENT as it was already sent
+                    $sendEmail = false;
+                }
+
+                $this->_confirmPayment($transactionId,$sendEmail);
 
                 return $this->_returnOk();
 
             } elseif ($status == "PENDING") { //Transaction in PENDING state (this is just for Euro Payments which are not yet available in this version)
 
-                //@ToDo
-                return $this->_returnInvalid("Order was not saved, please try another payment method");
+                $payment->setAdditionalInformation('euroPayment', true);
+
+                //send order email
+                $this->_orderSender->send($this->_order);
+
+                return $this->_returnOk();
 
             } else { //Transaction failed with NOTAUTHED, REJECTED or ERROR
 
@@ -253,7 +237,7 @@ class Notify extends \Magento\Framework\App\Action\Action
             }
 
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->_logger->critical($apiException);
+            $this->_suiteLogger->logException($apiException);
 
             //cancel pending payment order
             $this->_cancelOrder($order);
@@ -261,13 +245,38 @@ class Notify extends \Magento\Framework\App\Action\Action
             return $this->_returnInvalid("Something went wrong: " . $apiException->getUserMessage());
 
         } catch (\Exception $e) {
-            $this->_logger->critical($e);
+            $this->_suiteLogger->logException($e);
 
             //cancel pending payment order
             $this->_cancelOrder($order);
 
             return $this->_returnInvalid("Something went wrong: " . $e->getMessage());
         }
+    }
+
+    protected function _getVPSSignatureString($payment)
+    {
+        return $this->_postData->VPSTxId .
+        $this->_postData->VendorTxCode .
+        $this->_postData->Status .
+        property_exists($this->_postData, 'TxAuthNo') === TRUE ? $this->_postData->TxAuthNo : '' .
+        strtolower($payment->getAdditionalInformation('vendorname')) .
+        $this->_postData->AVSCV2 .
+        $payment->getAdditionalInformation('securityKey') .
+        $this->_postData->AddressResult .
+        $this->_postData->PostCodeResult .
+        $this->_postData->CV2Result .
+        $this->_postData->GiftAid .
+        $this->_postData->{'3DSecureStatus'} .
+        property_exists($this->_postData, 'CAVV') === TRUE ? $this->_postData->CAVV : '' .
+        $this->_postData->AddressStatus .
+        $this->_postData->PayerStatus .
+        $this->_postData->CardType .
+        $this->_postData->Last4Digits .
+        property_exists($this->_postData, 'DeclineCode') === TRUE ? $this->_postData->DeclineCode : '' .
+        $this->_postData->ExpiryDate .
+        property_exists($this->_postData, 'FraudResponse') === TRUE ? $this->_postData->FraudResponse : '' .
+        property_exists($this->_postData, 'BankAuthCode') === TRUE ? $this->_postData->BankAuthCode : '';
     }
 
     protected function _cancelOrder($order)
@@ -292,7 +301,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         }
     }
 
-    protected function _confirmPayment($transactionId)
+    protected function _confirmPayment($transactionId, $sendEmail=true)
     {
         //invoice
         $payment = $this->_order->getPayment();
@@ -300,7 +309,9 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_order->place()->save();
 
         //send email
-        $this->_orderSender->send($this->_order);
+        if($sendEmail){
+            $this->_orderSender->send($this->_order);
+        }
 
         //create transaction record
         switch ($this->_config->getSagepayPaymentAction()) {

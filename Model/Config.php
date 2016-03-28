@@ -586,4 +586,9 @@ class Config implements ConfigInterface
         );
         return $config_value;
     }
+
+    public function isServerLowProfileEnabled()
+    {
+        return $this->getValue("profile");
+    }
 }

@@ -53,6 +53,7 @@
                 <payment_action>PAYMENT</payment_action>
                 <order_status>pending</order_status>
                 <title>Sage Pay SERVER</title>
+                <profile>0</profile>
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>
                 <allowspecific>0</allowspecific>
             </sagepaysuiteserver>

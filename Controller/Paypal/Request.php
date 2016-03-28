@@ -149,6 +149,9 @@ class Request extends \Magento\Framework\App\Action\Action
         $data["VendorTxCode"] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
         $data["Description"] = $this->_requestHelper->getOrderDescription();
 
+        //referrer id
+        $data["ReferrerID"] = $this->_requestHelper->getReferrerId();
+
         if($this->_config->isSendBasket()) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote, $this->_config->isPaypalForceXml()));
         }

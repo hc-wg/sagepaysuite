@@ -123,6 +123,9 @@ class Request extends \Magento\Framework\App\Action\Action
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
         $data['Description'] = $this->_requestHelper->getOrderDescription();
 
+        //referrer id
+        $data["ReferrerID"] = $this->_requestHelper->getReferrerId();
+
         if($this->_config->isSendBasket()) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
         }
@@ -131,7 +134,6 @@ class Request extends \Magento\Framework\App\Action\Action
         $data['FailureURL'] = $this->_url->getUrl('*/*/failure');
 
         //not mandatory
-//        $data['CustomerName'] = $billing_address->getFirstname() . ' ' . $billing_address->getLastname();
 //        $data['CustomerEMail'] = ($customerEmail == null ? $billing->getEmail() : $customerEmail);
 //        $data['VendorEMail']
 //        $data['SendEMail']

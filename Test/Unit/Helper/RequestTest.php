@@ -113,6 +113,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                         'DeliveryPostCode' => "1234567891",
                         'DeliveryCountry' => "US",
                         'DeliveryState' => "MV",
+                        'CustomerEMail' => null,
+                        'BillingAddress2' => 'address line',
+                        'BillingPhone' => false,
+                        'DeliveryAddress2' => 'address line',
+                        'DeliveryPhone' => false
                     ]
                 ]
             ],
@@ -137,7 +142,12 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                         'DeliveryAddress1' => "address line",
                         'DeliveryCity' => "Montevideo",
                         'DeliveryPostCode' => "123456789",
-                        'DeliveryCountry' => "UY"
+                        'DeliveryCountry' => "UY",
+                        'CustomerEMail' => null,
+                        'BillingAddress2' => 'address line',
+                        'BillingPhone' => false,
+                        'DeliveryAddress2' => 'address line',
+                        'DeliveryPhone' => false
                     ]
                 ]
             ]
@@ -158,7 +168,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
-            ->setMethods(["getBaseGrandTotal","getGrandTotal"])
+            ->setMethods(["getBaseGrandTotal", "getGrandTotal"])
             ->disableOriginalConstructor()
             ->getMock();
         $quoteMock->expects($this->once())
@@ -379,7 +389,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 //        $this->assertEquals(
 //            true,
-            //$this->requestHelper->populateBasketInformation($this->quoteMock);
+        //$this->requestHelper->populateBasketInformation($this->quoteMock);
 //        );
     }
 
@@ -406,4 +416,12 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 //            $this->requestHelper->populateBasketInformation($this->quoteMock, true)
 //        );
 //    }
+
+    public function testGetReferrerId()
+    {
+        $this->assertEquals(
+            __("01bf51f9-0dcd-49dd-a07a-3b1f918c77d7"),
+            $this->requestHelper->getReferrerId()
+        );
+    }
 }
