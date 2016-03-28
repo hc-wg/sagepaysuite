@@ -268,6 +268,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @return string
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
+    // @codingStandardsIgnoreStart
     protected function _getBasketXml($quote)
     {
         $basket = new \SimpleXMLElement('<?xml version="1.0" encoding="utf-8" ?><basket />');
@@ -454,6 +455,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         return $xmlBasket;
 
     }
+    // @codingStandardsIgnoreEnd
 
     protected function _cleanSage50BasketString($text)
     {
