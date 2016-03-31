@@ -64,13 +64,8 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>sagepaysuite/advanced/fraud_autoinvoice</config_path>
                     </field>
-                    <field id="send_basket" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Send basket contents</label>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                        <config_path>sagepaysuite/advanced/send_basket</config_path>
-                    </field>
                     <field id="basket_format" translate="label" type="select" sortOrder="26" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Basket format</label>
+                        <label>Basket</label>
                         <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\BasketFormat</source_model>
                         <config_path>sagepaysuite/advanced/basket_format</config_path>
                     </field>

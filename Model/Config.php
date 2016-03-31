@@ -118,6 +118,7 @@ class Config implements ConfigInterface
      */
     const BASKETFORMAT_Sage50 = 'Sage50';
     const BASKETFORMAT_XML = 'xml';
+    const BASKETFORMAT_Disabled = 'Disabled';
 
     /*
      * Max tokens per customer
@@ -473,16 +474,6 @@ class Config implements ConfigInterface
             ScopeInterface::SCOPE_STORE,
             $this->_storeId
         );
-    }
-
-    public function isSendBasket()
-    {
-        $config_value = $this->_scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("send_basket"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
-        );
-        return $config_value;
     }
 
     public function getBasketFormat()

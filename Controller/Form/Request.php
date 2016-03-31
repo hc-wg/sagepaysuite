@@ -123,7 +123,7 @@ class Request extends \Magento\Framework\App\Action\Action
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
         $data['Description'] = $this->_requestHelper->getOrderDescription();
 
-        if($this->_config->isSendBasket()) {
+        if($this->_config->getBasketFormat() != 'Disabled') {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
         }
 

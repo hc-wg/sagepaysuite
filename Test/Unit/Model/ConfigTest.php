@@ -325,20 +325,6 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testIsSendBasket(){
-        $this->scopeConfigMock->expects($this->once())
-            ->method('getValue')
-            ->with('sagepaysuite/advanced/send_basket',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
-            ->willReturn(true);
-
-        $this->assertEquals(
-            true,
-            $this->configModel->isSendBasket()
-        );
-    }
-
     public function testGetBasketFormat()
     {
         $this->scopeConfigMock->expects($this->once())
