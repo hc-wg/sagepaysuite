@@ -58,7 +58,9 @@ class Logger extends \Monolog\Logger
     public function logException($exception)
     {
         $message = $exception->getMessage();
+        $message .= "\n";
         $message .= $exception->getTraceAsString();
+        $message .= "\r\n\r\n";
 
         return $this->addRecord(self::LOG_EXCEPTION, $message, array());
     }

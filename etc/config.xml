@@ -63,6 +63,7 @@
                 <billing_agreement>0</billing_agreement>
                 <order_status>pending</order_status>
                 <title>PayPal</title>
+                <force_xml>1</force_xml>
                 <allowspecific>0</allowspecific>
             </sagepaysuitepaypal>
             <sagepaysuiterepeat>

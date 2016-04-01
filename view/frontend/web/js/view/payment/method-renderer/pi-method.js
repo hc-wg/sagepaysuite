@@ -182,7 +182,7 @@ define(
                 var callbackUrl = url.build('sagepaysuite/pi/callback3D');
 
                 var payload = {
-                    merchant_session_Key: self.merchantSessionKey,
+                    merchant_session_key: self.merchantSessionKey,
                     card_identifier: self.cardIdentifier,
                     card_type: self.creditCardType,
                     card_exp_month: self.creditCardExpMonth,
@@ -269,7 +269,7 @@ define(
                     'method': this.getCode(),
                     'additional_data': {
                         'cc_last4': this.creditCardLast4,
-                        'merchant_session_Key': this.merchantSessionKey,
+                        'merchant_session_key': this.merchantSessionKey,
                         'card_identifier': this.cardIdentifier,
                         'cc_type': this.creditCardType,
                         'cc_exp_year': this.creditCardExpYear,

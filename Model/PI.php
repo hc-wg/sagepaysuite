@@ -175,7 +175,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         parent::assignData($data);
         $infoInstance = $this->getInfoInstance();
         $infoInstance->setAdditionalInformation('cc_last4', $data->getData('cc_last4'));
-        $infoInstance->setAdditionalInformation('merchant_session_Key', $data->getData('merchant_session_Key'));
+        $infoInstance->setAdditionalInformation('merchant_session_key', $data->getData('merchant_session_key'));
         $infoInstance->setAdditionalInformation('card_identifier', $data->getData('card_identifier'));
         return $this;
     }

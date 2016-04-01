@@ -118,18 +118,16 @@ class Notify extends \Magento\Framework\App\Action\Action
                 return $this->_returnInvalid("Order was not found");
             }
             $this->_order = $order;
+            $payment = $order->getPayment();
 
             //get some vars from POST
             $status = $this->_postData->Status;
             $transactionId = str_replace("{", "", str_replace("}", "", $this->_postData->VPSTxId)); //strip brackets
 
-            $payment = $order->getPayment();
-
             //validate hash
             $localMd5Hash = md5($this->_getVPSSignatureString($payment));
 
-            if (strtoupper($localMd5Hash) != $this->_postData->VPSSignature)
-            {
+            if (strtoupper($localMd5Hash) != $this->_postData->VPSSignature) {
                 //log full values for VPS signature
                 $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, "INVALID SIGNATURE: " . $this->_getVPSSignatureString($payment));
                 throw new \Magento\Framework\Validator\Exception(__('Invalid VPS Signature'));
@@ -210,12 +208,12 @@ class Notify extends \Magento\Framework\App\Action\Action
             } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") { //Transaction succeeded or authenticated
 
                 $sendEmail = true;
-                if($payment->getAdditionalInformation('euroPayment') == true){
+                if ($payment->getAdditionalInformation('euroPayment') == true) {
                     //don't send email if EURO PAYMENT as it was already sent
                     $sendEmail = false;
                 }
 
-                $this->_confirmPayment($transactionId,$sendEmail);
+                $this->_confirmPayment($transactionId, $sendEmail);
 
                 return $this->_returnOk();
 
@@ -259,7 +257,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         return $this->_postData->VPSTxId .
         $this->_postData->VendorTxCode .
         $this->_postData->Status .
-        property_exists($this->_postData, 'TxAuthNo') === TRUE ? $this->_postData->TxAuthNo : '' .
+        (property_exists($this->_postData, 'TxAuthNo') === TRUE ? $this->_postData->TxAuthNo : '') .
         strtolower($payment->getAdditionalInformation('vendorname')) .
         $this->_postData->AVSCV2 .
         $payment->getAdditionalInformation('securityKey') .
@@ -268,15 +266,15 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_postData->CV2Result .
         $this->_postData->GiftAid .
         $this->_postData->{'3DSecureStatus'} .
-        property_exists($this->_postData, 'CAVV') === TRUE ? $this->_postData->CAVV : '' .
+        (property_exists($this->_postData, 'CAVV') === TRUE ? $this->_postData->CAVV : '') .
         $this->_postData->AddressStatus .
         $this->_postData->PayerStatus .
         $this->_postData->CardType .
         $this->_postData->Last4Digits .
-        property_exists($this->_postData, 'DeclineCode') === TRUE ? $this->_postData->DeclineCode : '' .
+        (property_exists($this->_postData, 'DeclineCode') === TRUE ? $this->_postData->DeclineCode : '') .
         $this->_postData->ExpiryDate .
-        property_exists($this->_postData, 'FraudResponse') === TRUE ? $this->_postData->FraudResponse : '' .
-        property_exists($this->_postData, 'BankAuthCode') === TRUE ? $this->_postData->BankAuthCode : '';
+        (property_exists($this->_postData, 'FraudResponse') === TRUE ? $this->_postData->FraudResponse : '') .
+        (property_exists($this->_postData, 'BankAuthCode') === TRUE ? $this->_postData->BankAuthCode : '');
     }
 
     protected function _cancelOrder($order)
@@ -301,7 +299,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         }
     }
 
-    protected function _confirmPayment($transactionId, $sendEmail=true)
+    protected function _confirmPayment($transactionId, $sendEmail = true)
     {
         //invoice
         $payment = $this->_order->getPayment();
@@ -309,7 +307,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_order->place()->save();
 
         //send email
-        if($sendEmail){
+        if ($sendEmail) {
             $this->_orderSender->send($this->_order);
         }
 

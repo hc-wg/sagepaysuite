@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
 
+use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
@@ -230,7 +231,7 @@ class Request extends \Magento\Framework\App\Action\Action
         //populate payment amount information
         $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
 
-        if($this->_config->getBasketFormat() != 'Disabled') {
+        if($this->_config->getBasketFormat() != Config::BASKETFORMAT_Disabled) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
         }
 
@@ -240,10 +241,7 @@ class Request extends \Magento\Framework\App\Action\Action
         //token
         if ($this->_postData->save_token == true &&
             !empty($customer_data) &&
-            !$this->_tokenModel->isCustomerUsingMaxTokenSlots(
-                $customer_data->getId(),
-                $this->_config->getVendorname()
-            )
+            !$this->_tokenModel->isCustomerUsingMaxTokenSlots($customer_data->getId(),$this->_config->getVendorname())
         ) {
             //save token
             $data["CreateToken"] = 1;
@@ -261,25 +259,21 @@ class Request extends \Magento\Framework\App\Action\Action
         //Avs/Cvc rules
         $data["ApplyAVSCV2"] = $this->_config->getAvsCvc();
 
-        //gif aid
+        //gift aid
         $data["AllowGiftAid"] = (int)$this->_config->isGiftAidEnabled();
 
         //Paypal billing agreement
         $data["BillingAgreement"] = (int)$this->_config->getPaypalBillingAgreement();
 
-        //profile
+        //server profile
         if((bool)$this->_config->isServerLowProfileEnabled() == true){
             $data["Profile"] = "LOW";
         }
 
         //not mandatory
-//        CustomerEMail
-//        Profile
-//        AccountType
 //        CustomerXML
 //        SurchargeXML
 //        VendorData
-//        ReferrerID
 //        Language
 //        Website
 //        FIRecipientAcctNumber

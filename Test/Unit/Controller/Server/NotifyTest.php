@@ -195,7 +195,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "GiftAid" => "0",
                 "AddressStatus" => "OK",
                 "PayerStatus" => "OK",
-                "VPSSignature" => 'D41D8CD98F00B204E9800998ECF8427E'
+                "VPSSignature" => '301680A8BBDB771C67918A6599703B10'
             ]));
 
         $this->_expectSetBody(
@@ -228,7 +228,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "GiftAid" => "0",
                 "AddressStatus" => "OK",
                 "PayerStatus" => "OK",
-                "VPSSignature" => 'D41D8CD98F00B204E9800998ECF8427E'
+                "VPSSignature" => '5D0EB35B92419D489E8BC3224A17C9E3'
             ]));
 
         $this->_expectSetBody(
@@ -262,7 +262,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "GiftAid" => "0",
                 "AddressStatus" => "OK",
                 "PayerStatus" => "OK",
-                "VPSSignature" => 'D41D8CD98F00B204E9800998ECF8427E'
+                "VPSSignature" => '97EC6F77218792D1C09BEB89E7A5F0A2'
             ]));
 
         $this->_expectSetBody(
