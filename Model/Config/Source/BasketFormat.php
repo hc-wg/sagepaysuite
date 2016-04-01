@@ -27,6 +27,10 @@ class BasketFormat implements ArrayInterface
             [
                 'value' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML,
                 'label' => __('XML')
+            ],
+            [
+                'value' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Disabled,
+                'label' => __('Disabled')
             ]
         ];
     }

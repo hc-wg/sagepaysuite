@@ -125,16 +125,18 @@ class Config implements ConfigInterface
     const ReDSTATUS_CHALLENGE = 'CHALLENGE';
     const ReDSTATUS_NOTCHECKED = 'NOTCHECKED';
 
-    /*
-     * Max tokens per customer
-     */
-    const MAX_TOKENS_PER_CUSTOMER = 3;
 
     /**
      * Basket Formats
      */
     const BASKETFORMAT_Sage50 = 'Sage50';
     const BASKETFORMAT_XML = 'xml';
+    const BASKETFORMAT_Disabled = 'Disabled';
+
+    /*
+     * Max tokens per customer
+     */
+    const MAX_TOKENS_PER_CUSTOMER = 3;
 
     /**
      * Current payment method code
@@ -543,29 +545,6 @@ class Config implements ConfigInterface
         );
     }
 
-    /**
-     * @param $methodCode
-     * @return bool
-     */
-    public function isSagePaySuiteMethod($methodCode)
-    {
-        return $methodCode == self::METHOD_PAYPAL ||
-        $methodCode == self::METHOD_PI ||
-        $methodCode == self::METHOD_FORM ||
-        $methodCode == self::METHOD_SERVER ||
-        $methodCode == self::METHOD_REPEAT;
-    }
-
-    public function isSendBasket()
-    {
-        $config_value = $this->_scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("send_basket"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
-        );
-        return $config_value;
-    }
-
     public function getBasketFormat()
     {
         $config_value = $this->_scopeConfig->getValue(
@@ -581,7 +560,7 @@ class Config implements ConfigInterface
         return $this->getValue("force_xml");
     }
 
-    public function isGiftAidEnabled()
+	public function isGiftAidEnabled()
     {
         $config_value = $this->_scopeConfig->getValue(
             $this->_getAdvancedConfigPath("giftaid"),
@@ -595,4 +574,18 @@ class Config implements ConfigInterface
     {
         return $this->getValue("profile");
     }
+
+	/**
+     * @param $methodCode
+     * @return bool
+     */
+    public function isSagePaySuiteMethod($methodCode)
+    {
+        return $methodCode == self::METHOD_PAYPAL ||
+        $methodCode == self::METHOD_PI ||
+        $methodCode == self::METHOD_FORM ||
+        $methodCode == self::METHOD_SERVER ||
+        $methodCode == self::METHOD_REPEAT;
+    }
+
 }

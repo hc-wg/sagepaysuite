@@ -233,191 +233,301 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-//    public function populateBasketInformationDataProvider()
-//    {
-//        return [
-//            'test with state' => [
-//                [
-//                    'lastname' => 'Long last name 1234567891011121314151617181920',
-//                    'firstname' => 'Long first name 1234567891011121314151617181920',
-//                    'streetline' => 'address line',
-//                    'city' => 'Montevideo',
-//                    'postcode' => '1234567891011121314151617181920',
-//                    'country' => 'US',
-//                    'state' => 'MVD',
-//                    'result' => [
-//                        'BillingSurname' => "Long last name 12345",
-//                        'BillingFirstnames' => "Long first name 1234",
-//                        'BillingAddress1' => "address line",
-//                        'BillingCity' => "Montevideo",
-//                        'BillingPostCode' => "1234567891",
-//                        'BillingCountry' => "US",
-//                        'BillingState' => "MV",
-//                        'DeliverySurname' => "Long last name 12345",
-//                        'DeliveryFirstnames' => "Long first name 1234",
-//                        'DeliveryAddress1' => "address line",
-//                        'DeliveryCity' => "Montevideo",
-//                        'DeliveryPostCode' => "1234567891",
-//                        'DeliveryCountry' => "US",
-//                        'DeliveryState' => "MV",
-//                    ]
-//                ]
-//            ],
-//            'test without state' => [
-//                [
-//                    'lastname' => 'last name short',
-//                    'firstname' => 'first name short',
-//                    'streetline' => 'address line',
-//                    'city' => 'Montevideo',
-//                    'postcode' => '123456789',
-//                    'country' => 'UY',
-//                    'state' => 'MVD',
-//                    'result' => [
-//                        'BillingSurname' => "last name short",
-//                        'BillingFirstnames' => "first name short",
-//                        'BillingAddress1' => "address line",
-//                        'BillingCity' => "Montevideo",
-//                        'BillingPostCode' => "123456789",
-//                        'BillingCountry' => "UY",
-//                        'DeliverySurname' => "last name short",
-//                        'DeliveryFirstnames' => "first name short",
-//                        'DeliveryAddress1' => "address line",
-//                        'DeliveryCity' => "Montevideo",
-//                        'DeliveryPostCode' => "123456789",
-//                        'DeliveryCountry' => "UY"
-//                    ]
-//                ]
-//            ]
-//        ];
-//    }
-//
-//    /**
-//     * @dataProvider populateBasketInformationDataProvider
-//     */
-//    public function testPopulateBasketInformationXml()
-//    {
-//        $basket = array(
-//            'BasketXML' => ''
-//        );
-//
-//
-//        $this->quoteMock->expects($this->any())
-//            ->method('getShippingAddress')
-//            ->will($this->returnValue($this->addressMock));
-//        $this->quoteMock->expects($this->any())
-//            ->method('getBillingAddress')
-//            ->will($this->returnValue($this->addressMock));
-//
-//        $itemMock = $this
-//            ->getMockBuilder('Magento\Quote\Model\ResourceModel\Quote\Item')
-//            ->disableOriginalConstructor()
-//            ->getMock();
-//
-//        $items = array($itemMock, $itemMock);
-//
-//        $this->quoteMock->expects($this->any())
-//            ->method('getItemsCollection')
-//            ->will($this->returnValue($items));
-//        $this->itemsCollectionMock->expects($this->any())
-//            ->method('getIterator')
-//            ->will($this->returnValue(new \ArrayIterator($items)));
-//
-//        $this->scopeConfigMock->expects($this->any())
-//        ->method('getBasketFormat')
-//        ->willReturn(\Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML);
-//
-//        $this->assertEquals(
-//            $basket,
-//            $this->requestHelper->populateBasketInformation($this->quoteMock)
-//        );
-//
-//    }
-
-    public function testPopulateBasketInformation()
+    public function populateBasketInformationDataProvider()
     {
-//        $basket = array(
-//            'Basket' => '2:[WSH08-28-Purple] SybilRunningShort:1:44:0.000:44:44:BestWay-TableRate:1:15:0:15:15'
-//        );
-
-//        $this->quoteMock->expects($this->any())
-//            ->method('getShippingAddress')
-//            ->will($this->returnValue($this->addressMock));
-
-//        $this->addressMock->expects($this->once())
-//            ->method('getShippingDescription')
-//            ->willReturn('hola');
-
-//        $this->addressMock->expects($this->once())
-//            ->method('getShippingAmount')
-//            ->willReturn($this->returnValue($this->addressMock));
-
-//        $this->addressMock->expects($this->once())
-//            ->method('getShippingTaxAmount')
-//            ->willReturn($this->returnValue($this->addressMock));
-
-//        $this->addressMock->expects($this->once())
-//            ->method('getShippingInclTax')
-//            ->willReturn($this->returnValue($this->addressMock));
-
-
-//        $itemMock = $this
-//            ->getMockBuilder('Magento\Quote\Model\Quote\Item')
-//            ->disableOriginalConstructor()
-//            ->getMock();
-//
-//        $items[] = $itemMock;
-
-//        $this->itemsCollectionMock->expects($this->once())
-//            ->method('getItems')
-//            ->will($this->returnValue($items));
-
-//        $this->quoteMock->expects($this->once())
-//            ->method('getItemsCollection')
-//            ->willReturn($this->returnValue($this->itemsCollectionMock));
-
-//        $this->itemsCollectionMock->expects($this->once())
-//            ->method('getIterator')
-//            ->will($this->returnValue(new \ArrayIterator($items)));
-
-//        $this->quoteMock->expects($this->once())
-//            ->method('')
-//            ->willReturn();
-
-//        $this->scopeConfigMock->expects($this->once())
-//            ->method('getBasketFormat')
-//            ->willReturn(\Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50);
-
-//        $this->assertEquals(
-//            true,
-        //$this->requestHelper->populateBasketInformation($this->quoteMock);
-//        );
+        return [
+            'test Sage50' =>
+                [
+                    [
+                        'lines' => 2,
+                        'sku' => 'WSH08-28-Purple',
+                        'name' => 'SybilRunningShort',
+                        'qty' => 1,
+                        'priceInclTax' => 44,
+                        'taxAmount' => 0,
+                        'shippingDescription' => 'BestWay-TableRate',
+                        'shippingAmount' => 15,
+                        'shippingTaxAmount' => 0,
+                        'parentItem' => false,
+                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50,
+                        'id' => null,
+                        'firstName' => null,
+                        'lastName' => null,
+                        'middleName' => null,
+                        'prefix' => null,
+                        'email' => null,
+                        'telephone' => null,
+                        'streetLine' => null,
+                        'city' => null,
+                        'regionCode' => null,
+                        'country' => null,
+                        'postCode' => null,
+                        'fax' => null,
+                        'isMultishipping' => null,
+                        'allAddresses' => null,
+                        'method' => null,
+                    ]
+                ]
+            ,
+            'test XML' =>
+                [
+                    [
+                        'name' => 'SybilRunningShort',
+                        'sku' => 'WSH08-28-Pur',
+                        'id' => null,
+                        'qty' => 1,
+                        'taxAmount' => 0,
+                        'total' => 16,
+                        'firstName' => 'first name',
+                        'lastName' => 'last name',
+                        'middleName' => 'm',
+                        'prefix' => 'pref',
+                        'email' => 'email',
+                        'telephone' => '123456',
+                        'streetLine' => 'streetLine',
+                        'city' => 'city',
+                        'country' => 'co',
+                        'postCode' => '11222',
+                        'shippingAmount' => 15,
+                        'shippingTaxAmount' => 1,
+                        'priceInclTax' => 16,
+                        'fax' => '11222',
+                        'parentItem' => false,
+                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML,
+                        'shippingDescription' => 'desc',
+                        'regionCode' => 'rc',
+                        'allAddresses' => array(),
+                        'isMultishipping' => false,
+                        'method' => 'sagepayserver',
+                    ]
+                ]
+        ];
     }
 
-//    public function testPopulateBasketInformationSage50_ForceXml()
-//    {
-//        $basket = array(); //BasketXML
-//
-//        $this->quoteMock->expects($this->any())
-//            ->method('getShippingAddress')
-//            ->will($this->returnValue($this->addressMock));
-//        $this->quoteMock->expects($this->any())
-//            ->method('getBillingAddress')
-//            ->will($this->returnValue($this->addressMock));
-//        $this->quoteMock->expects($this->any())
-//            ->method('getItemsCollection')
-//            ->will($this->returnValue($this->itemsCollectionMock));
-//
-//        $this->scopeConfigMock->expects($this->any())
-//            ->method('getBasketFormat')
-//            ->willReturn(\Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50);
-//
-//        $this->assertEquals(
-//            $basket,
-//            $this->requestHelper->populateBasketInformation($this->quoteMock, true)
-//        );
-//    }
+    /**
+     * @dataProvider populateBasketInformationDataProvider
+     * @param $data
+     */
+    public function testPopulateBasketInformation($data)
+    {
+        $basket = null;
 
-    public function testGetReferrerId()
+        if ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50)
+        {
+            //TODO: esto se puede mejorar para que no sea tan fijo a este caso
+            $basket = array(
+                'Basket' =>
+                    $data['lines'] . ':' . '[' .
+                    $data['sku'] . '] ' .
+                    $data['name'] . ':' .
+                    $data['qty'] . ':' .
+                    $data['priceInclTax'] . ':' .
+                    number_format($data['taxAmount'], 3) . ':' .
+                    $data['priceInclTax'] * $data['qty'] . ':' .
+                    $data['priceInclTax'] * $data['qty'] . ':' .
+                    $data['shippingDescription'] . ':' .
+                    '1' . ':' .
+                    $data['shippingAmount'] . ':' .
+                    $data['shippingTaxAmount'] . ':' .
+                    ($data['shippingAmount'] + $data['shippingTaxAmount']) . ':' .
+                    ($data['shippingAmount'] + $data['shippingTaxAmount'])
+            );
+        }
+        elseif ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML)
+        {
+            //TODO: <productCode/>????
+            $basket = array(
+                'BasketXML' =>
+                    '<?xml version="1.0" encoding="utf-8"?>' .
+                    '<basket>' .
+                    '<item>' .
+                            '<description>' . $data['name'] . '</description>' .
+                            '<productSku>' . $data['sku'] . '</productSku>' .
+                            '<productCode/>' .
+                            '<quantity>' . $data['qty'] . '</quantity>' .
+                            '<unitNetAmount>' . number_format($data['priceInclTax'], 2) . '</unitNetAmount>' .
+                            '<unitTaxAmount>' . number_format($data['taxAmount'], 2) . '</unitTaxAmount>' .
+                            '<unitGrossAmount>' . number_format($data['total'], 2) . '</unitGrossAmount>' .
+                            '<totalGrossAmount>' . number_format($data['total'], 2) . '</totalGrossAmount>' .
+                            '<recipientFName>' . $data['firstName'] . '</recipientFName>' .
+                            '<recipientLName>' . $data['lastName'] . '</recipientLName>' .
+                            '<recipientMName>' . $data['middleName'] . '</recipientMName>' .
+                            '<recipientSal>' . $data['prefix'] . '</recipientSal>' .
+                            '<recipientEmail>' . $data['email'] . '</recipientEmail>' .
+                            '<recipientPhone>' . $data['telephone'] . '</recipientPhone>' .
+                            '<recipientAdd1>' . $data['streetLine'] . '</recipientAdd1>' .
+                            '<recipientAdd2>' . $data['streetLine'] . '</recipientAdd2>' .
+                            '<recipientCity>' . $data['city'] . '</recipientCity>' .
+                            '<recipientCountry>' . $data['country'] . '</recipientCountry>' .
+                            '<recipientPostCode>' . $data['postCode'] . '</recipientPostCode>' .
+                        '</item>' .
+                        '<deliveryNetAmount>' . number_format($data['shippingAmount'], 2) . '</deliveryNetAmount>' .
+                        '<deliveryTaxAmount>' . number_format($data['shippingTaxAmount'], 2) . '</deliveryTaxAmount>' .
+                        '<deliveryGrossAmount>' . number_format($data['priceInclTax'], 2) . '</deliveryGrossAmount>' .
+                        '<shippingFaxNo>' . $data['fax'] . '</shippingFaxNo>' .
+                    '</basket>'
+            );
+        }
+
+        $addressMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote\Address')
+            ->disableOriginalConstructor()
+            ->setMethods(array(
+                'getShippingDescription',
+                'getShippingAmount',
+                'getShippingTaxAmount',
+                'getFirstname',
+                'getLastname',
+                'getMiddlename',
+                'getPrefix',
+                'getEmail',
+                'getTelephone',
+                'getStreetLine',
+                'getCity',
+                'getRegionCode',
+                'getCountry',
+                'getPostcode',
+                'getFax'
+            ))->getMock();
+          $addressMock->expects($this->any())
+             ->method('getShippingDescription')
+             ->willReturn($data['shippingDescription']);
+         $addressMock->expects($this->any())
+             ->method('getShippingAmount')
+             ->willReturn($data['shippingAmount']);
+         $addressMock->expects($this->any())
+             ->method('getShippingTaxAmount')
+             ->willReturn($data['shippingTaxAmount']);
+        //no?
+         $addressMock->expects($this->any())
+             ->method('getFirstname')
+             ->willReturn($data['firstName']);
+         $addressMock->expects($this->any())
+             ->method('getLastname')
+             ->willReturn($data['lastName']);
+         $addressMock->expects($this->any())
+             ->method('getMiddlename')
+             ->willReturn($data['middleName']);
+         $addressMock->expects($this->any())
+             ->method('getPrefix')
+             ->willReturn($data['prefix']);
+        $addressMock->expects($this->any())
+            ->method('getEmail')
+            ->willReturn($data['email']);
+        $addressMock->expects($this->any())
+            ->method('getTelephone')
+            ->willReturn($data['telephone']);
+        $addressMock->expects($this->any())
+            ->method('getStreetLine')
+            ->willReturn($data['streetLine']);
+//TODO: Separate line 1 and line 2
+//        $addressMock->expects($this->any())
+//            ->method('getStreetLine')
+//            ->with(2)
+//            ->willReturn($data['streetLine1']);
+       $addressMock->expects($this->any())
+            ->method('getCity')
+            ->willReturn($data['city']);
+      $addressMock->expects($this->any())
+            ->method('getRegionCode')
+            ->willReturn($data['regionCode']);
+      $addressMock->expects($this->any())
+            ->method('getCountry')
+            ->willReturn($data['country']);
+      $addressMock->expects($this->any())
+            ->method('getPostcode')
+            ->willReturn($data['postCode']);
+      $addressMock->expects($this->any())
+            ->method('getFax')
+            ->willReturn($data['fax']);
+
+        $itemMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote\Item')
+            ->setMethods(array(
+                'getParentItem',
+                'getQty',
+                'getTaxAmount',
+                'getPriceInclTax',
+                'getSku',
+                'getName',
+                'getId'
+            ))
+            ->disableOriginalConstructor()
+            ->getMock();
+        $itemMock->expects($this->any())
+            ->method('getParentItem')
+            ->willReturn($data['parentItem']);
+        $itemMock->expects($this->any())
+            ->method('getQty')
+            ->willReturn($data['qty']);
+        $itemMock->expects($this->any())
+            ->method('getTaxAmount')
+            ->willReturn($data['taxAmount']);
+        $itemMock->expects($this->any())
+            ->method('getPriceInclTax')
+            ->willReturn($data['priceInclTax']);
+        $itemMock->expects($this->any())
+            ->method('getSku')
+            ->willReturn($data['sku']);
+        $itemMock->expects($this->any())
+            ->method('getName')
+            ->willReturn($data['name']);
+        $itemMock->expects($this->any())
+            ->method('getId')
+            ->willReturn($data['id']);
+
+        $items[] = $itemMock;
+
+        $itemsCollectionMock = $this
+            ->getMockBuilder('Magento\Quote\Model\ResourceModel\Quote\Item\Collection')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $itemsCollectionMock->expects($this->any())
+            ->method('getIterator')
+            ->willReturn(new \ArrayIterator($items));
+
+        $payment = $this
+            ->getMockBuilder('\Magento\Quote\Model\Quote\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $payment->expects($this->any())
+            ->method('getMethod')
+            ->willReturn($data['method']);
+
+        $quoteMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $quoteMock->expects($this->any())
+            ->method('getItemsCollection')
+            ->willReturn($itemsCollectionMock);
+        $quoteMock->expects($this->any())
+            ->method('getShippingAddress')
+            ->willReturn($addressMock);
+        $quoteMock->expects($this->any())
+            ->method('getBillingAddress')
+            ->willReturn($addressMock);
+        $quoteMock->expects($this->any())
+            ->method('getIsMultiShipping')
+            ->willReturn($data['isMultishipping']);
+        $quoteMock->expects($this->any())
+            ->method('getPayment')
+            ->willReturn($payment);
+        $quoteMock->expects($this->any())
+            ->method('getAllAddresses')
+            ->willReturn($data['allAddresses']);
+
+         $this->_configMock->expects($this->any())
+             ->method('getBasketFormat')
+             ->willReturn($data['format']);
+
+        $this->assertEquals(
+            $basket, $this->requestHelper->populateBasketInformation($quoteMock)
+         );
+
+     }
+
+	public function testGetReferrerId()
     {
         $this->assertEquals(
             __("01bf51f9-0dcd-49dd-a07a-3b1f918c77d7"),
@@ -425,3 +535,4 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         );
     }
 }
+
