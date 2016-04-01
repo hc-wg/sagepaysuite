@@ -15,7 +15,9 @@ define([
     /**
      * Disable card server validation in admin
      */
-    order.addExcludedPaymentMethod('sagepaysuiterepeat');
+    if(order){
+        order.addExcludedPaymentMethod('sagepaysuiterepeat');
+    }
 
     $.widget('mage.sagepaysuiteRepeatForm', {
         options: {

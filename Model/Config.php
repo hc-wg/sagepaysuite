@@ -399,13 +399,17 @@ class Config implements ConfigInterface
      * return 3D secure rules setting
      * @return string
      */
-    public function get3Dsecure()
+    public function get3Dsecure($forceDisable=false)
     {
         $config_value = $this->_scopeConfig->getValue(
             $this->_getAdvancedConfigPath("threedsecure"),
             ScopeInterface::SCOPE_STORE,
             $this->_storeId
         );
+
+        if($forceDisable){
+            $config_value = self::MODE_3D_DISABLE;
+        }
 
         if($this->_methodCode == self::METHOD_PI) {
             return $config_value;

@@ -221,7 +221,7 @@ class Request extends \Magento\Backend\App\AbstractAction
                 'country' => $billing_address->getCountryId()
             ],
             'entryMethod' => "Ecommerce",
-            'apply3DSecure' => Config::MODE_3D_DISABLE,
+            'apply3DSecure' => $this->_config->get3Dsecure(true),
             'applyAvsCvcCheck' => $this->_config->getAvsCvc()
         ];
 

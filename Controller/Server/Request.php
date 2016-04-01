@@ -36,11 +36,6 @@ class Request extends \Magento\Framework\App\Action\Action
     protected $_suiteLogger;
 
     /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $_logger;
-
-    /**
      * @var string
      */
     protected $_assignedVendorTxCode;
@@ -90,7 +85,6 @@ class Request extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
         Logger $suiteLogger,
-        \Psr\Log\LoggerInterface $logger,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
@@ -107,7 +101,6 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_customerSession = $customerSession;
         $this->_quote = $this->_checkoutSession->getQuote();
         $this->_suiteLogger = $suiteLogger;
-        $this->_logger = $logger;
         $this->_checkoutHelper = $checkoutHelper;
         $this->_requestHelper = $requestHelper;
         $this->_tokenModel = $tokenModel;
@@ -171,7 +164,7 @@ class Request extends \Magento\Framework\App\Action\Action
             }
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
 
-            $this->_logger->critical($apiException);
+            $this->_suiteLogger->logException($apiException);
 
             $responseContent = [
                 'success' => false,
@@ -179,7 +172,7 @@ class Request extends \Magento\Framework\App\Action\Action
             ];
         } catch (\Exception $e) {
 
-            $this->_logger->critical($e);
+            $this->_suiteLogger->logException($e);
 
             $responseContent = [
                 'success' => false,
