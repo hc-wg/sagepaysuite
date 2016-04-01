@@ -141,6 +141,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $requestHelperMock->expects($this->any())
             ->method('getOrderDescription')
             ->will($this->returnValue("description"));
+        $requestHelperMock->expects($this->any())
+            ->method('populateBasketInformation')
+            ->will($this->returnValue([]));
 
         $cryptMock = $this
             ->getMockBuilder('Crypt_AES')
@@ -166,7 +169,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteOK()
     {
-        $this->_configMock->expects($this->any())
+        $this->_configMock->expects($this->once())
             ->method('getFormEncryptedPassword')
             ->will($this->returnValue("1234567890"));
 

@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\Form;
 
+use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
@@ -94,7 +95,10 @@ class Request extends \Magento\Backend\App\AbstractAction
                 'crypt' => $this->_generateFormCrypt()
             ];
 
-        }  catch (\Exception $e) {
+        }  catch (\Exception $e)
+        {
+            $this->_suiteLogger->logException($e);
+
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $e->getMessage()),
@@ -121,7 +125,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         //referrer id
         $data["ReferrerID"] = $this->_requestHelper->getReferrerId();
 
-        if($this->_config->isSendBasket()) {
+        if($this->_config->getBasketFormat() != Config::BASKETFORMAT_Disabled) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
         }
 

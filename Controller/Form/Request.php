@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Form;
 
+use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
@@ -126,7 +127,7 @@ class Request extends \Magento\Framework\App\Action\Action
         //referrer id
         $data["ReferrerID"] = $this->_requestHelper->getReferrerId();
 
-        if($this->_config->getBasketFormat() != 'Disabled') {
+        if($this->_config->getBasketFormat() != Config::BASKETFORMAT_Disabled) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
         }
 

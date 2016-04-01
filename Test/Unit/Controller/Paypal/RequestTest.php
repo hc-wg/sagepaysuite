@@ -141,6 +141,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $requestHelperMock->expects($this->any())
             ->method('getOrderDescription')
             ->will($this->returnValue("description"));
+        $requestHelperMock->expects($this->any())
+            ->method('populateBasketInformation')
+            ->will($this->returnValue([]));
 
         $this->_postApiMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Post')
