@@ -1,3 +1,26 @@
+1.1.4 (01/04/2016)
+=============
+* New Features
+    * Tokens Report in backend.
+    * Fraud Report in backend.
+    * Fraud score automations.
+    * Unit-testing coverage of 80%.
+    * Basket in all requests, XML and Sage50 compatible.
+    * Currency configuration options.
+    * Transaction details can now be synced from Sage Pay API from backend.
+    * REPEAT MOTO integration.
+    * FORM MOTO integration.
+    * Euro Payments now supported with SERVER integration.
+* Improvements
+    * Max tokens per customer limitation (3).
+    * Paypal "processing payment" page.
+    * SERVER nice and shinny "slide" modal mode.
+    * Translations backbone.
+    * SERVER VPS hash validation.
+    * Recover quote when end user clicks on back button after order was pre saved.
+* Bugfixes
+    * Various fixes to meet magento2 coding standarts.
+
 1.1.2 (01/02/2016)
 =============
 * New Features
