@@ -1,3 +1,11 @@
+1.1.5 (09/05/2016)
+=============
+* New Features
+    * License and Reporting credentials validated in config.
+* Bugfixes
+    * Compilation error with fraud helper in version 2.0.4.
+    * Filename of fraud grid in admin with lowercase letter.
+
 1.1.4 (01/04/2016)
 =============
 * New Features
