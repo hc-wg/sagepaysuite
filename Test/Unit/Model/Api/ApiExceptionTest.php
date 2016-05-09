@@ -66,7 +66,7 @@ class ApiExceptionTest extends \PHPUnit_Framework_TestCase
                 [
                     'message' => "INVALID",
                     'code' => \Ebizmarts\SagePaySuite\Model\Api\ApiException::INVALID_USER_AUTH,
-                    'expected' => "Your Sage Pay API user/password is invalid or it might be locked out."
+                    'expected' => "Your Sage Pay API user/password is invalid or the user might be locked out."
                 ]
             ],
             'test default' => [

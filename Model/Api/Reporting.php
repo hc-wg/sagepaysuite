@@ -110,7 +110,6 @@ class Reporting
      */
     protected function _getXmlSignature($command, $params)
     {
-
         $xml = '<command>' . $command . '</command>';
         $xml .= '<vendor>' . $this->_config->getVendorname() . '</vendor>';
         $xml .= '<user>' . $this->_config->getReportingApiUser() . '</user>';
@@ -227,6 +226,18 @@ class Reporting
     {
         $params = '<vpstxid>' . $vpstxid . '</vpstxid>';
         $xml = $this->_createXml('getFraudScreenDetail', $params);
+        return $this->_handleApiErrors($this->_executeRequest($xml));
+    }
+
+    /**
+     * Get version of Reporting API (Used to validate credentials)
+     *
+     * @return mixed
+     * @throws
+     */
+    public function getVersion()
+    {
+        $xml = $this->_createXml('version');
         return $this->_handleApiErrors($this->_executeRequest($xml));
     }
 

@@ -6,7 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-use Magento\Payment\Model\Method\ConfigInterface;
 use Magento\Payment\Model\MethodInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
@@ -15,7 +14,7 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 /**
  * Class Config to handle all sagepay integrations configs
  */
-class Config implements ConfigInterface
+class Config
 {
     /**
      * SagePay VPS protocol
@@ -178,6 +177,11 @@ class Config implements ConfigInterface
     protected $_suiteLogger;
 
     /**
+     * @var ScopeConfigInterface
+     */
+    protected $_scopeConfig;
+
+    /**
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      */
     public function __construct(
@@ -189,7 +193,6 @@ class Config implements ConfigInterface
         $this->_scopeConfig = $scopeConfig;
         $this->_storeManager = $storeManager;
         $this->_suiteLogger = $suiteLogger;
-        $this->getCurrencyCode();
     }
 
     /**
@@ -226,6 +229,9 @@ class Config implements ConfigInterface
         }
 
         $path = $this->_getSpecificConfigPath($key);
+
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$path . " - " . ScopeInterface::SCOPE_STORE . " - " . $storeId);
+
         if ($path !== null) {
             $value = $this->_scopeConfig->getValue(
                 $path,
@@ -235,6 +241,18 @@ class Config implements ConfigInterface
             return $value;
         }
         return null;
+    }
+
+    /**
+     * Store ID setter
+     *
+     * @param int $storeId
+     * @return $this
+     */
+    public function setStoreId($storeId)
+    {
+        $this->_storeId = (int)$storeId;
+        return $this;
     }
 
     /**
@@ -338,6 +356,9 @@ class Config implements ConfigInterface
         );
     }
 
+    /**
+     * @return null|string
+     */
     public function getFormEncryptedPassword()
     {
         return $this->getValue("encrypted_password");
@@ -387,14 +408,6 @@ class Config implements ConfigInterface
     public function getPIKey()
     {
         return $this->getValue("key");
-    }
-
-    /**
-     * @param string $pathPattern
-     */
-    public function setPathPattern($pathPattern)
-    {
-        //dummy interface method not being used
     }
 
     /**

@@ -1,6 +1,6 @@
 # Sage Pay Suite integration for Magento 2
 
-[CHANGELOG](https://github.com/ebizmarts/magento2-sage-pay-suite/blob/master/CHANGELOG.md)
+[CHANGELOG](https://github.com/ebizmarts/magento2-sage-pay-suite/blob/devel_martin/CHANGELOG.md)
 
 ## Installation Instructions
 

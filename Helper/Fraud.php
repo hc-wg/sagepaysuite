@@ -29,11 +29,6 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
     protected $_mailTransportBuilder;
 
     /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     */
-    protected $scopeConfig;
-
-    /**
      * \Ebizmarts\SagePaySuite\Model\Api\Reporting
      */
     protected $_reportingApi;
@@ -48,7 +43,6 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Magento\Framework\Mail\Template\TransportBuilder $mailTransportBuilder,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi
     )
     {
@@ -56,7 +50,6 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         $this->_suiteLogger = $suiteLogger;
         $this->_config = $config;
         $this->_mailTransportBuilder = $mailTransportBuilder;
-        $this->scopeConfig = $scopeConfig;
         $this->_reportingApi = $reportingApi;
     }
 

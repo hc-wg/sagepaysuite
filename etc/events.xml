@@ -9,4 +9,7 @@
     <event name="controller_action_predispatch_checkout_cart_index">
         <observer name="sagepaysuite_checkout_cart_index" instance="Ebizmarts\SagePaySuite\Observer\CheckoutCartIndex" />
     </event>
+    <event name="controller_action_predispatch_adminhtml_system_config_edit">
+        <observer name="sagepaysuite_system_config_edit" instance="Ebizmarts\SagePaySuite\Observer\SystemConfigEdit" />
+    </event>
 </config>

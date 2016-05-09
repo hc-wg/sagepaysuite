@@ -41,11 +41,6 @@ class Request extends \Magento\Backend\App\AbstractAction
     protected $_requestHelper;
 
     /**
-     * @var \Crypt_AES
-     */
-    protected $_crypt;
-
-    /**
      * @var \Magento\Backend\Model\Session\Quote
      */
     protected $_quoteSession;
@@ -56,7 +51,6 @@ class Request extends \Magento\Backend\App\AbstractAction
      * @param Logger $suiteLogger
      * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
      * @param \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
-     * @param \Crypt_AES $crypt
      * @param \Magento\Backend\Model\Session\Quote $quoteSession
      */
     public function __construct(
@@ -65,7 +59,6 @@ class Request extends \Magento\Backend\App\AbstractAction
         Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
-        \Crypt_AES $crypt,
         \Magento\Backend\Model\Session\Quote $quoteSession
     )
     {
@@ -75,7 +68,6 @@ class Request extends \Magento\Backend\App\AbstractAction
         $this->_suiteHelper = $suiteHelper;
         $this->_suiteLogger = $suiteLogger;
         $this->_requestHelper = $requestHelper;
-        $this->_crypt = $crypt;
         $this->_quoteSession = $quoteSession;
         $this->_quote = $this->_quoteSession->getQuote();
     }
@@ -167,10 +159,22 @@ class Request extends \Magento\Backend\App\AbstractAction
             }
         }
 
-        $this->_crypt->setBlockLength(128);
-        $this->_crypt->setKey($encrypted_password);
-        $this->_crypt->setIV($encrypted_password);
-        $crypt = $this->_crypt->encrypt($preCryptString);
+//        $this->_crypt->setBlockLength(128);
+//        $this->_crypt->setKey($encrypted_password);
+//        $this->_crypt->setIV($encrypted_password);
+//        $crypt = $this->_crypt->encrypt($preCryptString);
+
+        //** add PKCS5 padding to the text to be encypted
+        //$pkcs5Data = $this->addPKCS5Padding($preCryptString);
+
+//        $encryptor = new \Magento\Framework\Encryption\Crypt($encrypted_password, MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC, $encrypted_password);
+//        $crypt = $encryptor->encrypt($pkcs5Data);
+
+        $encryptor = new \Crypt_AES(CRYPT_AES_MODE_CBC);
+        $encryptor->setBlockLength(128);
+        $encryptor->setKey($encrypted_password);
+        $encryptor->setIV($encrypted_password);
+        $crypt = $encryptor->encrypt($preCryptString);
 
         return "@" . bin2hex($crypt);
     }

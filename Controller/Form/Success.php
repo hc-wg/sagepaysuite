@@ -152,7 +152,7 @@ class Success extends \Magento\Framework\App\Action\Action
                 //send email
                 $this->_checkoutHelper->sendOrderEmail($order);
             }else{
-                throw new \Magento\Framework\Exception\LocalizedException('Can not create order');
+                throw new \Magento\Framework\Exception\LocalizedException(__('Can not create order'));
             }
 
             $payment = $order->getPayment();

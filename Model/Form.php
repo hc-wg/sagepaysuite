@@ -126,11 +126,6 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     protected $_sharedApi;
 
     /**
-     * @var \Crypt_AES
-     */
-    protected $_crypt;
-
-    /**
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory
@@ -141,7 +136,6 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      * @param Api\Shared $sharedApi
      * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
      * @param Config $config
-     * @param \Crypt_AES $crypt
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
      * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
      * @param array $data
@@ -157,7 +151,6 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Crypt_AES $crypt,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
@@ -177,7 +170,6 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         );
 
         $this->_suiteHelper = $suiteHelper;
-        $this->_crypt = $crypt;
         $this->_sharedApi = $sharedApi;
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
@@ -285,10 +277,20 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
             $strIn = substr($crypt, 1);
             //** HEX decoding
             $strIn = pack('H*', $strIn);
-            $this->_crypt->setBlockLength(128);
-            $this->_crypt->setKey($cryptPass);
-            $this->_crypt->setIV($cryptPass);
-            $strDecoded = $this->_crypt->decrypt($strIn);
+//            $this->_crypt->setBlockLength(128);
+//            $this->_crypt->setKey($cryptPass);
+//            $this->_crypt->setIV($cryptPass);
+//            $strDecoded = $this->_crypt->decrypt($strIn);
+
+//            $crypt = new \Magento\Framework\Encryption\Crypt($cryptPass, MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC, $cryptPass);
+//            $strDecoded = $crypt->decrypt($strIn);
+
+            $decryptor = new \Crypt_AES(CRYPT_AES_MODE_CBC);
+            $decryptor->setBlockLength(128);
+            $decryptor->setKey($cryptPass);
+            $decryptor->setIV($cryptPass);
+            $strDecoded = $decryptor->decrypt($strIn);
+
             /**
              * END DECRYPT
              */

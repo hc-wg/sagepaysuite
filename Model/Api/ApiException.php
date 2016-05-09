@@ -14,6 +14,8 @@ class ApiException extends LocalizedException
     /**
      * Error code returned by SagePay
      */
+
+    const INVALID_SIGNATURE = '0010';
     const VALID_VALUE_REQUIRED = '3002';
     const API_INVALID_IP = '4020';
     const INVALID_MERCHANT_AUTHENTICATION = '1002';
@@ -40,26 +42,25 @@ class ApiException extends LocalizedException
     {
         switch ($this->getCode()) {
             case self::API_INVALID_IP:
-                $message = __(
-                    'Information received from an invalid IP address.'
-                );
+                $message = __('Information received from an invalid IP address.');
+                break;
+            case self::INVALID_SIGNATURE:
+                $message = __('Invalid Sage Pay API credentials.');
                 break;
             case self::VALID_VALUE_REQUIRED:
-                if(strpos($this->getMessage(),"vpstxid") !== FALSE){
+                if (strpos($this->getMessage(), "vpstxid") !== FALSE) {
                     $message = __('Transaction NOT found / Invalid transaction Id.');
-                }else{
+                } else if (strpos($this->getMessage(), "username") !== FALSE) {
+                    $message = __('Invalid Sage Pay API credentials.');
+                } else {
                     $message = __($this->getMessage());
                 }
                 break;
             case self::INVALID_MERCHANT_AUTHENTICATION:
-                $message = __(
-                    'Invalid merchant authentication.'
-                );
+                $message = __('Invalid merchant authentication.');
                 break;
             case self::INVALID_USER_AUTH:
-                $message = __(
-                    'Your Sage Pay API user/password is invalid or it might be locked out.'
-                );
+                $message = __('Your Sage Pay API user/password is invalid or the user might be locked out.');
                 break;
             default:
                 $message = __($this->getMessage());
