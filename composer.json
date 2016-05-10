@@ -1,11 +1,11 @@
 {
     "name": "ebizmarts/sagepaysuite",
-    "description": "SagePay's payment gateway integration for Europe.",
+    "description": "Sage Pay's payment gateway integration for Europe.",
     "require": {
         "php": "5.5.*"
     },
     "type": "magento2-module",
-    "version": "1.1.2",
+    "version": "1.1.5",
     "autoload": {
         "psr-4": {"Ebizmarts\\SagePaySuite\\":""},
         "files": ["registration.php"]
