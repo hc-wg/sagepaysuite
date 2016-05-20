@@ -250,7 +250,8 @@ class Request extends \Magento\Framework\App\Action\Action
             ],
             'entryMethod' => "Ecommerce",
             'apply3DSecure' => $this->_config->get3Dsecure(),
-            'applyAvsCvcCheck' => $this->_config->getAvsCvc()
+            'applyAvsCvcCheck' => $this->_config->getAvsCvc(),
+            'referrerId' => $this->_requestHelper->getReferrerId()
         ];
 
         //populate payment amount information

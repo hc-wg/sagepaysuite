@@ -26,7 +26,7 @@ define(
                 $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
             }
 
-            if (piConfig && !piConfig.mode && piConfig.mode == 'live') {
+            if (piConfig && piConfig.mode && piConfig.mode == 'live') {
                 var sagepayjs = require(['sagepayjs_live']);
             } else {
                 var sagepayjs = require(['sagepayjs_test']);
