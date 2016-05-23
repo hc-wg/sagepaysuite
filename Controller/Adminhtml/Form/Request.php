@@ -77,6 +77,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         try {
             $this->_quote->collectTotals();
             $this->_quote->reserveOrderId();
+            $this->_quote->save();
 
             $responseContent = [
                 'success' => true,
@@ -124,10 +125,10 @@ class Request extends \Magento\Backend\App\AbstractAction
         $data['SuccessURL'] = $this->_backendUrl->getUrl('*/*/success');
         $data['FailureURL'] = $this->_backendUrl->getUrl('*/*/failure');
 
-        //not mandatory
-//        $data['VendorEMail']
-//        $data['SendEMail']
-//        $data['EmailMessage']
+        //email details
+        $data['VendorEMail'] = $this->_config->getFormVendorEmail();
+        $data['SendEMail'] = $this->_config->getFormSendEmail();
+        $data['EmailMessage'] = substr($this->_config->getFormEmailMessage(), 0, 7500);
 
         //populate payment amount information
         $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));

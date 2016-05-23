@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Helper;
 
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 
@@ -59,6 +60,12 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
     protected $_checkoutSession;
 
     /**
+     * Logging instance
+     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     */
+    protected $_suiteLogger;
+
+    /**
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Magento\Quote\Model\QuoteManagement $quoteManagement
      * @param OrderSender $orderSender
@@ -68,6 +75,7 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
      * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
      * @param \Magento\Framework\DataObject\Copy $objectCopyService
      * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param Logger $suiteLogger
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -78,7 +86,8 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\Api\DataObjectHelper $dataObjectHelper,
         \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
         \Magento\Framework\DataObject\Copy $objectCopyService,
-        \Magento\Checkout\Model\Session $checkoutSession
+        \Magento\Checkout\Model\Session $checkoutSession,
+        Logger $suiteLogger
     )
     {
         parent::__construct($context);
@@ -90,6 +99,7 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
         $this->_customerRepository = $customerRepository;
         $this->_dataObjectHelper = $dataObjectHelper;
         $this->_checkoutSession = $checkoutSession;
+        $this->_suiteLogger = $suiteLogger;
         $this->_quote = $this->_checkoutSession->getQuote();
     }
 

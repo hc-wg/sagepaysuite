@@ -36,6 +36,12 @@ $payment = $block->getPayment();
                     <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("vendorTxCode")); ?></td>
                 </tr>
             <?php } ?>
+            <?php if ($payment->getAdditionalInformation("mode")) { ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('Mode')); ?>:</th>
+                    <td><?php echo strtoupper($block->escapeHtml($payment->getAdditionalInformation("mode"))); ?></td>
+                </tr>
+            <?php } ?>
             <?php if ($payment->getAdditionalInformation("statusDetail")) {
                 $statusDetail = $payment->getAdditionalInformation("statusDetail");
                 if (strrpos($payment->getAdditionalInformation("statusDetail"), " : ") !== FALSE) {

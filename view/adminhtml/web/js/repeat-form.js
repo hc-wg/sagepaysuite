@@ -15,7 +15,8 @@ define([
     /**
      * Disable card server validation in admin
      */
-    if(order){
+    if (typeof variable !== 'undefined')
+    {
         order.addExcludedPaymentMethod('sagepaysuiterepeat');
     }
 

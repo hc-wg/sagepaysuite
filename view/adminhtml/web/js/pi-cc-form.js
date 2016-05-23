@@ -13,7 +13,7 @@ define([
     "use strict";
 
     //load sagepay library
-    if(sagepaysuitepi_config && !sagepaysuitepi_config.mode == 'live'){
+    if(sagepaysuitepi_config && sagepaysuitepi_config.mode == 'live'){
         var sagepayjs = require(['sagepayjs_live']);
     }else{
         var sagepayjs = require(['sagepayjs_test']);
@@ -22,7 +22,10 @@ define([
     /**
      * Disable card server validation in admin
      */
-    order.addExcludedPaymentMethod('sagepaysuitepi');
+    if (typeof order !== 'undefined')
+    {
+        order.addExcludedPaymentMethod('sagepaysuitepi');
+    }
 
     $.widget('mage.sagepaysuitepiCcForm', {
         options: {
@@ -38,32 +41,22 @@ define([
         prepare: function (event, method) {
             if (method === this.options.code) {
                 this.preparePayment();
-
-                //$('#sagepaysuitepi_cc_type').val("VI");
-                //$('#sagepaysuitepi_cc_number').val("4929000000006");
-                //$('#sagepaysuitepi_expiration').val("12");
-                //$('#sagepaysuitepi_expiration_yr').val("2022");
-                //$('#sagepaysuitepi_cc_cid').val("123");
             }
         },
         preparePayment: function () {
             $('#edit_form').off('submitOrder').on('submitOrder', this.submitAdminOrder.bind(this));
             $('#edit_form').off('changePaymentData').on('changePaymentData', this.changePaymentData.bind(this));
         },
-        changePaymentData: function(){
-            //console.log("changePaymentData");
-        },
-        fieldObserver: function(){
-            //console.log("fieldObserver");
-        },
+        changePaymentData: function()
+        {},
+        fieldObserver: function()
+        {},
         submitAdminOrder: function () {
 
             var self = this;
             self.resetPaymentErrors();
 
             var serviceUrl = sagepaysuitepi_config.url.generateMerchantKey;
-
-            //order._realSubmit();
 
             jQuery.ajax( {
                 url: serviceUrl,
@@ -144,12 +137,10 @@ define([
                 }
 
                 try {
-                    //console.log(token_form);
 
                     //request token
-                    Sagepay.tokeniseCardDetails(token_form, function (status, response) {
-                        //console.log(status, response);
-
+                    Sagepay.tokeniseCardDetails(token_form, function (status, response)
+                    {
                         if (status === 201) {
                             self.creditCardType = self.parseCCType(response.cardType);
                             self.creditCardExpYear = document.getElementById(self.getCode() + '_expiration_yr').value;

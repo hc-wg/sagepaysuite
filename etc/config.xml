@@ -31,6 +31,7 @@
                 <active>0</active>
                 <model>Ebizmarts\SagePaySuite\Model\Form</model>
                 <payment_action>PAYMENT</payment_action>
+                <send_email>1</send_email>
                 <order_status>pending</order_status>
                 <title>Sage Pay FORM</title>
                 <encrypted_password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />

@@ -79,7 +79,7 @@ class Request extends \Magento\Framework\App\Action\Action
         try {
             $this->_quote->collectTotals();
             $this->_quote->reserveOrderId();
-            //$this->_quote->save();
+            $this->_quote->save();
 
             $responseContent = [
                 'success' => true,
@@ -127,11 +127,10 @@ class Request extends \Magento\Framework\App\Action\Action
         $data['SuccessURL'] = $this->_url->getUrl('*/*/success');
         $data['FailureURL'] = $this->_url->getUrl('*/*/failure');
 
-        //not mandatory
-//        $data['CustomerEMail'] = ($customerEmail == null ? $billing->getEmail() : $customerEmail);
-//        $data['VendorEMail']
-//        $data['SendEMail']
-//        $data['EmailMessage']
+        //email details
+        $data['VendorEMail'] = $this->_config->getFormVendorEmail();
+        $data['SendEMail'] = $this->_config->getFormSendEmail();
+        $data['EmailMessage'] = substr($this->_config->getFormEmailMessage(), 0, 7500);
 
         //populate payment amount information
         $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
@@ -163,17 +162,6 @@ class Request extends \Magento\Framework\App\Action\Action
                 $preCryptString .= ($preCryptString == '') ? "$field=$value" : "&$field=$value";
             }
         }
-
-        //** add PKCS5 padding to the text to be encypted
-//        $pkcs5Data = $this->addPKCS5Padding($preCryptString);
-
-//        $encryptor = new \Magento\Framework\Encryption\Crypt($encrypted_password, MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC, $encrypted_password);
-//        $crypt = $encryptor->encrypt($pkcs5Data);
-
-//        $this->_crypt->setBlockLength(128);
-//        $this->_crypt->setKey($encrypted_password);
-//        $this->_crypt->setIV($encrypted_password);
-//        $crypt = $this->_crypt->encrypt($preCryptString);
 
         $encryptor = new \Crypt_AES(CRYPT_AES_MODE_CBC);
         $encryptor->setBlockLength(128);

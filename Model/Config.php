@@ -68,6 +68,13 @@ class Config
     const MODE_AVSCVC_IGNORE = 'ForceIgnoringRules'; // '3' for old integrations
 
     /**
+     * FORM Send Email MODES
+     */
+    const MODE_FORM_SEND_EMAIL_NONE = 0; //  Do not send either customer or vendor emails
+    const MODE_FORM_SEND_EMAIL_BOTH = 1; // Send customer and vendor emails if addresses are provided
+    const MODE_FORM_SEND_EMAIL_ONLY_VENDOR = 2; //  Send vendor email but NOT the customer email
+
+    /**
      * Currency settings
      */
     const CURRENCY_BASE = "base_currency";
@@ -230,8 +237,6 @@ class Config
 
         $path = $this->_getSpecificConfigPath($key);
 
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$path . " - " . ScopeInterface::SCOPE_STORE . " - " . $storeId);
-
         if ($path !== null) {
             $value = $this->_scopeConfig->getValue(
                 $path,
@@ -362,6 +367,21 @@ class Config
     public function getFormEncryptedPassword()
     {
         return $this->getValue("encrypted_password");
+    }
+
+    public function getFormSendEmail()
+    {
+        return $this->getValue("send_email");
+    }
+
+    public function getFormVendorEmail()
+    {
+        return $this->getValue("vendor_email");
+    }
+
+    public function getFormEmailMessage()
+    {
+        return $this->getValue("email_message");
     }
 
     public function getMode()

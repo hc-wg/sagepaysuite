@@ -135,6 +135,7 @@ class Success extends \Magento\Backend\App\AbstractAction
             {
                 //send email
                 $this->_checkoutHelper->sendOrderEmail($order);
+
             }else{
                 throw new \Magento\Framework\Exception\LocalizedException(__('Can not create order'));
             }
@@ -203,7 +204,7 @@ class Success extends \Magento\Backend\App\AbstractAction
                 $url = $this->_backendUrl->getUrl($route, $param);
             }else{
                 $this->messageManager->addError("Your payment was successful but the order was NOT created: " . $e->getMessage());
-                $route = 'sales/order_create/index';
+                $route = 'sales/order/view';
                 $url = $this->_backendUrl->getUrl($route, []);
             }
 

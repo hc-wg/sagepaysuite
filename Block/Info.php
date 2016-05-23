@@ -26,16 +26,6 @@ class Info extends \Magento\Payment\Block\Info\Cc
             $info["Credit Card Expiration"] = $payment->getCcExpMonth() . "/" . $payment->getCcExpYear();
         }
 
-        //only backend details
-//        if ($this->_appState->getAreaCode() === \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE)
-//        {
-//            if ($payment->getAdditionalInformation("moto")) {
-//                $info["Source"] = "Backend Order";
-//            }else{
-//                $info["Source"] = "Frontend Order";
-//            }
-//        }
-
         return $transport->addData($info);
     }
 }
