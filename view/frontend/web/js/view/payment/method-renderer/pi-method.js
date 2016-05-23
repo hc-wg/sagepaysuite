@@ -14,10 +14,11 @@ define(
         'Magento_Customer/js/model/customer',
         'Magento_Checkout/js/action/place-order',
         'Magento_Checkout/js/model/full-screen-loader',
-        'Magento_Ui/js/modal/modal'
+        'Magento_Ui/js/modal/modal',
+        'Magento_Checkout/js/model/payment/additional-validators'
 
     ],
-    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal) {
+    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal, additionalValidators) {
         'use strict';
 
         $(document).ready(function () {
@@ -58,11 +59,16 @@ define(
             isActive: function () {
                 return true;
             },
-            preparePayment: function () {
+            preparePayment: function ()
+            {
                 var self = this;
                 self.resetPaymentErrors();
 
-                //self.open3DModal();
+                //validations
+                if (!this.validate() || !additionalValidators.validate())
+                {
+                    return false;
+                }
 
                 fullScreenLoader.startLoader();
 

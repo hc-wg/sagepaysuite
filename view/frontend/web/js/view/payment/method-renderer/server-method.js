@@ -14,9 +14,10 @@ define(
         'Magento_Checkout/js/model/url-builder',
         'Magento_Customer/js/model/customer',
         'Magento_Checkout/js/model/quote',
-        'Magento_Checkout/js/model/full-screen-loader'
+        'Magento_Checkout/js/model/full-screen-loader',
+        'Magento_Checkout/js/model/payment/additional-validators'
     ],
-    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader) {
+    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader, additionalValidators) {
         'use strict';
 
         $(document).ready(function () {
@@ -44,14 +45,20 @@ define(
             },
             preparePayment: function () {
 
-                fullScreenLoader.startLoader();
-
                 var self = this;
                 self.resetPaymentErrors();
 
+                //validations
+                if (!this.validate() || !additionalValidators.validate())
+                {
+                    return false;
+                }
+
+                fullScreenLoader.startLoader();
+
                 var serviceUrl,
                     payload,
-                    paymentData = quote.paymentMethod();
+                    paymentData = {method:self.getCode()};
 
                 /**
                  * Checkout for guest and registered customer.
