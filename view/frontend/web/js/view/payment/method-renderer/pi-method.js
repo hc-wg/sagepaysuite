@@ -15,10 +15,12 @@ define(
         'Magento_Checkout/js/action/place-order',
         'Magento_Checkout/js/model/full-screen-loader',
         'Magento_Ui/js/modal/modal',
-        'Magento_Checkout/js/model/payment/additional-validators'
+        'Magento_Checkout/js/model/payment/additional-validators',
+        'Magento_Checkout/js/model/url-builder',
+        'Magento_Checkout/js/model/quote'
 
     ],
-    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal, additionalValidators) {
+    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal, additionalValidators, urlBuilder, quote) {
         'use strict';
 
         $(document).ready(function () {
@@ -59,34 +61,65 @@ define(
             isActive: function () {
                 return true;
             },
-            preparePayment: function ()
-            {
+            preparePayment: function () {
                 var self = this;
                 self.resetPaymentErrors();
 
                 //validations
-                if (!this.validate() || !additionalValidators.validate())
-                {
+                if (!this.validate() || !additionalValidators.validate()) {
                     return false;
                 }
 
                 fullScreenLoader.startLoader();
 
-                var serviceUrl = url.build('sagepaysuite/pi/generateMerchantKey');
+                /**
+                 * Save billing address
+                 * Checkout for guest and registered customer.
+                 */
+                var serviceUrl,
+                    payload;
+                if (!customer.isLoggedIn()) {
+                    serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/billing-address', {
+                        cartId: quote.getQuoteId()
+                    });
+                    payload = {
+                        cartId: quote.getQuoteId(),
+                        address: quote.billingAddress()
+                    };
+                } else {
+                    serviceUrl = urlBuilder.createUrl('/carts/mine/billing-address', {});
+                    payload = {
+                        cartId: quote.getQuoteId(),
+                        address: quote.billingAddress()
+                    };
+                }
 
-                //generate merchant session key
-                storage.get(serviceUrl).done(
-                    function (response) {
+                return storage.post(
+                    serviceUrl, JSON.stringify(payload)
+                ).done(
+                    function () {
 
-                        if (response.success) {
-                            self.sagepayTokeniseCard(response.merchant_session_key);
-                        } else {
-                            self.showPaymentError(response.error_message);
-                        }
+                        serviceUrl = url.build('sagepaysuite/pi/generateMerchantKey');
+
+                        //generate merchant session key
+                        storage.get(serviceUrl).done(
+                            function (response) {
+
+                                if (response.success) {
+                                    self.sagepayTokeniseCard(response.merchant_session_key);
+                                } else {
+                                    self.showPaymentError(response.error_message);
+                                }
+                            }
+                        ).fail(
+                            function (response) {
+                                self.showPaymentError("Unable to create Sage Pay merchant session key.");
+                            }
+                        );
                     }
                 ).fail(
                     function (response) {
-                        self.showPaymentError("Unable to create Sage Pay merchant session key.");
+                        self.showPaymentError("Unable to save billing address.");
                     }
                 );
                 return false;
@@ -225,7 +258,7 @@ define(
                                 //iframe.setAttribute("name",self.getCode() + '-3Dsecure-iframe')
                                 self.open3DModal();
                                 var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
-                                form3D.setAttribute('target',self.getCode() + '-3Dsecure-iframe');
+                                form3D.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
                                 form3D.setAttribute('action', response.response.acsUrl);
                                 form3D.elements[0].setAttribute('value', response.response.paReq);
                                 form3D.elements[1].setAttribute('value', callbackUrl);
@@ -253,8 +286,7 @@ define(
             /**
              * Create 3D modal
              */
-            open3DModal: function ()
-            {
+            open3DModal: function () {
                 this.modal = $('<iframe id="' + this.getCode() + '-3Dsecure-iframe" name="' + this.getCode() + '-3Dsecure-iframe"></iframe>').modal({
                     modalClass: 'sagepaysuite-modal',
                     title: "Sage Pay 3D Secure Authentication",

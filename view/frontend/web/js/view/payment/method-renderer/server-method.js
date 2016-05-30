@@ -49,109 +49,138 @@ define(
                 self.resetPaymentErrors();
 
                 //validations
-                if (!this.validate() || !additionalValidators.validate())
-                {
+                if (!this.validate() || !additionalValidators.validate()) {
                     return false;
                 }
 
                 fullScreenLoader.startLoader();
 
-                var serviceUrl,
-                    payload,
-                    paymentData = {method:self.getCode()};
-
                 /**
+                 * Save billing address
                  * Checkout for guest and registered customer.
                  */
+                var serviceUrl,
+                    payload;
                 if (!customer.isLoggedIn()) {
-                    serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/selected-payment-method', {
+                    serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/billing-address', {
                         cartId: quote.getQuoteId()
                     });
                     payload = {
                         cartId: quote.getQuoteId(),
-                        method: paymentData
+                        address: quote.billingAddress()
                     };
                 } else {
-                    serviceUrl = urlBuilder.createUrl('/carts/mine/selected-payment-method', {});
+                    serviceUrl = urlBuilder.createUrl('/carts/mine/billing-address', {});
                     payload = {
                         cartId: quote.getQuoteId(),
-                        method: paymentData
+                        address: quote.billingAddress()
                     };
                 }
-                storage.put(
+
+                return storage.post(
                     serviceUrl, JSON.stringify(payload)
                 ).done(
                     function () {
+                        var paymentData = {method: self.getCode()};
 
-                        var serviceUrl = url.build('sagepaysuite/server/request');
-                        var save_token = self.save_token && !self.use_token;
-                        var token = null;
-                        if (self.use_token) {
-                            var tokens = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens;
-                            for (var i = 0; i < tokens.length; i++) {
-                                if ($('#' + self.getCode() + '-token-' + tokens[i].id).prop("checked") == true) {
-                                    token = tokens[i].token;
-                                    break;
-                                }
-                            }
-                            if (token == null) {
-                                self.showPaymentError("Please select the card to be used form the list");
-                                return;
-                            }
+                        /**
+                         * Set payment method
+                         * Checkout for guest and registered customer.
+                         */
+                        if (!customer.isLoggedIn()) {
+                            serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/selected-payment-method', {
+                                cartId: quote.getQuoteId()
+                            });
+                            payload = {
+                                cartId: quote.getQuoteId(),
+                                method: paymentData
+                            };
+                        } else {
+                            serviceUrl = urlBuilder.createUrl('/carts/mine/selected-payment-method', {});
+                            payload = {
+                                cartId: quote.getQuoteId(),
+                                method: paymentData
+                            };
                         }
+                        storage.put(
+                            serviceUrl, JSON.stringify(payload)
+                        ).done(
+                            function () {
 
-                        //send server post request
-                        return storage.post(serviceUrl,
-                            JSON.stringify({
-                                save_token: save_token,
-                                token: token
-                            })).done(
-                            function (response) {
-
-                                if (response.success) {
-
-                                    //self.hideOtherPaymentOptions();
-
-                                    //$('#sagepaysuiteserver-actions-toolbar').css('display', 'none');
-                                    //$('#payment_form_sagepaysuiteserver .payment-method-note').css('display', 'none');
-                                    //$('#' + self.getCode() + '-tokens').css('display', 'none');
-
-
-                                    //$('#sagepaysuiteserver_embed_iframe_container').html("<iframe class='main-iframe' src='" +
-                                    //    response.response.data.NextURL + "'></iframe>");
-
-                                    self.openSERVERModal(response.response.data.NextURL);
-
-                                    fullScreenLoader.stopLoader();
-
-                                } else {
-                                    self.showPaymentError(response.error_message);
+                                var serviceUrl = url.build('sagepaysuite/server/request');
+                                var save_token = self.save_token && !self.use_token;
+                                var token = null;
+                                if (self.use_token) {
+                                    var tokens = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens;
+                                    for (var i = 0; i < tokens.length; i++) {
+                                        if ($('#' + self.getCode() + '-token-' + tokens[i].id).prop("checked") == true) {
+                                            token = tokens[i].token;
+                                            break;
+                                        }
+                                    }
+                                    if (token == null) {
+                                        self.showPaymentError("Please select the card to be used form the list");
+                                        return;
+                                    }
                                 }
+
+                                //send server post request
+                                return storage.post(serviceUrl,
+                                    JSON.stringify({
+                                        save_token: save_token,
+                                        token: token
+                                    })).done(
+                                    function (response) {
+
+                                        if (response.success) {
+
+                                            //self.hideOtherPaymentOptions();
+
+                                            //$('#sagepaysuiteserver-actions-toolbar').css('display', 'none');
+                                            //$('#payment_form_sagepaysuiteserver .payment-method-note').css('display', 'none');
+                                            //$('#' + self.getCode() + '-tokens').css('display', 'none');
+
+
+                                            //$('#sagepaysuiteserver_embed_iframe_container').html("<iframe class='main-iframe' src='" +
+                                            //    response.response.data.NextURL + "'></iframe>");
+
+                                            self.openSERVERModal(response.response.data.NextURL);
+
+                                            fullScreenLoader.stopLoader();
+
+                                        } else {
+                                            self.showPaymentError(response.error_message);
+                                        }
+                                    }
+                                ).fail(
+                                    function (response) {
+                                        self.showPaymentError("Unable to submit to Sage Pay. Please try another payment option.");
+                                    }
+                                );
                             }
                         ).fail(
                             function (response) {
-                                self.showPaymentError("Unable to submit to Sage Pay. Please try another payment option.");
+                                self.showPaymentError("Unable to save payment method.");
                             }
                         );
                     }
                 ).fail(
                     function (response) {
-                        self.showPaymentError("Unable to save payment method.");
+                        self.showPaymentError("Unable to save billing address.");
                     }
                 );
             },
-            checkMaxTokensPerCustomer: function(){
-                if(this.used_token_slots > 0 && this.used_token_slots >= window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.max_tokens){
+            checkMaxTokensPerCustomer: function () {
+                if (this.used_token_slots > 0 && this.used_token_slots >= window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.max_tokens) {
                     $('#' + this.getCode() + '-tokens .token-list .message-max-tokens').show();
-                }else{
+                } else {
                     $('#' + this.getCode() + '-tokens .token-list .message-max-tokens').hide();
                 }
             },
             /**
              * Create SERVER modal
              */
-            openSERVERModal: function (nextURL)
-            {
+            openSERVERModal: function (nextURL) {
                 this.modal = $("<div class='sagepaysuiteserver-scroll-wrapper'><iframe class='sagepaysuiteserver_embed_iframe' src='" + nextURL + "'></iframe></div>").modal({
                     modalClass: 'sagepaysuiteserver-modal',
                     title: "Sage Pay Secure Gateway",
@@ -203,7 +232,7 @@ define(
 
                 var self = this;
 
-                if(confirm("Are you sure you wish to delete this saved credit card token?")){
+                if (confirm("Are you sure you wish to delete this saved credit card token?")) {
 
                     var serviceUrl = url.build('sagepaysuite/token/delete');
 
@@ -224,7 +253,7 @@ define(
                                 //delete from token list
                                 var tokens = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens;
                                 for (var i = 0; i < tokens.length; i++) {
-                                    if (id == tokens[i].id){
+                                    if (id == tokens[i].id) {
                                         tokens.splice(i, 1);
                                     }
                                 }

@@ -22,7 +22,7 @@ define(
 
         $(document).ready(function () {
             var paypalConfig = window.checkoutConfig.payment.ebizmarts_sagepaysuitepaypal;
-            if(paypalConfig && !paypalConfig.licensed){
+            if (paypalConfig && !paypalConfig.licensed) {
                 $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
             }
         });
@@ -35,89 +35,119 @@ define(
                 return 'sagepaysuitepaypal';
             },
             /** Returns payment information data */
-            getData: function() {
+            getData: function () {
                 return $.extend(true, this._super(), {'additional_data': null});
             },
-            preparePayment: function(){
+            preparePayment: function () {
 
                 var self = this;
                 self.resetPaymentErrors();
 
                 //validations
-                if (!this.validate() || !additionalValidators.validate())
-                {
+                if (!this.validate() || !additionalValidators.validate()) {
                     return false;
                 }
 
                 fullScreenLoader.startLoader();
 
-                var serviceUrl,
-                    payload,
-                    paymentData = {method:self.getCode()};
-
                 /**
+                 * Save billing address
                  * Checkout for guest and registered customer.
                  */
+                var serviceUrl,
+                    payload;
                 if (!customer.isLoggedIn()) {
-                    serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/selected-payment-method', {
+                    serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/billing-address', {
                         cartId: quote.getQuoteId()
                     });
                     payload = {
                         cartId: quote.getQuoteId(),
-                        method: paymentData
+                        address: quote.billingAddress()
                     };
                 } else {
-                    serviceUrl = urlBuilder.createUrl('/carts/mine/selected-payment-method', {});
+                    serviceUrl = urlBuilder.createUrl('/carts/mine/billing-address', {});
                     payload = {
                         cartId: quote.getQuoteId(),
-                        method: paymentData
+                        address: quote.billingAddress()
                     };
                 }
-                return storage.put(
+
+                return storage.post(
                     serviceUrl, JSON.stringify(payload)
                 ).done(
                     function () {
+                        var paymentData = {method: self.getCode()};
 
-                        var serviceUrl = url.build('sagepaysuite/paypal/request');
+                        /**
+                         * Set payment method
+                         * Checkout for guest and registered customer.
+                         */
+                        if (!customer.isLoggedIn()) {
+                            serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/selected-payment-method', {
+                                cartId: quote.getQuoteId()
+                            });
+                            payload = {
+                                cartId: quote.getQuoteId(),
+                                method: paymentData
+                            };
+                        } else {
+                            serviceUrl = urlBuilder.createUrl('/carts/mine/selected-payment-method', {});
+                            payload = {
+                                cartId: quote.getQuoteId(),
+                                method: paymentData
+                            };
+                        }
+                        return storage.put(
+                            serviceUrl, JSON.stringify(payload)
+                        ).done(
+                            function () {
 
-                        //generate crypt and form data
-                        storage.get(serviceUrl).done(
-                            function (response) {
+                                var serviceUrl = url.build('sagepaysuite/paypal/request');
 
-                                if (response.success) {
-                                    if(response.response.data.PayPalRedirectURL){
-                                        window.location.href = response.response.data.PayPalRedirectURL;
-                                    }else{
-                                        self.showPaymentError("Invalid response from PayPal, please try another payment method");
+                                //generate crypt and form data
+                                storage.get(serviceUrl).done(
+                                    function (response) {
+
+                                        if (response.success) {
+                                            if (response.response.data.PayPalRedirectURL) {
+                                                window.location.href = response.response.data.PayPalRedirectURL;
+                                            } else {
+                                                self.showPaymentError("Invalid response from PayPal, please try another payment method");
+                                            }
+                                        } else {
+                                            self.showPaymentError(response.error_message);
+                                        }
                                     }
-                                } else {
-                                    self.showPaymentError(response.error_message);
-                                }
+                                ).fail(
+                                    function (response) {
+                                        self.showPaymentError("Unable to submit form to PayPal.");
+                                    }
+                                );
                             }
                         ).fail(
                             function (response) {
-                                self.showPaymentError("Unable to submit form to PayPal.");
+                                self.showPaymentError("Unable to save payment method.");
                             }
                         );
                     }
                 ).fail(
                     function (response) {
-                        self.showPaymentError("Unable to save payment method.");
+                        self.showPaymentError("Unable to save billing address.");
                     }
                 );
             },
-            showPaymentError: function(message){
+            showPaymentError: function (message) {
 
                 var span = document.getElementById(this.getCode() + '-payment-errors');
 
                 span.innerHTML = message;
-                span.style.display="block";
+                span.style.display = "block";
 
                 fullScreenLoader.stopLoader();
             },
-            resetPaymentErrors: function(){
+            resetPaymentErrors: function () {
                 var span = document.getElementById(this.getCode() + '-payment-errors');
-                span.style.display="none";
+                span.style.display = "none";
 
             }
         });

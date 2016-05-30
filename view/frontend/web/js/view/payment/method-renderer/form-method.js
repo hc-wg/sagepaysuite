@@ -51,65 +51,96 @@ define(
 
                 fullScreenLoader.startLoader();
 
-                var serviceUrl,
-                    payload,
-                    paymentData = {method:self.getCode()};
-
                 /**
+                 * Save billing address
                  * Checkout for guest and registered customer.
                  */
+                var serviceUrl,
+                    payload;
                 if (!customer.isLoggedIn()) {
-                    serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/selected-payment-method', {
+                    serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/billing-address', {
                         cartId: quote.getQuoteId()
                     });
                     payload = {
                         cartId: quote.getQuoteId(),
-                        method: paymentData
+                        address: quote.billingAddress()
                     };
                 } else {
-                    serviceUrl = urlBuilder.createUrl('/carts/mine/selected-payment-method', {});
+                    serviceUrl = urlBuilder.createUrl('/carts/mine/billing-address', {});
                     payload = {
                         cartId: quote.getQuoteId(),
-                        method: paymentData
+                        address: quote.billingAddress()
                     };
                 }
-                return storage.put(
+
+                return storage.post(
                     serviceUrl, JSON.stringify(payload)
                 ).done(
-                    function () {
+                    function ()
+                    {
+                        var paymentData = {method:self.getCode()};
 
-                        var serviceUrl = url.build('sagepaysuite/form/request');
+                        /**
+                         * Set payment method
+                         * Checkout for guest and registered customer.
+                         */
+                        if (!customer.isLoggedIn()) {
+                            serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/selected-payment-method', {
+                                cartId: quote.getQuoteId()
+                            });
+                            payload = {
+                                cartId: quote.getQuoteId(),
+                                method: paymentData
+                            };
+                        } else {
+                            serviceUrl = urlBuilder.createUrl('/carts/mine/selected-payment-method', {});
+                            payload = {
+                                cartId: quote.getQuoteId(),
+                                method: paymentData
+                            };
+                        }
 
-                        //generate crypt and form data
-                        storage.get(serviceUrl).done(
-                            function (response) {
+                        return storage.put(
+                            serviceUrl, JSON.stringify(payload)
+                        ).done(function () {
 
-                                if (response.success) {
+                                var serviceUrl = url.build('sagepaysuite/form/request');
 
-                                    //set form data and submit
-                                    var form_form = document.getElementById(self.getCode() + '-form');
-                                    form_form.setAttribute('action',response.redirect_url);
-                                    form_form.elements[0].setAttribute('value', response.vps_protocol);
-                                    form_form.elements[1].setAttribute('value', response.tx_type);
-                                    form_form.elements[2].setAttribute('value', response.vendor);
-                                    form_form.elements[3].setAttribute('value', response.crypt);
+                                //generate crypt and form data
+                                storage.get(serviceUrl).done(
+                                    function (response) {
 
-                                    form_form.submit();
+                                        if (response.success) {
 
-                                } else {
-                                    self.showPaymentError(response.error_message);
-                                }
+                                            //set form data and submit
+                                            var form_form = document.getElementById(self.getCode() + '-form');
+                                            form_form.setAttribute('action',response.redirect_url);
+                                            form_form.elements[0].setAttribute('value', response.vps_protocol);
+                                            form_form.elements[1].setAttribute('value', response.tx_type);
+                                            form_form.elements[2].setAttribute('value', response.vendor);
+                                            form_form.elements[3].setAttribute('value', response.crypt);
+
+                                            form_form.submit();
+
+                                        } else {
+                                            self.showPaymentError(response.error_message);
+                                        }
+                                    }
+                                ).fail(
+                                    function (response) {
+                                        self.showPaymentError("Unable to submit form to Sage Pay.");
+                                    }
+                                );
                             }
                         ).fail(
                             function (response) {
-                                self.showPaymentError("Unable to submit form to Sage Pay.");
+                                self.showPaymentError("Unable to save payment method.");
                             }
                         );
-
                     }
                 ).fail(
                     function (response) {
-                        self.showPaymentError("Unable to save payment method.");
+                        self.showPaymentError("Unable to save billing address.");
                     }
                 );
             },
