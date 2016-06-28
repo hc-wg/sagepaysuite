@@ -2,7 +2,7 @@ machine:
   php:
     version: 7.0.4
   environment:
-    MAGE_VERSION: 2.0.7
+    MAGE_VERSION: 2.1.0
     DB_URL: 127.0.0.1
     DB_NAME: circle_test
     DB_USER: ubuntu
