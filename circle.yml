@@ -1,6 +1,6 @@
 machine:
   php:
-    version: 7.0.4
+    version: 7.0.7
   environment:
     MAGE_VERSION: 2.1.0
     DB_URL: 127.0.0.1
