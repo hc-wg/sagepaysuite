@@ -87,7 +87,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      *
      * @var bool
      */
-    protected $_canUseInternal = true;
+    protected $_canUseInternal = false;
 
     /**
      * Availability option
