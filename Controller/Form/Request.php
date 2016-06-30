@@ -163,13 +163,13 @@ class Request extends \Magento\Framework\App\Action\Action
             }
         }
 
-        $encryptor = new \Crypt_AES(CRYPT_AES_MODE_CBC);
+        $encryptor = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
         $encryptor->setBlockLength(128);
         $encryptor->setKey($encrypted_password);
         $encryptor->setIV($encrypted_password);
         $crypt = $encryptor->encrypt($preCryptString);
 
-        return "@" . bin2hex($crypt);
+        return "@" . strtoupper(bin2hex($crypt));
     }
 
     protected function _getServiceURL(){

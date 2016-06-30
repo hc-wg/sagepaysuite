@@ -277,15 +277,8 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
             $strIn = substr($crypt, 1);
             //** HEX decoding
             $strIn = pack('H*', $strIn);
-//            $this->_crypt->setBlockLength(128);
-//            $this->_crypt->setKey($cryptPass);
-//            $this->_crypt->setIV($cryptPass);
-//            $strDecoded = $this->_crypt->decrypt($strIn);
 
-//            $crypt = new \Magento\Framework\Encryption\Crypt($cryptPass, MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC, $cryptPass);
-//            $strDecoded = $crypt->decrypt($strIn);
-
-            $decryptor = new \Crypt_AES(CRYPT_AES_MODE_CBC);
+            $decryptor = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
             $decryptor->setBlockLength(128);
             $decryptor->setKey($cryptPass);
             $decryptor->setIV($cryptPass);

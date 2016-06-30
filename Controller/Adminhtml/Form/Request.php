@@ -160,24 +160,13 @@ class Request extends \Magento\Backend\App\AbstractAction
             }
         }
 
-//        $this->_crypt->setBlockLength(128);
-//        $this->_crypt->setKey($encrypted_password);
-//        $this->_crypt->setIV($encrypted_password);
-//        $crypt = $this->_crypt->encrypt($preCryptString);
-
-        //** add PKCS5 padding to the text to be encypted
-        //$pkcs5Data = $this->addPKCS5Padding($preCryptString);
-
-//        $encryptor = new \Magento\Framework\Encryption\Crypt($encrypted_password, MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC, $encrypted_password);
-//        $crypt = $encryptor->encrypt($pkcs5Data);
-
-        $encryptor = new \Crypt_AES(CRYPT_AES_MODE_CBC);
+        $encryptor = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
         $encryptor->setBlockLength(128);
         $encryptor->setKey($encrypted_password);
         $encryptor->setIV($encrypted_password);
         $crypt = $encryptor->encrypt($preCryptString);
 
-        return "@" . bin2hex($crypt);
+        return "@" . strtoupper(bin2hex($crypt));
     }
 
     protected function _getServiceURL(){
