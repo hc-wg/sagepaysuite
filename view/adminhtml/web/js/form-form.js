@@ -9,13 +9,15 @@ define([
     "jquery",
     'mage/storage',
     'mage/url',
-    "jquery/ui"
-], function ($, storage, url) {
+    "jquery/ui",
+    'mage/translate'
+], function ($, storage, url, $t) {
     "use strict";
 
     $.widget('mage.sagepaysuiteFormForm', {
-        options: {
-            code: "sagepaysuiteform"
+        "options": {
+            "code": "sagepaysuiteform",
+            "serviceUrl": ""
         },
 
         prepare: function (event, method) {
@@ -26,6 +28,8 @@ define([
         preparePayment: function () {
             $('#edit_form').off('submitOrder').on('submitOrder', this.submitAdminOrder.bind(this));
             $('#edit_form').off('changePaymentData').on('changePaymentData', this.changePaymentData.bind(this));
+
+            //this.options.serviceUrl = sagepaysuiteform_config.url.request;
         },
         changePaymentData: function(){
             console.log("changePaymentData");
@@ -38,7 +42,7 @@ define([
             var self = this;
             self.resetPaymentErrors();
 
-            var serviceUrl = sagepaysuiteform_config.url.request;
+            var serviceUrl = this.options.serviceUrl;
 
             jQuery.ajax( {
                 url: serviceUrl,
@@ -104,6 +108,7 @@ define([
 
         },
         _create: function () {
+
             $('#edit_form').on('changePaymentMethod', this.prepare.bind(this));
             $('#edit_form').on('changePaymentData', this.changePaymentData.bind(this));
             $('#edit_form').trigger(
@@ -112,6 +117,7 @@ define([
                     $('#edit_form').find(':radio[name="payment[method]"]:checked').val()
                 ]
             );
+
         }
     });
 
