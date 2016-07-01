@@ -6,11 +6,19 @@
 
 $_code = $block->getMethodCode();
 $_config = $this->helper('Ebizmarts\SagePaySuite\Helper\Data')->getSagePayConfig();
+
 ?>
 
 
 <div id="payment_form_<?php echo $_code ?>" class="admin__page-section-item" style="display:none;"
-    data-mage-init='{"sagepaysuitepiCcForm":{}}'>
+    data-mage-init='{"sagepaysuitepiCcForm":{
+                            "url": {
+                                "generateMerchantKey":"<?php echo $this->getUrl('sagepaysuite/pi/generateMerchantKey', []); ?>",
+                                "request":"<?php echo $this->getUrl('sagepaysuite/pi/request', []); ?>"
+                            },
+                            "mode":"<?php echo $_config->getMode(); ?>"
+                        }
+                    }'>
 
     <span id="<?php echo $_code ?>-payment-errors" class="message error" style="display: none;"></span>
 
@@ -62,23 +70,10 @@ $_config = $this->helper('Ebizmarts\SagePaySuite\Helper\Data')->getSagePayConfig
             <label class="label admin__field-label" for="<?php echo $_code ?>_cc_cid" ><?php echo __('Card Verification Number') ?><span class="required">*</span></label>
             <div class="admin__field-control control">
                 <div class="v-fix">
-<!--                    <input type="text" title="--><?php //echo __('Card Verification Number') ?><!--" class="input-text admin__control-text cvv required-entry validate-cc-cvn" id="--><?php //echo $_code ?><!--_cc_cid" value="" />-->
                     <input type="text" title="<?php echo __('Card Verification Number') ?>" class="input-text cvv required-entry" id="<?php echo $_code ?>_cc_cid" value="" />
                 </div>
             </div>
         </div>
     </fieldset>
     <?php endif; ?>
-
-    <script>
-
-        var sagepaysuitepi_config = {
-            "url": {
-                "generateMerchantKey" : '<?php echo $this->getUrl('sagepaysuite/pi/generateMerchantKey', []); ?>',
-                "request" : '<?php echo $this->getUrl('sagepaysuite/pi/request', []); ?>'
-            },
-            "mode": '<?php echo $_config->getMode(); ?>'
-        };
-    </script>
-
 </div>
