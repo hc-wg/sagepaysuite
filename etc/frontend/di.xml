@@ -19,7 +19,7 @@
     <type name="Magento\Checkout\Model\CompositeConfigProvider">
         <arguments>
             <argument name="configProviders" xsi:type="array">
-                <item name="sagepaysuitepi" xsi:type="object">Ebizmarts\SagePaySuite\Model\ConfigProviderPI</item>-->
+                <item name="sagepaysuitepi" xsi:type="object">Ebizmarts\SagePaySuite\Model\ConfigProviderPI</item>
                 <item name="sagepaysuitepi_config_provider" xsi:type="object">Ebizmarts\SagePaySuite\Model\ConfigProvider\PI</item>
                 <item name="sagepaysuiteform_config_provider" xsi:type="object">Ebizmarts\SagePaySuite\Model\ConfigProvider\Form</item>
                 <item name="sagepaysuiteserver_config_provider" xsi:type="object">Ebizmarts\SagePaySuite\Model\ConfigProvider\Server</item>
