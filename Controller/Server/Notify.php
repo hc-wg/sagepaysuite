@@ -113,12 +113,15 @@ class Notify extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
+
         //get data from request
         $this->_postData = $this->getRequest()->getPost();
-        $this->_quote    = $this->quoteRepository->get($this->getRequest()->getParam("quoteid"));
 
         //log response
         $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $this->_postData);
+
+        $quoteId      = $this->getRequest()->getParam("quoteid");
+        $this->_quote = $this->quoteRepository->get($quoteId);
 
         try {
 
@@ -320,7 +323,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         //invoice
         $payment = $this->_order->getPayment();
         $payment->getMethodInstance()->markAsInitialized();
-        $this->_order->place()->save();
+        $this->_order->place();
 
         //send email
         if ($sendEmail) {
