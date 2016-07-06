@@ -1,3 +1,8 @@
+1.1.5.2 (28/06/2016)
+=============
+* Bugfixes
+    * Billing address not updated from checkout.
+
 1.1.5 (09/05/2016)
 =============
 * New Features
