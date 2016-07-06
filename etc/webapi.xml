@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+
+    <route url="/V1/sagepay/server" method="POST">
+        <service class="Ebizmarts\SagePaySuite\Api\ServerManagementInterface" method="savePaymentInformationAndPlaceOrder"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+        <data>
+            <parameter name="cartId" force="true">%cart_id%</parameter>
+            <parameter name="save_token" force="false">%save_token%</parameter>
+            <parameter name="token" force="false">%token%</parameter>
+        </data>
+    </route>
+
+</routes>
