@@ -52,11 +52,6 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
     protected $_postApi;
 
     /**
-     *  POST array
-     */
-    protected $_postData;
-
-    /**
      * Sage Pay Suite Request Helper
      * @var \Ebizmarts\SagePaySuite\Helper\Request
      */
@@ -118,10 +113,12 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
      * Set payment information and place order for a specified cart.
      *
      * @param int $cartId
+     * @param bool $save_token
+     * @param string $token
      * @throws \Magento\Framework\Exception\CouldNotSaveException
      * @return \Ebizmarts\SagePaySuite\Api\Data\ResultInterface
      */
-    public function savePaymentInformationAndPlaceOrder($cartId)
+    public function savePaymentInformationAndPlaceOrder($cartId, $save_token, $token)
     {
 
         try {
@@ -132,7 +129,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
             $quote->reserveOrderId();
 
             //generate POST request
-            $request = $this->_generateRequest();
+            $request = $this->_generateRequest($save_token, $token);
 
             //send POST to Sage Pay
             $post_response = $this->_postApi->sendPost($request,
@@ -231,9 +228,11 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
     }
 
     /**
-     * return array
+     * @param $save_token
+     * @param $token
+     * @return array
      */
-    protected function _generateRequest()
+    protected function _generateRequest($save_token, $token)
     {
 
         $data                    = array();
@@ -257,17 +256,16 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
 
         //token
         $customer_data = $this->_customerSession->getCustomerDataObject();
-        if ($this->_postData->save_token == true &&
-            !empty($customer_data) &&
-            !$this->_tokenModel->isCustomerUsingMaxTokenSlots($customer_data->getId(),$this->_config->getVendorname())
-        ) {
+        $slots         = $this->_tokenModel->isCustomerUsingMaxTokenSlots($customer_data->getId(),$this->_config->getVendorname());
+        if ($save_token && !empty($customer_data) && !$slots) {
             //save token
             $data["CreateToken"] = 1;
-        } else {
-            if (!is_null($this->_postData->token)) {
+        }
+        else {
+            if ($token !== '%token%' && !is_null($token)) {
                 //use token
                 $data["StoreToken"] = 1;
-                $data["Token"]      = $this->_postData->token;
+                $data["Token"]      = $token;
             }
         }
 
@@ -277,7 +275,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         $data["BillingAgreement"] = (int)$this->_config->getPaypalBillingAgreement();
 
         //server profile
-        if((bool)$this->_config->isServerLowProfileEnabled() == true){
+        if((bool)$this->_config->isServerLowProfileEnabled() === true) {
             $data["Profile"] = "LOW";
         }
 

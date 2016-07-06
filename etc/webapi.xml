@@ -5,7 +5,7 @@
     <route url="/V1/sagepay/server" method="POST">
         <service class="Ebizmarts\SagePaySuite\Api\ServerManagementInterface" method="savePaymentInformationAndPlaceOrder"/>
         <resources>
-            <resource ref="anonymous" />
+            <resource ref="self" />
         </resources>
         <data>
             <parameter name="cartId" force="true">%cart_id%</parameter>
