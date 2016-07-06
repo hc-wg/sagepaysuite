@@ -205,7 +205,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
 
     protected function _getNotificationUrl()
     {
-        $url = $this->_coreUrl->getUrl('sagepay/server/notify', array(
+        $url = $this->_coreUrl->getUrl('sagepaysuite/server/notify', array(
             '_secure' => true,
             '_store' => $this->_quote->getStoreId()
         ));
