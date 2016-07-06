@@ -69,6 +69,8 @@ class Notify extends \Magento\Framework\App\Action\Action
      */
     protected $quoteRepository;
 
+    protected $orderManagement;
+
     /**
      * Notify constructor.
      *
@@ -93,7 +95,8 @@ class Notify extends \Magento\Framework\App\Action\Action
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
         \Magento\Quote\Model\Quote $quote,
-        \Magento\Quote\Api\CartRepositoryInterface $quoteRepository
+        \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
+        \Magento\Sales\Api\OrderManagementInterface $orderManagement
     )
     {
         parent::__construct($context);
@@ -107,6 +110,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_tokenModel         = $tokenModel;
         $this->_quote              = $quote;
         $this->quoteRepository     = $quoteRepository;
+        $this->orderManagement     = $orderManagement;
 
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
     }
@@ -323,7 +327,9 @@ class Notify extends \Magento\Framework\App\Action\Action
         //invoice
         $payment = $this->_order->getPayment();
         $payment->getMethodInstance()->markAsInitialized();
-        $this->_order->place();
+        //$payment->place();
+
+        $this->orderManagement->place($this->_order);
 
         //send email
         if ($sendEmail) {
