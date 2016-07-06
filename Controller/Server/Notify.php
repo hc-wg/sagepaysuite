@@ -65,11 +65,23 @@ class Notify extends \Magento\Framework\App\Action\Action
     protected $_tokenModel;
 
     /**
+     * @var \Magento\Quote\Api\CartRepositoryInterface
+     */
+    protected $quoteRepository;
+
+    /**
+     * Notify constructor.
+     *
      * @param \Magento\Framework\App\Action\Context $context
      * @param Logger $suiteLogger
      * @param \Magento\Sales\Model\OrderFactory $orderFactory
      * @param OrderSender $orderSender
      * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
+     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Ebizmarts\SagePaySuite\Model\Token $tokenModel
+     * @param \Magento\Quote\Model\Quote $quote
+     * @param \Magento\Quote\Api\CartRepositoryInterface $quoteRepository
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -80,27 +92,30 @@ class Notify extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
-        \Magento\Quote\Model\Quote $quote
+        \Magento\Quote\Model\Quote $quote,
+        \Magento\Quote\Api\CartRepositoryInterface $quoteRepository
     )
     {
         parent::__construct($context);
 
-        $this->_suiteLogger = $suiteLogger;
-        $this->_orderFactory = $orderFactory;
-        $this->_orderSender = $orderSender;
+        $this->_suiteLogger        = $suiteLogger;
+        $this->_orderFactory       = $orderFactory;
+        $this->_orderSender        = $orderSender;
         $this->_transactionFactory = $transactionFactory;
-        $this->_config = $config;
+        $this->_config             = $config;
+        $this->_checkoutSession    = $checkoutSession;
+        $this->_tokenModel         = $tokenModel;
+        $this->_quote              = $quote;
+        $this->quoteRepository     = $quoteRepository;
+
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
-        $this->_checkoutSession = $checkoutSession;
-        $this->_tokenModel = $tokenModel;
-        $this->_quote = $quote;
     }
 
     public function execute()
     {
         //get data from request
         $this->_postData = $this->getRequest()->getPost();
-        $this->_quote = $this->_quote->load($this->getRequest()->getParam("quoteid"));
+        $this->_quote    = $this->quoteRepository->get($this->getRequest()->getParam("quoteid"));
 
         //log response
         $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $this->_postData);
@@ -117,12 +132,13 @@ class Notify extends \Magento\Framework\App\Action\Action
             if (is_null($order) || is_null($order->getId())) {
                 return $this->_returnInvalid("Order was not found");
             }
+
             $this->_order = $order;
-            $payment = $order->getPayment();
+            $payment      = $order->getPayment();
 
             //get some vars from POST
-            $status = $this->_postData->Status;
-            $transactionId = str_replace("{", "", str_replace("}", "", $this->_postData->VPSTxId)); //strip brackets
+            $status        = $this->_postData->Status;
+            $transactionId = str_replace(array("}", "{"), array(""), $this->_postData->VPSTxId); //strip brackets
 
             //validate hash
             $localMd5Hash = md5($this->_getVPSSignatureString($payment));
