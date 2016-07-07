@@ -7,11 +7,13 @@
         <resources>
             <resource ref="self" />
         </resources>
-        <data>
-            <parameter name="cartId" force="true">%cart_id%</parameter>
-            <parameter name="save_token" force="false">%save_token%</parameter>
-            <parameter name="token" force="false">%token%</parameter>
-        </data>
+    </route>
+
+    <route url="/V1/sagepay-guest/server" method="POST">
+        <service class="Ebizmarts\SagePaySuite\Api\GuestServerManagementInterface" method="savePaymentInformationAndPlaceOrder"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
     </route>
 
 </routes>
