@@ -10,13 +10,15 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 /**
  * Sage Pay PI REST API
+ *
+ * @see https://live.sagepay.com/documentation/
  */
 class PIRest
 {
     const ACTION_GENERATE_MERCHANT_KEY = 'merchant-session-keys';
-    const ACTION_CAPTURE_TRANSACTION = 'transactions';
-    const ACTION_SUBMIT_3D = '3d-secure';
-    const ACTION_TRANSACTION_DETAILS = 'transaction_details';
+    const ACTION_CAPTURE_TRANSACTION   = 'transactions';
+    const ACTION_SUBMIT_3D             = '3d-secure';
+    const ACTION_TRANSACTION_DETAILS   = 'transaction_details';
 
     /**
      * @var \Magento\Framework\HTTP\Adapter\CurlFactory
