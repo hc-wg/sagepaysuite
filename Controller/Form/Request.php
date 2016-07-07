@@ -150,7 +150,6 @@ class Request extends \Magento\Framework\App\Action\Action
 //        $data['CustomerXML']  = $this->getConfigData('avscv2');
 //        $data['SurchargeXML']  = $this->getConfigData('avscv2');
 //        $data['VendorData']  = $this->getConfigData('avscv2');
-//        $data['ReferrerID']        = $this->getConfigData('referrer_id');
 //        $data['Website']        = $this->getConfigData('referrer_id');
 
         //log request
