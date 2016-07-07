@@ -77,6 +77,11 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
      */
     protected $quoteRepository;
 
+    /**
+     * @var \Magento\Quote\Model\QuoteIdMaskFactory
+     */
+    protected $quoteIdMaskFactory;
+
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
@@ -89,22 +94,24 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         \Magento\Customer\Model\Session $customerSession,
         \Ebizmarts\SagePaySuite\Api\Data\ResultInterface $result,
         \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
-        \Magento\Framework\UrlInterface $coreUrl
+        \Magento\Framework\UrlInterface $coreUrl,
+        \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory
     )
     {
-        $this->result           = $result;
-        $this->quoteRepository  = $quoteRepository;
-        $this->_config          = $config;
-        $this->_suiteHelper     = $suiteHelper;
-        $this->_postApi         = $postApi;
-        $this->_checkoutSession = $checkoutSession;
-        $this->_customerSession = $customerSession;
-        $this->_quote           = $this->_checkoutSession->getQuote();
-        $this->_suiteLogger     = $suiteLogger;
-        $this->_checkoutHelper  = $checkoutHelper;
-        $this->_requestHelper   = $requestHelper;
-        $this->_tokenModel      = $tokenModel;
-        $this->_coreUrl         = $coreUrl;
+        $this->result             = $result;
+        $this->quoteRepository    = $quoteRepository;
+        $this->_config            = $config;
+        $this->_suiteHelper       = $suiteHelper;
+        $this->_postApi           = $postApi;
+        $this->_checkoutSession   = $checkoutSession;
+        $this->_customerSession   = $customerSession;
+        $this->_quote             = $this->_checkoutSession->getQuote();
+        $this->_suiteLogger       = $suiteLogger;
+        $this->_checkoutHelper    = $checkoutHelper;
+        $this->_requestHelper     = $requestHelper;
+        $this->_tokenModel        = $tokenModel;
+        $this->_coreUrl           = $coreUrl;
+        $this->quoteIdMaskFactory = $quoteIdMaskFactory;
 
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
     }
@@ -112,7 +119,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
     /**
      * Set payment information and place order for a specified cart.
      *
-     * @param int $cartId
+     * @param mixed $cartId
      * @param bool $save_token
      * @param string $token
      * @throws \Magento\Framework\Exception\CouldNotSaveException
@@ -124,7 +131,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         try {
 
             //prepare quote
-            $quote = $this->quoteRepository->get($cartId);
+            $quote = $this->getQuoteById($cartId);
             $quote->collectTotals();
             $quote->reserveOrderId();
 
@@ -291,6 +298,14 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
 //        FIRecipientDoB
 
         return $data;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getQuoteById($cartId)
+    {
+        return $this->quoteRepository->get($cartId);
     }
 
 }
