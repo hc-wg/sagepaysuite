@@ -126,8 +126,8 @@ class Request extends \Magento\Backend\App\AbstractAction
         $data['FailureURL'] = $this->_backendUrl->getUrl('*/*/failure');
 
         //email details
-        $data['VendorEMail'] = $this->_config->getFormVendorEmail();
-        $data['SendEMail'] = $this->_config->getFormSendEmail();
+        $data['VendorEMail']  = $this->_config->getFormVendorEmail();
+        $data['SendEMail']    = $this->_config->getFormSendEmail();
         $data['EmailMessage'] = substr($this->_config->getFormEmailMessage(), 0, 7500);
 
         //populate payment amount information
