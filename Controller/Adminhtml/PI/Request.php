@@ -207,22 +207,23 @@ class Request extends \Magento\Backend\App\AbstractAction
             'paymentMethod' => [
                 'card' => [
                     'merchantSessionKey' => $this->_postData->merchant_session_key,
-                    'cardIdentifier' => $this->_postData->card_identifier,
+                    'cardIdentifier'     => $this->_postData->card_identifier,
                 ]
             ],
             'vendorTxCode' => $vendorTxCode,
-            'description' => $this->_requestHelper->getOrderDescription(true),
+            'description'  => $this->_requestHelper->getOrderDescription(true),
             'customerFirstName' => $billing_address->getFirstname(),
             'customerLastName' => $billing_address->getLastname(),
             'billingAddress' => [
-                'address1' => $billing_address->getStreetLine(1),
-                'city' => $billing_address->getCity(),
+                'address1'   => $billing_address->getStreetLine(1),
+                'city'       => $billing_address->getCity(),
                 'postalCode' => $billing_address->getPostCode(),
-                'country' => $billing_address->getCountryId()
+                'country'    => $billing_address->getCountryId()
             ],
-            'entryMethod' => "Ecommerce",
-            'apply3DSecure' => $this->_config->get3Dsecure(true),
-            'applyAvsCvcCheck' => $this->_config->getAvsCvc()
+            'apply3DSecure'    => $this->_config->get3Dsecure(true),
+            'applyAvsCvcCheck' => $this->_config->getAvsCvc(),
+            'referrerId'       => $this->_requestHelper->getReferrerId(),
+            'entryMethod'      => "TelephoneOrder"
         ];
 
         //populate payment amount information
