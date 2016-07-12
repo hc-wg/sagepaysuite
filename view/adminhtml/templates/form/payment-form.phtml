@@ -9,16 +9,14 @@ $_code = $block->getMethodCode();
 ?>
 
 <div id="payment_form_<?php echo $_code ?>" class="admin__page-section-item" style="display:none;"
-     data-mage-init='{"sagepaysuiteFormForm":{}}'>
+     data-mage-init='{"sagepaysuiteFormForm":{"serviceUrl":"<?php echo $this->getUrl('sagepaysuite/form/request', []); ?>"}}'>
 
     <span id="<?php echo $_code ?>-payment-errors" class="message error" style="display: none;"></span>
 
-    <img style="margin-top: 10px; max-height: 45px;" class="payment-icon sagepaysuite-payment-icon" src="http://www.sagepay.co.uk/files/logo_0.png"/>
+    <img style="margin-top: 10px; max-height: 45px;" class="payment-icon sagepaysuite-payment-icon" src="https://www.sagepay.co.uk/files/logo_0.png"/>
 
     <div class="payment-method-note">
-        <strong>
-            <!-- ko text: $t('You will be redirected to the Sage Pay website.') --><!-- /ko -->
-        </strong>
+        <strong><?php echo __("You will be redirected to Sage Pay to complete payment.") ?></strong>
     </div>
 
     <!-- #### sagepay form request form #### -->
@@ -32,12 +30,4 @@ $_code = $block->getMethodCode();
         <input type="hidden" name="Vendor" value=""/>
         <input type="hidden" name="Crypt" value=""/>
     </form>
-
-    <script>
-        var sagepaysuiteform_config = {
-            "url": {
-                "request" : '<?php echo $this->getUrl('sagepaysuite/form/request', []); ?>'
-            }
-        };
-    </script>
 </div>

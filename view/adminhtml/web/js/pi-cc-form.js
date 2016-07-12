@@ -8,16 +8,19 @@
 define([
     "jquery",
     'mage/url',
-    "jquery/ui"
-], function ($, url) {
+    "jquery/ui",
+    'mage/translate'
+], function ($, url, ui, $t) {
     "use strict";
 
     //load sagepay library
-    if(sagepaysuitepi_config && sagepaysuitepi_config.mode == 'live'){
-        var sagepayjs = require(['sagepayjs_live']);
-    }else{
-        var sagepayjs = require(['sagepayjs_test']);
-    }
+    //if(sagepaysuitepi_config && this.options.mode == 'live'){
+    // if(false) {
+    //     var sagepayjs = require(['sagepayjs_live']);
+    // }
+    // else {
+    //     var sagepayjs = require(['sagepayjs_test']);
+    // }
 
     /**
      * Disable card server validation in admin
@@ -56,7 +59,7 @@ define([
             var self = this;
             self.resetPaymentErrors();
 
-            var serviceUrl = sagepaysuitepi_config.url.generateMerchantKey;
+            var serviceUrl = this.options.url.generateMerchantKey;
 
             jQuery.ajax( {
                 url: serviceUrl,
@@ -173,7 +176,7 @@ define([
 
             var self = this;
 
-            var serviceUrl = sagepaysuitepi_config.url.request;
+            var serviceUrl = this.options.url.request;
 
             var payload = {
                 merchant_session_key: self.merchantSessionKey,
@@ -245,6 +248,15 @@ define([
 
         },
         _create: function () {
+
+            if(this.options.mode == 'live') {
+                var sagepayjs = require(['sagepayjs_live']);
+            }
+            else {
+                var sagepayjs = require(['sagepayjs_test']);
+            }
+
+
             $('#edit_form').on('changePaymentMethod', this.prepare.bind(this));
             $('#edit_form').on('changePaymentData', this.changePaymentData.bind(this));
             $('#edit_form').trigger(

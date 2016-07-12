@@ -10,7 +10,12 @@ $_config = $this->helper('Ebizmarts\SagePaySuite\Helper\Data')->getSagePayConfig
 
 
 <div id="payment_form_<?php echo $_code ?>" class="admin__page-section-item" style="display:none;"
-    data-mage-init='{"sagepaysuiteRepeatForm":{}}'>
+    data-mage-init='{"sagepaysuiteRepeatForm":{
+            "url": {
+                "request" : "<?php echo $this->getUrl('sagepaysuite/repeat/request', []); ?>"
+            },
+            "mode": "<?php echo $_config->getMode(); ?>"
+}}'>
 
     <span id="<?php echo $_code ?>-payment-errors" class="message error" style="display: none;"></span>
 
@@ -22,15 +27,4 @@ $_config = $this->helper('Ebizmarts\SagePaySuite\Helper\Data')->getSagePayConfig
         </div>
     </div>
     </fieldset>
-
-    <script>
-
-        var sagepaysuiterepeat_config = {
-            "url": {
-                "request" : '<?php echo $this->getUrl('sagepaysuite/repeat/request', []); ?>'
-            },
-            "mode": '<?php echo $_config->getMode(); ?>'
-        };
-    </script>
-
 </div>

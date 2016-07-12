@@ -45,7 +45,7 @@ define([
             var self = this;
             self.resetPaymentErrors();
 
-            var serviceUrl = sagepaysuiterepeat_config.url.request;
+            var serviceUrl = this.options.url.request;
 
             var payload = {
                 vpstxid: $('#' + self.getCode() + '_vpstxid').val(),

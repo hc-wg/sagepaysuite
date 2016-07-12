@@ -197,7 +197,8 @@ class Request extends \Magento\Backend\App\AbstractAction
         $data = array();
 
         $data['VendorTxCode'] = $vendorTxCode;
-        $data['Description'] = $this->_requestHelper->getOrderDescription(true);
+        $data['Description']  = $this->_requestHelper->getOrderDescription(true);
+        $data['ReferrerID']   = $this->_requestHelper->getReferrerId();
 
         //basket XML
 //        if($this->_config->isSendBasket()) {

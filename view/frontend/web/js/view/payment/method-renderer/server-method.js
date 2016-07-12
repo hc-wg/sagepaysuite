@@ -107,9 +107,17 @@ define(
                         ).done(
                             function () {
 
-                                var serviceUrl = url.build('sagepaysuite/server/request');
+                                var serviceUrl = null;
+                                if (customer.isLoggedIn()) {
+                                    serviceUrl = urlBuilder.createUrl('/sagepay/server', {});
+                                }
+                                else {
+                                    serviceUrl = urlBuilder.createUrl('/sagepay-guest/server', {});
+                                }
+
                                 var save_token = self.save_token && !self.use_token;
-                                var token = null;
+                                var token = "%token%";
+
                                 if (self.use_token) {
                                     var tokens = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens;
                                     for (var i = 0; i < tokens.length; i++) {
@@ -125,11 +133,12 @@ define(
                                 }
 
                                 //send server post request
-                                return storage.post(serviceUrl,
-                                    JSON.stringify({
-                                        save_token: save_token,
-                                        token: token
-                                    })).done(
+                                 return storage.post(serviceUrl,
+                                     JSON.stringify({
+                                         "cartId": quote.getQuoteId(),
+                                         "save_token": save_token,
+                                         "token": token
+                                     })).done(
                                     function (response) {
 
                                         if (response.success) {
@@ -144,7 +153,7 @@ define(
                                             //$('#sagepaysuiteserver_embed_iframe_container').html("<iframe class='main-iframe' src='" +
                                             //    response.response.data.NextURL + "'></iframe>");
 
-                                            self.openSERVERModal(response.response.data.NextURL);
+                                            self.openSERVERModal(response.response[1].NextURL);
 
                                             fullScreenLoader.stopLoader();
 
