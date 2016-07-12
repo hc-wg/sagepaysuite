@@ -1,3 +1,12 @@
+1.1.6.0 (12/07/2016)
+=============
+**This release requires Magento 2.1.0 at least.**
+* Improvements
+    * Change PI wording for Direct.
+* Bugfixes
+    * Order with custom option=file with SERVER integration was not working.
+    * MOTO fixes.
+
 1.1.5.2 (28/06/2016)
 =============
 * Bugfixes
