@@ -209,16 +209,16 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
             $newItem["qty"] = $itemQty;
 
             //Item value
-            $newItem["item_value"] = $itemValue;
+            $newItem["item_value"] = number_format($itemValue, 2);
 
             //Item tax
             $newItem["item_tax"] = number_format($taxAmount, 3);
 
             //Item total
-            $newItem["item_total"] = $itemTotal;
+            $newItem["item_total"] = number_format($itemTotal, 2);
 
             //Line total
-            $newItem["line_total"] = $itemTotal * $itemQty;
+            $newItem["line_total"] = number_format($itemTotal * $itemQty, 2);
 
             //add item to array
             $basketArray[] = $newItem;
