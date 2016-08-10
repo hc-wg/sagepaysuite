@@ -17,7 +17,7 @@ dependencies:
     - wget https://github.com/magento/magento2/archive/$MAGE_VERSION.zip
     - unzip -qq $MAGE_VERSION.zip
     - mkdir -p magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite
-    - cp -r ./* magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite
+    - cp -r Api Block Controller Helper Model Observer Setup Test etc view i18n registration.php magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite
     - cd magento2-$MAGE_VERSION && wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
     - cp phpunit_config.xml magento2-$MAGE_VERSION/dev/tests/unit/
     - cp phpunit_config_integration.xml magento2-$MAGE_VERSION/dev/tests/integration/phpunit.xml
