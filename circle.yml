@@ -1,6 +1,6 @@
 machine:
   php:
-    version: 5.6.22
+    version: 5.6.14
   environment:
     MAGE_VERSION: 2.1.0
     DB_URL: 127.0.0.1
@@ -10,21 +10,23 @@ machine:
 dependencies:
   pre:
     - sed -i 's/^;//' ~/.phpenv/versions/$(phpenv global)/etc/conf.d/xdebug.ini
-    - echo "memory_limit = 512M" > ~/.phpenv/versions/$(phpenv global)/etc/conf.d/memory.ini
+    - echo "memory_limit = 768M" > ~/.phpenv/versions/$(phpenv global)/etc/conf.d/memory.ini
     - sudo apt-add-repository -y 'deb http://ppa.launchpad.net/ondrej/mysql-experimental/ubuntu precise main'
     - sudo apt-get update; sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server-5.6
   override:
     - wget https://github.com/magento/magento2/archive/$MAGE_VERSION.zip
     - unzip -qq $MAGE_VERSION.zip
     - mkdir -p magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite
-    - cp -r Block Controller Helper Model Setup Test etc view registration.php magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite
+    - cp -r ./* magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite
     - cd magento2-$MAGE_VERSION && wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
     - cp phpunit_config.xml magento2-$MAGE_VERSION/dev/tests/unit/
+    - cp phpunit_config_integration.xml magento2-$MAGE_VERSION/dev/tests/integration/phpunit.xml
     - cd magento2-$MAGE_VERSION && composer install --prefer-source --no-interaction
-    - cd magento2-$MAGE_VERSION && bin/magento setup:install --base-url=http://127.0.0.1/magento2/ --db-host=$DB_URL --db-name=$DB_NAME --db-user=$DB_USER --db-password= --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1
+    - cd magento2-$MAGE_VERSION && bin/magento setup:install --base-url=http://127.0.0.1/magento2.1/ --db-host=$DB_URL --db-name=$DB_NAME --db-user=$DB_USER --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1
     - cd magento2-$MAGE_VERSION && bin/magento setup:upgrade
     - cd magento2-$MAGE_VERSION && bin/magento setup:di:compile
 
 test:
   override:
+    - cd magento2-$MAGE_VERSION && composer require --prefer-source --no-interaction "squizlabs/php_codesniffer=*" magento-ecg/coding-standard && vendor/squizlabs/php_codesniffer/scripts/phpcs --config-set installed_paths vendor/magento-ecg/coding-standard && ./vendor/squizlabs/php_codesniffer/scripts/phpcs -n --standard="EcgM2" ./app/code/Ebizmarts/SagePaySuite;
     - magento2-$MAGE_VERSION/vendor/bin/phpunit -c magento2-$MAGE_VERSION/dev/tests/unit/phpunit_config.xml --coverage-text
