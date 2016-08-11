@@ -146,7 +146,6 @@ define(
 
                         //request token
                         Sagepay.tokeniseCardDetails(token_form, function (status, response) {
-                            //console.log(status, response);
 
                             if (status === 201) {
                                 self.creditCardType = self.parseCCType(response.cardType);
