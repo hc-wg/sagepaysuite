@@ -88,8 +88,8 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\DataObject\Copy $objectCopyService,
         \Magento\Checkout\Model\Session $checkoutSession,
         Logger $suiteLogger
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_quoteManagement = $quoteManagement;
         $this->orderSender = $orderSender;
@@ -267,5 +267,4 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $this->orderSender->send($order);
     }
-
 }

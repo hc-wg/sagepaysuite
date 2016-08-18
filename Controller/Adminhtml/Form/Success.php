@@ -70,8 +70,8 @@ class Success extends \Magento\Backend\App\AbstractAction
         \Ebizmarts\SagePaySuite\Model\Form $formModel,
         \Magento\Backend\Model\Session\Quote $quoteSession,
         \Magento\Quote\Model\QuoteManagement $quoteManagement
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
@@ -92,7 +92,6 @@ class Success extends \Magento\Backend\App\AbstractAction
         $order = null;
 
         try {
-
             //decode response
             $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
             if (!array_key_exists("VPSTxId", $response)) {
@@ -100,7 +99,7 @@ class Success extends \Magento\Backend\App\AbstractAction
             }
 
             //log response
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $response);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
 
             $this->_quote = $this->_quoteSession->getQuote();
             //$this->_quote->save();
@@ -131,12 +130,10 @@ class Success extends \Magento\Backend\App\AbstractAction
             $order = $this->_quoteManagement->submit($this->_quote);
 
             //an order may be created
-            if ($order)
-            {
-                //send email
+            if ($order) {
+            //send email
                 $this->_checkoutHelper->sendOrderEmail($order);
-
-            }else{
+            } else {
                 throw new \Magento\Framework\Exception\LocalizedException(__('Can not create order'));
             }
 
@@ -191,18 +188,15 @@ class Success extends \Magento\Backend\App\AbstractAction
             $this->_redirect($url);
 
             return;
-
-        } catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             $this->_suiteLogger->logException($e);
 
-            if($order)
-            {
+            if ($order) {
                 $this->messageManager->addError($e->getMessage());
                 $route = 'sales/order/view';
                 $param['order_id'] = $order->getId();
                 $url = $this->_backendUrl->getUrl($route, $param);
-            }else{
+            } else {
                 $this->messageManager->addError("Your payment was successful but the order was NOT created: " . $e->getMessage());
                 $route = 'sales/order/view';
                 $url = $this->_backendUrl->getUrl($route, []);

@@ -81,7 +81,7 @@ class InfoTest extends \PHPUnit_Framework_TestCase
     {
         $this->urlBuilderMock->expects($this->once())
             ->method('getUrl')
-            ->with('sagepaysuite/order/syncFromApi', array('order_id'=>NULL));
+            ->with('sagepaysuite/order/syncFromApi', ['order_id'=>null]);
 
         $this->infoBlock->getSyncFromApiUrl();
     }

@@ -25,9 +25,8 @@ define([
     /**
      * Disable card server validation in admin
      */
-    if (typeof order !== 'undefined')
-    {
-        order.addExcludedPaymentMethod('sagepaysuitepi');
+    if (typeof order !== 'undefined') {
+    order.addExcludedPaymentMethod('sagepaysuitepi');
     }
 
     $.widget('mage.sagepaysuitepiCcForm', {
@@ -50,10 +49,10 @@ define([
             $('#edit_form').off('submitOrder').on('submitOrder', this.submitAdminOrder.bind(this));
             $('#edit_form').off('changePaymentData').on('changePaymentData', this.changePaymentData.bind(this));
         },
-        changePaymentData: function()
-        {},
-        fieldObserver: function()
-        {},
+        changePaymentData: function () {
+        },
+        fieldObserver: function () {
+        },
         submitAdminOrder: function () {
 
             var self = this;
@@ -61,11 +60,11 @@ define([
 
             var serviceUrl = this.options.url.generateMerchantKey;
 
-            jQuery.ajax( {
+            jQuery.ajax({
                 url: serviceUrl,
                 data: {form_key: window.FORM_KEY},
                 type: 'POST'
-            }).done(function(response) {
+            }).done(function (response) {
                 if (response.success) {
                     self.sagepayTokeniseCard(response.merchant_session_key);
                 } else {
@@ -81,10 +80,9 @@ define([
             var self = this;
 
             if (merchant_session_key) {
-
                 var token_form = document.getElementById(self.getCode() + '-token-form');
 
-                if(!token_form){
+                if (!token_form) {
                     token_form = document.createElement("form");
                     token_form.setAttribute('id',self.getCode() + '-token-form');
                     token_form.setAttribute('method',"post");
@@ -124,9 +122,7 @@ define([
                     input_cc_cvc.setAttribute('data-sagepay',"securityCode");
                     token_form.appendChild(input_cc_cvc);
                     input_cc_cvc.setAttribute('value',document.getElementById(self.getCode() + "_cc_cid").value);
-
-                }else {
-
+                } else {
                     //update token form
                     var token_form = document.getElementById(self.getCode() + '-token-form');
                     token_form.elements[0].setAttribute('value', merchant_session_key);
@@ -140,10 +136,9 @@ define([
                 }
 
                 try {
-
                     //request token
-                    Sagepay.tokeniseCardDetails(token_form, function (status, response)
-                    {
+                    Sagepay.tokeniseCardDetails(token_form, function (status, response) {
+                    
                         if (status === 201) {
                             self.creditCardType = self.parseCCType(response.cardType);
                             self.creditCardExpYear = document.getElementById(self.getCode() + '_expiration_yr').value;
@@ -153,16 +148,20 @@ define([
                             self.cardIdentifier = response.cardIdentifier;
 
                             try {
-
                                 self.placeTansactionRequest();
-
                             } catch (err) {
                                 console.log(err);
                                 alert("Unable to initialize Sage Pay payment method, please refresh the page and try again.");
                             }
-
                         } else {
-                            self.showPaymentError(response.error.message);
+                            var errorMessages = "";
+
+                            var errorsCount = response.responseJSON.errors.length;
+                            for (var i = 0; i < errorsCount; i++) {
+                                errorMessages += "<br />" + response.responseJSON.errors[i].clientMessage;
+                            }
+
+                            self.showPaymentError(errorMessages);
                         }
                     });
                 } catch (err) {
@@ -172,33 +171,40 @@ define([
                 }
             }
         },
-        placeTansactionRequest: function(){
+        placeTansactionRequest: function () {
 
             var self = this;
 
             var serviceUrl = this.options.url.request;
 
-            var payload = {
-                merchant_session_key: self.merchantSessionKey,
-                card_identifier: self.cardIdentifier,
-                card_type: self.creditCardType,
-                card_exp_month: self.creditCardExpMonth,
-                card_exp_year: self.creditCardExpYear,
-                card_last4: self.creditCardLast4,
-                form_key: window.FORM_KEY
-            };
+            // var payload = {
+            //     merchant_session_key: self.merchantSessionKey,
+            //     card_identifier: self.cardIdentifier,
+            //     card_type: self.creditCardType,
+            //     card_exp_month: self.creditCardExpMonth,
+            //     card_exp_year: self.creditCardExpYear,
+            //     card_last4: self.creditCardLast4,
+            //     form_key: window.FORM_KEY
+            // };
 
-            jQuery.ajax( {
+            var formData = jQuery("#edit_form").serialize();
+            formData += "&merchant_session_key=" + self.merchantSessionKey;
+            formData += "&card_identifier=" + self.cardIdentifier;
+            formData += "&card_type=" + self.creditCardType;
+            formData += "&card_exp_month=" + self.creditCardExpMonth;
+            formData += "&card_exp_year=" + self.creditCardExpYear;
+            formData += "&card_last4=" + self.creditCardLast4;
+
+            jQuery.ajax({
                 url: serviceUrl,
-                data: payload,
+                data: formData,
                 type: 'POST'
-            }).done(function(response) {
-                if(response.success == true) {
+            }).done(function (response) {
 
+                if (response.success == true) {
                     //redirect to success
                     window.location.href = response.response.redirect;
-
-                }else{
+                } else {
                     self.showPaymentError(response.error_message ? response.error_message : "Invalid Sage Pay response, please use another payment method.");
                 }
                 console.log(response);
@@ -229,7 +235,7 @@ define([
                     break;
             }
         },
-        getCode: function(){
+        getCode: function () {
             return this.options.code;
         },
         showPaymentError: function (message) {
@@ -249,10 +255,9 @@ define([
         },
         _create: function () {
 
-            if(this.options.mode == 'live') {
+            if (this.options.mode == 'live') {
                 var sagepayjs = require(['sagepayjs_live']);
-            }
-            else {
+            } else {
                 var sagepayjs = require(['sagepayjs_test']);
             }
 

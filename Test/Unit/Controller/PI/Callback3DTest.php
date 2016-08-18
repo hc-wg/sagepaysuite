@@ -203,7 +203,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
         $this->_expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/onepage/success', array('_secure' => true))
+            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true])
             . '";</script>'
         );
 
@@ -214,11 +214,11 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
     {
         $this->orderMock->expects($this->any())
             ->method('load')
-            ->willReturn(NULL);
+            ->willReturn(null);
 
         $this->_expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/cart', array('_secure' => true))
+            . $this->urlBuilderMock->getUrl('checkout/cart', ['_secure' => true])
             . '";</script>'
         );
 

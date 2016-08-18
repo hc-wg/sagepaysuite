@@ -21,7 +21,7 @@ class BasketFormat implements ArrayInterface
     {
         return [
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50,
+                'value' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
                 'label' => __('Sage50 compatible')
             ],
             [
@@ -29,7 +29,7 @@ class BasketFormat implements ArrayInterface
                 'label' => __('XML')
             ],
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Disabled,
+                'value' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_DISABLED,
                 'label' => __('Disabled')
             ]
         ];

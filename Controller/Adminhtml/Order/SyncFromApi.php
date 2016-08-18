@@ -52,8 +52,8 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
         \Ebizmarts\SagePaySuite\Helper\Fraud $fraudHelper,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Magento\Sales\Model\Order\Payment\Transaction\Repository $transactionRepository
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_reportingApi = $reportingApi;
         $this->_orderFactory = $orderFactory;
@@ -66,7 +66,6 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
     public function execute()
     {
         try {
-
             //get order id
             if (!empty($this->getRequest()->getParam("order_id"))) {
                 $order = $this->_orderFactory->create()->load($this->getRequest()->getParam("order_id"));
@@ -86,28 +85,25 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
 
             //update fraud status
             if (!empty($payment->getLastTransId())) {
-                $transaction = $this->_transactionRepository->getByTransactionId($payment->getLastTransId(),$payment->getId(), $order->getId());
-                if ((bool)$transaction->getSagepaysuiteFraudCheck() == false)
-                {
+                $transaction = $this->_transactionRepository->getByTransactionId($payment->getLastTransId(), $payment->getId(), $order->getId());
+                if ((bool)$transaction->getSagepaysuiteFraudCheck() == false) {
                     $this->_fraudHelper->processFraudInformation($transaction, $payment);
                 }
             }
 
             $this->messageManager->addSuccess(__('Successfully synced from Sage Pay\'s API'));
-
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->_suiteLogger->SageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString());
+            $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString());
             $this->messageManager->addError(__($apiException->getUserMessage()));
-
         } catch (\Exception $e) {
-            $this->_suiteLogger->SageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString());
+            $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString());
             $this->messageManager->addError(__('Something went wrong: ' . $e->getMessage()));
         }
 
         if (!empty($order)) {
-            $this->_redirect($this->_backendUrl->getUrl('sales/order/view/', array('order_id' => $order->getId())));
+            $this->_redirect($this->_backendUrl->getUrl('sales/order/view/', ['order_id' => $order->getId()]));
         } else {
-            $this->_redirect($this->_backendUrl->getUrl('sales/order/index/', array()));
+            $this->_redirect($this->_backendUrl->getUrl('sales/order/index/', []));
         }
     }
 }

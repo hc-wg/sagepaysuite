@@ -78,8 +78,8 @@ class Success extends \Magento\Framework\App\Action\Action
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Model\Form $formModel
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
@@ -99,7 +99,6 @@ class Success extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
-
             //decode response
             $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
             if (!array_key_exists("VPSTxId", $response)) {
@@ -107,7 +106,7 @@ class Success extends \Magento\Framework\App\Action\Action
             }
 
             //log response
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $response);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
 
             $this->_quote = $this->_checkoutSession->getQuote();
             //$this->_quote->save();
@@ -151,7 +150,7 @@ class Success extends \Magento\Framework\App\Action\Action
 
                 //send email
                 $this->_checkoutHelper->sendOrderEmail($order);
-            }else{
+            } else {
                 throw new \Magento\Framework\Exception\LocalizedException(__('Can not create order'));
             }
 
@@ -202,9 +201,7 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->_redirect('checkout/onepage/success');
 
             return;
-
-        } catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             $this->_logger->critical($e);
             $this->_redirectToCartAndShowError('Your payment was successful but the order was NOT created, please contact administration: ' . $e->getMessage());
         }
@@ -221,5 +218,4 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->messageManager->addError($errorMessage);
         $this->_redirect('checkout/cart');
     }
-
 }

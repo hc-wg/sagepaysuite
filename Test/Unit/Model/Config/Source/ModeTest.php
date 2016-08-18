@@ -22,7 +22,8 @@ class ModeTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testToOptionArray(){
+    public function testToOptionArray()
+    {
         $this->assertEquals(
             [
                 'value' => \Ebizmarts\SagePaySuite\Model\Config::MODE_TEST,

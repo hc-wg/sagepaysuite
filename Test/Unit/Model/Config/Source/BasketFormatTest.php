@@ -26,7 +26,7 @@ class BasketFormatTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50,
+                'value' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
                 'label' => __('Sage50 compatible')
             ],
             $this->basketFormatModel->toOptionArray()[0]

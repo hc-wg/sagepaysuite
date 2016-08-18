@@ -158,5 +158,4 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
     {
         $this->syncFromApiController->execute();
     }
-
 }

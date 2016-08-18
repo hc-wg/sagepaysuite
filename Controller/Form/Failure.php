@@ -37,8 +37,8 @@ class Failure extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
         \Psr\Log\LoggerInterface $logger,
         \Ebizmarts\SagePaySuite\Model\Form $formModel
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_suiteLogger = $suiteLogger;
         $this->_logger = $logger;
@@ -51,7 +51,6 @@ class Failure extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
-
             //decode response
             $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
             if (!array_key_exists("Status", $response) || !array_key_exists("StatusDetail", $response)) {
@@ -59,19 +58,17 @@ class Failure extends \Magento\Framework\App\Action\Action
             }
 
             //log response
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $response);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
 
             $statusDetail = $response["StatusDetail"];
-            $statusDetail = explode(" : ",$statusDetail);
+            $statusDetail = explode(" : ", $statusDetail);
             $statusDetail = $statusDetail[1];
 
             $this->messageManager->addError($response["Status"] . ": " . $statusDetail);
             $this->_redirect('checkout/cart');
 
             return;
-
-        } catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             $this->messageManager->addError($e->getMessage());
             $this->_logger->critical($e);
         }

@@ -8,7 +8,6 @@ namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\Reports\Tokens;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
-
 class Delete extends \Magento\Backend\App\Action
 {
 
@@ -41,8 +40,8 @@ class Delete extends \Magento\Backend\App\Action
         Logger $suiteLogger,
         \Psr\Log\LoggerInterface $logger,
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_suiteLogger = $suiteLogger;
         $this->_logger = $logger;
@@ -52,7 +51,6 @@ class Delete extends \Magento\Backend\App\Action
     public function execute()
     {
         try {
-
             $this->_view->loadLayout();
             $this->_tokenId = $this->getRequest()->getParam('id');
 
@@ -66,14 +64,10 @@ class Delete extends \Magento\Backend\App\Action
             $token->deleteToken();
 
             $this->messageManager->addSuccess(__('Token deleted successfully.'));
-
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-
             $this->_logger->critical($apiException);
             $this->messageManager->addError(__($apiException->getUserMessage()));
-
         } catch (\Exception $e) {
-
             $this->_logger->critical($e);
             $this->messageManager->addError(__($e->getMessage()));
         }

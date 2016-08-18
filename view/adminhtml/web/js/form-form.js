@@ -31,10 +31,10 @@ define([
 
             //this.options.serviceUrl = sagepaysuiteform_config.url.request;
         },
-        changePaymentData: function(){
+        changePaymentData: function () {
             console.log("changePaymentData");
         },
-        fieldObserver: function(){
+        fieldObserver: function () {
             console.log("fieldObserver");
         },
         submitAdminOrder: function () {
@@ -44,16 +44,15 @@ define([
 
             var serviceUrl = this.options.serviceUrl;
 
-            jQuery.ajax( {
+            jQuery.ajax({
                 url: serviceUrl,
                 data: {form_key: window.FORM_KEY},
                 type: 'POST'
-            }).done(function(response) {
+            }).done(function (response) {
                 if (response.success) {
-
                     //set form data and submit
                     var form_form = document.getElementById(self.getCode() + '-form');
-                    if(!form_form){
+                    if (!form_form) {
                         form_form = document.createElement("form");
                         form_form.setAttribute('method',"post");
                         form_form.setAttribute('style',"display:none;");
@@ -81,7 +80,6 @@ define([
                     form_form.elements[2].setAttribute('value', response.vendor);
                     form_form.elements[3].setAttribute('value', response.crypt);
                     form_form.submit();
-
                 } else {
                     self.showPaymentError(response.error_message);
                 }
@@ -89,7 +87,7 @@ define([
 
             return false;
         },
-        getCode: function(){
+        getCode: function () {
             return this.options.code;
         },
         showPaymentError: function (message) {

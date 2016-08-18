@@ -15,9 +15,8 @@ define([
     /**
      * Disable card server validation in admin
      */
-    if (typeof variable !== 'undefined')
-    {
-        order.addExcludedPaymentMethod('sagepaysuiterepeat');
+    if (typeof variable !== 'undefined') {
+    order.addExcludedPaymentMethod('sagepaysuiterepeat');
     }
 
     $.widget('mage.sagepaysuiteRepeatForm', {
@@ -34,10 +33,10 @@ define([
             $('#edit_form').off('submitOrder').on('submitOrder', this.submitAdminOrder.bind(this));
             $('#edit_form').off('changePaymentData').on('changePaymentData', this.changePaymentData.bind(this));
         },
-        changePaymentData: function(){
+        changePaymentData: function () {
             //console.log("changePaymentData");
         },
-        fieldObserver: function(){
+        fieldObserver: function () {
             //console.log("fieldObserver");
         },
         submitAdminOrder: function () {
@@ -52,23 +51,21 @@ define([
                 form_key: window.FORM_KEY
             };
 
-            jQuery.ajax( {
+            jQuery.ajax({
                 url: serviceUrl,
                 data: payload,
                 type: 'POST'
-            }).done(function(response) {
-                if(response.success == true) {
-
+            }).done(function (response) {
+                if (response.success == true) {
                     //redirect to success
                     window.location.href = response.response.data.redirect;
-
-                }else{
+                } else {
                     console.log(response);
                     self.showPaymentError(response.error_message ? response.error_message : "Invalid Sage Pay response.");
                 }
             });
         },
-        getCode: function(){
+        getCode: function () {
             return this.options.code;
         },
         showPaymentError: function (message) {
@@ -83,7 +80,7 @@ define([
         },
         resetPaymentErrors: function () {
             var span = document.getElementById(this.getCode() + '-payment-errors');
-            if(span){
+            if (span) {
                 span.style.display = "none";
             }
         },

@@ -6,7 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
-
 class FraudTest extends \PHPUnit_Framework_TestCase
 {
     /**

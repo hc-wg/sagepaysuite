@@ -25,8 +25,8 @@ class Processing extends \Magento\Framework\App\Action\Action
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context
-    )
-    {
+    ) {
+    
         parent::__construct($context);
     }
 
@@ -36,7 +36,8 @@ class Processing extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         $body = $this->_view->getLayout()->createBlock(
-            'Ebizmarts\SagePaySuite\Block\Paypal\Processing')
+            'Ebizmarts\SagePaySuite\Block\Paypal\Processing'
+        )
             ->setData(
                 ["paypal_post"=>$this->getRequest()->getPost()]
             )->toHtml();

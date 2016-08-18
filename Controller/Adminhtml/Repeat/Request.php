@@ -99,8 +99,8 @@ class Request extends \Magento\Backend\App\AbstractAction
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
         \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_REPEAT);
@@ -134,7 +134,8 @@ class Request extends \Magento\Backend\App\AbstractAction
             $post_response = $this->_sharedApi->repeatTransaction(
                 $this->_postData->vpstxid,
                 $request,
-                $this->_config->getSagepayPaymentAction());
+                $this->_config->getSagepayPaymentAction()
+            );
 
             //set payment info for save order
             $transactionId = str_replace("{", "", str_replace("}", "", $post_response["data"]["VPSTxId"])); //strip brackets
@@ -152,9 +153,8 @@ class Request extends \Magento\Backend\App\AbstractAction
             $order = $this->_quoteManagement->submit($this->_quote);
 
             if ($order) {
-
                 //mark order as paid
-                $this->_confirmPayment($transactionId,$order);
+                $this->_confirmPayment($transactionId, $order);
 
                 //add success url to response
                 $route = 'sales/order/view';
@@ -167,18 +167,15 @@ class Request extends \Magento\Backend\App\AbstractAction
                     'success' => true,
                     'response' => $post_response
                 ];
-
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order.'));
             }
-
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_suiteLogger->logException($apiException);
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $apiException->getUserMessage()),
             ];
-
         } catch (\Exception $e) {
             $this->_suiteLogger->logException($e);
             $responseContent = [
@@ -194,7 +191,7 @@ class Request extends \Magento\Backend\App\AbstractAction
 
     protected function _generateRequest($vendorTxCode)
     {
-        $data = array();
+        $data = [];
 
         $data['VendorTxCode'] = $vendorTxCode;
         $data['Description']  = $this->_requestHelper->getOrderDescription(true);
@@ -214,14 +211,14 @@ class Request extends \Magento\Backend\App\AbstractAction
         return $data;
     }
 
-    protected function _confirmPayment($transactionId,$order)
+    protected function _confirmPayment($transactionId, $order)
     {
         $payment = $order->getPayment();
         $payment->setTransactionId($transactionId);
         $payment->setLastTransId($transactionId);
 
         //leave transaction open in case defer
-        if($this->_config->getSagepayPaymentAction() == Config::ACTION_REPEAT_DEFERRED){
+        if ($this->_config->getSagepayPaymentAction() == Config::ACTION_REPEAT_DEFERRED) {
             $payment->setIsTransactionClosed(0);
         }
 

@@ -1,7 +1,6 @@
 <?php
 namespace Ebizmarts\SagePaySuite\Api\Data;
 
-
 interface ResultInterface
 {
     const SUCCESS       = 'success';

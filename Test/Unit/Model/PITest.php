@@ -97,7 +97,6 @@ class PITest extends \PHPUnit_Framework_TestCase
             ->with(self::TEST_VPSTXID, 100, 1000001);
 
         $this->piModel->refund($paymentMock, 100);
-
     }
 
     public function testRefundERROR()
@@ -135,7 +134,6 @@ class PITest extends \PHPUnit_Framework_TestCase
             'There was an error refunding Sage Pay transaction ' . self::TEST_VPSTXID . ': Error in Refunding',
             $response
         );
-
     }
 
     public function testCancel()

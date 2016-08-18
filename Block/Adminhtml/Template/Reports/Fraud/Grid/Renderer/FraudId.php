@@ -25,7 +25,6 @@ class FraudId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
             $additionalInfo = unserialize($additionalInfo);
         }
 
-        return array_key_exists("fraudid",$additionalInfo) ? $additionalInfo["fraudid"] : "";
+        return array_key_exists("fraudid", $additionalInfo) ? $additionalInfo["fraudid"] : "";
     }
-
 }

@@ -81,7 +81,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $result = $data["result"];
 
-        $this->assertEquals($result,
+        $this->assertEquals(
+            $result,
             $this->requestHelper->populateAddressInformation($quoteMock)
         );
     }
@@ -249,7 +250,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                         'shippingAmount' => 15,
                         'shippingTaxAmount' => 0,
                         'parentItem' => false,
-                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50,
+                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
                         'id' => null,
                         'firstName' => null,
                         'lastName' => null,
@@ -296,7 +297,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                         'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML,
                         'shippingDescription' => 'desc',
                         'regionCode' => 'rc',
-                        'allAddresses' => array(),
+                        'allAddresses' => [],
                         'isMultishipping' => false,
                         'method' => 'sagepayserver',
                     ]
@@ -312,31 +313,28 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     {
         $basket = null;
 
-        if ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50)
-        {
-            //TODO: esto se puede mejorar para que no sea tan fijo a este caso
-            $basket = array(
+        if ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50) {
+        //TODO: esto se puede mejorar para que no sea tan fijo a este caso
+            $basket = [
                 'Basket' =>
                     $data['lines'] . ':' . '[' .
                     $data['sku'] . '] ' .
                     $data['name'] . ':' .
                     $data['qty'] . ':' .
-                    $data['priceInclTax'] . ':' .
+                    number_format($data['priceInclTax'], 2) . ':' .
                     number_format($data['taxAmount'], 3) . ':' .
-                    $data['priceInclTax'] * $data['qty'] . ':' .
-                    $data['priceInclTax'] * $data['qty'] . ':' .
+                    number_format($data['priceInclTax'] * $data['qty'], 2) . ':' .
+                    number_format($data['priceInclTax'] * $data['qty'], 2) . ':' .
                     $data['shippingDescription'] . ':' .
                     '1' . ':' .
                     $data['shippingAmount'] . ':' .
                     $data['shippingTaxAmount'] . ':' .
                     ($data['shippingAmount'] + $data['shippingTaxAmount']) . ':' .
                     ($data['shippingAmount'] + $data['shippingTaxAmount'])
-            );
-        }
-        elseif ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML)
-        {
-            //TODO: <productCode/>????
-            $basket = array(
+            ];
+        } elseif ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML) {
+        //TODO: <productCode/>????
+            $basket = [
                 'BasketXML' =>
                     '<?xml version="1.0" encoding="utf-8"?>' .
                     '<basket>' .
@@ -366,13 +364,13 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                         '<deliveryGrossAmount>' . number_format($data['priceInclTax'], 2) . '</deliveryGrossAmount>' .
                         '<shippingFaxNo>' . $data['fax'] . '</shippingFaxNo>' .
                     '</basket>'
-            );
+            ];
         }
 
         $addressMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote\Address')
             ->disableOriginalConstructor()
-            ->setMethods(array(
+            ->setMethods([
                 'getShippingDescription',
                 'getShippingAmount',
                 'getShippingTaxAmount',
@@ -388,7 +386,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 'getCountry',
                 'getPostcode',
                 'getFax'
-            ))->getMock();
+            ])->getMock();
           $addressMock->expects($this->any())
              ->method('getShippingDescription')
              ->willReturn($data['shippingDescription']);
@@ -425,25 +423,25 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 //            ->method('getStreetLine')
 //            ->with(2)
 //            ->willReturn($data['streetLine1']);
-       $addressMock->expects($this->any())
+        $addressMock->expects($this->any())
             ->method('getCity')
             ->willReturn($data['city']);
-      $addressMock->expects($this->any())
+        $addressMock->expects($this->any())
             ->method('getRegionCode')
             ->willReturn($data['regionCode']);
-      $addressMock->expects($this->any())
+        $addressMock->expects($this->any())
             ->method('getCountry')
             ->willReturn($data['country']);
-      $addressMock->expects($this->any())
+        $addressMock->expects($this->any())
             ->method('getPostcode')
             ->willReturn($data['postCode']);
-      $addressMock->expects($this->any())
+        $addressMock->expects($this->any())
             ->method('getFax')
             ->willReturn($data['fax']);
 
         $itemMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote\Item')
-            ->setMethods(array(
+            ->setMethods([
                 'getParentItem',
                 'getQty',
                 'getTaxAmount',
@@ -451,7 +449,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 'getSku',
                 'getName',
                 'getId'
-            ))
+            ])
             ->disableOriginalConstructor()
             ->getMock();
         $itemMock->expects($this->any())
@@ -522,12 +520,12 @@ class RequestTest extends \PHPUnit_Framework_TestCase
              ->willReturn($data['format']);
 
         $this->assertEquals(
-            $basket, $this->requestHelper->populateBasketInformation($quoteMock)
-         );
+            $basket,
+            $this->requestHelper->populateBasketInformation($quoteMock)
+        );
+    }
 
-     }
-
-	public function testGetReferrerId()
+    public function testGetReferrerId()
     {
         $this->assertEquals(
             __("01bf51f9-0dcd-49dd-a07a-3b1f918c77d7"),
@@ -535,4 +533,3 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         );
     }
 }
-

@@ -105,7 +105,8 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new \Magento\Framework\Phrase("INVALID STATUS"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("INVALID STATUS")));
+            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("INVALID STATUS"))
+        );
 
         $this->apiExceptionFactoryMock->expects($this->any())
             ->method('create')
@@ -114,8 +115,7 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
         try {
             $this->reportingApiModel->getTransactionDetails("12345");
             $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
-        {
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->assertEquals(
                 "INVALID STATUS",
                 $apiException->getUserMessage()
@@ -182,5 +182,4 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
             $this->reportingApiModel->getFraudScreenDetail("12345")
         );
     }
-
 }

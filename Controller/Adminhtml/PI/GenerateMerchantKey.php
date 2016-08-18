@@ -22,8 +22,8 @@ class GenerateMerchantKey extends \Magento\Backend\App\AbstractAction
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
         \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirestapi
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_pirest = $pirestapi;
     }
@@ -35,15 +35,12 @@ class GenerateMerchantKey extends \Magento\Backend\App\AbstractAction
                 'success' => true,
                 'merchant_session_key' => $this->_pirest->generateMerchantKey(),
             ];
-
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-
             $responseContent = [
                 'success' => false,
                 'error_message' => __($apiException->getUserMessage()),
             ];
             $this->messageManager->addError(__($apiException->getUserMessage()));
-
         } catch (\Exception $e) {
             $responseContent = [
                 'success' => false,

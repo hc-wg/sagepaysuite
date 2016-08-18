@@ -22,7 +22,7 @@ define(
 
         $(document).ready(function () {
             var formConfig = window.checkoutConfig.payment.ebizmarts_sagepaysuiteform;
-            if(formConfig && !formConfig.licensed){
+            if (formConfig && !formConfig.licensed) {
                 $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
             }
         });
@@ -35,18 +35,17 @@ define(
                 return 'sagepaysuiteform';
             },
             /** Returns payment information data */
-            getData: function() {
+            getData: function () {
                 return $.extend(true, this._super(), {'additional_data': null});
             },
-            preparePayment: function()
-            {
+            preparePayment: function () {
+            
                 var self = this;
                 self.resetPaymentErrors();
 
                 //validations
-                if (!this.validate() || !additionalValidators.validate())
-                {
-                    return false;
+                if (!this.validate() || !additionalValidators.validate()) {
+                return false;
                 }
 
                 fullScreenLoader.startLoader();
@@ -74,10 +73,11 @@ define(
                 }
 
                 return storage.post(
-                    serviceUrl, JSON.stringify(payload)
+                    serviceUrl,
+                    JSON.stringify(payload)
                 ).done(
-                    function ()
-                    {
+                    function () {
+                    
                         var paymentData = {method:self.getCode()};
 
                         /**
@@ -101,7 +101,8 @@ define(
                         }
 
                         return storage.put(
-                            serviceUrl, JSON.stringify(payload)
+                            serviceUrl,
+                            JSON.stringify(payload)
                         ).done(function () {
 
                                 var serviceUrl = url.build('sagepaysuite/form/request');
@@ -111,7 +112,6 @@ define(
                                     function (response) {
 
                                         if (response.success) {
-
                                             //set form data and submit
                                             var form_form = document.getElementById(self.getCode() + '-form');
                                             form_form.setAttribute('action',response.redirect_url);
@@ -121,7 +121,6 @@ define(
                                             form_form.elements[3].setAttribute('value', response.crypt);
 
                                             form_form.submit();
-
                                         } else {
                                             self.showPaymentError(response.error_message);
                                         }
@@ -131,12 +130,11 @@ define(
                                         self.showPaymentError("Unable to submit form to Sage Pay.");
                                     }
                                 );
-                            }
-                        ).fail(
-                            function (response) {
+                            }).fail(
+                                function (response) {
                                 self.showPaymentError("Unable to save payment method.");
-                            }
-                        );
+                                }
+                            );
                     }
                 ).fail(
                     function (response) {
@@ -144,7 +142,7 @@ define(
                     }
                 );
             },
-            showPaymentError: function(message){
+            showPaymentError: function (message) {
 
                 var span = document.getElementById(this.getCode() + '-payment-errors');
 
@@ -153,7 +151,7 @@ define(
 
                 fullScreenLoader.stopLoader();
             },
-            resetPaymentErrors: function(){
+            resetPaymentErrors: function () {
                 var span = document.getElementById(this.getCode() + '-payment-errors');
                 span.style.display="none";
 

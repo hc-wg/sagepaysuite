@@ -31,7 +31,9 @@ class InstallSchema implements InstallSchemaInterface
 
         $connection = $setup->getConnection();
 
-        $connection->modifyColumn($tableName, "last_trans_id",
+        $connection->modifyColumn(
+            $tableName,
+            "last_trans_id",
             [
                 'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
                 'length' => 100,

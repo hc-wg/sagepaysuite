@@ -86,9 +86,9 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
         $this->sharedApiMock->expects($this->once())
             ->method('releaseTransaction')
-            ->with(1,100);
+            ->with(1, 100);
 
-        $this->serverModel->capture($paymentMock,100);
+        $this->serverModel->capture($paymentMock, 100);
     }
 
     public function testCaptureERROR()
@@ -119,12 +119,12 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         $exception = new \Exception("Error in Authenticating");
         $this->sharedApiMock->expects($this->once())
             ->method('authorizeTransaction')
-            ->with(2,100)
+            ->with(2, 100)
             ->willThrowException($exception);
 
         $response = "";
         try {
-            $this->serverModel->capture($paymentMock,100);
+            $this->serverModel->capture($paymentMock, 100);
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $response = $e->getMessage();
         }
@@ -170,10 +170,9 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
         $this->sharedApiMock->expects($this->once())
             ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID,100,1000001);
+            ->with(self::TEST_VPSTXID, 100, 1000001);
 
-        $this->serverModel->refund($paymentMock,100);
-
+        $this->serverModel->refund($paymentMock, 100);
     }
 
     public function testRefundERROR()
@@ -197,12 +196,12 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         $exception = new \Exception("Error in Refunding");
         $this->sharedApiMock->expects($this->once())
             ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID,100,1000001)
+            ->with(self::TEST_VPSTXID, 100, 1000001)
             ->willThrowException($exception);
 
         $response = "";
         try {
-            $this->serverModel->refund($paymentMock,100);
+            $this->serverModel->refund($paymentMock, 100);
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $response = $e->getMessage();
         }
@@ -211,7 +210,6 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             'There was an error refunding Sage Pay transaction ' . self::TEST_VPSTXID . ': Error in Refunding',
             $response
         );
-
     }
 
     public function testCancel()
@@ -260,10 +258,11 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             ->with(false);
 
         $this->serverModel->setInfoInstance($paymentMock);
-        $this->serverModel->initialize("",$stateMock);
+        $this->serverModel->initialize("", $stateMock);
     }
 
-    public function testGetConfigPaymentAction(){
+    public function testGetConfigPaymentAction()
+    {
         $this->configMock->expects($this->once())
             ->method('getPaymentAction');
         $this->serverModel->getConfigPaymentAction();

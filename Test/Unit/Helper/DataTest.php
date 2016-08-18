@@ -6,11 +6,13 @@
 
 namespace Ebizmarts\SagePaySuite\Helper;
 
-function time() {
+function time()
+{
     return "1456419355";
 }
 
-function date() {
+function date()
+{
     return "2016-02-25-085555";
 }
 
@@ -157,7 +159,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             $data['expected'],
-            $this->dataHelper->generateVendorTxCode($data['order_id'],$data['action'])
+            $this->dataHelper->generateVendorTxCode($data['order_id'], $data['action'])
         );
     }
 

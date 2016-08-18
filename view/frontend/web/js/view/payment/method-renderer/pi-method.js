@@ -95,7 +95,8 @@ define(
                 }
 
                 return storage.post(
-                    serviceUrl, JSON.stringify(payload)
+                    serviceUrl,
+                    JSON.stringify(payload)
                 ).done(
                     function () {
 
@@ -146,7 +147,6 @@ define(
 
                         //request token
                         Sagepay.tokeniseCardDetails(token_form, function (status, response) {
-                            //console.log(status, response);
 
                             if (status === 201) {
                                 self.creditCardType = self.parseCCType(response.cardType);
@@ -157,14 +157,11 @@ define(
                                 self.cardIdentifier = response.cardIdentifier;
 
                                 try {
-
                                     self.placeTransaction();
-
                                 } catch (err) {
                                     self.showPaymentError("Unable to initialize Sage Pay payment method, please use another payment method.");
                                     console.log(err);
                                 }
-
                             } else {
                                 var errorMessage = "Unable to initialize Sage Pay payment method, please use another payment method.";
                                 console.log(response);
@@ -230,11 +227,12 @@ define(
                 };
 
                 storage.post(
-                    serviceUrl, JSON.stringify(payload)).done(
+                    serviceUrl,
+                    JSON.stringify(payload)
+                ).done(
                     function (response) {
 
                         if (response.success) {
-
                             if (response.response.status == "Ok") {
 
                                 /**
@@ -242,7 +240,6 @@ define(
                                  */
 
                                 window.location.replace(url.build('checkout/onepage/success/'));
-
                             } else if (response.response.status == "3DAuth") {
 
                                 /**
@@ -266,20 +263,18 @@ define(
                                 form3D.submit();
 
                                 fullScreenLoader.stopLoader();
-
                             } else {
                                 console.log(response);
                                 self.showPaymentError("Invalid Sage Pay response, please use another payment method.");
                             }
-
                         } else {
                             self.showPaymentError(response.error_message);
                         }
-                    }
+                        }
                 ).fail(
                     function (response) {
                         self.showPaymentError("Unable to capture Sage Pay transaction, please use another payment method.");
-                    }
+                        }
                 );
             },
 

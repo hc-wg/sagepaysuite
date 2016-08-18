@@ -65,7 +65,7 @@ class PaypalTest extends \PHPUnit_Framework_TestCase
             [
                 'payment' => [
                     'ebizmarts_sagepaysuitepaypal' => [
-                        'licensed' => NULL,
+                        'licensed' => null,
                         'mode' => null
                     ],
                 ]

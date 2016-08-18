@@ -2,7 +2,6 @@
 
 namespace Ebizmarts\SagePaySuite\Api\Data;
 
-
 class Result extends \Magento\Framework\Api\AbstractExtensibleObject implements ResultInterface
 {
 
@@ -54,5 +53,4 @@ class Result extends \Magento\Framework\Api\AbstractExtensibleObject implements 
     {
         $this->setData(self::ERROR_MESSAGE, $text);
     }
-
 }

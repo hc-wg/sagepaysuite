@@ -173,7 +173,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     {
         $this->checkoutHelperMock->expects($this->any())
             ->method('placeOrder')
-            ->will($this->returnValue(NULL));
+            ->will($this->returnValue(null));
 
         $this->_expectRedirect("checkout/cart");
         $this->formSuccessController->execute();
