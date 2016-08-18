@@ -8,5 +8,5 @@ namespace Ebizmarts\SagePaySuite\Api;
  */
 interface GuestServerManagementInterface extends ServerManagementInterface
 {
-
+    const GUEST_CHECKOOUT = true;
 }
