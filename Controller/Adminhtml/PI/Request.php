@@ -149,7 +149,10 @@ class Request extends \Magento\Backend\App\AbstractAction
                 $payment->setAdditionalInformation('mode', $this->_config->getMode());
 
                 //save order with pending payment
-                $order = $this->_quoteManagement->submit($this->_quote);
+                $order = $this->_getOrderCreateModel()
+                    ->setIsValidate(true)
+                    ->importPostData($this->getRequest()->getPost('order'))
+                    ->createOrder();
 
                 if ($order) {
 
@@ -195,6 +198,16 @@ class Request extends \Magento\Backend\App\AbstractAction
         $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
         $resultJson->setData($responseContent);
         return $resultJson;
+    }
+
+    /**
+     * Retrieve order create model
+     *
+     * @return \Magento\Sales\Model\AdminOrder\Create
+     */
+    protected function _getOrderCreateModel()
+    {
+        return $this->_objectManager->get('Magento\Sales\Model\AdminOrder\Create');
     }
 
     protected function _generateRequest($vendorTxCode)
