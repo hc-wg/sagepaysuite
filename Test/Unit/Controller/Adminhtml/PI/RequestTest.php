@@ -42,7 +42,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     protected $quoteManagementMock;
 
     /**
-     * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
+     * @var  \Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $orderMock;
 
@@ -51,8 +51,15 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      */
     protected $resultJson;
 
+    /**
+     * @var \Magento\Sales\Model\AdminOrder\Create
+     */
+    private $adminOrder;
+    private $objectManager;
+
     protected function setUp()
     {
+
         $piModelMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\PI')
             ->disableOriginalConstructor()
@@ -115,7 +122,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
             ->disableOriginalConstructor()
             ->getMock();
-        $requestMock->expects($this->once())
+        $requestMock->expects($this->any())
             ->method('getPost')
             ->will($this->returnValue((object)[
                 "merchant_session_key" => "12345",
@@ -185,6 +192,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $this->quoteManagementMock = $this
             ->getMockBuilder('Magento\Quote\Model\QuoteManagement')
+            ->setConstructorArgs(array('context' => $contextMock))
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -199,23 +207,34 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('getOrderDescription')
             ->will($this->returnValue("description"));
 
-        $objectManagerHelper = new ObjectManagerHelper($this);
+        $this->adminOrder = $this->getMock('Magento\Sales\Model\AdminOrder\Create', array(), array(), '', false);
+        $this->adminOrder->method('setIsValidate')->willReturnSelf();
+        $this->adminOrder->method('importPostData')->willReturnSelf();
+        $objManager = $this->getMock('\Magento\Framework\ObjectManager\ObjectManager', array(), array(), '', false);
+        $objManager->method('get')->willReturn($this->adminOrder);
+        $contextMock->method('getObjectManager')
+            ->willReturn($objManager);
+
+        $objectManagerHelper       = new ObjectManagerHelper($this);
         $this->piRequestController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\PI\Request',
             [
-                'context' => $contextMock,
-                'config' => $configMock,
-                'suiteHelper' => $suiteHelperMock,
-                'pirestapi' => $pirestapiMock,
-                'quoteSession' => $quoteSessionMock,
+                'context'         => $contextMock,
+                'config'          => $configMock,
+                'suiteHelper'     => $suiteHelperMock,
+                'pirestapi'       => $pirestapiMock,
+                'quoteSession'    => $quoteSessionMock,
                 'quoteManagement' => $this->quoteManagementMock,
-                'requestHelper' => $requestHelperMock
+                'requestHelper'   => $requestHelperMock
             ]
         );
     }
 
     public function testExecuteSUCCESS()
     {
+        $this->adminOrder->method('createOrder')->willReturn($this->orderMock);
+
+
         $this->quoteManagementMock->expects($this->any())
             ->method('submit')
             ->will($this->returnValue($this->orderMock));
