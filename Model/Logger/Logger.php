@@ -23,7 +23,7 @@ class Logger extends \Monolog\Logger
         self::LOG_EXCEPTION => 'Exception'
     ];
 
-    public function SageLog($logType, $message)
+    public function sageLog($logType, $message)
     {
 
         try {

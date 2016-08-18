@@ -123,7 +123,7 @@ class Shared
                 }
             }
         } else {
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, "INVALID RESPONSE FROM SAGE PAY: " . $response_status);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, "INVALID RESPONSE FROM SAGE PAY: " . $response_status);
         }
 
         $response = [
@@ -204,7 +204,7 @@ class Shared
         }
 
         if (!$validResponse) {
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $response);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
         }
 
         $exception = $this->_apiExceptionFactory->create([
@@ -229,7 +229,7 @@ class Shared
         $data['TxAuthNo'] = (string)$transaction->vpsauthcode;
 
         //log request
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data);
 
         $response = $this->_executeRequest(
             \Ebizmarts\SagePaySuite\Model\Config::ACTION_VOID,
@@ -239,7 +239,7 @@ class Shared
         $api_response = $this->_handleApiErrors($response);
 
         //log response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $api_response);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $api_response);
 
         return $api_response;
     }
@@ -262,7 +262,7 @@ class Shared
         $data['RelatedTxAuthNo'] = (string)$transaction->vpsauthcode;
 
         //log request
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data);
 
         $response = $this->_executeRequest(
             \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND,
@@ -272,7 +272,7 @@ class Shared
         $api_response = $this->_handleApiErrors($response);
 
         //log response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $api_response);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $api_response);
 
         return $api_response;
     }
@@ -281,7 +281,7 @@ class Shared
     {
         $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
 
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $transaction);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $transaction);
 
         $data['VPSProtocol'] = $this->_config->getVPSProtocol();
         $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_RELEASE;
@@ -293,7 +293,7 @@ class Shared
         $data['ReleaseAmount'] = number_format($amount, 2, '.', '');
 
         //log request
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data);
 
         $response = $this->_executeRequest(
             \Ebizmarts\SagePaySuite\Model\Config::ACTION_RELEASE,
@@ -303,7 +303,7 @@ class Shared
         $api_response = $this->_handleApiErrors($response);
 
         //log response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $api_response);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $api_response);
 
         return $api_response;
     }
@@ -324,7 +324,7 @@ class Shared
         $data['RelatedTxAuthNo'] = (string)$transaction->vpsauthcode;
 
         //log request
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data);
 
         $response = $this->_executeRequest(
             \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE,
@@ -334,7 +334,7 @@ class Shared
         $api_response = $this->_handleApiErrors($response);
 
         //log response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $api_response);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $api_response);
 
         return $api_response;
     }
@@ -357,7 +357,7 @@ class Shared
         $data['RelatedTxAuthNo'] = (string)$transaction->vpsauthcode;
 
         //log request
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data);
 
         $response = $this->_executeRequest(
             $payment_action,
@@ -367,7 +367,7 @@ class Shared
         $api_response = $this->_handleApiErrors($response);
 
         //log response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $api_response);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $api_response);
 
         return $api_response;
     }

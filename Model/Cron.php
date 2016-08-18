@@ -119,33 +119,33 @@ class Cron
                          */
                         $order->cancel()->save();
 
-                        $this->_suiteLogger->SageLog(
+                        $this->_suiteLogger->sageLog(
                             \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
                             ["OrderId" => $orderId,
                                 "Result" => "CANCELLED : No payment received."]
                         );
                     } else {
-                        $this->_suiteLogger->SageLog(
+                        $this->_suiteLogger->sageLog(
                             \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
                             ["OrderId" => $orderId,
                                 "Result" => "ERROR : Transaction found: " . $transaction->getTxnId()]
                         );
                     }
                 } else {
-                    $this->_suiteLogger->SageLog(
+                    $this->_suiteLogger->sageLog(
                         \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
                         ["OrderId" => $orderId,
                             "Result" => "ERROR : No payment found."]
                     );
                 }
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-                $this->_suiteLogger->SageLog(
+                $this->_suiteLogger->sageLog(
                     \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
                     ["OrderId" => $orderId,
                         "Result" => $apiException->getUserMessage()]
                 );
             } catch (\Exception $e) {
-                $this->_suiteLogger->SageLog(
+                $this->_suiteLogger->sageLog(
                     \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
                     ["OrderId" => $orderId,
                         "Result" => $e->getMessage()]
@@ -183,7 +183,7 @@ class Cron
             try {
                 $payment = $this->_orderPaymentRepository->get($transaction->getPaymentId());
                 if (is_null($payment)) {
-                    throw new LocalizedException(__('Payment not found for this transaction'));
+                    throw new \LocalizedException(__('Payment not found for this transaction'));
                 }
 
                 //process fraud information
@@ -195,7 +195,7 @@ class Cron
             }
 
             //log
-            $this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON, $logData);
+            $this->_suiteLogger->sageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON, $logData);
         }
     }
 }

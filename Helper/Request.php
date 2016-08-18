@@ -127,7 +127,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
             if ($this->_validateBasketXml($_basket)) {
                 $data['BasketXML'] = $_basket;
             }
-        } elseif ($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50) {
+        } elseif ($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50) {
             $data['Basket'] = $this->_getBasketSage50($quote);
         }
 

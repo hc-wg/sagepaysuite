@@ -126,18 +126,18 @@ class Config
     /**
      * SagePay ReD Score Statuses
      */
-    const ReDSTATUS_ACCEPT = 'ACCEPT';
-    const ReDSTATUS_DENY = 'DENY';
-    const ReDSTATUS_CHALLENGE = 'CHALLENGE';
-    const ReDSTATUS_NOTCHECKED = 'NOTCHECKED';
+    const REDSTATUS_ACCEPT = 'ACCEPT';
+    const REDSTATUS_DENY = 'DENY';
+    const REDSTATUS_CHALLENGE = 'CHALLENGE';
+    const REDSTATUS_NOTCHECKED = 'NOTCHECKED';
 
 
     /**
      * Basket Formats
      */
-    const BASKETFORMAT_Sage50 = 'Sage50';
-    const BASKETFORMAT_XML = 'xml';
-    const BASKETFORMAT_Disabled = 'Disabled';
+    const BASKETFORMAT_SAGE50   = 'Sage50';
+    const BASKETFORMAT_XML      = 'xml';
+    const BASKETFORMAT_DISABLED = 'Disabled';
 
     /*
      * Max tokens per customer

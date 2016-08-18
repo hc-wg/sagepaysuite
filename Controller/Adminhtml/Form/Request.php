@@ -117,7 +117,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         //referrer id
         $data["ReferrerID"] = $this->_requestHelper->getReferrerId();
 
-        if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_Disabled) {
+        if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_DISABLED) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
         }
 
@@ -150,7 +150,7 @@ class Request extends \Magento\Backend\App\AbstractAction
 //        $data['Website']        = $this->getConfigData('referrer_id');
 
         //log request
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data);
 
         $preCryptString = '';
         foreach ($data as $field => $value) {

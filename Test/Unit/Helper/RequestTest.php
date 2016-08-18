@@ -250,7 +250,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                         'shippingAmount' => 15,
                         'shippingTaxAmount' => 0,
                         'parentItem' => false,
-                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50,
+                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
                         'id' => null,
                         'firstName' => null,
                         'lastName' => null,
@@ -313,7 +313,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     {
         $basket = null;
 
-        if ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_Sage50) {
+        if ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50) {
         //TODO: esto se puede mejorar para que no sea tan fijo a este caso
             $basket = [
                 'Basket' =>

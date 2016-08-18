@@ -208,13 +208,13 @@ class PIRest
     public function capture($payment_request)
     {
         //log request
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $payment_request);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $payment_request);
 
         $jsonRequest = json_encode($payment_request);
         $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_CAPTURE_TRANSACTION), $jsonRequest);
 
         //log result
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $result);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
 
         if ($result["status"] == 201) {
             //success
@@ -272,7 +272,7 @@ class PIRest
         $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
 
         //log result
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $result);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
 
         if ($result["status"] == 201) {
             return $result["data"];

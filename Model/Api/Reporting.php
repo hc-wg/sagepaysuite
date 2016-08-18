@@ -176,7 +176,7 @@ class Reporting
         }
 
         if (!$validResponse) {
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $response);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
         }
 
         $exception = $this->_apiExceptionFactory->create([

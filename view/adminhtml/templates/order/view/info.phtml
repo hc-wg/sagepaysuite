@@ -78,7 +78,7 @@ $payment = $block->getPayment();
             <tbody>
             <?php if (empty($payment->getAdditionalInformation("fraudscreenrecommendation")) ||
                 $payment->getAdditionalInformation("fraudscreenrecommendation") == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT ||
-                $payment->getAdditionalInformation("fraudscreenrecommendation") == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_NOTCHECKED
+                $payment->getAdditionalInformation("fraudscreenrecommendation") == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_NOTCHECKED
             ) { ?>
                 <tr>
                     <td colspan="2">
@@ -90,11 +90,11 @@ $payment = $block->getPayment();
                     <th><?php echo $block->escapeHtml(__('Fraud Recommendation')); ?>:</th>
                     <td><?php $html = $payment->getAdditionalInformation("fraudscreenrecommendation");
                         switch ($html) {
-                            case \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_CHALLENGE:
+                            case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_CHALLENGE:
                             case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD:
                                 $html = '<span style="color:orange;">' . $html . '</span>';
                                 break;
-                            case \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY:
+                            case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY:
                             case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT:
                                 $html = '<span style="color:red;">' . $html . '</span>';
                                 break;

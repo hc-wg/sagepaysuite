@@ -211,7 +211,7 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
                     $result = $this->_sharedApi->releaseTransaction($transactionId, $amount);
                 }
 
-                $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, "CAPTURE");
+                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, "CAPTURE");
 
                 $payment->setIsTransactionClosed(1);
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {

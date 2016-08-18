@@ -226,7 +226,7 @@ class Request extends \Magento\Framework\App\Action\Action
         //populate payment amount information
         $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
 
-        if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_Disabled) {
+        if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_DISABLED) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
         }
 

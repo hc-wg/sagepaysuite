@@ -29,7 +29,7 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             $data["expected"],
-            $this->loggerModel->SageLog($data["type"], $data["message"])
+            $this->loggerModel->sageLog($data["type"], $data["message"])
         );
     }
 

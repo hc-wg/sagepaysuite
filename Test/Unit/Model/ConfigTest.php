@@ -255,7 +255,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function TestIsSagePaySuiteMethod()
+    public function testIsSagePaySuiteMethod()
     {
         $this->assertEquals(
             true,

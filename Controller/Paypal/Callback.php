@@ -108,7 +108,7 @@ class Callback extends \Magento\Framework\App\Action\Action
             $this->_postData = $this->getRequest()->getPost();
 
             //log response
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $this->_postData);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $this->_postData);
 
             if (empty($this->_postData) || !isset($this->_postData->Status) || $this->_postData->Status != "PAYPALOK") {
                 if (!empty($this->_postData) && isset($this->_postData->StatusDetail)) {

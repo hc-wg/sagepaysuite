@@ -99,7 +99,7 @@ class Success extends \Magento\Backend\App\AbstractAction
             }
 
             //log response
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $response);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
 
             $this->_quote = $this->_quoteSession->getQuote();
             //$this->_quote->save();

@@ -93,11 +93,11 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
                 $rules = (string)$response->rules;
 
                 if ($fraudscreenrecommendation != \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT &&
-                    $fraudscreenrecommendation != \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_NOTCHECKED
+                    $fraudscreenrecommendation != \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_NOTCHECKED
                 ) {
                     //mark payment as fraud
                     if ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT ||
-                        $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY
+                        $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY
                     ) {
                         $payment->setIsFraudDetected(true);
                         $payment->getOrder()->setStatus(Order::STATUS_FRAUD);
@@ -173,7 +173,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         if ((bool)$this->_config->getAutoInvoiceFraudPassed() == true &&
             $transaction->getTxnType() == \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH &&
             (bool)$transaction->getIsTransactionClosed() == false &&
-            ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_ACCEPT ||
+            ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_ACCEPT ||
                 $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_OK)
         ) {
             //create invoice
@@ -202,13 +202,13 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
     
         if ((string)$this->_config->getNotifyFraudResult() != 'disabled') {
             if (((string)$this->_config->getNotifyFraudResult() == "medium_risk" &&
-                    ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY ||
-                        $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_CHALLENGE ||
+                    ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY ||
+                        $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_CHALLENGE ||
                         $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT ||
                         $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD))
                 ||
                 ((string)$this->_config->getNotifyFraudResult() == "high_risk" &&
-                    ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY ||
+                    ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY ||
                         $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT))
             ) {
                 $template = "sagepaysuite_fraud_notification";

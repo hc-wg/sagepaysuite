@@ -128,7 +128,6 @@ class PI extends \Magento\Payment\Model\Method\Cc
      * @param array $data
      */
     public function __construct(
-
         \Magento\Framework\Model\Context $context,
         \Magento\Framework\Registry $registry,
         \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory,
@@ -146,8 +145,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
-    )
-    {
+    ) {
         parent::__construct(
             $context,
             $registry,
@@ -200,7 +198,6 @@ class PI extends \Magento\Payment\Model\Method\Cc
     {
 
         try {
-
             $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
             $order = $payment->getOrder();
 
@@ -209,11 +206,9 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
             $payment->setIsTransactionClosed(1);
             $payment->setShouldCloseParentTransaction(1);
-
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
             throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
-
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
@@ -235,11 +230,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $transaction_id = $payment->getLastTransId();
 
         try {
-
             $result = $this->_sharedApi->voidTransaction($transaction_id);
-
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-
             if ($apiException->getCode() == \Ebizmarts\SagePaySuite\Model\Api\ApiException::INVALID_TRANSACTION_STATE) {
                 //unable to void transaction
                 throw new LocalizedException(__('Unable to VOID Sage Pay transaction ' . $transaction_id . ': ' . $apiException->getUserMessage()));
@@ -247,7 +239,6 @@ class PI extends \Magento\Payment\Model\Method\Cc
                 $this->_logger->critical($apiException);
                 throw $apiException;
             }
-
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             throw new LocalizedException(__('Unable to VOID Sage Pay transaction ' . $transaction_id . ': ' . $e->getMessage()));

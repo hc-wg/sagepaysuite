@@ -106,7 +106,7 @@ class Success extends \Magento\Framework\App\Action\Action
             }
 
             //log response
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $response);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
 
             $this->_quote = $this->_checkoutSession->getQuote();
             //$this->_quote->save();

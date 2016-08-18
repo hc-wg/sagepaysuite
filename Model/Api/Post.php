@@ -120,7 +120,7 @@ class Post
         }
 
         //log request
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $postData);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $postData);
 
         $curl->setConfig(
             [
@@ -143,7 +143,7 @@ class Post
         $curl->close();
 
         //log response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $data);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data);
 
         $response_data = [];
         if ($response_status == 200) {

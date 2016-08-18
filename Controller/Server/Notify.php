@@ -102,7 +102,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_quote = $this->_quote->load($this->getRequest()->getParam("quoteid"));
 
         //log response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $this->_postData);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $this->_postData);
 
         try {
             //find quote with GET param
@@ -127,7 +127,7 @@ class Notify extends \Magento\Framework\App\Action\Action
 
             if (strtoupper($localMd5Hash) != $this->_postData->VPSSignature) {
                 //log full values for VPS signature
-                $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, "INVALID SIGNATURE: " . $this->_getVPSSignatureString($payment));
+                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, "INVALID SIGNATURE: " . $this->_getVPSSignatureString($payment));
                 throw new \Magento\Framework\Validator\Exception(__('Invalid VPS Signature'));
             }
 
@@ -353,7 +353,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->getResponse()->setBody($strResponse);
 
         //log our response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $strResponse);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse);
 
         return;
     }
@@ -368,7 +368,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->getResponse()->setBody($strResponse);
 
         //log our response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $strResponse);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse);
 
         return;
     }
@@ -383,7 +383,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->getResponse()->setBody($strResponse);
 
         //log our response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $strResponse);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse);
 
         return;
     }

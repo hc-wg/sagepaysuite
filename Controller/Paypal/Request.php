@@ -153,7 +153,7 @@ class Request extends \Magento\Framework\App\Action\Action
         //referrer id
         $data["ReferrerID"] = $this->_requestHelper->getReferrerId();
 
-        if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_Disabled) {
+        if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_DISABLED) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote, $this->_config->isPaypalForceXml()));
         }
 
