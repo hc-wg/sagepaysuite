@@ -162,7 +162,14 @@ define([
                             }
 
                         } else {
-                            self.showPaymentError(response.error.message);
+                            var errorMessages = "";
+
+                            var errorsCount = response.responseJSON.errors.length;
+                            for (var i = 0; i < errorsCount; i++) {
+                                errorMessages += "<br />" + response.responseJSON.errors[i].clientMessage;
+                            }
+
+                            self.showPaymentError(errorMessages);
                         }
                     });
                 } catch (err) {
@@ -178,21 +185,30 @@ define([
 
             var serviceUrl = this.options.url.request;
 
-            var payload = {
-                merchant_session_key: self.merchantSessionKey,
-                card_identifier: self.cardIdentifier,
-                card_type: self.creditCardType,
-                card_exp_month: self.creditCardExpMonth,
-                card_exp_year: self.creditCardExpYear,
-                card_last4: self.creditCardLast4,
-                form_key: window.FORM_KEY
-            };
+            // var payload = {
+            //     merchant_session_key: self.merchantSessionKey,
+            //     card_identifier: self.cardIdentifier,
+            //     card_type: self.creditCardType,
+            //     card_exp_month: self.creditCardExpMonth,
+            //     card_exp_year: self.creditCardExpYear,
+            //     card_last4: self.creditCardLast4,
+            //     form_key: window.FORM_KEY
+            // };
+
+            var formData = jQuery("#edit_form").serialize();
+            formData += "&merchant_session_key=" + self.merchantSessionKey;
+            formData += "&card_identifier=" + self.cardIdentifier;
+            formData += "&card_type=" + self.creditCardType;
+            formData += "&card_exp_month=" + self.creditCardExpMonth;
+            formData += "&card_exp_year=" + self.creditCardExpYear;
+            formData += "&card_last4=" + self.creditCardLast4;
 
             jQuery.ajax( {
                 url: serviceUrl,
-                data: payload,
+                data: formData,
                 type: 'POST'
             }).done(function(response) {
+
                 if(response.success == true) {
 
                     //redirect to success
