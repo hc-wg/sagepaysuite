@@ -48,9 +48,9 @@ class ApiException extends LocalizedException
                 $message = __('Invalid Sage Pay API credentials.');
                 break;
             case self::VALID_VALUE_REQUIRED:
-                if (strpos($this->getMessage(), "vpstxid") !== FALSE) {
+                if (strpos($this->getMessage(), "vpstxid") !== false) {
                     $message = __('Transaction NOT found / Invalid transaction Id.');
-                } else if (strpos($this->getMessage(), "username") !== FALSE) {
+                } elseif (strpos($this->getMessage(), "username") !== false) {
                     $message = __('Invalid Sage Pay API credentials.');
                 } else {
                     $message = __($this->getMessage());
@@ -68,5 +68,4 @@ class ApiException extends LocalizedException
         }
         return $message;
     }
-
 }

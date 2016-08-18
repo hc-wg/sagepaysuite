@@ -42,9 +42,10 @@ class Info extends \Magento\Backend\Block\Template
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         Config $config,
         array $data = []
-    )
-    {
-        $this->_order = $registry->registry('current_order');;
+    ) {
+    
+        $this->_order = $registry->registry('current_order');
+        ;
         $this->_config = $config;
         $this->_suiteHelper = $suiteHelper;
         parent::__construct($context, $data);
@@ -68,7 +69,7 @@ class Info extends \Magento\Backend\Block\Template
 
     public function getSyncFromApiUrl()
     {
-        $url =  $this->getUrl('sagepaysuite/order/syncFromApi',array('order_id'=>$this->_order->getId()));
+        $url =  $this->getUrl('sagepaysuite/order/syncFromApi', ['order_id'=>$this->_order->getId()]);
         return $url;
     }
 

@@ -95,10 +95,9 @@ class PostTest extends \PHPUnit_Framework_TestCase
                     "URL" => "http://example.com?test=1&test2=2"
                 ],
                 \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_LIVE,
-                array("OK")
+                ["OK"]
             )
         );
-
     }
 
     public function testSendPostERROR()
@@ -127,7 +126,8 @@ class PostTest extends \PHPUnit_Framework_TestCase
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new \Magento\Framework\Phrase("INVALID ERROR"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("INVALID ERROR")));
+            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("INVALID ERROR"))
+        );
 
         $this->apiExceptionFactoryMock->expects($this->any())
             ->method('create')
@@ -141,11 +141,10 @@ class PostTest extends \PHPUnit_Framework_TestCase
                     "URL" => "http://example.com?test=1&test2=2"
                 ],
                 \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_LIVE,
-                array("OK")
+                ["OK"]
             );
             $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
-        {
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->assertEquals(
                 "INVALID ERROR",
                 $apiException->getUserMessage()

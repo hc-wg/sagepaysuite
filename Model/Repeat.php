@@ -166,8 +166,8 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
-    )
-    {
+    ) {
+    
         parent::__construct(
             $context,
             $registry,
@@ -211,14 +211,12 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
                     $result = $this->_sharedApi->releaseTransaction($transactionId, $amount);
                 }
 
-                $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,"CAPTURE");
+                $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, "CAPTURE");
 
                 $payment->setIsTransactionClosed(1);
-
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
                 $this->_suiteLogger->logException($apiException);
                 throw new LocalizedException(__('There was an error ' . $action . ' Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
-
             } catch (\Exception $e) {
                 $this->_suiteLogger->logException($e);
                 throw new LocalizedException(__('There was an error ' . $action . ' Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
@@ -238,7 +236,6 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
     public function refund(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
         try {
-
             $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
             $order = $payment->getOrder();
 
@@ -246,11 +243,9 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
 
             $payment->setIsTransactionClosed(1);
             $payment->setShouldCloseParentTransaction(1);
-
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_suiteLogger->logException($apiException);
             throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
-
         } catch (\Exception $e) {
             $this->_suiteLogger->logException($e);
             throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));

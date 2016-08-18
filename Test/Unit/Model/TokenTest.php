@@ -63,7 +63,8 @@ class TokenTest extends \PHPUnit_Framework_TestCase
             '0006',
             '02',
             '22',
-            'testebizmarts');
+            'testebizmarts'
+        );
 
         $this->assertEquals(
             'fsd587fds78dfsfdsa687dsa',
@@ -93,18 +94,20 @@ class TokenTest extends \PHPUnit_Framework_TestCase
             '0006',
             '02',
             '22',
-            'testebizmarts');
+            'testebizmarts'
+        );
 
         $this->postApiMock->expects($this->once())
             ->method('sendPost')
-            ->with([
-                "VPSProtocol" => NULL,
+            ->with(
+                [
+                "VPSProtocol" => null,
                 "TxType" => "REMOVETOKEN",
                 "Vendor" => 'testebizmarts',
                 "Token" => 'fsd587fds78dfsfdsa687dsa'
-            ],
+                ],
                 \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_TEST,
-                array("OK")
+                ["OK"]
             );
 
         $token->deleteToken();
@@ -156,7 +159,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             false,
-            $this->tokenModel->isCustomerUsingMaxTokenSlots(1,'testebizmarts')
+            $this->tokenModel->isCustomerUsingMaxTokenSlots(1, 'testebizmarts')
         );
     }
 }

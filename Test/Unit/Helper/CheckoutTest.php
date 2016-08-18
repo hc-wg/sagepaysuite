@@ -141,7 +141,7 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $addressMock->expects($this->once())
             ->method('getCustomerId')
-            ->will($this->returnValue(NULL));
+            ->will($this->returnValue(null));
         $addressMock->expects($this->once())
             ->method('exportCustomerAddress')
             ->willReturn($addressInterfaceMock);
@@ -225,11 +225,11 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
         $this->checkoutHelper->placeOrder();
     }
 
-    public function testSendOrderEmail(){
+    public function testSendOrderEmail()
+    {
         $this->orderSenderMock->expects($this->once())
             ->method('send');
 
         $this->checkoutHelper->sendOrderEmail($this->orderMock);
     }
-
 }

@@ -124,7 +124,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             true,
-            $this->resourceTokenModel->isTokenOwnedByCustomer(1,1)
+            $this->resourceTokenModel->isTokenOwnedByCustomer(1, 1)
         );
     }
 }

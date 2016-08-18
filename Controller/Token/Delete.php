@@ -6,10 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Token;
 
-
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-
 
 class Delete extends \Magento\Framework\App\Action\Action
 {
@@ -47,8 +45,8 @@ class Delete extends \Magento\Framework\App\Action\Action
         \Psr\Log\LoggerInterface $logger,
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
         \Magento\Customer\Model\Session $customerSession
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_suiteLogger = $suiteLogger;
         $this->_logger = $logger;
@@ -60,7 +58,6 @@ class Delete extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
-
             //get token id
             if (!empty($this->getRequest()->getParam("token_id"))) {
                 $this->_tokenId = $this->getRequest()->getParam("token_id");
@@ -75,10 +72,8 @@ class Delete extends \Magento\Framework\App\Action\Action
 
             //validate ownership
             if ($token->isOwnedByCustomer($this->_customerSession->getCustomerId())) {
-
                 //delete
                 $token->deleteToken();
-
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to delete token: Token is not owned by you'));
             }
@@ -88,18 +83,14 @@ class Delete extends \Magento\Framework\App\Action\Action
                 'success' => true,
                 'response' => true
             ];
-
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-
             $this->_logger->critical($apiException);
 
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $apiException->getUserMessage()),
             ];
-
         } catch (\Exception $e) {
-
             $this->_logger->critical($e);
 
             $responseContent = [

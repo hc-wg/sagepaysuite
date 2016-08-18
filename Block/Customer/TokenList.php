@@ -43,8 +43,10 @@ class TokenList extends \Magento\Framework\View\Element\Template
         $this->_config = $config;
         $this->_tokenModel = $tokenModel;
 
-        $this->setItems($this->_tokenModel->getCustomerTokens($this->currentCustomer->getCustomerId(),
-            $this->_config->getVendorname()));
+        $this->setItems($this->_tokenModel->getCustomerTokens(
+            $this->currentCustomer->getCustomerId(),
+            $this->_config->getVendorname()
+        ));
     }
 
     /**
@@ -57,5 +59,4 @@ class TokenList extends \Magento\Framework\View\Element\Template
         }
         return $this->getUrl('customer/account/');
     }
-
 }

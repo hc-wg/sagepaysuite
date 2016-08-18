@@ -46,8 +46,8 @@ class Post
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger
-    )
-    {
+    ) {
+    
         $this->_config = $config;
         $this->_curlFactory = $curlFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
@@ -109,7 +109,7 @@ class Post
      * @return mixed
      * @throws
      */
-    public function sendPost($postData, $url, $expectedStatus = array(), $defaultErrorMessage = "Invalid response from Sage Pay")
+    public function sendPost($postData, $url, $expectedStatus = [], $defaultErrorMessage = "Invalid response from Sage Pay")
     {
 
         $curl = $this->_curlFactory->create();
@@ -130,11 +130,13 @@ class Post
             ]
         );
 
-        $curl->write(\Zend_Http_Client::POST,
+        $curl->write(
+            \Zend_Http_Client::POST,
             $url,
             '1.0',
             [],
-            $post_data_string);
+            $post_data_string
+        );
         $data = $curl->read();
 
         $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
@@ -145,7 +147,6 @@ class Post
 
         $response_data = [];
         if ($response_status == 200) {
-
             //parse response
             $data = preg_split('/^\r?$/m', $data, 2);
             $data = explode(PHP_EOL, $data[1]);

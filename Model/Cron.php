@@ -72,8 +72,8 @@ class Cron
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Helper\Fraud $fraudHelper
-    )
-    {
+    ) {
+    
         $this->_resource = $resource;
         $this->_suiteLogger = $suiteLogger;
         $this->_orderPaymentRepository = $orderPaymentRepository;
@@ -106,14 +106,12 @@ class Cron
             )->limit(10);
 
         foreach ($connection->fetchAll($select) as $orderArray) {
-
             $order = $this->_orderFactory->create()->load($orderArray["entity_id"]);
             $orderId = $order->getEntityId();
 
             try {
                 $payment = $order->getPayment();
                 if (!is_null($payment) && !empty($payment->getLastTransId())) {
-
                     $transaction = $this->_transactionFactory->create()->load($payment->getLastTransId());
                     if (empty($transaction->getId())) {
                         /**
@@ -121,33 +119,36 @@ class Cron
                          */
                         $order->cancel()->save();
 
-                        $this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
-                            array("OrderId" => $orderId,
-                                "Result" => "CANCELLED : No payment received.")
+                        $this->_suiteLogger->SageLog(
+                            \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
+                            ["OrderId" => $orderId,
+                                "Result" => "CANCELLED : No payment received."]
                         );
                     } else {
-
-                        $this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
-                            array("OrderId" => $orderId,
-                                "Result" => "ERROR : Transaction found: " . $transaction->getTxnId())
+                        $this->_suiteLogger->SageLog(
+                            \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
+                            ["OrderId" => $orderId,
+                                "Result" => "ERROR : Transaction found: " . $transaction->getTxnId()]
                         );
                     }
                 } else {
-                    $this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
-                        array("OrderId" => $orderId,
-                            "Result" => "ERROR : No payment found.")
+                    $this->_suiteLogger->SageLog(
+                        \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
+                        ["OrderId" => $orderId,
+                            "Result" => "ERROR : No payment found."]
                     );
                 }
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-                $this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
-                    array("OrderId" => $orderId,
-                        "Result" => $apiException->getUserMessage())
+                $this->_suiteLogger->SageLog(
+                    \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
+                    ["OrderId" => $orderId,
+                        "Result" => $apiException->getUserMessage()]
                 );
-
             } catch (\Exception $e) {
-                $this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
-                    array("OrderId" => $orderId,
-                        "Result" => $e->getMessage())
+                $this->_suiteLogger->SageLog(
+                    \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
+                    ["OrderId" => $orderId,
+                        "Result" => $e->getMessage()]
                 );
             }
         }
@@ -176,23 +177,19 @@ class Cron
             )->limit(20);
 
         foreach ($connection->fetchAll($select) as $trnArray) {
-
             $transaction = $this->_transactionFactory->create()->load($trnArray["transaction_id"]);
-            $logData = array();
+            $logData = [];
 
             try {
-
                 $payment = $this->_orderPaymentRepository->get($transaction->getPaymentId());
                 if (is_null($payment)) {
                     throw new LocalizedException(__('Payment not found for this transaction'));
                 }
 
                 //process fraud information
-                $logData = $this->_fraudHelper->processFraudInformation($transaction,$payment);
-
+                $logData = $this->_fraudHelper->processFraudInformation($transaction, $payment);
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
                 $logData["ERROR"] = $apiException->getUserMessage();
-
             } catch (\Exception $e) {
                 $logData["ERROR"] = $e->getMessage();
             }

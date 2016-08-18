@@ -44,8 +44,8 @@ class PI extends CcGenericConfigProvider
         PaymentHelper $paymentHelper,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Config $config
-    )
-    {
+    ) {
+    
         parent::__construct($ccConfig, $paymentHelper);
 
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);

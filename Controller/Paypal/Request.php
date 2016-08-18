@@ -67,8 +67,8 @@ class Request extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Customer\Model\Session $customerSession
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
@@ -84,7 +84,6 @@ class Request extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
-
             $this->_quote->collectTotals();
             $this->_quote->reserveOrderId();
             $this->_quote->save();
@@ -93,9 +92,10 @@ class Request extends \Magento\Framework\App\Action\Action
             $request = $this->_generateRequest();
 
             //send POST to Sage Pay
-            $post_response = $this->_postApi->sendPost($request,
+            $post_response = $this->_postApi->sendPost(
+                $request,
                 $this->_getServiceURL(),
-                array("PPREDIRECT"),
+                ["PPREDIRECT"],
                 'Invalid response from PayPal'
             );
 
@@ -104,8 +104,7 @@ class Request extends \Magento\Framework\App\Action\Action
                 'success' => true,
                 'response' => $post_response
             ];
-
-        }  catch (\Exception $e) {
+        } catch (\Exception $e) {
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $e->getMessage()),
@@ -120,20 +119,21 @@ class Request extends \Magento\Framework\App\Action\Action
 
     protected function _getCallbackUrl()
     {
-        $url = $this->_url->getUrl('*/*/processing', array(
+        $url = $this->_url->getUrl('*/*/processing', [
             '_secure' => true,
             '_store' => $this->_quote->getStoreId()
-        ));
+        ]);
 
         $url .= "?quoteid=" . $this->_quote->getId();
 
         return $url;
     }
 
-    protected function _getServiceURL(){
-        if($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE){
+    protected function _getServiceURL()
+    {
+        if ($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_DIRECT_POST_LIVE;
-        }else{
+        } else {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_DIRECT_POST_TEST;
         }
     }
@@ -143,7 +143,7 @@ class Request extends \Magento\Framework\App\Action\Action
      */
     protected function _generateRequest()
     {
-        $data = array();
+        $data = [];
         $data["VPSProtocol"] = $this->_config->getVPSProtocol();
         $data["TxType"] = $this->_config->getSagepayPaymentAction();
         $data["Vendor"] = $this->_config->getVendorname();
@@ -153,7 +153,7 @@ class Request extends \Magento\Framework\App\Action\Action
         //referrer id
         $data["ReferrerID"] = $this->_requestHelper->getReferrerId();
 
-        if($this->_config->getBasketFormat() != Config::BASKETFORMAT_Disabled) {
+        if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_Disabled) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote, $this->_config->isPaypalForceXml()));
         }
 

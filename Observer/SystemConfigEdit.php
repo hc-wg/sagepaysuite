@@ -52,8 +52,8 @@ class SystemConfigEdit implements ObserverInterface
         Data $suiteHelper,
         \Magento\Framework\Message\ManagerInterface $messageManager,
         Reporting $reportingApi
-    )
-    {
+    ) {
+    
         $this->_suiteLogger = $suiteLogger;
         $this->_suiteConfig = $suiteConfig;
         $this->_suiteHelper = $suiteHelper;
@@ -81,17 +81,12 @@ class SystemConfigEdit implements ObserverInterface
             /**
              * VALIDATE REPORTING API CREDENTIALS
              */
-            try
-            {
+            try {
                 $version = $this->_reportingApi->getVersion();
-                $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$version);
-
-            } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
-            {
+                $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $version);
+            } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
                 $this->_messageManager->addError($apiException->getUserMessage());
-
-            } catch (\Exception $e)
-            {
+            } catch (\Exception $e) {
                 $this->_messageManager->addError(__('Can not establish connection with Sage Pay API.'));
             }
 

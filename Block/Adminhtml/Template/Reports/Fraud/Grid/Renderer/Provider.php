@@ -25,15 +25,14 @@ class Provider extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
             $additionalInfo = unserialize($additionalInfo);
         }
 
-        $provider = array_key_exists("fraudprovidername",$additionalInfo) ? $additionalInfo["fraudprovidername"] : "";
+        $provider = array_key_exists("fraudprovidername", $additionalInfo) ? $additionalInfo["fraudprovidername"] : "";
 
-        if($provider == "ReD"){
+        if ($provider == "ReD") {
             $html = '<img style="height: 20px;" src="' . $this->getViewFileUrl('Ebizmarts_SagePaySuite::images/red_logo.png') . '">';
-        }else{
+        } else {
             $html = '<span><img style="height: 20px;vertical-align: text-top;" src="' . $this->getViewFileUrl('Ebizmarts_SagePaySuite::images/t3m_logo.png') . '"> T3M</span>';
         }
 
         return $html;
     }
-
 }

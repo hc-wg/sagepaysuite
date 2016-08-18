@@ -44,8 +44,8 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Magento\Framework\Mail\Template\TransportBuilder $mailTransportBuilder,
         \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_suiteLogger = $suiteLogger;
         $this->_config = $config;
@@ -62,7 +62,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $sagepayVpsTxId = $transaction->getTxnId();
 
-        $logData = array("VPSTxId" => $sagepayVpsTxId);
+        $logData = ["VPSTxId" => $sagepayVpsTxId];
 
         //flag test transactions (no actions taken with test orders)
         if ($payment->getAdditionalInformation("mode") &&
@@ -75,7 +75,6 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
             $transaction->setSagepaysuiteFraudCheck(1);
             $transaction->save();
             $logData["Action"] = "Marked as TEST";
-
         } else {
 
             /**
@@ -86,7 +85,6 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
             $response = $this->_reportingApi->getFraudScreenDetail($sagepayVpsTxId);
 
             if (!empty($response) && isset($response->errorcode) && $response->errorcode == "0000") {
-
                 $fraudscreenrecommendation = (string)$response->fraudscreenrecommendation;
                 $fraudid = (string)$response->fraudid;
                 $fraudcode = (string)$response->fraudcode;
@@ -154,9 +152,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
                     $logData["fraudcodedetail"] = $fraudcodedetail;
                     $logData["fraudprovidername"] = $fraudprovidername;
                     $logData["fraudrules"] = $rules;
-
                 } else {
-
                     //save the "not checked" or "no result" status
                     $payment->setAdditionalInformation("fraudscreenrecommendation", (string)$fraudscreenrecommendation);
                     $payment->save();
@@ -194,14 +190,16 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
-    protected function _notification(\Magento\Sales\Model\Order\Payment\Transaction $transaction,
-                                     \Magento\Sales\Model\Order\Payment $payment,
-                                     $fraudscreenrecommendation,
-                                     $fraudid,
-                                     $fraudcodedetail,
-                                     $fraudprovidername,
-                                     $rules)
-    {
+    protected function _notification(
+        \Magento\Sales\Model\Order\Payment\Transaction $transaction,
+        \Magento\Sales\Model\Order\Payment $payment,
+        $fraudscreenrecommendation,
+        $fraudid,
+        $fraudcodedetail,
+        $fraudprovidername,
+        $rules
+    ) {
+    
         if ((string)$this->_config->getNotifyFraudResult() != 'disabled') {
             if (((string)$this->_config->getNotifyFraudResult() == "medium_risk" &&
                     ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY ||

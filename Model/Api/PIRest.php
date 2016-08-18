@@ -53,8 +53,8 @@ class PIRest
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         Logger $suiteLogger
-    )
-    {
+    ) {
+    
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
         $this->_curlFactory = $curlFactory;
@@ -83,11 +83,13 @@ class PIRest
             ]
         );
 
-        $curl->write(\Zend_Http_Client::POST,
+        $curl->write(
+            \Zend_Http_Client::POST,
             $url,
             '1.0',
-            array('Content-type: application/json'),
-            $body);
+            ['Content-type: application/json'],
+            $body
+        );
         $data = $curl->read();
 
         $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
@@ -124,10 +126,12 @@ class PIRest
             ]
         );
 
-        $curl->write(\Zend_Http_Client::GET,
+        $curl->write(
+            \Zend_Http_Client::GET,
             $url,
             '1.0',
-            array('Content-type: application/json'));
+            ['Content-type: application/json']
+        );
         $data = $curl->read();
 
         $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
@@ -147,9 +151,9 @@ class PIRest
     /**
      * Returns url for each enviroment according the configuration.
      */
-    protected function _getServiceUrl($action,$vpsTxId=null)
+    protected function _getServiceUrl($action, $vpsTxId = null)
     {
-        switch($action){
+        switch ($action) {
             case self::ACTION_TRANSACTION_DETAILS:
                 $endpoint = "transactions/" . $vpsTxId;
                 break;
@@ -176,15 +180,12 @@ class PIRest
      */
     public function generateMerchantKey()
     {
-        $jsonBody = json_encode(array("vendorName" => $this->_config->getVendorname()));
+        $jsonBody = json_encode(["vendorName" => $this->_config->getVendorname()]);
         $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_GENERATE_MERCHANT_KEY), $jsonBody);
 
         if ($result["status"] == 201) {
-
             return $result["data"]->merchantSessionKey;
-
         } else {
-
             $error_code = $result["data"]->code;
             $error_msg = $result["data"]->description;
 
@@ -207,45 +208,40 @@ class PIRest
     public function capture($payment_request)
     {
         //log request
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$payment_request);
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $payment_request);
 
         $jsonRequest = json_encode($payment_request);
         $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_CAPTURE_TRANSACTION), $jsonRequest);
 
         //log result
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$result);
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $result);
 
         if ($result["status"] == 201) {
-
             //success
             return $result["data"];
-
-        }elseif ($result["status"] == 202) {
-
+        } elseif ($result["status"] == 202) {
             //authentication required
             return $result["data"];
-
         } else {
-
             $error_code = 0;
             $error_msg = "Unable to capture Sage Pay transaction";
 
             $errors = $result["data"];
-            if(isset($errors->errors) && count($errors->errors) > 0){
+            if (isset($errors->errors) && count($errors->errors) > 0) {
                 $errors = $errors->errors[0];
             }
 
-            if(isset($errors->code)){
+            if (isset($errors->code)) {
                 $error_code = $errors->code;
             }
-            if(isset($errors->description)){
+            if (isset($errors->description)) {
                 $error_msg = $errors->description;
             }
-            if(isset($errors->property)){
+            if (isset($errors->property)) {
                 $error_msg .= ': ' . $errors->property;
             }
 
-            if(isset($errors->statusDetail)){
+            if (isset($errors->statusDetail)) {
                 $error_msg = $errors->statusDetail;
             }
 
@@ -268,22 +264,19 @@ class PIRest
      */
     public function submit3D($paRes, $vpsTxId)
     {
-        $jsonBody = json_encode(array("paRes" => $paRes));
+        $jsonBody = json_encode(["paRes" => $paRes]);
 
         //log request
         //$this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$jsonBody);
 
-        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_SUBMIT_3D,$vpsTxId), $jsonBody);
+        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
 
         //log result
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$result);
+        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $result);
 
         if ($result["status"] == 201) {
-
             return $result["data"];
-
         } else {
-
             $error_code = $result["data"]->code;
             $error_msg = $result["data"]->description;
 
@@ -306,14 +299,11 @@ class PIRest
     public function transactionDetails($vpsTxId)
     {
 
-        $result = $this->_executeRequest($this->_getServiceUrl(self::ACTION_TRANSACTION_DETAILS,$vpsTxId));
+        $result = $this->_executeRequest($this->_getServiceUrl(self::ACTION_TRANSACTION_DETAILS, $vpsTxId));
 
         if ($result["status"] == 200) {
-
             return $result["data"];
-
         } else {
-
             $error_code = $result["data"]->code;
             $error_msg = $result["data"]->description;
 
@@ -325,5 +315,4 @@ class PIRest
             throw $exception;
         }
     }
-
 }

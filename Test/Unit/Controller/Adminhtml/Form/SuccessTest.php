@@ -218,7 +218,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     {
         $this->_quoteManagementMock->expects($this->once())
             ->method("submit")
-            ->willReturn(NULL);
+            ->willReturn(null);
 
         $this->_messageManagerMock->expects($this->once())
             ->method("addError")

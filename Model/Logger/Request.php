@@ -20,5 +20,4 @@ class Request extends \Magento\Framework\Logger\Handler\Base
     {
         return $record['level'] == \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST;
     }
-
 }

@@ -190,10 +190,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $requestHelperMock->expects($this->any())
             ->method('populatePaymentAmount')
-            ->will($this->returnValue(array()));
+            ->will($this->returnValue([]));
         $requestHelperMock->expects($this->any())
             ->method('populateAddressInformation')
-            ->will($this->returnValue(array()));
+            ->will($this->returnValue([]));
         $requestHelperMock->expects($this->any())
             ->method('getOrderDescription')
             ->will($this->returnValue("description"));
@@ -225,7 +225,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 "data" => [
                     "VPSTxId" => self::TEST_VPSTXID,
                     "StatusDetail" => "OK Status",
-                    "redirect" => NULL
+                    "redirect" => null
                 ]
             ]
         ]);
@@ -237,7 +237,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     {
         $this->quoteManagementMock->expects($this->any())
             ->method('submit')
-            ->will($this->returnValue(NULL));
+            ->will($this->returnValue(null));
 
         $this->_expectResultJson([
             "success" => false,
@@ -256,5 +256,4 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('setData')
             ->with($result);
     }
-
 }

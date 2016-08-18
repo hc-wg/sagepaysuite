@@ -40,5 +40,4 @@ class Recommendation extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\
 
         return $html;
     }
-
 }

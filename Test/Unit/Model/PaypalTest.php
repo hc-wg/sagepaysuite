@@ -75,9 +75,9 @@ class PaypalTest extends \PHPUnit_Framework_TestCase
 
         $this->sharedApiMock->expects($this->once())
             ->method('releaseTransaction')
-            ->with(1,100);
+            ->with(1, 100);
 
-        $this->paypalModel->capture($paymentMock,100);
+        $this->paypalModel->capture($paymentMock, 100);
     }
 
     public function testCaptureERROR()
@@ -108,12 +108,12 @@ class PaypalTest extends \PHPUnit_Framework_TestCase
         $exception = new \Exception("Error in Authenticating");
         $this->sharedApiMock->expects($this->once())
             ->method('authorizeTransaction')
-            ->with(2,100)
+            ->with(2, 100)
             ->willThrowException($exception);
 
         $response = "";
         try {
-            $this->paypalModel->capture($paymentMock,100);
+            $this->paypalModel->capture($paymentMock, 100);
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $response = $e->getMessage();
         }
@@ -150,10 +150,9 @@ class PaypalTest extends \PHPUnit_Framework_TestCase
 
         $this->sharedApiMock->expects($this->once())
             ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID,100,1000001);
+            ->with(self::TEST_VPSTXID, 100, 1000001);
 
-        $this->paypalModel->refund($paymentMock,100);
-
+        $this->paypalModel->refund($paymentMock, 100);
     }
 
     public function testRefundERROR()
@@ -177,12 +176,12 @@ class PaypalTest extends \PHPUnit_Framework_TestCase
         $exception = new \Exception("Error in Refunding");
         $this->sharedApiMock->expects($this->once())
             ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID,100,1000001)
+            ->with(self::TEST_VPSTXID, 100, 1000001)
             ->willThrowException($exception);
 
         $response = "";
         try {
-            $this->paypalModel->refund($paymentMock,100);
+            $this->paypalModel->refund($paymentMock, 100);
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $response = $e->getMessage();
         }
@@ -191,10 +190,10 @@ class PaypalTest extends \PHPUnit_Framework_TestCase
             'There was an error refunding Sage Pay transaction ' . self::TEST_VPSTXID . ': Error in Refunding',
             $response
         );
-
     }
 
-    public function testGetConfigPaymentAction(){
+    public function testGetConfigPaymentAction()
+    {
         $this->configMock->expects($this->once())
             ->method('getPaymentAction');
         $this->paypalModel->getConfigPaymentAction();

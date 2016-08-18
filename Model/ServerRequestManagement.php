@@ -96,8 +96,8 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
         \Magento\Framework\UrlInterface $coreUrl,
         \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory
-    )
-    {
+    ) {
+    
         $this->result             = $result;
         $this->quoteRepository    = $quoteRepository;
         $this->_config            = $config;
@@ -129,7 +129,6 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
     {
 
         try {
-
             //prepare quote
             $quote = $this->getQuoteById($cartId);
             $quote->collectTotals();
@@ -139,14 +138,15 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
             $request = $this->_generateRequest($save_token, $token);
 
             //send POST to Sage Pay
-            $post_response = $this->_postApi->sendPost($request,
+            $post_response = $this->_postApi->sendPost(
+                $request,
                 $this->_getServiceURL(),
-                array("OK")
+                ["OK"]
             );
 
             //set payment info for save order
             $transactionId = $post_response["data"]["VPSTxId"];
-            $transactionId = str_replace(array("}", "{"), array(""), $transactionId);
+            $transactionId = str_replace(["}", "{"], [""], $transactionId);
             $payment       = $quote->getPayment();
             $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
 
@@ -187,24 +187,19 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
                 //prepare response
                 $this->result->setSuccess(true);
                 $this->result->setResponse($post_response);
-
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
             }
         } catch (Api\ApiException $apiException) {
-
             $this->_suiteLogger->logException($apiException);
 
             $this->result->setSuccess(false);
             $this->result->setErrorMessage(__('Something went wrong while generating the Sage Pay request: ' . $apiException->getUserMessage()));
-
         } catch (\Exception $e) {
-
             $this->_suiteLogger->logException($e);
 
             $this->result->setSuccess(false);
             $this->result->setErrorMessage(__('Something went wrong while generating the Sage Pay request: ' . $e->getMessage()));
-
         }
 
         return $this->result;
@@ -212,10 +207,10 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
 
     protected function _getNotificationUrl()
     {
-        $url = $this->_coreUrl->getUrl('sagepaysuite/server/notify', array(
+        $url = $this->_coreUrl->getUrl('sagepaysuite/server/notify', [
             '_secure' => true,
             '_store' => $this->_quote->getStoreId()
-        ));
+        ]);
 
         $url .= "?quoteid=" . $this->_quote->getId();
 
@@ -242,7 +237,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
     protected function _generateRequest($save_token, $token)
     {
 
-        $data                    = array();
+        $data                    = [];
         $data["VPSProtocol"]     = $this->_config->getVPSProtocol();
         $data["TxType"]          = $this->_config->getSagepayPaymentAction();
         $data["Vendor"]          = $this->_config->getVendorname();
@@ -254,7 +249,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         //populate payment amount information
         $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
 
-        if($this->_config->getBasketFormat() != Config::BASKETFORMAT_Disabled) {
+        if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_Disabled) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
         }
 
@@ -263,12 +258,11 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
 
         //token
         $customer_data = $this->_customerSession->getCustomerDataObject();
-        $slots         = $this->_tokenModel->isCustomerUsingMaxTokenSlots($customer_data->getId(),$this->_config->getVendorname());
+        $slots         = $this->_tokenModel->isCustomerUsingMaxTokenSlots($customer_data->getId(), $this->_config->getVendorname());
         if ($save_token && !empty($customer_data) && !$slots) {
             //save token
             $data["CreateToken"] = 1;
-        }
-        else {
+        } else {
             if ($token !== '%token%' && !is_null($token)) {
                 //use token
                 $data["StoreToken"] = 1;
@@ -282,7 +276,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         $data["BillingAgreement"] = (int)$this->_config->getPaypalBillingAgreement();
 
         //server profile
-        if((bool)$this->_config->isServerLowProfileEnabled() === true) {
+        if ((bool)$this->_config->isServerLowProfileEnabled() === true) {
             $data["Profile"] = "LOW";
         }
 
@@ -307,5 +301,4 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
     {
         return $this->quoteRepository->get($cartId);
     }
-
 }

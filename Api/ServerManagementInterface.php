@@ -25,5 +25,4 @@ interface ServerManagementInterface
      * @return \Magento\Quote\Api\Data\CartInterface
      */
     public function getQuoteById($cartId);
-
 }

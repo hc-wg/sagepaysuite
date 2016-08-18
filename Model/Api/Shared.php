@@ -97,11 +97,13 @@ class Shared
             $postData .= $_key . '=' . urlencode(mb_convert_encoding($_val, 'ISO-8859-1', 'UTF-8')) . '&';
         }
 
-        $curl->write(\Zend_Http_Client::POST,
+        $curl->write(
+            \Zend_Http_Client::POST,
             $url,
             '1.0',
             [],
-            $postData);
+            $postData
+        );
         $data = $curl->read();
 
         $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
@@ -109,18 +111,18 @@ class Shared
 
         //parse response
         $response_data = [];
-        if($response_status == 200){
+        if ($response_status == 200) {
             $data = preg_split('/^\r?$/m', $data, 2);
             $data = explode(PHP_EOL, $data[1]);
-            for($i=0;$i<count($data);$i++){
-                if(!empty($data[$i])){
-                    $aux = explode("=",trim($data[$i]));
-                    if(count($aux) == 2){
+            for ($i=0; $i<count($data); $i++) {
+                if (!empty($data[$i])) {
+                    $aux = explode("=", trim($data[$i]));
+                    if (count($aux) == 2) {
                         $response_data[$aux[0]] = $aux[1];
                     }
                 }
             }
-        }else{
+        } else {
             $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, "INVALID RESPONSE FROM SAGE PAY: " . $response_status);
         }
 
@@ -135,42 +137,43 @@ class Shared
     /**
      * Returns url for each enviroment according the configuration.
      */
-    protected function _getServiceUrl($action) {
+    protected function _getServiceUrl($action)
+    {
 
-        switch($action){
+        switch ($action) {
             case \Ebizmarts\SagePaySuite\Model\Config::ACTION_VOID:
-                if($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE ){
+                if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
                     return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_VOID_LIVE;
-                }else{
+                } else {
                     return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_VOID_TEST;
                 }
                 break;
             case \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND:
-                if($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE ){
+                if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
                     return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REFUND_LIVE;
-                }else{
+                } else {
                     return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REFUND_TEST;
                 }
                 break;
             case \Ebizmarts\SagePaySuite\Model\Config::ACTION_RELEASE:
-                if($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE ){
+                if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
                     return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_RELEASE_LIVE;
-                }else{
+                } else {
                     return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_RELEASE_TEST;
                 }
                 break;
             case \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE:
-                if($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE ){
+                if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
                     return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_AUTHORIZE_LIVE;
-                }else{
+                } else {
                     return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_AUTHORIZE_TEST;
                 }
                 break;
             case \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT:
             case \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED:
-                if($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE ){
+                if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
                     return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REPEAT_LIVE;
-                }else{
+                } else {
                     return \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REPEAT_TEST;
                 }
                 break;
@@ -185,17 +188,14 @@ class Shared
         $exceptionCode = 0;
         $validResponse = false;
 
-        if (!empty($response) && array_key_exists("data",$response)) {
-            if(array_key_exists("Status",$response["data"]) && $response["data"]["Status"] == 'OK'){
-
+        if (!empty($response) && array_key_exists("data", $response)) {
+            if (array_key_exists("Status", $response["data"]) && $response["data"]["Status"] == 'OK') {
                 //this is a successfull response
                 return $response;
-
-            }else{
-
+            } else {
                 //there was an error
-                if(array_key_exists("StatusDetail",$response["data"])){
-                    $detail = explode(":",$response["data"]["StatusDetail"]);
+                if (array_key_exists("StatusDetail", $response["data"])) {
+                    $detail = explode(":", $response["data"]["StatusDetail"]);
                     $exceptionCode = trim($detail[0]);
                     $exceptionPhrase = trim($detail[1]);
                     $validResponse = true;
@@ -203,8 +203,8 @@ class Shared
             }
         }
 
-        if(!$validResponse){
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$response);
+        if (!$validResponse) {
+            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $response);
         }
 
         $exception = $this->_apiExceptionFactory->create([
@@ -215,7 +215,8 @@ class Shared
         throw $exception;
     }
 
-    public function voidTransaction($vpstxid){
+    public function voidTransaction($vpstxid)
+    {
 
         $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
 
@@ -243,14 +244,15 @@ class Shared
         return $api_response;
     }
 
-    public function refundTransaction($vpstxid, $amount, $order_id){
+    public function refundTransaction($vpstxid, $amount, $order_id)
+    {
 
         $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
 
         $data['VPSProtocol'] = $this->_config->getVPSProtocol();
         $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND;
         $data['Vendor'] = $this->_config->getVendorname();
-        $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($order_id,\Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND);
+        $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($order_id, \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND);
         $data['Amount'] = number_format($amount, 2, '.', '');
         $data['Currency'] = (string)$transaction->currency;
         $data['Description'] = "Refund issued from magento.";
@@ -275,7 +277,7 @@ class Shared
         return $api_response;
     }
 
-    public function releaseTransaction($vpstxid,$amount)
+    public function releaseTransaction($vpstxid, $amount)
     {
         $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
 
@@ -306,14 +308,14 @@ class Shared
         return $api_response;
     }
 
-    public function authorizeTransaction($vpstxid,$amount,$order_id)
+    public function authorizeTransaction($vpstxid, $amount, $order_id)
     {
         $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
 
         $data['VPSProtocol'] = $this->_config->getVPSProtocol();
         $data['TxType'] = \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE;
         $data['Vendor'] = $this->_config->getVendorname();
-        $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($order_id,\Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE);
+        $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($order_id, \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE);
         $data['Amount'] = number_format($amount, 2, '.', '');
         $data['Description'] = "Authorize transaction from Magento";
         $data['RelatedVPSTxId'] = (string)$transaction->vpstxid;
@@ -337,7 +339,7 @@ class Shared
         return $api_response;
     }
 
-    public function repeatTransaction($vpstxid,$quote_data,$payment_action=Config::ACTION_REPEAT)
+    public function repeatTransaction($vpstxid, $quote_data, $payment_action = Config::ACTION_REPEAT)
     {
         $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
 

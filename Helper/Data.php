@@ -6,7 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Helper;
 
-
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
 
@@ -37,7 +36,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * Get default sagepay config instance
      * @return \Ebizmarts\SagePaySuite\Model\Config
      */
-    public function getSagePayConfig(){
+    public function getSagePayConfig()
+    {
         return $this->_config;
     }
 
@@ -46,10 +46,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param string $action
      * @return string
      */
-    public function generateVendorTxCode($order_id="", $action=\Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT){
+    public function generateVendorTxCode($order_id = "", $action = \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT)
+    {
 
         $prefix = "";
-        switch($action){
+        switch ($action) {
             case \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND:
                 $prefix = "R";
                 break;
@@ -72,10 +73,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function verify()
     {
         $domain = preg_replace("/^http:\/\//", "", $this->_config->getStoreDomain());
-        $domain = preg_replace("/^https:\/\//", "",$domain);
+        $domain = preg_replace("/^https:\/\//", "", $domain);
         $domain = preg_replace("/^www\./", "", $domain);
         $domain = preg_replace("/\/$/", "", $domain);
-        $version = explode('.',$this->getVersion());
+        $version = explode('.', $this->getVersion());
         $module = 'Ebizmarts_SagePaySuite2';
         $md5 = md5($module . $version[0].'.'.$version[1] . $domain);
         $key = hash('sha1', $md5 . 'EbizmartsV2');
@@ -91,8 +92,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $modules = $this->_loader->load();
         $v = "UNKNOWN";
 
-        if(isset($modules['Ebizmarts_SagePaySuite']) && isset($modules['Ebizmarts_SagePaySuite']['setup_version']))
-        {
+        if (isset($modules['Ebizmarts_SagePaySuite']) && isset($modules['Ebizmarts_SagePaySuite']['setup_version'])) {
             $v =$modules['Ebizmarts_SagePaySuite']['setup_version'];
         }
         return $v;

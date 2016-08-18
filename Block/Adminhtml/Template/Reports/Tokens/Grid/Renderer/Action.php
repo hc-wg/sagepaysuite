@@ -30,5 +30,4 @@ class Action extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Action
 
         return parent::render($row);
     }
-
 }

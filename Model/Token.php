@@ -45,8 +45,8 @@ class Token extends \Magento\Framework\Model\AbstractModel
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
-    )
-    {
+    ) {
+    
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
         $this->_suiteLogger = $suiteLogger;
         $this->_logger = $context->getLogger();
@@ -109,7 +109,7 @@ class Token extends \Magento\Framework\Model\AbstractModel
             $this->getResource()->getCustomerTokens($this, $customerId, $vendorname);
             return $this->_data;
         }
-        return array();
+        return [];
     }
 
     /**
@@ -132,25 +132,24 @@ class Token extends \Magento\Framework\Model\AbstractModel
     protected function _deleteFromSagePay()
     {
         try {
-
             if (empty($this->getVendorname()) || empty($this->getToken())) {
                 //missing data to proceed
                 return;
             }
 
             //generate delete POST request
-            $data = array();
+            $data = [];
             $data["VPSProtocol"] = $this->_config->getVPSProtocol();
             $data["TxType"] = "REMOVETOKEN";
             $data["Vendor"] = $this->getVendorname();
             $data["Token"] = $this->getToken();
 
             //send POST to Sage Pay
-            $this->_postApi->sendPost($data,
+            $this->_postApi->sendPost(
+                $data,
                 $this->_getRemoveServiceURL(),
-                array("OK")
+                ["OK"]
             );
-
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             //we do not show any error message to frontend
@@ -223,5 +222,4 @@ class Token extends \Magento\Framework\Model\AbstractModel
         $this->getResource()->getCustomerTokens($this, $customerId, $vendorname);
         return count($this->_data) >= \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER;
     }
-
 }

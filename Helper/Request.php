@@ -30,8 +30,8 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger
-    )
-    {
+    ) {
+    
         $this->_config = $config;
         $this->_suiteLogger = $suiteLogger;
     }
@@ -42,7 +42,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         $billing_address = $quote->getBillingAddress();
         $shipping_address = $quote->isVirtual() ? $billing_address : $quote->getShippingAddress();
 
-        $data = array();
+        $data = [];
 
         //customer email
         $data["CustomerEMail"] = $billing_address->getEmail();
@@ -104,7 +104,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
                 break;
         }
 
-        $data = array();
+        $data = [];
         if ($isRestRequest) {
             $data["amount"] = $amount * 100;
             $data["currency"] = $currencyCode;
@@ -118,7 +118,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function populateBasketInformation($quote, $force_xml = false)
     {
-        $data = array();
+        $data = [];
 
         $basketFormat = $this->_config->getBasketFormat();
 
@@ -144,7 +144,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         $BASKET_SEP = ':';
         $BASKET_SEP_ESCAPE = '-';
 
-        $basketArray = array();
+        $basketArray = [];
 //        $useBaseMoney = false; //true
 
         $itemsCollection = $quote->getItemsCollection();
@@ -155,7 +155,6 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 //        }
 
         foreach ($itemsCollection as $item) {
-
 //                //Avoid duplicates SKUs on basket
 //                if ($this->_isSkuDuplicatedInSageBasket($basketArray,$this->_cleanSage50BasketString($item->getSku())) == true) {
 //                    continue;
@@ -193,14 +192,14 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 //                    $_options = '_' . substr($_options, 0, -1) . '_';
 //                }
 
-            $newItem = array(
+            $newItem = [
                 "item" => "",
                 "qty" => 0,
                 "item_value" => 0,
                 "item_tax" => 0,
                 "item_total" => 0,
                 "line_total" => 0
-            );
+            ];
 
             //[SKU] Name
             $newItem["item"] = str_replace($BASKET_SEP, $BASKET_SEP_ESCAPE, '[' . $this->_cleanSage50BasketString($item->getSku()) . '] ' . $this->_cleanSage50BasketString($item->getName()) . $this->_cleanSage50BasketString($_options));
@@ -239,13 +238,13 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         $deliveryAmount = $deliveryValue + $deliveryTax;
 
         //delivery item
-        $deliveryItem = array(
+        $deliveryItem = [
             "item"=>str_replace($BASKET_SEP, $BASKET_SEP_ESCAPE, $this->_cleanSage50BasketString($deliveryName)),
             "qty"=>1,
             "item_value"=>$deliveryValue,
             "item_tax"=>$deliveryTax,
             "item_total"=>$deliveryAmount,
-            "line_total"=>$deliveryAmount);
+            "line_total"=>$deliveryAmount];
 
         $basketArray[] = $deliveryItem;
 
@@ -459,7 +458,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         $safe_string = "";
 
         for ($i = 0; $i < strlen($string); $i++) {
-            if (preg_match($safe_regex, substr($string, $i, 1)) != FALSE) {
+            if (preg_match($safe_regex, substr($string, $i, 1)) != false) {
                 $safe_string .= substr($string, $i, 1);
             } else {
                 $safe_string .= '-';
@@ -501,7 +500,4 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return "01bf51f9-0dcd-49dd-a07a-3b1f918c77d7";
     }
-
-
-
 }

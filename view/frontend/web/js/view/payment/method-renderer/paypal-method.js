@@ -73,7 +73,8 @@ define(
                 }
 
                 return storage.post(
-                    serviceUrl, JSON.stringify(payload)
+                    serviceUrl,
+                    JSON.stringify(payload)
                 ).done(
                     function () {
                         var paymentData = {method: self.getCode()};
@@ -98,7 +99,8 @@ define(
                             };
                         }
                         return storage.put(
-                            serviceUrl, JSON.stringify(payload)
+                            serviceUrl,
+                            JSON.stringify(payload)
                         ).done(
                             function () {
 

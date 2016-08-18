@@ -61,8 +61,8 @@ class Request extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Checkout\Model\Session $checkoutSession
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
@@ -89,8 +89,7 @@ class Request extends \Magento\Framework\App\Action\Action
                 'vendor' => $this->_config->getVendorname(),
                 'crypt' => $this->_generateFormCrypt()
             ];
-
-        }  catch (\Exception $e) {
+        } catch (\Exception $e) {
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $e->getMessage()),
@@ -103,24 +102,25 @@ class Request extends \Magento\Framework\App\Action\Action
         return $resultJson;
     }
 
-    protected function _generateFormCrypt(){
+    protected function _generateFormCrypt()
+    {
 
         $encrypted_password = $this->_config->getFormEncryptedPassword();
 
-        if(empty($encrypted_password)){
+        if (empty($encrypted_password)) {
             throw new \Magento\Framework\Exception\LocalizedException(__('Invalid FORM encrypted password.'));
         }
 
         //$customer_data = $this->_getCustomerSession()->getCustomerDataObject();
 
-        $data = array();
+        $data = [];
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
         $data['Description'] = $this->_requestHelper->getOrderDescription();
 
         //referrer id
         $data["ReferrerID"] = $this->_requestHelper->getReferrerId();
 
-        if($this->_config->getBasketFormat() != Config::BASKETFORMAT_Disabled) {
+        if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_Disabled) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
         }
 
@@ -171,10 +171,11 @@ class Request extends \Magento\Framework\App\Action\Action
         return "@" . strtoupper(bin2hex($crypt));
     }
 
-    protected function _getServiceURL(){
-        if($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE){
+    protected function _getServiceURL()
+    {
+        if ($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_FORM_REDIRECT_LIVE;
-        }else{
+        } else {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_FORM_REDIRECT_TEST;
         }
     }

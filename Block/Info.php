@@ -21,7 +21,7 @@ class Info extends \Magento\Payment\Block\Info\Cc
         $transport = parent::_prepareSpecificInformation($transport);
         $payment = $this->getInfo();
 
-        $info = array();
+        $info = [];
         if ($payment->getCcExpMonth()) {
             $info["Credit Card Expiration"] = $payment->getCcExpMonth() . "/" . $payment->getCcExpYear();
         }

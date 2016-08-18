@@ -75,9 +75,9 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
 
         $this->sharedApiMock->expects($this->once())
             ->method('releaseTransaction')
-            ->with(1,100);
+            ->with(1, 100);
 
-        $this->repeatModel->capture($paymentMock,100);
+        $this->repeatModel->capture($paymentMock, 100);
     }
 
     public function testCaptureERROR()
@@ -97,12 +97,12 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
         $exception = new \Exception("Error in Releasing");
         $this->sharedApiMock->expects($this->once())
             ->method('releaseTransaction')
-            ->with(2,100)
+            ->with(2, 100)
             ->willThrowException($exception);
 
         $response = "";
         try {
-            $this->repeatModel->capture($paymentMock,100);
+            $this->repeatModel->capture($paymentMock, 100);
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $response = $e->getMessage();
         }
@@ -139,9 +139,9 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
 
         $this->sharedApiMock->expects($this->once())
             ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID,100,1000001);
+            ->with(self::TEST_VPSTXID, 100, 1000001);
 
-        $this->repeatModel->refund($paymentMock,100);
+        $this->repeatModel->refund($paymentMock, 100);
     }
 
     public function testRefundERROR()
@@ -165,12 +165,12 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
         $exception = new \Exception("Error in Refunding");
         $this->sharedApiMock->expects($this->once())
             ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID,100,1000001)
+            ->with(self::TEST_VPSTXID, 100, 1000001)
             ->willThrowException($exception);
 
         $response = "";
         try {
-            $this->repeatModel->refund($paymentMock,100);
+            $this->repeatModel->refund($paymentMock, 100);
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $response = $e->getMessage();
         }
@@ -181,7 +181,8 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testGetConfigPaymentAction(){
+    public function testGetConfigPaymentAction()
+    {
         $this->configMock->expects($this->once())
             ->method('getPaymentAction');
         $this->repeatModel->getConfigPaymentAction();

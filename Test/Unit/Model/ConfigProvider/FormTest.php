@@ -65,7 +65,7 @@ class FormTest extends \PHPUnit_Framework_TestCase
             [
                 'payment' => [
                     'ebizmarts_sagepaysuiteform' => [
-                        'licensed' => NULL,
+                        'licensed' => null,
                         'mode' => null
                     ],
                 ]

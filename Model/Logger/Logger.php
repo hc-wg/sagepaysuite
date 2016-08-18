@@ -17,42 +17,40 @@ class Logger extends \Monolog\Logger
     const LOG_CRON = 'Cron';
     const LOG_EXCEPTION = 'Exception';
 
-    protected static $levels = array(
+    protected static $levels = [
         self::LOG_REQUEST => 'Request',
         self::LOG_CRON => 'Cron',
         self::LOG_EXCEPTION => 'Exception'
-    );
+    ];
 
     public function SageLog($logType, $message)
     {
 
         try {
-
-            if(is_null($message)){
+            if (is_null($message)) {
                 $message = "NULL";
             }
 
             if (is_array($message)) {
-                $message = json_encode($message,JSON_PRETTY_PRINT);
+                $message = json_encode($message, JSON_PRETTY_PRINT);
             }
 
             if (is_object($message)) {
-                $message = json_encode($message,JSON_PRETTY_PRINT);
+                $message = json_encode($message, JSON_PRETTY_PRINT);
             }
 
-            if(!empty(json_last_error())){
+            if (!empty(json_last_error())) {
                 $message = (string)json_last_error();
             }
 
             $message = (string)$message;
-
         } catch (\Exception $e) {
             $message = "INVALID MESSAGE";
         }
 
         $message .= "\r\n";
 
-        return $this->addRecord($logType, $message, array());
+        return $this->addRecord($logType, $message, []);
     }
 
     public function logException($exception)
@@ -62,7 +60,6 @@ class Logger extends \Monolog\Logger
         $message .= $exception->getTraceAsString();
         $message .= "\r\n\r\n";
 
-        return $this->addRecord(self::LOG_EXCEPTION, $message, array());
+        return $this->addRecord(self::LOG_EXCEPTION, $message, []);
     }
-
 }

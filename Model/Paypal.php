@@ -174,26 +174,23 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
     {
         $action = "with";
 
-        if($payment->getLastTransId()) {
+        if ($payment->getLastTransId()) {
             try {
                 $transactionId = $payment->getLastTransId();
                 $paymentAction = $payment->getAdditionalInformation('paymentAction') ? $payment->getAdditionalInformation('paymentAction') : $this->_config->getSagepayPaymentAction();
 
-                if($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER){
+                if ($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER) {
                     $action = 'releasing';
                     $result = $this->_sharedApi->releaseTransaction($transactionId, $amount);
-                }elseif($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE){
+                } elseif ($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE) {
                     $action = 'authorizing';
                     $result = $this->_sharedApi->authorizeTransaction($transactionId, $amount, $payment->getOrder()->getIncrementId());
                 }
 
                 $payment->setIsTransactionClosed(1);
-
-
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
                 $this->_logger->critical($apiException);
                 throw new LocalizedException(__('There was an error ' . $action .' Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
-
             } catch (\Exception $e) {
                 $this->_logger->critical($e);
                 throw new LocalizedException(__('There was an error ' . $action .' Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
@@ -213,7 +210,6 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
     public function refund(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
         try {
-
             $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
             $order = $payment->getOrder();
 
@@ -222,11 +218,9 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
 
             $payment->setIsTransactionClosed(1);
             $payment->setShouldCloseParentTransaction(1);
-
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
             throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
-
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));

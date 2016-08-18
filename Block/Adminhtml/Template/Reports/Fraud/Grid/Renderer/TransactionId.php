@@ -22,9 +22,8 @@ class TransactionId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\N
     {
         $trnId = parent::render($row);
 
-        $link = $this->getUrl('sales/transactions/view/',array('txn_id'=>$trnId));
+        $link = $this->getUrl('sales/transactions/view/', ['txn_id'=>$trnId]);
 
         return '<a href="' . $link . '">' . $trnId . '</a>';
     }
-
 }

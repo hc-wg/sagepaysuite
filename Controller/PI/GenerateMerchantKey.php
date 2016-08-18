@@ -6,9 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\PI;
 
-
 use Magento\Framework\Controller\ResultFactory;
-
 
 class GenerateMerchantKey extends \Magento\Framework\App\Action\Action
 {
@@ -24,8 +22,8 @@ class GenerateMerchantKey extends \Magento\Framework\App\Action\Action
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirestapi
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_pirestapi = $pirestapi;
     }
@@ -33,19 +31,16 @@ class GenerateMerchantKey extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
-
             $responseContent = [
                 'success' => true,
                 'merchant_session_key' => $this->_pirestapi->generateMerchantKey()
             ];
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
-        {
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $responseContent = [
                 'success' => false,
                 'error_message' => __($apiException->getUserMessage())
             ];
-        } catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong while generating the merchant session key.')
