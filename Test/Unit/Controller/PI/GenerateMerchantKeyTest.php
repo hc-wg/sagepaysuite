@@ -96,5 +96,4 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
             ->method('setData')
             ->with($result);
     }
-
 }

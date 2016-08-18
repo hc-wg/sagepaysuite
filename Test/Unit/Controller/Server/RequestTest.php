@@ -152,10 +152,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $requestHelperMock->expects($this->any())
             ->method('populateAddressInformation')
-            ->will($this->returnValue(array()));
+            ->will($this->returnValue([]));
         $requestHelperMock->expects($this->any())
             ->method('populatePaymentAmount')
-            ->will($this->returnValue(array()));
+            ->will($this->returnValue([]));
         $requestHelperMock->expects($this->any())
             ->method('getOrderDescription')
             ->will($this->returnValue("description"));
@@ -233,5 +233,4 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('setData')
             ->with($result);
     }
-
 }

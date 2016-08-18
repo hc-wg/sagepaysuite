@@ -58,7 +58,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
     public function testAroundIsEmailAvailable()
     {
-        $proceed = $this->getProceedClosure(true, "test@example.com", NULL);
+        $proceed = $this->getProceedClosure(true, "test@example.com", null);
 
         $accountManagementMock = $this
             ->getMockBuilder('Magento\Customer\Model\AccountManagement')
@@ -68,7 +68,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->quoteMock->expects($this->once())
             ->method('save');
 
-        $this->pluginAccountManagementModel->aroundIsEmailAvailable($accountManagementMock,$proceed,"test@example.com",NULL);
+        $this->pluginAccountManagementModel->aroundIsEmailAvailable($accountManagementMock, $proceed, "test@example.com", null);
     }
 
     private function getProceedClosure($result, $email, $storeId)

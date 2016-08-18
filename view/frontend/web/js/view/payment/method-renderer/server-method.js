@@ -78,7 +78,8 @@ define(
                 }
 
                 return storage.post(
-                    serviceUrl, JSON.stringify(payload)
+                    serviceUrl,
+                    JSON.stringify(payload)
                 ).done(
                     function () {
                         var paymentData = {method: self.getCode()};
@@ -103,15 +104,15 @@ define(
                             };
                         }
                         storage.put(
-                            serviceUrl, JSON.stringify(payload)
+                            serviceUrl,
+                            JSON.stringify(payload)
                         ).done(
                             function () {
 
                                 var serviceUrl = null;
                                 if (customer.isLoggedIn()) {
                                     serviceUrl = urlBuilder.createUrl('/sagepay/server', {});
-                                }
-                                else {
+                                } else {
                                     serviceUrl = urlBuilder.createUrl('/sagepay-guest/server', {});
                                 }
 
@@ -133,16 +134,17 @@ define(
                                 }
 
                                 //send server post request
-                                 return storage.post(serviceUrl,
+                                 return storage.post(
+                                     serviceUrl,
                                      JSON.stringify({
                                          "cartId": quote.getQuoteId(),
                                          "save_token": save_token,
                                          "token": token
-                                     })).done(
-                                    function (response) {
+                                     })
+                                 ).done(
+                                     function (response) {
 
-                                        if (response.success) {
-
+                                         if (response.success) {
                                             //self.hideOtherPaymentOptions();
 
                                             //$('#sagepaysuiteserver-actions-toolbar').css('display', 'none');
@@ -156,16 +158,15 @@ define(
                                             self.openSERVERModal(response.response[1].NextURL);
 
                                             fullScreenLoader.stopLoader();
-
-                                        } else {
+                                         } else {
                                             self.showPaymentError(response.error_message);
-                                        }
-                                    }
-                                ).fail(
-                                    function (response) {
-                                        self.showPaymentError("Unable to submit to Sage Pay. Please try another payment option.");
-                                    }
-                                );
+                                         }
+                                         }
+                                 ).fail(
+                                     function (response) {
+                                         self.showPaymentError("Unable to submit to Sage Pay. Please try another payment option.");
+                                         }
+                                 );
                             }
                         ).fail(
                             function (response) {
@@ -242,7 +243,6 @@ define(
                 var self = this;
 
                 if (confirm("Are you sure you wish to delete this saved credit card token?")) {
-
                     var serviceUrl = url.build('sagepaysuite/token/delete');
 
                     //send token delete post
@@ -250,7 +250,6 @@ define(
                         function (response) {
 
                             if (response.success && response.success == true) {
-
                                 //check warning message
                                 self.used_token_slots = self.used_token_slots - 1;
                                 self.checkMaxTokensPerCustomer();

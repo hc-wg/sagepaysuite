@@ -28,11 +28,11 @@ class Recommendation extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\
         $html = array_key_exists("fraudscreenrecommendation", $additionalInfo) ? $additionalInfo["fraudscreenrecommendation"] : "";
 
         switch ($html) {
-            case \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_CHALLENGE:
+            case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_CHALLENGE:
             case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD:
                 $html = '<span style="color:orange;">' . $html . '</span>';
                 break;
-            case \Ebizmarts\SagePaySuite\Model\Config::ReDSTATUS_DENY:
+            case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY:
             case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT:
                 $html = '<span style="color:red;">' . $html . '</span>';
                 break;
@@ -40,5 +40,4 @@ class Recommendation extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\
 
         return $html;
     }
-
 }

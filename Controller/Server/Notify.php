@@ -6,7 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
-
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 
@@ -81,8 +80,8 @@ class Notify extends \Magento\Framework\App\Action\Action
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
         \Magento\Quote\Model\Quote $quote
-    )
-    {
+    ) {
+    
         parent::__construct($context);
 
         $this->_suiteLogger = $suiteLogger;
@@ -103,10 +102,9 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_quote = $this->_quote->load($this->getRequest()->getParam("quoteid"));
 
         //log response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $this->_postData);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $this->_postData);
 
         try {
-
             //find quote with GET param
             if (empty($this->_quote->getId())) {
                 return $this->_returnInvalid("Unable to find quote");
@@ -129,7 +127,7 @@ class Notify extends \Magento\Framework\App\Action\Action
 
             if (strtoupper($localMd5Hash) != $this->_postData->VPSSignature) {
                 //log full values for VPS signature
-                $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, "INVALID SIGNATURE: " . $this->_getVPSSignatureString($payment));
+                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, "INVALID SIGNATURE: " . $this->_getVPSSignatureString($payment));
                 throw new \Magento\Framework\Validator\Exception(__('Invalid VPS Signature'));
             }
 
@@ -149,7 +147,8 @@ class Notify extends \Magento\Framework\App\Action\Action
             if (isset($this->_postData->Token)) {
                 //save token
 
-                $this->_tokenModel->saveToken($order->getCustomerId(),
+                $this->_tokenModel->saveToken(
+                    $order->getCustomerId(),
                     $this->_postData->Token,
                     $this->_postData->CardType,
                     $this->_postData->Last4Digits,
@@ -204,7 +203,6 @@ class Notify extends \Magento\Framework\App\Action\Action
                 $this->_cancelOrder($order);
 
                 return $this->_returnAbort();
-
             } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") { //Transaction succeeded or authenticated
 
                 $sendEmail = true;
@@ -216,7 +214,6 @@ class Notify extends \Magento\Framework\App\Action\Action
                 $this->_confirmPayment($transactionId, $sendEmail);
 
                 return $this->_returnOk();
-
             } elseif ($status == "PENDING") { //Transaction in PENDING state (this is just for Euro Payments which are not yet available in this version)
 
                 $payment->setAdditionalInformation('euroPayment', true);
@@ -225,7 +222,6 @@ class Notify extends \Magento\Framework\App\Action\Action
                 $this->_orderSender->send($this->_order);
 
                 return $this->_returnOk();
-
             } else { //Transaction failed with NOTAUTHED, REJECTED or ERROR
 
                 //cancel pending payment order
@@ -233,7 +229,6 @@ class Notify extends \Magento\Framework\App\Action\Action
 
                 return $this->_returnInvalid("Payment was not accepted, please try another payment method");
             }
-
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_suiteLogger->logException($apiException);
 
@@ -241,7 +236,6 @@ class Notify extends \Magento\Framework\App\Action\Action
             $this->_cancelOrder($order);
 
             return $this->_returnInvalid("Something went wrong: " . $apiException->getUserMessage());
-
         } catch (\Exception $e) {
             $this->_suiteLogger->logException($e);
 
@@ -257,7 +251,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         return $this->_postData->VPSTxId .
         $this->_postData->VendorTxCode .
         $this->_postData->Status .
-        (property_exists($this->_postData, 'TxAuthNo') === TRUE ? $this->_postData->TxAuthNo : '') .
+        (property_exists($this->_postData, 'TxAuthNo') === true ? $this->_postData->TxAuthNo : '') .
         strtolower($payment->getAdditionalInformation('vendorname')) .
         $this->_postData->AVSCV2 .
         $payment->getAdditionalInformation('securityKey') .
@@ -266,15 +260,15 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_postData->CV2Result .
         $this->_postData->GiftAid .
         $this->_postData->{'3DSecureStatus'} .
-        (property_exists($this->_postData, 'CAVV') === TRUE ? $this->_postData->CAVV : '') .
+        (property_exists($this->_postData, 'CAVV') === true ? $this->_postData->CAVV : '') .
         $this->_postData->AddressStatus .
         $this->_postData->PayerStatus .
         $this->_postData->CardType .
         $this->_postData->Last4Digits .
-        (property_exists($this->_postData, 'DeclineCode') === TRUE ? $this->_postData->DeclineCode : '') .
+        (property_exists($this->_postData, 'DeclineCode') === true ? $this->_postData->DeclineCode : '') .
         $this->_postData->ExpiryDate .
-        (property_exists($this->_postData, 'FraudResponse') === TRUE ? $this->_postData->FraudResponse : '') .
-        (property_exists($this->_postData, 'BankAuthCode') === TRUE ? $this->_postData->BankAuthCode : '');
+        (property_exists($this->_postData, 'FraudResponse') === true ? $this->_postData->FraudResponse : '') .
+        (property_exists($this->_postData, 'BankAuthCode') === true ? $this->_postData->BankAuthCode : '');
     }
 
     protected function _cancelOrder($order)
@@ -285,7 +279,7 @@ class Notify extends \Magento\Framework\App\Action\Action
             //recover quote
             if ($this->_quote->getId()) {
                 $this->_quote->setIsActive(1);
-                $this->_quote->setReservedOrderId(NULL);
+                $this->_quote->setReservedOrderId(null);
                 $this->_quote->save();
 
                 $this->_checkoutSession->replaceQuote($this->_quote);
@@ -293,7 +287,6 @@ class Notify extends \Magento\Framework\App\Action\Action
 
             //Unset data
             $this->_checkoutSession->unsLastRealOrderId();
-
         } catch (\Exception $e) {
             Mage::logException($e);
         }
@@ -360,7 +353,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->getResponse()->setBody($strResponse);
 
         //log our response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $strResponse);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse);
 
         return;
     }
@@ -375,7 +368,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->getResponse()->setBody($strResponse);
 
         //log our response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $strResponse);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse);
 
         return;
     }
@@ -390,17 +383,17 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->getResponse()->setBody($strResponse);
 
         //log our response
-        $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $strResponse);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse);
 
         return;
     }
 
     protected function _getAbortRedirectUrl()
     {
-        $url = $this->_url->getUrl('*/*/cancel', array(
+        $url = $this->_url->getUrl('*/*/cancel', [
             '_secure' => true,
             //'_store' => $this->getRequest()->getParam('_store')
-        ));
+        ]);
 
         $url .= "?message=Transaction cancelled by customer";
 
@@ -409,10 +402,10 @@ class Notify extends \Magento\Framework\App\Action\Action
 
     protected function _getSuccessRedirectUrl()
     {
-        $url = $this->_url->getUrl('*/*/success', array(
+        $url = $this->_url->getUrl('*/*/success', [
             '_secure' => true,
             //'_store' => $this->getRequest()->getParam('_store')
-        ));
+        ]);
 
         $url .= "?quoteid=" . $this->_quote->getId();
 
@@ -421,14 +414,13 @@ class Notify extends \Magento\Framework\App\Action\Action
 
     protected function _getFailedRedirectUrl($message)
     {
-        $url = $this->_url->getUrl('*/*/cancel', array(
+        $url = $this->_url->getUrl('*/*/cancel', [
             '_secure' => true,
             //'_store' => $this->getRequest()->getParam('_store')
-        ));
+        ]);
 
         $url .= "?message=" . $message;
 
         return $url;
     }
-
 }

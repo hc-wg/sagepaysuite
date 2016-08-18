@@ -27,20 +27,23 @@ class AccountManagement
     public function __construct(
         \Magento\Quote\Model\QuoteFactory $quoteFactory,
         \Magento\Checkout\Model\Session $checkoutSession
-    )
-    {
+    ) {
+    
         $this->_quoteFactory = $quoteFactory;
         $this->_checkoutSession = $checkoutSession;
     }
 
-    public function aroundIsEmailAvailable(\Magento\Customer\Model\AccountManagement $accountManagement,
-                                           \Closure $proceed,$customerEmail,$websiteId=null)
-    {
+    public function aroundIsEmailAvailable(
+        \Magento\Customer\Model\AccountManagement $accountManagement,
+        \Closure $proceed,
+        $customerEmail,
+        $websiteId = null
+    ) {
+    
         $ret = $proceed($customerEmail,$websiteId);
-        if($this->_checkoutSession)
-        {
+        if ($this->_checkoutSession) {
             $quoteId = $this->_checkoutSession->getQuoteId();
-            if($quoteId) {
+            if ($quoteId) {
                 $quote = $this->_quoteFactory->create()->load($quoteId);
                 $quote->setCustomerEmail($customerEmail);
                 $quote->setUpdatedAt(date('Y-m-d H:i:s'));

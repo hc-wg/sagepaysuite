@@ -32,8 +32,8 @@ class Version extends \Magento\Backend\Block\Template implements \Magento\Framew
         \Magento\Framework\App\ProductMetadataInterface $productMetaData,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         array $data = []
-    )
-    {
+    ) {
+    
         parent::__construct($context, $data);
         $this->_metaData = $productMetaData;
         $this->_suiteHelper = $suiteHelper;
@@ -56,8 +56,7 @@ class Version extends \Magento\Backend\Block\Template implements \Magento\Framew
     {
         $extension = "Sage Pay Suite M2;{$this->getVersion()}";
         $mageEdition = $this->_metaData->getEdition();
-        switch($mageEdition)
-        {
+        switch ($mageEdition) {
             case 'Community':
                 $mageEdition = 'CE';
                 break;

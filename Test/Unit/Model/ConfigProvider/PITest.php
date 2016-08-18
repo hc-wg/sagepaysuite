@@ -63,8 +63,8 @@ class PITest extends \PHPUnit_Framework_TestCase
             [
                 'payment' => [
                     'ebizmarts_sagepaysuitepi' => [
-                        'licensed' => NULL,
-                        'mode' => NULL
+                        'licensed' => null,
+                        'mode' => null
                     ],
                 ]
             ],

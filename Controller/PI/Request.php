@@ -6,11 +6,9 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\PI;
 
-
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Api\PIRest;
-
 
 class Request extends \Magento\Framework\App\Action\Action
 {
@@ -95,8 +93,8 @@ class Request extends \Magento\Framework\App\Action\Action
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
@@ -134,7 +132,6 @@ class Request extends \Magento\Framework\App\Action\Action
             if ($post_response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS ||
                 $post_response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS
             ) {
-
                 //set payment info for save order
                 $transactionId = $post_response->transactionId;
                 $payment = $this->_quote->getPayment();
@@ -158,7 +155,6 @@ class Request extends \Magento\Framework\App\Action\Action
                 $order = $this->_checkoutHelper->placeOrder();
 
                 if ($order) {
-
                     //set pre-saved order flag in checkout session
                     $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", $order->getId());
 
@@ -200,17 +196,13 @@ class Request extends \Magento\Framework\App\Action\Action
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Invalid Sage Pay response, please use another payment method.'));
             }
-
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
-        {
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $apiException->getUserMessage()),
             ];
-
-        } catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             $this->_logger->critical($e);
             $responseContent = [
                 'success' => false,
@@ -255,7 +247,7 @@ class Request extends \Magento\Framework\App\Action\Action
         ];
 
         //populate payment amount information
-        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote,true));
+        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote, true));
 
         if ($billing_address->getCountryId() == "US") {
             $data["billingAddress"]["state"] = substr($billing_address->getRegionCode(), 0, 2);

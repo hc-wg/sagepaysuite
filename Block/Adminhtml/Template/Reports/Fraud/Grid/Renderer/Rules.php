@@ -25,7 +25,6 @@ class Rules extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
             $additionalInfo = unserialize($additionalInfo);
         }
 
-        return array_key_exists("fraudrules",$additionalInfo) ? $additionalInfo["fraudrules"] : "";
+        return array_key_exists("fraudrules", $additionalInfo) ? $additionalInfo["fraudrules"] : "";
     }
-
 }

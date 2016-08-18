@@ -34,8 +34,8 @@ class Paypal implements ConfigProviderInterface
     public function __construct(
         PaymentHelper $paymentHelper,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
-    )
-    {
+    ) {
+    
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
         $this->_suiteHelper = $suiteHelper;
     }

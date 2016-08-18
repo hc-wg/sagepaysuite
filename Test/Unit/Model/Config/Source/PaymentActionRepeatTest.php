@@ -22,7 +22,8 @@ class PaymentActionRepeatTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testToOptionArray(){
+    public function testToOptionArray()
+    {
         $this->assertEquals(
             [
                 'value' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT,

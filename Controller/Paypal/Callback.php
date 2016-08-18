@@ -81,8 +81,8 @@ class Callback extends \Magento\Framework\App\Action\Action
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Model\Api\Post $postApi
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
@@ -108,7 +108,7 @@ class Callback extends \Magento\Framework\App\Action\Action
             $this->_postData = $this->getRequest()->getPost();
 
             //log response
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST, $this->_postData);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $this->_postData);
 
             if (empty($this->_postData) || !isset($this->_postData->Status) || $this->_postData->Status != "PAYPALOK") {
                 if (!empty($this->_postData) && isset($this->_postData->StatusDetail)) {
@@ -204,9 +204,7 @@ class Callback extends \Magento\Framework\App\Action\Action
             $this->_redirect('checkout/onepage/success');
 
             return;
-
-        } catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             $this->_logger->critical($e);
             $this->_redirectToCartAndShowError('We can\'t place the order: ' . $e->getMessage());
         }
@@ -214,17 +212,18 @@ class Callback extends \Magento\Framework\App\Action\Action
 
     protected function _sendCompletionPost()
     {
-        $request = array(
+        $request = [
             "VPSProtocol" => $this->_config->getVPSProtocol(),
             "TxType" => "COMPLETE",
             "VPSTxId" => $this->_postData->VPSTxId,
             "Amount" => number_format($this->_quote->getGrandTotal(), 2, '.', ''),
             "Accept" => "YES"
-        );
+        ];
 
-        return $this->_postApi->sendPost($request,
+        return $this->_postApi->sendPost(
+            $request,
             $this->_getServiceURL(),
-            array("OK", 'REGISTERED', 'AUTHENTICATED'),
+            ["OK", 'REGISTERED', 'AUTHENTICATED'],
             'Invalid response from PayPal'
         );
     }
@@ -249,5 +248,4 @@ class Callback extends \Magento\Framework\App\Action\Action
             return \Ebizmarts\SagePaySuite\Model\Config::URL_PAYPAL_COMPLETION_TEST;
         }
     }
-
 }

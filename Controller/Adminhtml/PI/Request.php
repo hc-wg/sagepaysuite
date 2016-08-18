@@ -93,8 +93,8 @@ class Request extends \Magento\Backend\App\AbstractAction
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Magento\Quote\Model\QuoteManagement $quoteManagement,
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
@@ -127,7 +127,6 @@ class Request extends \Magento\Backend\App\AbstractAction
             $post_response = $this->_pirestapi->capture($request);
 
             if ($post_response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
-
                 //set payment info for save order
                 $transactionId = $post_response->transactionId;
                 $payment = $this->_quote->getPayment();
@@ -155,8 +154,7 @@ class Request extends \Magento\Backend\App\AbstractAction
                     ->createOrder();
 
                 if ($order) {
-
-                    $this->_confirmPayment($transactionId,$order);
+                    $this->_confirmPayment($transactionId, $order);
 
                     //add success url to response
                     $route = 'sales/order/view';
@@ -169,25 +167,19 @@ class Request extends \Magento\Backend\App\AbstractAction
                         'success' => true,
                         'response' => $post_response
                     ];
-
                 } else {
                     throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order.'));
                 }
-
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Invalid Sage Pay response.'));
             }
-
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
-        {
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_suiteLogger->logException($apiException);
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $apiException->getUserMessage()),
             ];
-
-        } catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             $this->_suiteLogger->logException($e);
             $responseContent = [
                 'success' => false,
@@ -240,7 +232,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         ];
 
         //populate payment amount information
-        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote,true));
+        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote, true));
 
         if ($billing_address->getCountryId() == "US") {
             $data["billingAddress"]["state"] = substr($billing_address->getRegionCode(), 0, 2);
@@ -249,15 +241,15 @@ class Request extends \Magento\Backend\App\AbstractAction
         return $data;
     }
 
-    protected function _confirmPayment($transactionId,$order)
+    protected function _confirmPayment($transactionId, $order)
     {
         $payment = $order->getPayment();
         $payment->setTransactionId($transactionId);
         $payment->setLastTransId($transactionId);
 
         //leave transaction open in case defer or authorize
-        if($this->_config->getSagepayPaymentAction() == Config::ACTION_AUTHENTICATE ||
-            $this->_config->getSagepayPaymentAction() == Config::ACTION_DEFER){
+        if ($this->_config->getSagepayPaymentAction() == Config::ACTION_AUTHENTICATE ||
+            $this->_config->getSagepayPaymentAction() == Config::ACTION_DEFER) {
             $payment->setIsTransactionClosed(0);
         }
 

@@ -40,8 +40,8 @@ class Cancel extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Checkout\Model\Session $checkoutSession
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_suiteLogger = $suiteLogger;
         $this->_config = $config;
@@ -53,14 +53,14 @@ class Cancel extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         $message = $this->getRequest()->getParam("message");
-        if(!empty($message)){
+        if (!empty($message)) {
             $this->messageManager->addError($message);
         }
         $this->getResponse()->setBody(
             '<script>window.top.location.href = "'
-            . $this->_url->getUrl('checkout/cart', array(
+            . $this->_url->getUrl('checkout/cart', [
                 '_secure' => true,
-            ))
+            ])
             . '";</script>'
         );
     }

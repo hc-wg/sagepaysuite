@@ -107,7 +107,9 @@ class UpgradeSchema implements UpgradeSchemaInterface
              * add column fraud_check to transaction table
              */
             $tableName = $setup->getTable('sales_payment_transaction');
-            $setup->getConnection()->addColumn($tableName, "sagepaysuite_fraud_check",
+            $setup->getConnection()->addColumn(
+                $tableName,
+                "sagepaysuite_fraud_check",
                 [
                     'type' => \Magento\Framework\DB\Ddl\Table::TYPE_BOOLEAN,
                     'nullable' => false,

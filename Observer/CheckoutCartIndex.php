@@ -36,8 +36,8 @@ class CheckoutCartIndex implements ObserverInterface
         Logger $suiteLogger,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Quote\Model\QuoteFactory $quoteFactory
-    )
-    {
+    ) {
+    
         $this->_checkoutSession = $checkoutSession;
         $this->_suiteLogger = $suiteLogger;
         $this->_orderFactory = $orderFactory;
@@ -56,29 +56,25 @@ class CheckoutCartIndex implements ObserverInterface
          */
         $presavedOrderId = $this->_checkoutSession->getData("sagepaysuite_presaved_order_pending_payment");
 
-        if (!empty($presavedOrderId))
-        {
+        if (!empty($presavedOrderId)) {
             $order = $this->_orderFactory->create()->load($presavedOrderId);
-            if (!is_null($order) && !is_null($order->getId()) && $order->getState() == \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT)
-            {
+            if (!is_null($order) && !is_null($order->getId()) && $order->getState() == \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
                 $quote = $this->_checkoutSession->getQuote();
-                if (empty($quote) || empty($quote->getId()))
-                {
-                    //cancel order
+                if (empty($quote) || empty($quote->getId())) {
+                //cancel order
                     $order->cancel()->save();
 
                     //recover quote
                     $quote = $this->_quoteFactory->create()->load($order->getQuoteId());
-                    if ($quote->getId())
-                    {
+                    if ($quote->getId()) {
                         $quote->setIsActive(1);
-                        $quote->setReservedOrderId(NULL);
+                        $quote->setReservedOrderId(null);
                         $quote->save();
                         $this->_checkoutSession->replaceQuote($quote);
                     }
 
                     //remove flag
-                    $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment",null);
+                    $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
                 }
             }
         }

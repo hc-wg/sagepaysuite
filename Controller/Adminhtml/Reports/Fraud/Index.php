@@ -27,8 +27,6 @@ class Index extends \Magento\Backend\App\Action
     ) {
         $this->_logger = $logger;
         parent::__construct($context);
-
-
     }
 
     public function execute()

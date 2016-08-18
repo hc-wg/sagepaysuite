@@ -13,10 +13,6 @@ class ApiExceptionTest extends \PHPUnit_Framework_TestCase
      */
     protected $apiExceptionModel;
 
-    protected function setUp()
-    {
-    }
-
     /**
      * @dataProvider getUserMessageDataProvider
      */

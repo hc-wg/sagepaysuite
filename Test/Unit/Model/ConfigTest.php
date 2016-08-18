@@ -65,9 +65,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM . '/active',
+            ->with(
+                'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM . '/active',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn(true);
 
         $this->assertEquals(
@@ -93,9 +95,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/' . $data["code"] . '/payment_action',
+            ->with(
+                'payment/' . $data["code"] . '/payment_action',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn($data["payment_action"]);
 
         $this->assertEquals(
@@ -133,9 +137,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/' . $data["code"] . '/payment_action',
+            ->with(
+                'payment/' . $data["code"] . '/payment_action',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn($data["payment_action"]);
 
         $this->assertEquals(
@@ -168,9 +174,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('sagepaysuite/global/vendorname',
+            ->with(
+                'sagepaysuite/global/vendorname',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn('testebizmarts');
 
         $this->assertEquals(
@@ -183,9 +191,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('sagepaysuite/global/license',
+            ->with(
+                'sagepaysuite/global/license',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn('f678dfs786fds786dfs876dfs');
 
         $this->assertEquals(
@@ -198,9 +208,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with(\Magento\Store\Model\Store::XML_PATH_UNSECURE_BASE_URL,
+            ->with(
+                \Magento\Store\Model\Store::XML_PATH_UNSECURE_BASE_URL,
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn('http://example.com');
 
         $this->assertEquals(
@@ -213,9 +225,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('sagepaysuite/global/mode',
+            ->with(
+                'sagepaysuite/global/mode',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn('live');
 
         $this->assertEquals(
@@ -228,9 +242,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('sagepaysuite/global/token',
+            ->with(
+                'sagepaysuite/global/token',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn(true);
 
         $this->assertEquals(
@@ -239,7 +255,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function TestIsSagePaySuiteMethod()
+    public function testIsSagePaySuiteMethod()
     {
         $this->assertEquals(
             true,
@@ -268,9 +284,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM . '/encrypted_password',
+            ->with(
+                'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM . '/encrypted_password',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn('345jh345hj45');
 
         $this->assertEquals(
@@ -283,9 +301,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('sagepaysuite/global/reporting_user',
+            ->with(
+                'sagepaysuite/global/reporting_user',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn('ebizmarts');
 
         $this->assertEquals(
@@ -298,9 +318,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('sagepaysuite/global/reporting_password',
+            ->with(
+                'sagepaysuite/global/reporting_password',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn('fds678dsf68ds');
 
         $this->assertEquals(
@@ -315,9 +337,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI . '/password',
+            ->with(
+                'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI . '/password',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn('fd67sf8ds6f78ds6f78ds');
 
         $this->assertEquals(
@@ -332,9 +356,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI . '/key',
+            ->with(
+                'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI . '/key',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn('fd7s6f87ds6f78ds6f78dsf8ds76f7ds8f687dsf8');
 
         $this->assertEquals(
@@ -349,9 +375,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->once())
             ->method('getValue')
-            ->with('sagepaysuite/advanced/threedsecure',
+            ->with(
+                'sagepaysuite/advanced/threedsecure',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn(Config::MODE_3D_DISABLE);
 
         $this->assertEquals(
@@ -366,9 +394,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->once())
             ->method('getValue')
-            ->with('sagepaysuite/advanced/threedsecure',
+            ->with(
+                'sagepaysuite/advanced/threedsecure',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn(Config::MODE_3D_DEFAULT);
 
         $this->assertEquals(
@@ -383,9 +413,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->once())
             ->method('getValue')
-            ->with('sagepaysuite/advanced/avscvc',
+            ->with(
+                'sagepaysuite/advanced/avscvc',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn(Config::MODE_AVSCVC_DISABLE);
 
         $this->assertEquals(
@@ -400,9 +432,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->once())
             ->method('getValue')
-            ->with('sagepaysuite/advanced/avscvc',
+            ->with(
+                'sagepaysuite/advanced/avscvc',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn(Config::MODE_AVSCVC_DEFAULT);
 
         $this->assertEquals(
@@ -415,14 +449,17 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $this->scopeConfigMock->expects($this->once())
             ->method('getValue')
-            ->with('sagepaysuite/advanced/basket_format',
+            ->with(
+                'sagepaysuite/advanced/basket_format',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn('Sage50');
 
         $this->assertEquals(
             'Sage50',
-            $this->configModel->getBasketFormat());
+            $this->configModel->getBasketFormat()
+        );
     }
 
 
@@ -432,9 +469,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/billing_agreement',
+            ->with(
+                'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/billing_agreement',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn(false);
 
         $this->assertEquals(
@@ -447,9 +486,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('sagepaysuite/advanced/fraud_autoinvoice',
+            ->with(
+                'sagepaysuite/advanced/fraud_autoinvoice',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn(true);
 
         $this->assertEquals(
@@ -462,9 +503,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('sagepaysuite/advanced/fraud_notify',
+            ->with(
+                'sagepaysuite/advanced/fraud_notify',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn('medium_risk');
 
         $this->assertEquals(
@@ -479,9 +522,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/cctypes',
+            ->with(
+                'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/cctypes',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn("VI,MC");
 
         $this->assertEquals(
@@ -496,9 +541,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/allowspecific',
+            ->with(
+                'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/allowspecific',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn(0);
 
         $this->assertEquals(
@@ -513,9 +560,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/specificcountry',
+            ->with(
+                'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/specificcountry',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn("UY,US");
 
         $this->assertEquals(
@@ -531,9 +580,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('sagepaysuite/global/currency',
+            ->with(
+                'sagepaysuite/global/currency',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn($data["currency_setting"]);
 
         $this->assertEquals(
@@ -570,9 +621,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('sagepaysuite/global/currency',
+            ->with(
+                'sagepaysuite/global/currency',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn(Config::CURRENCY_BASE);
 
         $this->assertEquals(
@@ -585,9 +638,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
-            ->with('sagepaysuite/advanced/giftaid',
+            ->with(
+                'sagepaysuite/advanced/giftaid',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                NULL)
+                null
+            )
             ->willReturn(true);
 
         $this->assertEquals(

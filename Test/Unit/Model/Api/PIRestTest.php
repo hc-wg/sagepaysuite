@@ -73,7 +73,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 \Zend_Http_Client::POST,
                 \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_GENERATE_MERCHANT_KEY,
                 '1.0',
-                array('Content-type: application/json'),
+                ['Content-type: application/json'],
                 '{"vendorName":null}'
             );
 
@@ -102,13 +102,14 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 \Zend_Http_Client::POST,
                 \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_GENERATE_MERCHANT_KEY,
                 '1.0',
-                array('Content-type: application/json'),
+                ['Content-type: application/json'],
                 '{"vendorName":null}'
             );
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new \Magento\Framework\Phrase("error description"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("error description")));
+            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("error description"))
+        );
 
         $this->apiExceptionFactoryMock->expects($this->any())
             ->method('create')
@@ -117,8 +118,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         try {
             $this->pirestApiModel->generateMerchantKey();
             $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
-        {
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->assertEquals(
                 "error description",
                 $apiException->getUserMessage()
@@ -145,7 +145,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 \Zend_Http_Client::POST,
                 \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_CAPTURE_TRANSACTION,
                 '1.0',
-                array('Content-type: application/json'),
+                ['Content-type: application/json'],
                 '{"Amount":"100.00"}'
             );
 
@@ -180,13 +180,14 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 \Zend_Http_Client::POST,
                 \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_CAPTURE_TRANSACTION,
                 '1.0',
-                array('Content-type: application/json'),
+                ['Content-type: application/json'],
                 '{"Amount":"100.00"}'
             );
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new \Magento\Framework\Phrase("Invalid address: Invalid post code"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Invalid address: Invalid post code")));
+            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Invalid address: Invalid post code"))
+        );
 
         $this->apiExceptionFactoryMock->expects($this->any())
             ->method('create')
@@ -199,8 +200,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 ]
             );
             $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
-        {
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->assertEquals(
                 "Invalid address: Invalid post code",
                 $apiException->getUserMessage()
@@ -227,7 +227,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 \Zend_Http_Client::POST,
                 \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . "transactions/" . 12345 . "/" . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_SUBMIT_3D,
                 '1.0',
-                array('Content-type: application/json'),
+                ['Content-type: application/json'],
                 '{"paRes":"fsd678dfs786dfs786fds678fds"}'
             );
 
@@ -235,7 +235,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             (object)[
                 "status" => "OK"
             ],
-            $this->pirestApiModel->submit3D("fsd678dfs786dfs786fds678fds",12345)
+            $this->pirestApiModel->submit3D("fsd678dfs786dfs786fds678fds", 12345)
         );
     }
 
@@ -258,23 +258,23 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 \Zend_Http_Client::POST,
                 \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . "transactions/" . 12345 . "/" . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_SUBMIT_3D,
                 '1.0',
-                array('Content-type: application/json'),
+                ['Content-type: application/json'],
                 '{"paRes":"fsd678dfs786dfs786fds678fds"}'
             );
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new \Magento\Framework\Phrase("Invalid PaRES"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Invalid PaRES")));
+            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Invalid PaRES"))
+        );
 
         $this->apiExceptionFactoryMock->expects($this->any())
             ->method('create')
             ->will($this->returnValue($apiException));
 
         try {
-            $this->pirestApiModel->submit3D("fsd678dfs786dfs786fds678fds",12345);
+            $this->pirestApiModel->submit3D("fsd678dfs786dfs786fds678fds", 12345);
             $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
-        {
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->assertEquals(
                 "Invalid PaRES",
                 $apiException->getUserMessage()
@@ -301,7 +301,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 \Zend_Http_Client::GET,
                 \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . "transactions/" . 12345,
                 '1.0',
-                array('Content-type: application/json')
+                ['Content-type: application/json']
             );
 
         $this->assertEquals(
@@ -331,12 +331,13 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 \Zend_Http_Client::GET,
                 \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . "transactions/" . 12345,
                 '1.0',
-                array('Content-type: application/json')
+                ['Content-type: application/json']
             );
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new \Magento\Framework\Phrase("Invalid Transaction Id"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Invalid Transaction Id")));
+            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Invalid Transaction Id"))
+        );
 
         $this->apiExceptionFactoryMock->expects($this->any())
             ->method('create')
@@ -345,8 +346,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         try {
             $this->pirestApiModel->transactionDetails(12345);
             $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
-        {
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->assertEquals(
                 "Invalid Transaction Id",
                 $apiException->getUserMessage()

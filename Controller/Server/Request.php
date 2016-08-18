@@ -6,11 +6,9 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
-
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-
 
 class Request extends \Magento\Framework\App\Action\Action
 {
@@ -91,8 +89,8 @@ class Request extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Customer\Model\Session $customerSession
-    )
-    {
+    ) {
+    
         parent::__construct($context);
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
@@ -110,7 +108,6 @@ class Request extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
-
             //parse POST data
             $postData = $this->getRequest();
             $postData = preg_split('/^\r?$/m', $postData, 2);
@@ -125,9 +122,10 @@ class Request extends \Magento\Framework\App\Action\Action
             $request = $this->_generateRequest();
 
             //send POST to Sage Pay
-            $post_response = $this->_postApi->sendPost($request,
+            $post_response = $this->_postApi->sendPost(
+                $request,
                 $this->_getServiceURL(),
-                array("OK")
+                ["OK"]
             );
 
             //set payment info for save order
@@ -159,12 +157,10 @@ class Request extends \Magento\Framework\App\Action\Action
                     'success' => true,
                     'response' => $post_response
                 ];
-
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
             }
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-
             $this->_suiteLogger->logException($apiException);
 
             $responseContent = [
@@ -172,7 +168,6 @@ class Request extends \Magento\Framework\App\Action\Action
                 'error_message' => __('Something went wrong while generating the Sage Pay request: ' . $apiException->getUserMessage()),
             ];
         } catch (\Exception $e) {
-
             $this->_suiteLogger->logException($e);
 
             $responseContent = [
@@ -188,10 +183,10 @@ class Request extends \Magento\Framework\App\Action\Action
 
     protected function _getNotificationUrl()
     {
-        $url = $this->_url->getUrl('*/*/notify', array(
+        $url = $this->_url->getUrl('*/*/notify', [
             '_secure' => true,
             '_store' => $this->_quote->getStoreId()
-        ));
+        ]);
 
         $url .= "?quoteid=" . $this->_quote->getId();
 
@@ -217,7 +212,7 @@ class Request extends \Magento\Framework\App\Action\Action
     {
         $customer_data = $this->_customerSession->getCustomerDataObject();
 
-        $data = array();
+        $data = [];
         $data["VPSProtocol"] = $this->_config->getVPSProtocol();
         $data["TxType"] = $this->_config->getSagepayPaymentAction();
         $data["Vendor"] = $this->_config->getVendorname();
@@ -231,7 +226,7 @@ class Request extends \Magento\Framework\App\Action\Action
         //populate payment amount information
         $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
 
-        if($this->_config->getBasketFormat() != Config::BASKETFORMAT_Disabled) {
+        if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_DISABLED) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
         }
 
@@ -241,7 +236,7 @@ class Request extends \Magento\Framework\App\Action\Action
         //token
         if ($this->_postData->save_token == true &&
             !empty($customer_data) &&
-            !$this->_tokenModel->isCustomerUsingMaxTokenSlots($customer_data->getId(),$this->_config->getVendorname())
+            !$this->_tokenModel->isCustomerUsingMaxTokenSlots($customer_data->getId(), $this->_config->getVendorname())
         ) {
             //save token
             $data["CreateToken"] = 1;
@@ -266,7 +261,7 @@ class Request extends \Magento\Framework\App\Action\Action
         $data["BillingAgreement"] = (int)$this->_config->getPaypalBillingAgreement();
 
         //server profile
-        if((bool)$this->_config->isServerLowProfileEnabled() == true){
+        if ((bool)$this->_config->isServerLowProfileEnabled() == true) {
             $data["Profile"] = "LOW";
         }
 

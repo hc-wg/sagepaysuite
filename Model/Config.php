@@ -126,18 +126,18 @@ class Config
     /**
      * SagePay ReD Score Statuses
      */
-    const ReDSTATUS_ACCEPT = 'ACCEPT';
-    const ReDSTATUS_DENY = 'DENY';
-    const ReDSTATUS_CHALLENGE = 'CHALLENGE';
-    const ReDSTATUS_NOTCHECKED = 'NOTCHECKED';
+    const REDSTATUS_ACCEPT = 'ACCEPT';
+    const REDSTATUS_DENY = 'DENY';
+    const REDSTATUS_CHALLENGE = 'CHALLENGE';
+    const REDSTATUS_NOTCHECKED = 'NOTCHECKED';
 
 
     /**
      * Basket Formats
      */
-    const BASKETFORMAT_Sage50 = 'Sage50';
-    const BASKETFORMAT_XML = 'xml';
-    const BASKETFORMAT_Disabled = 'Disabled';
+    const BASKETFORMAT_SAGE50   = 'Sage50';
+    const BASKETFORMAT_XML      = 'xml';
+    const BASKETFORMAT_DISABLED = 'Disabled';
 
     /*
      * Max tokens per customer
@@ -195,8 +195,8 @@ class Config
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger
-    )
-    {
+    ) {
+    
         $this->_scopeConfig = $scopeConfig;
         $this->_storeManager = $storeManager;
         $this->_suiteLogger = $suiteLogger;
@@ -434,7 +434,7 @@ class Config
      * return 3D secure rules setting
      * @return string
      */
-    public function get3Dsecure($forceDisable=false)
+    public function get3Dsecure($forceDisable = false)
     {
         $config_value = $this->_scopeConfig->getValue(
             $this->_getAdvancedConfigPath("threedsecure"),
@@ -442,16 +442,15 @@ class Config
             $this->_storeId
         );
 
-        if($forceDisable){
+        if ($forceDisable) {
             $config_value = self::MODE_3D_DISABLE;
         }
 
-        if($this->_methodCode == self::METHOD_PI) {
+        if ($this->_methodCode == self::METHOD_PI) {
             return $config_value;
-        }else {
+        } else {
             //for old integrations
-            switch($config_value)
-            {
+            switch ($config_value) {
                 case self::MODE_3D_FORCE:
                     return '1';
                     break;
@@ -480,12 +479,11 @@ class Config
             $this->_storeId
         );
 
-        if($this->_methodCode == self::METHOD_PI) {
+        if ($this->_methodCode == self::METHOD_PI) {
             return $config_value;
-        }else {
+        } else {
             //for old integrations
-            switch($config_value)
-            {
+            switch ($config_value) {
                 case self::MODE_AVSCVC_FORCE:
                     return '1';
                     break;
@@ -554,7 +552,6 @@ class Config
         $currency = $this->_storeManager->getStore()->getBaseCurrencyCode();
 
         switch ($currency_settings) {
-
             //store default display currency
             case \Ebizmarts\SagePaySuite\Model\Config::CURRENCY_STORE:
                 $currency = $this->_storeManager->getStore()->getDefaultCurrencyCode();
@@ -593,7 +590,7 @@ class Config
         return $this->getValue("force_xml");
     }
 
-	public function isGiftAidEnabled()
+    public function isGiftAidEnabled()
     {
         $config_value = $this->_scopeConfig->getValue(
             $this->_getAdvancedConfigPath("giftaid"),
@@ -608,7 +605,7 @@ class Config
         return $this->getValue("profile");
     }
 
-	/**
+    /**
      * @param $methodCode
      * @return bool
      */
@@ -620,5 +617,4 @@ class Config
         $methodCode == self::METHOD_SERVER ||
         $methodCode == self::METHOD_REPEAT;
     }
-
 }

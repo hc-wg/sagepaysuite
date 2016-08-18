@@ -30,12 +30,15 @@ class InstallSchemaTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $connectionMock->expects($this->once())
             ->method('modifyColumn')
-            ->with('sales_order_payment', "last_trans_id",
+            ->with(
+                'sales_order_payment',
+                "last_trans_id",
                 [
                     'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
                     'length' => 100,
                     'nullable' => false
-                ]);
+                ]
+            );
 
         $schemaSetupMock = $this
             ->getMockBuilder('Magento\Framework\Setup\SchemaSetupInterface')

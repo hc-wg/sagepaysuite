@@ -146,7 +146,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                     'StatusDetail' => 'OK STATUS'
                 ]
             ],
-            $this->sharedApiModel->refundTransaction("12345",100,1)
+            $this->sharedApiModel->refundTransaction("12345", 100, 1)
         );
     }
 
@@ -176,17 +176,17 @@ class SharedTest extends \PHPUnit_Framework_TestCase
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new \Magento\Framework\Phrase("INVALID STATUS"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("INVALID STATUS")));
+            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("INVALID STATUS"))
+        );
 
         $this->apiExceptionFactoryMock->expects($this->any())
             ->method('create')
             ->will($this->returnValue($apiException));
 
         try {
-            $this->sharedApiModel->refundTransaction("12345",100,1);
+            $this->sharedApiModel->refundTransaction("12345", 100, 1);
             $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException)
-        {
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->assertEquals(
                 "INVALID STATUS",
                 $apiException->getUserMessage()
@@ -226,7 +226,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                     'StatusDetail' => 'OK STATUS'
                 ]
             ],
-            $this->sharedApiModel->releaseTransaction("12345",100)
+            $this->sharedApiModel->releaseTransaction("12345", 100)
         );
     }
 
@@ -262,7 +262,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                     'StatusDetail' => 'OK STATUS'
                 ]
             ],
-            $this->sharedApiModel->authorizeTransaction("12345",100,1)
+            $this->sharedApiModel->authorizeTransaction("12345", 100, 1)
         );
     }
 
@@ -298,7 +298,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                     'StatusDetail' => 'OK STATUS'
                 ]
             ],
-            $this->sharedApiModel->repeatTransaction("12345",[])
+            $this->sharedApiModel->repeatTransaction("12345", [])
         );
     }
 }

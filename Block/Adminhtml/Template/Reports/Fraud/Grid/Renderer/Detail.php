@@ -25,7 +25,6 @@ class Detail extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
             $additionalInfo = unserialize($additionalInfo);
         }
 
-        return array_key_exists("fraudcodedetail",$additionalInfo) ? $additionalInfo["fraudcodedetail"] : "";
+        return array_key_exists("fraudcodedetail", $additionalInfo) ? $additionalInfo["fraudcodedetail"] : "";
     }
-
 }

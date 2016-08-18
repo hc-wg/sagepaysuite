@@ -87,9 +87,9 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             [
                 'payment' => [
                     'ebizmarts_sagepaysuiteserver' => [
-                        'licensed' => NULL,
+                        'licensed' => null,
                         'token_enabled' => false,
-                        'tokens' => NULL,
+                        'tokens' => null,
                         'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER,
                         'mode' => null
                     ]
@@ -109,7 +109,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             [
                 'payment' => [
                     'ebizmarts_sagepaysuiteserver' => [
-                        'licensed' => NULL,
+                        'licensed' => null,
                         'token_enabled' => true,
                         'tokens' => [
                             "token_id" => 1

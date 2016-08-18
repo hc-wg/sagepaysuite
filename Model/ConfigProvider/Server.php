@@ -52,7 +52,7 @@ class Server implements ConfigProviderInterface
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
         \Magento\Customer\Model\Session $customerSession,
         \Ebizmarts\SagePaySuite\Model\Config $config
-    ){
+    ) {
         $this->_customerSession = $customerSession;
         $this->_tokenModel = $tokenModel;
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
@@ -70,11 +70,13 @@ class Server implements ConfigProviderInterface
         //get tokens if enabled and cutomer is logged in
         $tokenEnabled = (bool)$this->_config->isTokenEnabled();
         $tokens = null;
-        if($tokenEnabled){
-            if(!empty($this->_customerSession->getCustomerId())) {
-                $tokens = $this->_tokenModel->getCustomerTokens($this->_customerSession->getCustomerId(),
-                    $this->_config->getVendorname());
-            }else{
+        if ($tokenEnabled) {
+            if (!empty($this->_customerSession->getCustomerId())) {
+                $tokens = $this->_tokenModel->getCustomerTokens(
+                    $this->_customerSession->getCustomerId(),
+                    $this->_config->getVendorname()
+                );
+            } else {
                 $tokenEnabled = false;
             }
         }

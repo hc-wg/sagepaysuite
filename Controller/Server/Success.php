@@ -6,9 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
-
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-
 
 class Success extends \Magento\Framework\App\Action\Action
 {
@@ -54,8 +52,8 @@ class Success extends \Magento\Framework\App\Action\Action
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Quote\Model\QuoteFactory $quoteFactory
-    )
-    {
+    ) {
+    
         parent::__construct($context);
 
         $this->_suiteLogger = $suiteLogger;
@@ -68,7 +66,6 @@ class Success extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
-
             $quote = $this->_quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
             $order = $this->_orderFactory->create()->loadByIncrementId($quote->getReservedOrderId());
 
@@ -82,7 +79,6 @@ class Success extends \Magento\Framework\App\Action\Action
 
             //remove order pre-saved flag from checkout
             $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
-
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             $this->messageManager->addSuccess(__('Order created successfully'));
@@ -91,7 +87,7 @@ class Success extends \Magento\Framework\App\Action\Action
         //redirect to success via javascript
         $this->getResponse()->setBody(
             '<script>window.top.location.href = "'
-            . $this->_url->getUrl('checkout/onepage/success', array('_secure' => true))
+            . $this->_url->getUrl('checkout/onepage/success', ['_secure' => true])
             . '";</script>'
         );
     }

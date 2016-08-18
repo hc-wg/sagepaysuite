@@ -5,6 +5,7 @@
  */
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
+
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 /**
@@ -44,8 +45,8 @@ class Reporting
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         Logger $suiteLogger
-    )
-    {
+    ) {
+    
         $this->_config = $config;
         $this->_curlFactory = $curlFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
@@ -68,11 +69,13 @@ class Reporting
             ]
         );
 
-        $curl->write(\Zend_Http_Client::POST,
+        $curl->write(
+            \Zend_Http_Client::POST,
             $this->_getServiceUrl(),
             '1.0',
             [],
-            'XML=' . $xml);
+            'XML=' . $xml
+        );
         $data = $curl->read();
         if ($data === false) {
             return false;
@@ -159,10 +162,8 @@ class Reporting
 
         if (!empty($response)) {
             if (is_object($response) && !array_key_exists("errorcode", $response) || $response->errorcode == '0000') {
-
                 //this is a successfull response
                 return $response;
-
             } else { //there was an error
                 if (is_object($response) && array_key_exists("errorcode", $response)) {
                     $exceptionCode = $response->errorcode;
@@ -174,8 +175,8 @@ class Reporting
             }
         }
 
-        if(!$validResponse){
-            $this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$response);
+        if (!$validResponse) {
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
         }
 
         $exception = $this->_apiExceptionFactory->create([
@@ -240,5 +241,4 @@ class Reporting
         $xml = $this->_createXml('version');
         return $this->_handleApiErrors($this->_executeRequest($xml));
     }
-
 }
