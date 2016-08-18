@@ -321,10 +321,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                     $data['sku'] . '] ' .
                     $data['name'] . ':' .
                     $data['qty'] . ':' .
-                    $data['priceInclTax'] . ':' .
+                    number_format($data['priceInclTax'], 2) . ':' .
                     number_format($data['taxAmount'], 3) . ':' .
-                    $data['priceInclTax'] * $data['qty'] . ':' .
-                    $data['priceInclTax'] * $data['qty'] . ':' .
+                    number_format($data['priceInclTax'] * $data['qty'], 2) . ':' .
+                    number_format($data['priceInclTax'] * $data['qty'], 2) . ':' .
                     $data['shippingDescription'] . ':' .
                     '1' . ':' .
                     $data['shippingAmount'] . ':' .
