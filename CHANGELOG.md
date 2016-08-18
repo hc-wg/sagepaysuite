@@ -1,3 +1,12 @@
+1.1.7 (18/08/2016)
+=============
+**This release requires Magento 2.1.0 at least.**
+* Improvements
+    * Coding standards for Magento Marketplace.
+* Bugfixes
+    * Basket display issue, decimal places.
+    * MOTO customer create account for PI integration fixed.
+
 1.1.6.0 (12/07/2016)
 =============
 **This release requires Magento 2.1.0 at least.**
