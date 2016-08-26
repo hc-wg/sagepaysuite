@@ -78,5 +78,7 @@ __Test__
 
   2. Menu > Stores > Configuration > SALES > Payment Methods
   You should see Sage Pay Suite on the payment methods list.
+  3. Enter your Sage Pay vendorname and Ebizmarts license key on the configuration settings.
+  4. Enable the integration of your preference.
 
 [![Build Status](https://circleci.com/gh/ebizmarts/magento2-sage-pay-suite.svg?style=shield&circle-token=9d950c73b76af8868862caf8400c549439838d47)](https://circleci.com/gh/ebizmarts/magento2-sage-pay-suite)
