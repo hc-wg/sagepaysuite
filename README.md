@@ -6,7 +6,7 @@
 
 __Requirements__
 
-  - The ZIP file named Ebizmarts_SagePaySuiteM2-1.1.7.zip
+  - The ZIP file named **Ebizmarts_SagePaySuiteM2-1.1.7.zip**
   - Access to the Magento 2 server via SSH
   - The unzip command should be available, check by running `which unzip`
   - [Composer](https://getcomposer.org/) needs to be installed in the server
@@ -22,20 +22,20 @@ __Installation__
 
   4. Go to the Magento2 modules folder
 
-    $ cd <MAGENTO_FOLDER>/app/code
+    $ cd $MAGENTO_FOLDER$/app/code
 
   5. Create the directory (if it does not exist) that will hold the module contents
     `$ mkdir -p Ebizmarts/SagePaySuite`
    
   6. Go to the SagePaySuite folder
   
-    $ cd <MAGENTO_FOLDER>/app/code/Ebizmarts/SagePaySuite
+    $ cd $MAGENTO_FOLDER$/app/code/Ebizmarts/SagePaySuite
    
   7. Uncompress Sage Pay Suite package
   
     $ unzip /PATH/TO/PACKAGE/Ebizmarts_SagePaySuiteM2-1.1.7.zip
 
-  8. This will create the following content in app/code
+  8. This will create the following content in $MAGENTO_FOLDER$/app/code
     <pre>
     └── Ebizmarts
         └── SagePaySuite
@@ -53,7 +53,7 @@ __Installation__
     </pre>
   9. Go to the magento root folder (where composer.json is located)
 
-    `$ cd <MAGENTO_FOLDER>`
+    $ cd $MAGENTO_FOLDER$
 
   10. Execute Magento setup upgrade
 
