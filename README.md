@@ -62,6 +62,7 @@ __Installation__
   11. Clean cache and generated code
 
     $ bin/magento cache:clean
+    
     $ rm -rf var/generation/*
 
   12. Run magento compiler to generate auto-generated classes
