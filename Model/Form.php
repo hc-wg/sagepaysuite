@@ -125,6 +125,9 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     protected $_sharedApi;
 
+    private $_context;
+
+
     /**
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
@@ -169,9 +172,10 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
             $data
         );
 
+        $this->_context     = $context;
         $this->_suiteHelper = $suiteHelper;
-        $this->_sharedApi = $sharedApi;
-        $this->_config = $config;
+        $this->_sharedApi   = $sharedApi;
+        $this->_config      = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
     }
 
@@ -293,4 +297,36 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
             return $response;
         }
     }
+
+    /**
+     * Using internal pages for input payment data
+     * Can be used in admin
+     *
+     * @return bool
+     */
+    public function canUseInternal()
+    {
+        $configEnabled = (bool)(int)$this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM)->isMethodActiveMoto();
+        return $this->_canUseInternal && $configEnabled;
+    }
+
+    /**
+     * Is active
+     *
+     * @param int|null $storeId
+     * @return bool
+     */
+    public function isActive($storeId = null)
+    {
+        $areaCode = $this->_context->getAppState()->getAreaCode();
+
+        $moto = '';
+        if($areaCode == 'adminhtml') {
+            $moto .= '_moto';
+        }
+
+        return (bool)(int)$this->getConfigData('active' . $moto, $storeId);
+    }
+
+
 }

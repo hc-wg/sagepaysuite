@@ -208,6 +208,7 @@ class Config
     public function setMethodCode($methodCode)
     {
         $this->_methodCode = $methodCode;
+        return $this;
     }
 
     /**
@@ -289,6 +290,15 @@ class Config
     public function isMethodActive()
     {
         return $this->getValue("active");
+    }
+
+    /**
+     * Check whether method active for backend transactions.
+     *
+     */
+    public function isMethodActiveMoto()
+    {
+        return $this->getValue("active_moto");
     }
 
     public function getVPSProtocol()

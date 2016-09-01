@@ -109,6 +109,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     protected $_suiteLogger;
 
+    private $_context;
+
     /**
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
@@ -160,6 +162,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $resourceCollection,
             $data
         );
+
+        $this->_context = $context;
         $this->config = $config;
         $this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
         $this->_pirestapi = $pirestapi;
@@ -326,4 +330,36 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
         return $this;
     }
+
+    /**
+     * Using internal pages for input payment data
+     * Can be used in admin
+     *
+     * @return bool
+     */
+    public function canUseInternal()
+    {
+        $configEnabled = (bool)(int)$this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI)->isMethodActiveMoto();
+
+        return $this->_canUseInternal && $configEnabled;
+    }
+
+    /**
+     * Is active
+     *
+     * @param int|null $storeId
+     * @return bool
+     */
+    public function isActive($storeId = null)
+    {
+        $areaCode = $this->_context->getAppState()->getAreaCode();
+
+        $moto = '';
+        if($areaCode == 'adminhtml') {
+            $moto .= '_moto';
+        }
+
+        return (bool)(int)$this->getConfigData('active' . $moto, $storeId);
+    }
+
 }

@@ -23,12 +23,13 @@
                 <avscvc>UseMSPSetting</avscvc>
                 <fraud_autoinvoice>0</fraud_autoinvoice>
                 <basket_format>Sage50</basket_format>
-				<!--<fraud_notify>high_risk</fraud_notify>-->
+                <!--<fraud_notify>high_risk</fraud_notify>-->
             </advanced>
         </sagepaysuite>
         <payment>
             <sagepaysuiteform>
                 <active>0</active>
+                <active_moto>0</active_moto>
                 <model>Ebizmarts\SagePaySuite\Model\Form</model>
                 <payment_action>PAYMENT</payment_action>
                 <send_email>1</send_email>
@@ -39,6 +40,7 @@
             </sagepaysuiteform>
             <sagepaysuitepi>
                 <active>0</active>
+                <active_moto>0</active_moto>
                 <model>Ebizmarts\SagePaySuite\Model\PI</model>
                 <payment_action>PAYMENT</payment_action>
                 <order_status>pending</order_status>
