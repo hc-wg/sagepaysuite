@@ -321,12 +321,10 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         $areaCode = $this->_context->getAppState()->getAreaCode();
 
         $moto = '';
-        if($areaCode == 'adminhtml') {
+        if ($areaCode == 'adminhtml') {
             $moto .= '_moto';
         }
 
         return (bool)(int)$this->getConfigData('active' . $moto, $storeId);
     }
-
-
 }

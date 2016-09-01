@@ -355,11 +355,10 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $areaCode = $this->_context->getAppState()->getAreaCode();
 
         $moto = '';
-        if($areaCode == 'adminhtml') {
+        if ($areaCode == 'adminhtml') {
             $moto .= '_moto';
         }
 
         return (bool)(int)$this->getConfigData('active' . $moto, $storeId);
     }
-
 }

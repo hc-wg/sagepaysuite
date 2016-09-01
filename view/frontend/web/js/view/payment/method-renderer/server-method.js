@@ -194,8 +194,7 @@ define(
 
                 if (this.sagePayIsMobile()) {
                     location.href = nextURL;
-                }
-                else {
+                } else {
                     this.modal = $("<div class='sagepaysuiteserver-scroll-wrapper'><iframe class='sagepaysuiteserver_embed_iframe' src='" + nextURL + "'></iframe></div>").modal({
                         modalClass: 'sagepaysuiteserver-modal',
                         title: "Sage Pay Secure Gateway",
@@ -209,7 +208,7 @@ define(
                 }
 
             },
-            sagePayIsMobile: function() {
+            sagePayIsMobile: function () {
                 return (navigator.userAgent.match(/BlackBerry/i) ||
                 navigator.userAgent.match(/webOS/i) ||
                 navigator.userAgent.match(/Android/i) ||
