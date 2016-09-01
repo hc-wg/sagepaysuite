@@ -3,6 +3,7 @@ machine:
     version: 5.6.14
   environment:
     MAGE_VERSION: 2.1.0
+    MARKETPLACE_EQP_VERSION: 1.0.2
     DB_URL: 127.0.0.1
     DB_NAME: circle_test
     DB_USER: ubuntu
@@ -15,7 +16,9 @@ dependencies:
     - sudo apt-get update; sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server-5.6
   override:
     - wget https://github.com/magento/magento2/archive/$MAGE_VERSION.zip
+    - wget https://github.com/magento/marketplace-eqp/archive/$MARKETPLACE_EQP_VERSION.zip
     - unzip -qq $MAGE_VERSION.zip
+    - unzip -qq $MARKETPLACE_EQP_VERSION.zip
     - mkdir -p magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite
     - cp -r Api Block Controller Helper Model Observer Setup Test etc view i18n registration.php magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite
     - cd magento2-$MAGE_VERSION && wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
@@ -29,3 +32,4 @@ test:
   override:
     - cd magento2-$MAGE_VERSION && composer require --prefer-source --no-interaction "squizlabs/php_codesniffer=*" magento-ecg/coding-standard && vendor/squizlabs/php_codesniffer/scripts/phpcs --config-set installed_paths vendor/magento-ecg/coding-standard && ./vendor/squizlabs/php_codesniffer/scripts/phpcs -n --standard="EcgM2" ./app/code/Ebizmarts/SagePaySuite;
     - magento2-$MAGE_VERSION/vendor/bin/phpunit -c magento2-$MAGE_VERSION/dev/tests/unit/phpunit_config.xml --coverage-text
+    - cd magento2-$MAGE_VERSION && vendor/squizlabs/php_codesniffer/scripts/phpcs --config-set installed_paths /home/ubuntu/magento2-sage-pay-suite/marketplace-eqp-$MARKETPLACE_EQP_VERSION && ./vendor/squizlabs/php_codesniffer/scripts/phpcs -n --standard="MEQP2" ./app/code/Ebizmarts/SagePaySuite;
