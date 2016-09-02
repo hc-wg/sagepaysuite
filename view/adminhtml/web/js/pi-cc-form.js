@@ -13,20 +13,11 @@ define([
 ], function ($, url, ui, $t) {
     "use strict";
 
-    //load sagepay library
-    //if(sagepaysuitepi_config && this.options.mode == 'live'){
-    // if(false) {
-    //     var sagepayjs = require(['sagepayjs_live']);
-    // }
-    // else {
-    //     var sagepayjs = require(['sagepayjs_test']);
-    // }
-
     /**
      * Disable card server validation in admin
      */
     if (typeof order !== 'undefined') {
-    order.addExcludedPaymentMethod('sagepaysuitepi');
+        order.addExcludedPaymentMethod('sagepaysuitepi');
     }
 
     $.widget('mage.sagepaysuitepiCcForm', {
@@ -54,6 +45,15 @@ define([
         fieldObserver: function () {
         },
         submitAdminOrder: function () {
+
+            $('#edit_form').validate().form();
+            $('#edit_form').trigger('afterValidate.beforeSubmit');
+            $('body').trigger('processStop');
+
+            // validate parent form
+            if ($('#edit_form').validate().errorList.length) {
+                return false;
+            }
 
             var self = this;
             self.resetPaymentErrors();
