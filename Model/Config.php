@@ -203,7 +203,8 @@ class Config
     }
 
     /**
-     * @param string $methodCode
+     * @param $methodCode
+     * @return $this
      */
     public function setMethodCode($methodCode)
     {
