@@ -135,6 +135,8 @@ class Request extends \Magento\Backend\App\AbstractAction
         //populate address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
 
+        $data["CardHolder"]    = $data['BillingFirstnames'] . ' ' . $data['BillingSurname'];
+
         //3D rules
         $data["Apply3DSecure"] = $this->_config->get3Dsecure(true);
 

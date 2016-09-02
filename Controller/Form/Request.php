@@ -115,7 +115,7 @@ class Request extends \Magento\Framework\App\Action\Action
 
         $data = [];
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
-        $data['Description'] = $this->_requestHelper->getOrderDescription();
+        $data['Description']  = $this->_requestHelper->getOrderDescription();
 
         //referrer id
         $data["ReferrerID"] = $this->_requestHelper->getReferrerId();
@@ -128,8 +128,8 @@ class Request extends \Magento\Framework\App\Action\Action
         $data['FailureURL'] = $this->_url->getUrl('*/*/failure');
 
         //email details
-        $data['VendorEMail'] = $this->_config->getFormVendorEmail();
-        $data['SendEMail'] = $this->_config->getFormSendEmail();
+        $data['VendorEMail']  = $this->_config->getFormVendorEmail();
+        $data['SendEMail']    = $this->_config->getFormSendEmail();
         $data['EmailMessage'] = substr($this->_config->getFormEmailMessage(), 0, 7500);
 
         //populate payment amount information
@@ -138,14 +138,16 @@ class Request extends \Magento\Framework\App\Action\Action
         //populate address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
 
+        $data["CardHolder"]    = $data['BillingFirstnames'] . ' ' . $data['BillingSurname'];
+
         //3D rules
         $data["Apply3DSecure"] = $this->_config->get3Dsecure();
 
         //Avs/Cvc rules
-        $data["ApplyAVSCV2"] = $this->_config->getAvsCvc();
+        $data["ApplyAVSCV2"]   = $this->_config->getAvsCvc();
 
         //gif aid
-        $data["AllowGiftAid"] = (int)$this->_config->isGiftAidEnabled();
+        $data["AllowGiftAid"]  = (int)$this->_config->isGiftAidEnabled();
 
 //        $data['CustomerXML']  = $this->getConfigData('avscv2');
 //        $data['SurchargeXML']  = $this->getConfigData('avscv2');
