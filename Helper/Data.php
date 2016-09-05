@@ -28,8 +28,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Ebizmarts\SagePaySuite\Model\Config $config
     ) {
         parent::__construct($context);
-        $this->_loader = $loader;
-        $this->_config = $config;
+        $this->_loader  = $loader;
+        $this->_config  = $config;
     }
 
     /**
@@ -72,6 +72,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function verify()
     {
+        $storeId = (int)$this->_getRequest()->getParam('store', \Magento\Store\Model\Store::DEFAULT_STORE_ID);
+        $this->_config->setStoreId($storeId);
         $domain = preg_replace("/^http:\/\//", "", $this->_config->getStoreDomain());
         $domain = preg_replace("/^https:\/\//", "", $domain);
         $domain = preg_replace("/^www\./", "", $domain);
