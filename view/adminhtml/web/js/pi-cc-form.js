@@ -60,10 +60,11 @@ define([
 
             var serviceUrl = this.options.url.generateMerchantKey;
 
-            jQuery.ajax({
+            $.ajax({
                 url: serviceUrl,
                 data: {form_key: window.FORM_KEY},
-                type: 'POST'
+                type: 'POST',
+                showLoader: true
             }).done(function (response) {
                 if (response.success) {
                     self.sagepayTokeniseCard(response.merchant_session_key);
@@ -195,10 +196,11 @@ define([
             formData += "&card_exp_year=" + self.creditCardExpYear;
             formData += "&card_last4=" + self.creditCardLast4;
 
-            jQuery.ajax({
+            $.ajax({
                 url: serviceUrl,
                 data: formData,
-                type: 'POST'
+                type: 'POST',
+                showLoader: true
             }).done(function (response) {
 
                 if (response.success == true) {
