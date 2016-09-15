@@ -192,7 +192,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $this->quoteManagementMock = $this
             ->getMockBuilder('Magento\Quote\Model\QuoteManagement')
-            ->setConstructorArgs(array('context' => $contextMock))
+            ->setConstructorArgs(['context' => $contextMock])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -207,10 +207,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('getOrderDescription')
             ->will($this->returnValue("description"));
 
-        $this->adminOrder = $this->getMock('Magento\Sales\Model\AdminOrder\Create', array(), array(), '', false);
+        $this->adminOrder = $this->getMock('Magento\Sales\Model\AdminOrder\Create', [], [], '', false);
         $this->adminOrder->method('setIsValidate')->willReturnSelf();
         $this->adminOrder->method('importPostData')->willReturnSelf();
-        $objManager = $this->getMock('\Magento\Framework\ObjectManager\ObjectManager', array(), array(), '', false);
+        $objManager = $this->getMock('\Magento\Framework\ObjectManager\ObjectManager', [], [], '', false);
         $objManager->method('get')->willReturn($this->adminOrder);
         $contextMock->method('getObjectManager')
             ->willReturn($objManager);

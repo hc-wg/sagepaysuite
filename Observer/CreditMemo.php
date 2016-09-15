@@ -23,7 +23,7 @@ class CreditMemo implements ObserverInterface
         $payment           = $observer->getData('creditmemo')->getOrder()->getPayment();
         $paymentMethodCode = $payment->getMethod();
 
-        if(!$this->_suiteHelper->methodCodeIsSagePay($paymentMethodCode)) {
+        if (!$this->_suiteHelper->methodCodeIsSagePay($paymentMethodCode)) {
             return;
         }
 
@@ -32,9 +32,8 @@ class CreditMemo implements ObserverInterface
 
         try {
             $this->_suiteReportingApi->getTransactionDetails($vpsTxId);
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->_messageManager->addErrorMessage(__("This Sage Pay transaction cannot be refunded online because the Reporting API communication could not be established. The response is: %1", $e->getMessage()));
         }
-
     }
 }
