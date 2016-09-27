@@ -144,6 +144,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $requestHelperMock->expects($this->any())
             ->method('populateBasketInformation')
             ->will($this->returnValue([]));
+        $requestHelperMock->expects($this->any())
+            ->method('unsetBasketXMLIfAmountsDontMatch')
+            ->willReturn([]);
 
         $this->_postApiMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Post')

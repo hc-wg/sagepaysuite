@@ -89,6 +89,52 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * Remove BasketXML from request if amounts don't match.
+     *
+     * @param array $data
+     * @return array
+     */
+    public function unsetBasketXMLIfAmountsDontMatch(array $data)
+    {
+        if (array_key_exists('BasketXML', $data) && array_key_exists('Amount', $data)) {
+            $basketTotal = $this->getBasketXmlTotalAmount($data['BasketXML']);
+
+            if (!$this->floatsEqual($data['Amount'], $basketTotal)) {
+                unset($data['BasketXML']);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param string $basket
+     * @return float
+     */
+    public function getBasketXmlTotalAmount($basket)
+    {
+        //amount = Sum of totalGrossAmount + deliveryGrossAmount - Sum of fixed (discounts)
+        $xml    = null;
+        $amount = 0;
+
+        try {
+            $xml = new \SimpleXMLElement($basket);
+        } catch (\Exception $ex) {
+            return $amount;
+        }
+
+        $amount += $this->getBasketXmlItemsTotalAmount($xml->children()->item);
+
+        $amount += (float)$xml->children()->deliveryGrossAmount;
+
+        if (isset($xml->children()->discounts)) {
+            $amount -= $this->getBasketXmlDiscountTotalAmount($xml->children()->discounts->children());
+        }
+
+        return $amount;
+    }
+
+    /**
      * @param \Magento\Quote\Model\Quote $quote
      * @param bool|false $isRestRequest
      * @return array
@@ -106,10 +152,10 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
         $data = [];
         if ($isRestRequest) {
-            $data["amount"] = $amount * 100;
+            $data["amount"]   = $amount * 100;
             $data["currency"] = $currencyCode;
         } else {
-            $data["Amount"] = number_format($amount, 2, '.', '');
+            $data["Amount"]   = $this->formatPrice($amount);
             $data["Currency"] = $currencyCode;
         }
 
@@ -263,20 +309,18 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * @param $quote \Magento\Quote\Model\Quote
      * @return string
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    // @codingStandardsIgnoreStart
     protected function _getBasketXml($quote)
     {
+
         $basket = new \SimpleXMLElement('<?xml version="1.0" encoding="utf-8" ?><basket />');
 
         $shippingAdd = $quote->getShippingAddress();
-        $billingAdd = $quote->getBillingAddress();
+        $billingAdd  = $quote->getBillingAddress();
 
         $itemsCollection = $quote->getItemsCollection();
 
         foreach ($itemsCollection as $item) {
-
             if ($item->getParentItem()) {
                 continue;
             }
@@ -293,23 +337,17 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
                 $node->addChild('description', $this->_convertStringToSafeXMLChar(substr(implode("", $matchesDescription[0]), 0, 100)));
             }
 
-            //FIXME aca no esta entrando
-            $validSku = preg_match_all("/[\p{L}0-9\s\-]+/", $item->getSku(), $matchesSku);
-            if ($validSku === 1) {
-                //<productSku>
-                $node->addChild('productSku', substr($item->getSku(), 0, 12));
-            }
+            $this->basketXmlProductSku($item, $node);
 
-            //FIXME: aca no esta entrando
             //<productCode>
-            $node->addChild('productCode', $item->getId());
+            $node->addChild('productCode', $item->getProductId());
 
             $itemQty = $item->getQty();
 
-            $unitTaxAmount = number_format(($item->getTaxAmount() / $itemQty), 2, '.', '');
-            $unitNetAmount = number_format($item->getPriceInclTax(), 2, '.', '');
-            $unitGrossAmount = number_format($unitNetAmount + $unitTaxAmount, 2, '.', '');
-            $totalGrossAmount = number_format($unitGrossAmount * $itemQty, 2, '.', '');
+            $unitTaxAmount    = $this->formatPrice($item->getTaxAmount() / $itemQty);
+            $unitNetAmount    = $this->formatPrice($item->getPrice());
+            $unitGrossAmount  = $this->formatPrice($unitNetAmount + $unitTaxAmount);
+            $totalGrossAmount = $this->formatPrice($unitGrossAmount * $itemQty);
 
             //<quantity>
             $node->addChild('quantity', $itemQty);
@@ -323,24 +361,13 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
             $node->addChild('totalGrossAmount', $totalGrossAmount);
 
             //<recipientFName>
-            $recipientFName = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getFirstname()), 0, 20));
-            if (!empty($recipientFName)) {
-                $node->addChild('recipientFName', $recipientFName);
-            }
+            $this->basketXmlRecipientFName($shippingAdd, $node);
 
             //<recipientLName>
-            $recipientLName = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getLastname()), 0, 20));
-            if (!empty($recipientLName)) {
-                $node->addChild('recipientLName', $recipientLName);
-            }
+            $this->basketXmlRecipientLName($shippingAdd, $node);
 
             //<recipientMName>
-            if ($shippingAdd->getMiddlename()) {
-                $recipientMName = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getMiddlename()), 0, 1));
-                if (!empty($recipientMName)) {
-                    $node->addChild('recipientMName', $recipientMName);
-                }
-            }
+            $this->basketXmlMiddleName($shippingAdd, $node);
 
             //<recipientSal>
             if ($shippingAdd->getPrefix()) {
@@ -402,47 +429,47 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
                 $_postCode = $shippingAdd->getPostcode();
             }
             $node->addChild('recipientPostCode', $this->_convertStringToSafeXMLChar($this->_sanitizePostcode(substr(trim($_postCode), 0, 9))));
-
         }
 
         //Sum up shipping totals when using SERVER with MAC
         if ($quote->getIsMultiShipping() && ($quote->getPayment()->getMethod() == 'sagepayserver')) {
-
             $shippingInclTax = $shippingTaxAmount = 0.00;
 
             $addresses = $quote->getAllAddresses();
-            foreach($addresses as $address) {
+            foreach ($addresses as $address) {
                 $shippingTaxAmount += $address->getShippingTaxAmount();
                 $shippingInclTax   += $address->getShippingAmount() + $shippingTaxAmount;
             }
-
-        }
-        else {
+        } else {
             $shippingTaxAmount = $shippingAdd->getShippingTaxAmount();
             $shippingInclTax   = $shippingAdd->getShippingAmount() + $shippingTaxAmount;
         }
 
         //<deliveryNetAmount>
-        $basket->addChild('deliveryNetAmount', number_format($shippingAdd->getShippingAmount(), 2, '.', ''));
+        $basket->addChild('deliveryNetAmount', $this->formatPrice($shippingAdd->getShippingAmount()));
 
         //<deliveryTaxAmount>
-        $basket->addChild('deliveryTaxAmount', number_format($shippingTaxAmount, 2, '.', ''));
+        $basket->addChild('deliveryTaxAmount', $this->formatPrice($shippingTaxAmount));
 
         //<deliveryGrossAmount>
-        $basket->addChild('deliveryGrossAmount', number_format($shippingInclTax, 2, '.', ''));
+        $basket->addChild('deliveryGrossAmount', $this->formatPrice($shippingInclTax));
 
         //<shippingFaxNo>
-        $validFax = preg_match_all("/[a-zA-Z0-9\-\s\(\)\+]+/", trim($shippingAdd->getFax()), $matchesFax);
-        if ($validFax === 1) {
-            $basket->addChild('shippingFaxNo', substr(trim($shippingAdd->getFax()), 0, 20));
-        }
+        $this->basketXmlFaxNumber($shippingAdd, $basket);
 
         $xmlBasket = str_replace("\n", "", trim($basket->asXml()));
 
         return $xmlBasket;
-
     }
-    // @codingStandardsIgnoreEnd
+
+    /**
+     * @param $value
+     * @return string
+     */
+    protected function formatPrice($value)
+    {
+        return number_format($value, 2, '.', '');
+    }
 
     protected function _cleanSage50BasketString($text)
     {
@@ -481,14 +508,12 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected function _validateBasketXml($basket)
     {
-        $valid = true;
-
         //Validate max length
-        if (strlen($basket) > 20000) {
-            $valid = false;
-        }
+        $validLength  = $this->validateBasketXmlLength($basket);
 
-        return $valid;
+        $validAmounts = $this->validateBasketXmlAmounts($basket);
+
+        return $validLength && $validAmounts;
     }
 
     public function getOrderDescription($isMOTO = false)
@@ -499,5 +524,159 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
     public function getReferrerId()
     {
         return "01bf51f9-0dcd-49dd-a07a-3b1f918c77d7";
+    }
+
+    /**
+     * @param $basket
+     * @return bool
+     */
+    public function validateBasketXmlAmounts($basket)
+    {
+        $valid = true;
+
+        /**
+         * unitGrossAmount = unitNetAmount + unitTaxAmount
+         * totalGrossAmount = unitGrossAmount * quantity
+         */
+
+        $xml = null;
+
+        try {
+            $xml = new \SimpleXMLElement($basket);
+        } catch (\Exception $ex) {
+            $valid = false;
+        }
+
+        $items = $xml->children()->item;
+
+        $totalItems = count($items);
+
+        $i = 0;
+        while ($valid && $i < $totalItems) {
+            $unitGrossAmount  = (float)$items[$i]->unitNetAmount + (float)$items[$i]->unitTaxAmount;
+            $validUnit        = $this->floatsEqual((float)$items[$i]->unitGrossAmount, $unitGrossAmount);
+
+            $totalGrossAmount = (float)$items[$i]->unitGrossAmount * (float)$items[$i]->quantity;
+            $validTotal       = $this->floatsEqual((float)$items[$i]->totalGrossAmount, $totalGrossAmount);
+
+            $valid = $validTotal && $validUnit;
+
+            $i++;
+        }
+
+        return $valid;
+    }
+
+    public function floatsEqual($f1, $f2)
+    {
+        return abs(($f1-$f2)/$f2) < 0.00001;
+    }
+
+    /**
+     * @param $basket
+     * @return bool
+     */
+    public function validateBasketXmlLength($basket)
+    {
+        $valid = true;
+        if (strlen($basket) > 20000) {
+            $valid = false;
+        }
+        return $valid;
+    }
+
+    /**
+     * @param $shippingAdd
+     * @param $node
+     */
+    protected function basketXmlRecipientFName($shippingAdd, $node)
+    {
+        $recipientFName = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getFirstname()), 0, 20));
+        if (!empty($recipientFName)) {
+            $node->addChild('recipientFName', $recipientFName);
+        }
+    }
+
+    /**
+     * @param $shippingAdd
+     * @param $node
+     */
+    protected function basketXmlRecipientLName($shippingAdd, $node)
+    {
+        $recipientLName = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getLastname()), 0, 20));
+        if (!empty($recipientLName)) {
+            $node->addChild('recipientLName', $recipientLName);
+        }
+    }
+
+    /**
+     * @param $shippingAdd
+     * @param $node
+     */
+    protected function basketXmlMiddleName($shippingAdd, $node)
+    {
+        if ($shippingAdd->getMiddlename()) {
+            $recipientMName = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getMiddlename()), 0, 1));
+            if (!empty($recipientMName)) {
+                $node->addChild('recipientMName', $recipientMName);
+            }
+        }
+    }
+
+    /**
+     * @param $item
+     * @param $node
+     */
+    protected function basketXmlProductSku($item, $node)
+    {
+        $validSku = preg_match_all("/[\p{L}0-9\s\-]+/", $item->getSku(), $matchesSku);
+        if ($validSku === 1) {
+            //<productSku>
+            $node->addChild('productSku', substr($item->getSku(), 0, 12));
+        }
+    }
+
+    /**
+     * @param $shippingAdd
+     * @param $basket
+     */
+    protected function basketXmlFaxNumber($shippingAdd, $basket)
+    {
+        $validFax = preg_match_all("/[a-zA-Z0-9\-\s\(\)\+]+/", trim($shippingAdd->getFax()), $matchesFax);
+        if ($validFax === 1) {
+            $basket->addChild('shippingFaxNo', substr(trim($shippingAdd->getFax()), 0, 20));
+        }
+    }
+
+    private function getBasketXmlDiscountTotalAmount($discounts)
+    {
+        $amount = 0;
+
+        $totalDiscounts = count($discounts);
+
+        $i = 0;
+        while ($i < $totalDiscounts) {
+            $amount += (float)$discounts[$i]->fixed;
+            $i++;
+        }
+
+        return $amount;
+    }
+
+    /**
+     * @param $items
+     * @return float
+     */
+    private function getBasketXmlItemsTotalAmount($items)
+    {
+        $amount = 0;
+        $totalItems = count($items);
+
+        $i = 0;
+        while ($i < $totalItems) {
+            $amount += (float)$items[$i]->totalGrossAmount;
+            $i++;
+        }
+        return $amount;
     }
 }

@@ -135,6 +135,8 @@ class Request extends \Magento\Framework\App\Action\Action
         //populate payment amount information
         $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
 
+        $data = $this->_requestHelper->unsetBasketXMLIfAmountsDontMatch($data);
+
         //populate address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
 

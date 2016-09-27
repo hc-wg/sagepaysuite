@@ -230,6 +230,8 @@ class Request extends \Magento\Framework\App\Action\Action
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
         }
 
+        $data = $this->_requestHelper->unsetBasketXMLIfAmountsDontMatch($data);
+
         //address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
 

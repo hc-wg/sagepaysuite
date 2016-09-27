@@ -11,8 +11,9 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $loggerModel;
+    private $loggerModel;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
@@ -21,6 +22,7 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
             []
         );
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * @dataProvider sageLogDataProvider
@@ -74,10 +76,6 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['getMessage','getTraceAsString'])
             ->disableOriginalConstructor()
             ->getMock();
-//        $exceptionMock->expects($this->once())
-//            ->method('getMessage');
-//        $exceptionMock->expects($this->once())
-//            ->method('getTraceAsString');
 
         $this->assertEquals(
             false,
