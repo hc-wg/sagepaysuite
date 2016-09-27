@@ -11,8 +11,9 @@ class ExceptionTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Exception
      */
-    protected $exceptionLoggerModel;
+    private $exceptionLoggerModel;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
@@ -21,12 +22,15 @@ class ExceptionTest extends \PHPUnit_Framework_TestCase
             []
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testIsHandling()
     {
         $this->assertEquals(
             true,
-            $this->exceptionLoggerModel->isHandling(['level'=>\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_EXCEPTION])
+            $this->exceptionLoggerModel->isHandling(
+                ['level'=>\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_EXCEPTION]
+            )
         );
     }
 }
