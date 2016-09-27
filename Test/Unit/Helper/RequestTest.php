@@ -1141,5 +1141,4 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('BasketXML', $requestData);
         $this->assertArrayHasKey('Amount', $requestData);
     }
-
 }

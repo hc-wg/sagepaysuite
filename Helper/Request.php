@@ -96,11 +96,10 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function unsetBasketXMLIfAmountsDontMatch(array $data)
     {
-        if(array_key_exists('BasketXML', $data) && array_key_exists('Amount', $data)) {
-
+        if (array_key_exists('BasketXML', $data) && array_key_exists('Amount', $data)) {
             $basketTotal = $this->getBasketXmlTotalAmount($data['BasketXML']);
 
-            if(!$this->floatsEqual($data['Amount'], $basketTotal)) {
+            if (!$this->floatsEqual($data['Amount'], $basketTotal)) {
                 unset($data['BasketXML']);
             }
         }
@@ -120,7 +119,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
         try {
             $xml = new \SimpleXMLElement($basket);
-        }catch(\Exception $ex){
+        } catch (\Exception $ex) {
             return $amount;
         }
 
@@ -128,7 +127,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
         $amount += (float)$xml->children()->deliveryGrossAmount;
 
-        if(isset($xml->children()->discounts)) {
+        if (isset($xml->children()->discounts)) {
             $amount -= $this->getBasketXmlDiscountTotalAmount($xml->children()->discounts->children());
         }
 
@@ -544,7 +543,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
         try {
             $xml = new \SimpleXMLElement($basket);
-        }catch(\Exception $ex){
+        } catch (\Exception $ex) {
             $valid = false;
         }
 
