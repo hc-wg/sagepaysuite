@@ -484,16 +484,19 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $basket
      * @return bool
      */
-    protected function validateBasketXmlAmounts($basket)
+    public function validateBasketXmlAmounts($basket)
     {
         /**
          *
          * @TODO
          *
          * unitGrossAmount = unitNetAmount + unitTaxAmount
-        totalGrossAmount = unitGrossAmount * quantity
-        amount ( sent in transaction Registration) = Sum of totalGrossAmount + deliveryGrossAmount - Sum of fixed (discounts)
+         * totalGrossAmount = unitGrossAmount * quantity
+         * amount ( sent in transaction Registration) = Sum of totalGrossAmount + deliveryGrossAmount - Sum of fixed (discounts)
          */
+
+
+
         return true;
     }
 
@@ -501,7 +504,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $basket
      * @return bool
      */
-    protected function validateBasketXmlLength($basket)
+    public function validateBasketXmlLength($basket)
     {
         $valid = true;
         if (strlen($basket) > 20000) {
