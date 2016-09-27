@@ -89,6 +89,53 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * Remove BasketXML from request if amounts don't match.
+     *
+     * @param array $data
+     * @return array
+     */
+    public function unsetBasketXMLIfAmountsDontMatch(array $data)
+    {
+        if(array_key_exists('BasketXML', $data) && array_key_exists('Amount', $data)) {
+
+            $basketTotal = $this->getBasketXmlTotalAmount($data['BasketXML']);
+
+            if(!$this->floatsEqual($data['Amount'], $basketTotal)) {
+                unset($data['BasketXML']);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param string $basket
+     * @return float
+     */
+    public function getBasketXmlTotalAmount($basket)
+    {
+        //amount = Sum of totalGrossAmount + deliveryGrossAmount - Sum of fixed (discounts)
+        $xml    = null;
+        $amount = 0;
+
+        try {
+            $xml = new \SimpleXMLElement($basket);
+        }catch(\Exception $ex){
+            return $amount;
+        }
+
+        $amount += $this->getBasketXmlItemsTotalAmount($xml->children()->item);
+
+        $amount += (float)$xml->children()->deliveryGrossAmount;
+
+        if(isset($xml->children()->discounts)) {
+            $amount -= $this->getBasketXmlDiscountTotalAmount($xml->children()->discounts->children());
+        }
+
+        return $amount;
+    }
+
+    /**
      * @param \Magento\Quote\Model\Quote $quote
      * @param bool|false $isRestRequest
      * @return array
@@ -106,10 +153,10 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
         $data = [];
         if ($isRestRequest) {
-            $data["amount"] = $amount * 100;
+            $data["amount"]   = $amount * 100;
             $data["currency"] = $currencyCode;
         } else {
-            $data["Amount"] = number_format($amount, 2, '.', '');
+            $data["Amount"]   = $this->formatPrice($amount);
             $data["Currency"] = $currencyCode;
         }
 
@@ -486,18 +533,44 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function validateBasketXmlAmounts($basket)
     {
+        $valid = true;
+
         /**
-         *
-         * @TODO
-         *
          * unitGrossAmount = unitNetAmount + unitTaxAmount
          * totalGrossAmount = unitGrossAmount * quantity
-         * amount ( sent in transaction Registration) = Sum of totalGrossAmount + deliveryGrossAmount - Sum of fixed (discounts)
          */
 
+        $xml = null;
 
+        try {
+            $xml = new \SimpleXMLElement($basket);
+        }catch(\Exception $ex){
+            $valid = false;
+        }
 
-        return true;
+        $items = $xml->children()->item;
+
+        $totalItems = count($items);
+
+        $i = 0;
+        while ($valid && $i < $totalItems) {
+            $unitGrossAmount  = (float)$items[$i]->unitNetAmount + (float)$items[$i]->unitTaxAmount;
+            $validUnit        = $this->floatsEqual((float)$items[$i]->unitGrossAmount, $unitGrossAmount);
+
+            $totalGrossAmount = (float)$items[$i]->unitGrossAmount * (float)$items[$i]->quantity;
+            $validTotal       = $this->floatsEqual((float)$items[$i]->totalGrossAmount, $totalGrossAmount);
+
+            $valid = $validTotal && $validUnit;
+
+            $i++;
+        }
+
+        return $valid;
+    }
+
+    public function floatsEqual($f1, $f2)
+    {
+        return abs(($f1-$f2)/$f2) < 0.00001;
     }
 
     /**
@@ -574,5 +647,37 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         if ($validFax === 1) {
             $basket->addChild('shippingFaxNo', substr(trim($shippingAdd->getFax()), 0, 20));
         }
+    }
+
+    private function getBasketXmlDiscountTotalAmount($discounts)
+    {
+        $amount = 0;
+
+        $totalDiscounts = count($discounts);
+
+        $i = 0;
+        while ($i < $totalDiscounts) {
+            $amount += (float)$discounts[$i]->fixed;
+            $i++;
+        }
+
+        return $amount;
+    }
+
+    /**
+     * @param $items
+     * @return float
+     */
+    private function getBasketXmlItemsTotalAmount($items)
+    {
+        $amount = 0;
+        $totalItems = count($items);
+
+        $i = 0;
+        while ($i < $totalItems) {
+            $amount += (float)$items[$i]->totalGrossAmount;
+            $i++;
+        }
+        return $amount;
     }
 }
