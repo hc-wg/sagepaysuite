@@ -11,7 +11,7 @@ class ApiExceptionTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
-    protected $apiExceptionModel;
+    private $apiExceptionModel;
 
     /**
      * @dataProvider getUserMessageDataProvider
@@ -23,7 +23,9 @@ class ApiExceptionTest extends \PHPUnit_Framework_TestCase
             'Ebizmarts\SagePaySuite\Model\Api\ApiException',
             [
                 "phrase" => new \Magento\Framework\Phrase($data["message"]),
-                "cause" => new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase($data["message"])),
+                "cause" => new \Magento\Framework\Exception\LocalizedException(
+                    new \Magento\Framework\Phrase($data["message"])
+                ),
                 "code" => $data["code"]
             ]
         );
