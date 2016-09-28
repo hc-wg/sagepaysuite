@@ -11,8 +11,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Request
      */
-    protected $requestLoggerModel;
+    private $requestLoggerModel;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
@@ -21,6 +22,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             []
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testIsHandling()
     {
