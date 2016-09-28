@@ -14,28 +14,24 @@ class FailureTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Controller\Adminhtml\Form\Failure
      */
-    protected $formFailureController;
+    private $formFailureController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
-
-    /**
-     * @var \Magento\Framework\App\Response\RedirectInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $redirectMock;
+    private $responseMock;
 
     /**
      * @var Magento\Framework\Message\ManagerInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $messageManagerMock;
+    private $messageManagerMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->responseMock = $this
@@ -45,8 +41,6 @@ class FailureTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
             ->disableOriginalConstructor()
             ->getMock();
-
-       // $this->redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
         $quoteSessionMock = $this
             ->getMockBuilder('Magento\Backend\Model\Session\Quote')
@@ -81,9 +75,6 @@ class FailureTest extends \PHPUnit_Framework_TestCase
         $contextMock->expects($this->any())
             ->method('getResponse')
             ->will($this->returnValue($this->responseMock));
-//        $contextMock->expects($this->any())
-//            ->method('getRedirect')
-//            ->will($this->returnValue($this->redirectMock));
         $contextMock->expects($this->any())
             ->method('getMessageManager')
             ->will($this->returnValue($this->messageManagerMock));
@@ -120,6 +111,7 @@ class FailureTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecute()
     {
