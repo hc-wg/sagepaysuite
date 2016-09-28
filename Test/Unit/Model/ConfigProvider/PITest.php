@@ -11,13 +11,14 @@ class PITest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\ConfigProvider\PI
      */
-    protected $piConfigProviderModel;
+    private $piConfigProviderModel;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $configMock;
+    private $configMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $piModelMock = $this
@@ -56,6 +57,7 @@ class PITest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testGetConfig()
     {
