@@ -11,18 +11,19 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
      */
-    protected $reportingApiModel;
+    private $reportingApiModel;
 
     /**
      * @var \Magento\Framework\HTTP\Adapter\Curl|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $curlMock;
+    private $curlMock;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $apiExceptionFactoryMock;
+    private $apiExceptionFactoryMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->apiExceptionFactoryMock = $this
@@ -53,6 +54,7 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testGetTransactionDetails()
     {
@@ -60,9 +62,13 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
             ->method('read')
             ->willReturn(
                 'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp><vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode></vspaccess>'
+                '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
+                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
+                </vspaccess>'
             );
 
+        $xmlWrite = 'XML=<vspaccess><command>getTransactionDetail</command><vendor></vendor><user></user>';
+        $xmlWrite .= '<vpstxid>12345</vpstxid><signature>4a0787ba97d65455d24be4d1768133ac</signature></vspaccess>';
         $this->curlMock->expects($this->once())
             ->method('write')
             ->with(
@@ -70,7 +76,7 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
                 \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_TEST,
                 '1.0',
                 [],
-                'XML=<vspaccess><command>getTransactionDetail</command><vendor></vendor><user></user><vpstxid>12345</vpstxid><signature>4a0787ba97d65455d24be4d1768133ac</signature></vspaccess>'
+                $xmlWrite
             );
 
         $this->assertEquals(
@@ -90,8 +96,13 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
             ->method('read')
             ->willReturn(
                 'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '<vspaccess><errorcode>2015</errorcode><error>INVALID STATUS</error><timestamp>04/11/2013 11:45:32</timestamp><vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode></vspaccess>'
+                '<vspaccess><errorcode>2015</errorcode><error>INVALID STATUS</error>
+                <timestamp>04/11/2013 11:45:32</timestamp><vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid>
+                <vendortxcode>REF20131029-1-838</vendortxcode></vspaccess>'
             );
+
+        $xmlWrite  = 'XML=<vspaccess><command>getTransactionDetail</command><vendor></vendor><user></user>';
+        $xmlWrite .= '<vpstxid>12345</vpstxid><signature>4a0787ba97d65455d24be4d1768133ac</signature></vspaccess>';
 
         $this->curlMock->expects($this->once())
             ->method('write')
@@ -100,7 +111,7 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
                 \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_TEST,
                 '1.0',
                 [],
-                'XML=<vspaccess><command>getTransactionDetail</command><vendor></vendor><user></user><vpstxid>12345</vpstxid><signature>4a0787ba97d65455d24be4d1768133ac</signature></vspaccess>'
+                $xmlWrite
             );
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
@@ -129,8 +140,13 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
             ->method('read')
             ->willReturn(
                 'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp><vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode></vspaccess>'
+                '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
+                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
+                </vspaccess>'
             );
+
+        $xmlWrite = 'XML=<vspaccess><command>getTokenCount</command><vendor></vendor><user></user>';
+        $xmlWrite .= '<signature>eca0a57c18e960a6cba53f685597b6c2</signature></vspaccess>';
 
         $this->curlMock->expects($this->once())
             ->method('write')
@@ -139,7 +155,7 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
                 \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_TEST,
                 '1.0',
                 [],
-                'XML=<vspaccess><command>getTokenCount</command><vendor></vendor><user></user><signature>eca0a57c18e960a6cba53f685597b6c2</signature></vspaccess>'
+                $xmlWrite
             );
 
         $this->assertEquals(
@@ -159,8 +175,13 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
             ->method('read')
             ->willReturn(
                 'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp><vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode></vspaccess>'
+                '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
+                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
+                </vspaccess>'
             );
+
+        $xmlWrite = 'XML=<vspaccess><command>getFraudScreenDetail</command><vendor></vendor><user></user>';
+        $xmlWrite .= '<vpstxid>12345</vpstxid><signature>85bd7f80aad73ecd5740bd6b58142071</signature></vspaccess>';
 
         $this->curlMock->expects($this->once())
             ->method('write')
@@ -169,7 +190,7 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
                 \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_TEST,
                 '1.0',
                 [],
-                'XML=<vspaccess><command>getFraudScreenDetail</command><vendor></vendor><user></user><vpstxid>12345</vpstxid><signature>85bd7f80aad73ecd5740bd6b58142071</signature></vspaccess>'
+                $xmlWrite
             );
 
         $this->assertEquals(

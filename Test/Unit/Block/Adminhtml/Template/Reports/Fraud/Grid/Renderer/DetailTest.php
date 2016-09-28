@@ -11,8 +11,9 @@ class DetailTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer\Detail
      */
-    protected $detailRendererBlock;
+    private $detailRendererBlock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $columnMock = $this
@@ -28,6 +29,7 @@ class DetailTest extends \PHPUnit_Framework_TestCase
 
         $this->detailRendererBlock->setColumn($columnMock);
     }
+    // @codingStandardsIgnoreEnd
 
     public function testRender()
     {

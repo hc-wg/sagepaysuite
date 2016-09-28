@@ -19,33 +19,34 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     /**
      * @var /Ebizmarts\SagePaySuite\Controller\Form\Success
      */
-    protected $formSuccessController;
+    private $formSuccessController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
+    private $responseMock;
 
     /**
      * @var \Magento\Framework\App\Response\RedirectInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $redirectMock;
+    private $redirectMock;
 
     /**
      * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $orderMock;
+    private $orderMock;
 
     /**
      * @var Ebizmarts\SagePaySuite\Helper\Checkout|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $checkoutHelperMock;
+    private $checkoutHelperMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $paymentMock = $this
@@ -158,6 +159,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecuteSUCCESS()
     {
@@ -182,7 +184,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     /**
      * @param string $path
      */
-    protected function _expectRedirect($path)
+    private function _expectRedirect($path)
     {
         $this->redirectMock->expects($this->once())
             ->method('redirect')

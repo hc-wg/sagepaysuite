@@ -11,8 +11,9 @@ class AvsCvcTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config\Source\AvsCvc
      */
-    protected $avsCvcSecureModel;
+    private $avsCvcSecureModel;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
@@ -21,6 +22,7 @@ class AvsCvcTest extends \PHPUnit_Framework_TestCase
             []
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testToOptionArray()
     {

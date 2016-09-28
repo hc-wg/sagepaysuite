@@ -19,28 +19,29 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
     /**
      * @var /Ebizmarts\SagePaySuite\Controller\Paypal\Callback
      */
-    protected $paypalCallbackController;
+    private $paypalCallbackController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
+    private $responseMock;
 
     /**
      * @var \Magento\Framework\App\Response\RedirectInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $redirectMock;
+    private $redirectMock;
 
     /**
      * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $orderMock;
+    private $orderMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $paymentMock = $this
@@ -158,6 +159,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecuteSUCCESS()
     {
@@ -189,7 +191,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
     /**
      * @param string $path
      */
-    protected function _expectRedirect($path)
+    private function _expectRedirect($path)
     {
         $this->redirectMock->expects($this->once())
             ->method('redirect')

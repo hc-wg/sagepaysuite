@@ -11,18 +11,19 @@ class FraudTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Fraud
      */
-    protected $fraudHelperModel;
+    private $fraudHelperModel;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $reportingApiMock;
+    private $reportingApiMock;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $configMock;
+    private $configMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->configMock = $this
@@ -44,6 +45,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * @dataProvider processFraudInformationDataProvider

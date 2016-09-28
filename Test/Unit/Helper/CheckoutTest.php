@@ -11,29 +11,29 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Checkout
      */
-    protected $checkoutHelper;
+    private $checkoutHelper;
 
     /**
      * @var \Magento\Quote\Model\Quote|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $quoteMock;
+    private $quoteMock;
 
     /**
      * @var \Magento\Customer\Model\Session|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $customerSessionMock;
+    private $customerSessionMock;
 
     /**
      * @var \Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $orderMock;
+    private $orderMock;
 
     /**
      * @var \Magento\Sales\Model\Order\Email\Sender\OrderSender|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $orderSenderMock;
+    private $orderSenderMock;
 
-
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $customerMock = $this
@@ -119,6 +119,7 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testPlaceOrderCUSTOMER()
     {

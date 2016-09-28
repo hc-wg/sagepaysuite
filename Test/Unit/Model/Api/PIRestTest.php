@@ -11,18 +11,19 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
-    protected $pirestApiModel;
+    private $pirestApiModel;
 
     /**
      * @var \Magento\Framework\HTTP\Adapter\Curl|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $curlMock;
+    private $curlMock;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $apiExceptionFactoryMock;
+    private $apiExceptionFactoryMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->apiExceptionFactoryMock = $this
@@ -53,6 +54,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testGenerateMerchantKey()
     {
@@ -71,7 +73,8 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->method('write')
             ->with(
                 \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_GENERATE_MERCHANT_KEY,
+                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
+                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_GENERATE_MERCHANT_KEY,
                 '1.0',
                 ['Content-type: application/json'],
                 '{"vendorName":null}'
@@ -100,7 +103,8 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->method('write')
             ->with(
                 \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_GENERATE_MERCHANT_KEY,
+                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
+                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_GENERATE_MERCHANT_KEY,
                 '1.0',
                 ['Content-type: application/json'],
                 '{"vendorName":null}'
@@ -143,7 +147,8 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->method('write')
             ->with(
                 \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_CAPTURE_TRANSACTION,
+                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
+                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_CAPTURE_TRANSACTION,
                 '1.0',
                 ['Content-type: application/json'],
                 '{"Amount":"100.00"}'
@@ -178,7 +183,8 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->method('write')
             ->with(
                 \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_CAPTURE_TRANSACTION,
+                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
+                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_CAPTURE_TRANSACTION,
                 '1.0',
                 ['Content-type: application/json'],
                 '{"Amount":"100.00"}'
@@ -186,7 +192,9 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new \Magento\Framework\Phrase("Invalid address: Invalid post code"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Invalid address: Invalid post code"))
+            new \Magento\Framework\Exception\LocalizedException(
+                new \Magento\Framework\Phrase("Invalid address: Invalid post code")
+            )
         );
 
         $this->apiExceptionFactoryMock->expects($this->any())
@@ -225,7 +233,8 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->method('write')
             ->with(
                 \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . "transactions/" . 12345 . "/" . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_SUBMIT_3D,
+                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
+                "transactions/" . 12345 . "/" . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_SUBMIT_3D,
                 '1.0',
                 ['Content-type: application/json'],
                 '{"paRes":"fsd678dfs786dfs786fds678fds"}'
@@ -256,7 +265,8 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->method('write')
             ->with(
                 \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . "transactions/" . 12345 . "/" . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_SUBMIT_3D,
+                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . "transactions/" . 12345 . "/" .
+                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_SUBMIT_3D,
                 '1.0',
                 ['Content-type: application/json'],
                 '{"paRes":"fsd678dfs786dfs786fds678fds"}'

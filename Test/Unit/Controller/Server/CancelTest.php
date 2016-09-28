@@ -13,28 +13,29 @@ class CancelTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Controller\Server\Cancel
      */
-    protected $serverCancelController;
+    private $serverCancelController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
+    private $responseMock;
 
     /**
      * @var CheckoutSession|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $checkoutSessionMock;
+    private $checkoutSessionMock;
 
     /**
      * @var \Magento\Framework\UrlInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $urlBuilderMock;
+    private $urlBuilderMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->requestMock = $this
@@ -83,6 +84,7 @@ class CancelTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecute()
     {
@@ -97,7 +99,7 @@ class CancelTest extends \PHPUnit_Framework_TestCase
     /**
      * @param $body
      */
-    protected function _expectSetBody($body)
+    private function _expectSetBody($body)
     {
         $this->responseMock->expects($this->once())
             ->method('setBody')

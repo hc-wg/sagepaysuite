@@ -13,13 +13,14 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $configModel;
+    private $configModel;
 
     /**
      * @var \Magento\Framework\App\Config\ScopeConfigInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $scopeConfigMock;
+    private $scopeConfigMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->scopeConfigMock = $this
@@ -53,11 +54,12 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->configModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Config',
             [
-                'scopeConfig' => $this->scopeConfigMock,
+                'scopeConfig'  => $this->scopeConfigMock,
                 'storeManager' => $storeManagerMock
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testIsMethodActive()
     {
@@ -462,7 +464,6 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-
     public function testGetPaypalBillingAgreement()
     {
         $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
@@ -669,5 +670,44 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             false,
             $this->configModel->isServerLowProfileEnabled()
         );
+    }
+
+    /**
+     * @param $mockMode
+     * @param $mockAction
+     * @param $mockUrl
+     * @dataProvider urlsProvider
+     */
+    public function testGetServiceUrl($mockMode, $mockAction, $mockUrl)
+    {
+        $configMock = $this
+            ->getMockBuilder(Config::class)
+            ->setMethods(['getMode'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $configMock->method('getMode')->willReturn($mockMode);
+
+        $url = $configMock->getServiceUrl($mockAction);
+
+        $this->assertEquals($mockUrl, $url);
+    }
+
+    public function urlsProvider()
+    {
+        return [
+            'live void' => ['live', 'VOID', 'https://live.sagepay.com/gateway/service/void.vsp'],
+            'live refund' => ['live', 'REFUND', 'https://live.sagepay.com/gateway/service/refund.vsp'],
+            'live release' => ['live', 'RELEASE', 'https://live.sagepay.com/gateway/service/release.vsp'],
+            'live authorise' => ['live', 'AUTHORISE', 'https://live.sagepay.com/gateway/service/authorise.vsp'],
+            'live repeat' => ['live', 'REPEAT', 'https://live.sagepay.com/gateway/service/repeat.vsp'],
+            'live repeat deferred' => ['live', 'REPEATDEFERRED', 'https://live.sagepay.com/gateway/service/repeat.vsp'],
+            'test void' => ['test', 'VOID', 'https://test.sagepay.com/gateway/service/void.vsp'],
+            'test refund' => ['test', 'REFUND', 'https://test.sagepay.com/gateway/service/refund.vsp'],
+            'test release' => ['test', 'RELEASE', 'https://test.sagepay.com/gateway/service/release.vsp'],
+            'test authorise' => ['test', 'AUTHORISE', 'https://test.sagepay.com/gateway/service/authorise.vsp'],
+            'test repeat' => ['test', 'REPEAT', 'https://test.sagepay.com/gateway/service/repeat.vsp'],
+            'test repeat deferred' => ['test', 'REPEATDEFERRED', 'https://test.sagepay.com/gateway/service/repeat.vsp']
+        ];
     }
 }

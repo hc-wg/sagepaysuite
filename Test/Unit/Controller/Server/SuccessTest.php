@@ -13,28 +13,24 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     /**
      * @var Delete
      */
-    protected $serverSuccessController;
+    private $serverSuccessController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
-
-    /**
-     * @var CheckoutSession|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $checkoutSessionMock;
+    private $responseMock;
 
     /**
      * @var \Magento\Framework\UrlInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $urlBuilderMock;
+    private $urlBuilderMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
 
@@ -110,6 +106,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecute()
     {
@@ -125,7 +122,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     /**
      * @param $body
      */
-    protected function _expectSetBody($body)
+    private function _expectSetBody($body)
     {
         $this->responseMock->expects($this->once())
             ->method('setBody')

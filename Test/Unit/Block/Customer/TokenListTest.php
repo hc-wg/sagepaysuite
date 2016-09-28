@@ -11,8 +11,9 @@ class TokenListTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Block\Customer\TokenList
      */
-    protected $tokenListBlock;
+    private $tokenListBlock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $urlBuilderMock = $this
@@ -62,6 +63,7 @@ class TokenListTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testGetBackUrl()
     {

@@ -11,8 +11,9 @@ class VersionTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Block\Adminhtml\System\Config\Fieldset\Version
      */
-    protected $versionBlock;
+    private $versionBlock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $suiteHelperMock = $this
@@ -31,20 +32,13 @@ class VersionTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testGetVersion()
     {
         $this->assertEquals(
             '1.0.0',
             $this->versionBlock->getVersion()
-        );
-    }
-
-    public function testGetPxParams()
-    {
-        $this->assertEquals(
-            'ext=Sage Pay Suite M2;1.0.0&mage=Magento ;&ctrl=9bd1cea438e2b7a1ff1bb82a8664b553',
-            $this->versionBlock->getPxParams()
         );
     }
 }

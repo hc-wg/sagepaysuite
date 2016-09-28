@@ -11,8 +11,9 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer\Provider
      */
-    protected $providerRendererBlock;
+    private $providerRendererBlock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $columnMock = $this
@@ -28,6 +29,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->providerRendererBlock->setColumn($columnMock);
     }
+    // @codingStandardsIgnoreEnd
 
     public function testRender()
     {

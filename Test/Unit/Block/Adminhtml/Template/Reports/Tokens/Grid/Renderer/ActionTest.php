@@ -11,8 +11,9 @@ class ActionTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Tokens\Grid\Renderer\Action
      */
-    protected $actionRendererBlock;
+    private $actionRendererBlock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $columnMock = $this
@@ -28,6 +29,7 @@ class ActionTest extends \PHPUnit_Framework_TestCase
 
         $this->actionRendererBlock->setColumn($columnMock);
     }
+    // @codingStandardsIgnoreEnd
 
     public function testRender()
     {

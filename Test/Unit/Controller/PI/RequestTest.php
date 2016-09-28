@@ -19,38 +19,39 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Controller\PI\Request
      */
-    protected $piRequestController;
+    private $piRequestController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
+    private $responseMock;
 
     /**
      * @var CheckoutSession|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $checkoutSessionMock;
+    private $checkoutSessionMock;
 
     /**
      * @var  Ebizmarts\SagePaySuite\Helper\Checkout|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $checkoutHelperMock;
+    private $checkoutHelperMock;
 
     /**
      * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $orderMock;
+    private $orderMock;
 
     /**
      * @var \Magento\Framework\Controller\Result\Json|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $resultJson;
+    private $resultJson;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $piModelMock = $this
@@ -196,6 +197,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecuteSUCCESS()
     {
@@ -234,7 +236,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @param $result
      */
-    protected function _expectResultJson($result)
+    private function _expectResultJson($result)
     {
         $this->resultJson->expects($this->once())
             ->method('setData')
