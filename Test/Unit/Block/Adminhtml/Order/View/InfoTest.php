@@ -11,18 +11,19 @@ class InfoTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Block\Adminhtml\Order\View\Info
      */
-    protected $infoBlock;
+    private $infoBlock;
 
     /**
      * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $orderMock;
+    private $orderMock;
 
     /**
      * @var  Magento\Framework\UrlInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $urlBuilderMock;
+    private $urlBuilderMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->orderMock = $this
@@ -59,6 +60,7 @@ class InfoTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testGetPayment()
     {

@@ -6,16 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Helper;
 
-function time()
-{
-    return "1456419355";
-}
-
-function date()
-{
-    return "2016-02-25-085555";
-}
-
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
 class DataTest extends \PHPUnit_Framework_TestCase
@@ -28,18 +18,19 @@ class DataTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $dataHelper;
+    private $dataHelper;
 
     /**
      * @var \Magento\Framework\Module\ModuleList\Loader|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $loaderMock;
+    private $loaderMock;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $configMock;
+    private $configMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->loaderMock = $this
@@ -52,16 +43,25 @@ class DataTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $dateTimeMock = $this->getMockBuilder(\Magento\Framework\Stdlib\DateTime\DateTime::class)
+        ->setMethods(['gmtTimestamp', 'gmtDate'])
+        ->disableOriginalConstructor()
+        ->getMock();
+        $dateTimeMock->expects($this->any())->method('gmtTimestamp')->willReturn('1456419355');
+        $dateTimeMock->expects($this->any())->method('gmtDate')->willReturn('2016-02-25-085555');
+
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
 
         $this->dataHelper = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Data',
             [
-                'loader' => $this->loaderMock,
-                'config' => $this->configMock
+                'loader'   => $this->loaderMock,
+                'config'   => $this->configMock,
+                'dateTime' => $dateTimeMock,
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * @dataProvider getVersionDataProvider
@@ -122,7 +122,6 @@ class DataTest extends \PHPUnit_Framework_TestCase
         $this->configMock->expects($this->any())
             ->method('getLicense')
             ->will($this->returnValue("010b6116a7a99954fd2f3ad27e9706b2b5f5f51c"));
-
 
         $this->assertEquals(
             $data['expected'],
