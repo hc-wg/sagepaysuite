@@ -4,7 +4,9 @@ namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite;
 
-class GuestServerRequestManagement extends ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\GuestServerManagementInterface
+use \Ebizmarts\SagePaySuite\Api\GuestServerManagementInterface;
+
+class GuestServerRequestManagement extends ServerRequestManagement implements GuestServerManagementInterface
 {
 
     /**

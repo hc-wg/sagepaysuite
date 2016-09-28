@@ -13,7 +13,7 @@ class GenerateMerchantKey extends \Magento\Framework\App\Action\Action
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
-    protected $_pirestapi;
+    private $_pirestapi;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context

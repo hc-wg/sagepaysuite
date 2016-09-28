@@ -16,64 +16,65 @@ class Request extends \Magento\Framework\App\Action\Action
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    protected $_quote;
+    private $_quote;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var string
      */
-    protected $_assignedVendorTxCode;
+    private $_assignedVendorTxCode;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Checkout
      */
-    protected $_checkoutHelper;
+    private $_checkoutHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Post
      */
-    protected $_postApi;
+    private $_postApi;
 
     /**
      *  POST array
+     * @var array
      */
-    protected $_postData;
+    private $_postData;
 
     /**
      * Sage Pay Suite Request Helper
      * @var \Ebizmarts\SagePaySuite\Helper\Request
      */
-    protected $_requestHelper;
+    private $_requestHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Token
      */
-    protected $_tokenModel;
+    private $_tokenModel;
 
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    protected $_checkoutSession;
+    private $_checkoutSession;
 
     /**
      * @var \Magento\Customer\Model\Session
      */
-    protected $_customerSession;
+    private $_customerSession;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -92,17 +93,17 @@ class Request extends \Magento\Framework\App\Action\Action
     ) {
     
         parent::__construct($context);
-        $this->_config = $config;
+        $this->_config          = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
-        $this->_suiteHelper = $suiteHelper;
-        $this->_postApi = $postApi;
+        $this->_suiteHelper     = $suiteHelper;
+        $this->_postApi         = $postApi;
         $this->_checkoutSession = $checkoutSession;
         $this->_customerSession = $customerSession;
-        $this->_quote = $this->_checkoutSession->getQuote();
-        $this->_suiteLogger = $suiteLogger;
-        $this->_checkoutHelper = $checkoutHelper;
-        $this->_requestHelper = $requestHelper;
-        $this->_tokenModel = $tokenModel;
+        $this->_quote           = $this->_checkoutSession->getQuote();
+        $this->_suiteLogger     = $suiteLogger;
+        $this->_checkoutHelper  = $checkoutHelper;
+        $this->_requestHelper   = $requestHelper;
+        $this->_tokenModel      = $tokenModel;
     }
 
     public function execute()
@@ -163,16 +164,20 @@ class Request extends \Magento\Framework\App\Action\Action
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_suiteLogger->logException($apiException);
 
+            $errorMessage = 'Something went wrong while generating the Sage Pay request: %1';
+
             $responseContent = [
                 'success' => false,
-                'error_message' => __('Something went wrong while generating the Sage Pay request: ' . $apiException->getUserMessage()),
+                'error_message' => __($errorMessage, $apiException->getUserMessage()),
             ];
         } catch (\Exception $e) {
             $this->_suiteLogger->logException($e);
 
+            $errorMessage = 'Something went wrong while generating the Sage Pay request: %1';
+
             $responseContent = [
                 'success' => false,
-                'error_message' => __('Something went wrong while generating the Sage Pay request: ' . $e->getMessage()),
+                'error_message' => __($errorMessage, $e->getMessage()),
             ];
         }
 
@@ -181,7 +186,7 @@ class Request extends \Magento\Framework\App\Action\Action
         return $resultJson;
     }
 
-    protected function _getNotificationUrl()
+    private function _getNotificationUrl()
     {
         $url = $this->_url->getUrl('*/*/notify', [
             '_secure' => true,
@@ -196,7 +201,7 @@ class Request extends \Magento\Framework\App\Action\Action
     /**
      * @return string
      */
-    protected function _getServiceURL()
+    private function _getServiceURL()
     {
         if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_LIVE;
@@ -208,7 +213,7 @@ class Request extends \Magento\Framework\App\Action\Action
     /**
      * return array
      */
-    protected function _generateRequest()
+    private function _generateRequest()
     {
         $customer_data = $this->_customerSession->getCustomerDataObject();
 
@@ -243,7 +248,7 @@ class Request extends \Magento\Framework\App\Action\Action
             //save token
             $data["CreateToken"] = 1;
         } else {
-            if (!is_null($this->_postData->token)) {
+            if ($this->_postData->token !== null) {
                 //use token
                 $data["StoreToken"] = 1;
                 $data["Token"] = $this->_postData->token;
@@ -266,17 +271,6 @@ class Request extends \Magento\Framework\App\Action\Action
         if ((bool)$this->_config->isServerLowProfileEnabled() == true) {
             $data["Profile"] = "LOW";
         }
-
-        //not mandatory
-//        CustomerXML
-//        SurchargeXML
-//        VendorData
-//        Language
-//        Website
-//        FIRecipientAcctNumber
-//        FIRecipientSurname
-//        FIRecipientPostcode
-//        FIRecipientDoB
 
         return $data;
     }

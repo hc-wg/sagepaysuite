@@ -11,12 +11,12 @@ class AccountManagement
     /**
      * @var \Magento\Quote\Model\QuoteFactory
      */
-    protected $_quoteFactory;
+    private $_quoteFactory;
 
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    protected $_checkoutSession;
+    private $_checkoutSession;
 
     /**
      * AccountManagement constructor.
@@ -33,8 +33,15 @@ class AccountManagement
         $this->_checkoutSession = $checkoutSession;
     }
 
+    /**
+     * @param \Magento\Customer\Model\AccountManagement $accountManagement
+     * @param \Closure $proceed
+     * @param $customerEmail
+     * @param null $websiteId
+     * @return mixed
+     */
     public function aroundIsEmailAvailable(
-        \Magento\Customer\Model\AccountManagement $accountManagement,
+        \Magento\Customer\Model\AccountManagement $accountManagement, // @codingStandardsIgnoreLine
         \Closure $proceed,
         $customerEmail,
         $websiteId = null

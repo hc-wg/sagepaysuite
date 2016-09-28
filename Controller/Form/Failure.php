@@ -13,18 +13,18 @@ class Failure extends \Magento\Framework\App\Action\Action
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    protected $_logger;
+    private $_logger;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Form
      */
-    protected $_formModel;
+    private $_formModel;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -41,8 +41,8 @@ class Failure extends \Magento\Framework\App\Action\Action
     
         parent::__construct($context);
         $this->_suiteLogger = $suiteLogger;
-        $this->_logger = $logger;
-        $this->_formModel = $formModel;
+        $this->_logger      = $logger;
+        $this->_formModel   = $formModel;
     }
 
     /**

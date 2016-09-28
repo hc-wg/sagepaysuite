@@ -16,39 +16,39 @@ class Request extends \Magento\Framework\App\Action\Action
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    protected $_quote;
+    private $_quote;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * Sage Pay Suite Request Helper
      * @var \Ebizmarts\SagePaySuite\Helper\Request
      */
-    protected $_requestHelper;
+    private $_requestHelper;
 
     /**
      * @var \Magento\Customer\Model\Session
      */
-    protected $_customerSession;
+    private $_customerSession;
 
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    protected $_checkoutSession;
+    private $_checkoutSession;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -64,14 +64,14 @@ class Request extends \Magento\Framework\App\Action\Action
     ) {
     
         parent::__construct($context);
-        $this->_config = $config;
+        $this->_config          = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
-        $this->_suiteHelper = $suiteHelper;
-        $this->_suiteLogger = $suiteLogger;
-        $this->_requestHelper = $requestHelper;
+        $this->_suiteHelper     = $suiteHelper;
+        $this->_suiteLogger     = $suiteLogger;
+        $this->_requestHelper   = $requestHelper;
         $this->_customerSession = $customerSession;
         $this->_checkoutSession = $checkoutSession;
-        $this->_quote = $this->_checkoutSession->getQuote();
+        $this->_quote           = $this->_checkoutSession->getQuote();
     }
 
     public function execute()
@@ -102,7 +102,7 @@ class Request extends \Magento\Framework\App\Action\Action
         return $resultJson;
     }
 
-    protected function _generateFormCrypt()
+    private function _generateFormCrypt()
     {
 
         $encrypted_password = $this->_config->getFormEncryptedPassword();
@@ -110,8 +110,6 @@ class Request extends \Magento\Framework\App\Action\Action
         if (empty($encrypted_password)) {
             throw new \Magento\Framework\Exception\LocalizedException(__('Invalid FORM encrypted password.'));
         }
-
-        //$customer_data = $this->_getCustomerSession()->getCustomerDataObject();
 
         $data = [];
         $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
@@ -151,11 +149,6 @@ class Request extends \Magento\Framework\App\Action\Action
         //gif aid
         $data["AllowGiftAid"]  = (int)$this->_config->isGiftAidEnabled();
 
-//        $data['CustomerXML']  = $this->getConfigData('avscv2');
-//        $data['SurchargeXML']  = $this->getConfigData('avscv2');
-//        $data['VendorData']  = $this->getConfigData('avscv2');
-//        $data['Website']        = $this->getConfigData('referrer_id');
-
         //log request
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data);
 
@@ -175,7 +168,7 @@ class Request extends \Magento\Framework\App\Action\Action
         return "@" . strtoupper(bin2hex($crypt));
     }
 
-    protected function _getServiceURL()
+    private function _getServiceURL()
     {
         if ($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_FORM_REDIRECT_LIVE;

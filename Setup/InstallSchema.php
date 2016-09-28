@@ -15,7 +15,7 @@ class InstallSchema implements InstallSchemaInterface
 {
     /**
      * {@inheritdoc}
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings(PHPMD.UnusedFunctionParameter)
      */
     public function install(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {

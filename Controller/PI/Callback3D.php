@@ -15,53 +15,57 @@ class Callback3D extends \Magento\Framework\App\Action\Action
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
-    protected $_pirestapi;
+    private $_pirestapi;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Magento\Sales\Model\OrderFactory
      */
-    protected $_orderFactory;
+    private $_orderFactory;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Checkout
      */
-    protected $_checkoutHelper;
+    private $_checkoutHelper;
 
     /**
      * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
      */
-    protected $_transactionFactory;
+    private $_transactionFactory;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    protected $_logger;
+    private $_logger;
 
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    protected $_checkoutSession;
+    private $_checkoutSession;
 
-    protected $_transactionId;
+    private $_transactionId;
 
     /**
+     * Callback3D constructor.
      * @param \Magento\Framework\App\Action\Context $context
-     * @param \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirest
+     * @param \Ebizmarts\SagePaySuite\Model\Api\PIRest $pirestapi
      * @param Logger $suiteLogger
      * @param \Magento\Sales\Model\OrderFactory $orderFactory
-     * @param OrderSender $orderSender
+     * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
      * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
+     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Magento\Checkout\Model\Session $checkoutSession
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -77,15 +81,15 @@ class Callback3D extends \Magento\Framework\App\Action\Action
     
         parent::__construct($context);
 
-        $this->_pirestapi = $pirestapi;
-        $this->_suiteLogger = $suiteLogger;
-        $this->_orderFactory = $orderFactory;
-        $this->_checkoutHelper = $checkoutHelper;
+        $this->_pirestapi          = $pirestapi;
+        $this->_suiteLogger        = $suiteLogger;
+        $this->_orderFactory       = $orderFactory;
+        $this->_checkoutHelper     = $checkoutHelper;
         $this->_transactionFactory = $transactionFactory;
-        $this->_config = $config;
+        $this->_config             = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
-        $this->_logger = $logger;
-        $this->_checkoutSession = $checkoutSession;
+        $this->_logger             = $logger;
+        $this->_checkoutSession    = $checkoutSession;
     }
 
     public function execute()
@@ -116,22 +120,19 @@ class Callback3D extends \Magento\Framework\App\Action\Action
             } else {
                 $this->messageManager->addError("Invalid 3D secure authentication.");
                 $this->_javascriptRedirect('checkout/cart');
-                //$this->_redirect('checkout/cart');
             }
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
             $this->messageManager->addError($apiException->getUserMessage());
-            //$this->_redirect('checkout/cart');
             $this->_javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             $this->messageManager->addError("Something went wrong: " . $e->getMessage());
-            //$this->_redirect('checkout/cart');
             $this->_javascriptRedirect('checkout/cart');
         }
     }
 
-    protected function _confirmPayment($response)
+    private function _confirmPayment($response)
     {
 
         if ($response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
@@ -198,7 +199,7 @@ class Callback3D extends \Magento\Framework\App\Action\Action
         }
     }
 
-    protected function _javascriptRedirect($url)
+    private function _javascriptRedirect($url)
     {
         //redirect to success via javascript
         $this->getResponse()->setBody(

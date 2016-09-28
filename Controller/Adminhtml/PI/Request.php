@@ -16,59 +16,59 @@ class Request extends \Magento\Backend\App\AbstractAction
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    protected $_quote;
+    private $_quote;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
-    protected $_pirestapi;
+    private $_pirestapi;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Checkout
      */
-    protected $_checkoutHelper;
+    private $_checkoutHelper;
 
     /**
      *  POST array
      */
-    protected $_postData;
+    private $_postData;
 
     /**
      * @var \Magento\Customer\Model\Session
      */
-    protected $_customerSession;
+    private $_customerSession;
 
     /**
      * @var \Magento\Backend\Model\Session\Quote
      */
-    protected $_quoteSession;
+    private $_quoteSession;
 
     /**
      * @var \Magento\Quote\Model\QuoteManagement
      */
-    protected $_quoteManagement;
+    private $_quoteManagement;
 
     /**
      * Sage Pay Suite Request Helper
      * @var \Ebizmarts\SagePaySuite\Helper\Request
      */
-    protected $_requestHelper;
+    private $_requestHelper;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -96,17 +96,17 @@ class Request extends \Magento\Backend\App\AbstractAction
     ) {
     
         parent::__construct($context);
-        $this->_config = $config;
+        $this->_config          = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
-        $this->_suiteHelper = $suiteHelper;
-        $this->_suiteLogger = $suiteLogger;
-        $this->_pirestapi = $pirestapi;
-        $this->_checkoutHelper = $checkoutHelper;
+        $this->_suiteHelper     = $suiteHelper;
+        $this->_suiteLogger     = $suiteLogger;
+        $this->_pirestapi       = $pirestapi;
+        $this->_checkoutHelper  = $checkoutHelper;
         $this->_customerSession = $customerSession;
-        $this->_quoteSession = $quoteSession;
+        $this->_quoteSession    = $quoteSession;
         $this->_quoteManagement = $quoteManagement;
-        $this->_requestHelper = $requestHelper;
-        $this->_quote = $this->_quoteSession->getQuote();
+        $this->_requestHelper   = $requestHelper;
+        $this->_quote           = $this->_quoteSession->getQuote();
     }
 
     public function execute()
@@ -197,12 +197,12 @@ class Request extends \Magento\Backend\App\AbstractAction
      *
      * @return \Magento\Sales\Model\AdminOrder\Create
      */
-    protected function _getOrderCreateModel()
+    private function _getOrderCreateModel()
     {
         return $this->_objectManager->get('Magento\Sales\Model\AdminOrder\Create');
     }
 
-    protected function _generateRequest($vendorTxCode)
+    private function _generateRequest($vendorTxCode)
     {
 
         $billing_address = $this->_quote->getBillingAddress();
@@ -241,7 +241,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         return $data;
     }
 
-    protected function _confirmPayment($transactionId, $order)
+    private function _confirmPayment($transactionId, $order)
     {
         $payment = $order->getPayment();
         $payment->setTransactionId($transactionId);

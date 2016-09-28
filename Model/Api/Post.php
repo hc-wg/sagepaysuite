@@ -18,23 +18,23 @@ class Post
      * @var \Magento\Framework\HTTP\Adapter\CurlFactory
      *
      */
-    protected $_curlFactory;
+    private $_curlFactory;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
      */
-    protected $_apiExceptionFactory;
+    private $_apiExceptionFactory;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
@@ -47,14 +47,14 @@ class Post
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger
     ) {
-    
-        $this->_config = $config;
-        $this->_curlFactory = $curlFactory;
+
+        $this->_config              = $config;
+        $this->_curlFactory         = $curlFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
-        $this->_suiteLogger = $suiteLogger;
+        $this->_suiteLogger         = $suiteLogger;
     }
 
-    protected function _handleApiErrors($response, $expectedStatus, $defaultErrorMessage)
+    private function _handleApiErrors($response, $expectedStatus, $defaultErrorMessage)
     {
         $success = false;
 
@@ -63,8 +63,9 @@ class Post
             array_key_exists("data", $response) &&
             array_key_exists("Status", $response["data"])
         ) {
+            $expectedStatusCnt = count($expectedStatus);
             //check against all possible success response statuses
-            for ($i = 0; $i < count($expectedStatus); $i++) {
+            for ($i = 0; $i < $expectedStatusCnt; $i++) {
                 if ($response["data"]["Status"] == $expectedStatus[$i]) {
                     $success = true;
                 }
@@ -105,19 +106,16 @@ class Post
      * @param $postData
      * @param $url
      * @param array $expectedStatus
-     * @param string $defaultErrorMessage
+     * @param string $errorMessage
      * @return mixed
      * @throws
      */
-    public function sendPost($postData, $url, $expectedStatus = [], $defaultErrorMessage = "Invalid response from Sage Pay")
+    public function sendPost($postData, $url, $expectedStatus = [], $errorMessage = "Invalid response from Sage Pay")
     {
 
         $curl = $this->_curlFactory->create();
 
-        $post_data_string = '';
-        foreach ($postData as $_key => $_val) {
-            $post_data_string .= $_key . '=' . urlencode(mb_convert_encoding($_val, 'ISO-8859-1', 'UTF-8')) . '&';
-        }
+        $post_data_string = $this->arrayToQueryParams($postData);
 
         //log request
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $postData);
@@ -151,15 +149,17 @@ class Post
             $data = preg_split('/^\r?$/m', $data, 2);
             $data = explode(PHP_EOL, $data[1]);
 
-            for ($i = 0; $i < count($data); $i++) {
+            $dataCnt = count($data);
+            for ($i = 0; $i < $dataCnt; $i++) {
                 if (!empty($data[$i])) {
                     $aux = explode("=", trim($data[$i]));
-                    if (count($aux) == 2) {
+                    $auxCnt = count($aux);
+                    if ($auxCnt == 2) {
                         $response_data[$aux[0]] = $aux[1];
                     } else {
-                        if (count($aux) > 2) {
+                        if ($auxCnt > 2) {
                             $response_data[$aux[0]] = $aux[1];
-                            for ($j = 2; $j < count($aux); $j++) {
+                            for ($j = 2; $j < $auxCnt; $j++) {
                                 $response_data[$aux[0]] .= "=" . $aux[$j];
                             }
                         }
@@ -173,6 +173,19 @@ class Post
             "data" => $response_data
         ];
 
-        return $this->_handleApiErrors($response, $expectedStatus, $defaultErrorMessage);
+        return $this->_handleApiErrors($response, $expectedStatus, $errorMessage);
+    }
+
+    /**
+     * @param $postData
+     * @return string
+     */
+    private function arrayToQueryParams($postData)
+    {
+        $post_data_string = '';
+        foreach ($postData as $_key => $_val) {
+            $post_data_string .= $_key . '=' . urlencode(mb_convert_encoding($_val, 'ISO-8859-1', 'UTF-8')) . '&';
+        }
+        return $post_data_string;
     }
 }

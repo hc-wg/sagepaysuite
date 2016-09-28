@@ -11,8 +11,11 @@ class CreditMemo implements ObserverInterface
     private $_suiteReportingApi;
     private $_messageManager;
 
-    public function __construct(\Magento\Framework\Message\ManagerInterface $messageManager, \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper, \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi)
-    {
+    public function __construct(
+        \Magento\Framework\Message\ManagerInterface $messageManager,
+        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi
+    ) {
         $this->_suiteHelper       = $suiteHelper;
         $this->_suiteReportingApi = $reportingApi;
         $this->_messageManager    = $messageManager;
@@ -33,7 +36,8 @@ class CreditMemo implements ObserverInterface
         try {
             $this->_suiteReportingApi->getTransactionDetails($vpsTxId);
         } catch (\Exception $e) {
-            $this->_messageManager->addErrorMessage(__("This Sage Pay transaction cannot be refunded online because the Reporting API communication could not be established. The response is: %1", $e->getMessage()));
+            $this->_messageManager->addErrorMessage(__("This Sage Pay transaction cannot be refunded online because the
+            Reporting API communication could not be established. The response is: %1", $e->getMessage()));
         }
     }
 }

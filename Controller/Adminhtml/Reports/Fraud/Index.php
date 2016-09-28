@@ -15,7 +15,7 @@ class Index extends \Magento\Backend\App\Action
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    protected $_logger;
+    private $_logger;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -40,6 +40,7 @@ class Index extends \Magento\Backend\App\Action
      *
      * @return $this
      */
+    // @codingStandardsIgnoreStart
     protected function _initAction()
     {
         $this->_view->loadLayout();
@@ -58,6 +59,7 @@ class Index extends \Magento\Backend\App\Action
         $this->_view->getPage()->getConfig()->getTitle()->prepend(__('Sage Pay Fraud'));
         return $this;
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * ACL check
@@ -66,6 +68,7 @@ class Index extends \Magento\Backend\App\Action
      */
     protected function _isAllowed()
     {
+        //TODO
         return true;
     }
 }

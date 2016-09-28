@@ -17,17 +17,19 @@ class Logger extends \Monolog\Logger
     const LOG_CRON = 'Cron';
     const LOG_EXCEPTION = 'Exception';
 
+    // @codingStandardsIgnoreStart
     protected static $levels = [
         self::LOG_REQUEST => 'Request',
         self::LOG_CRON => 'Cron',
         self::LOG_EXCEPTION => 'Exception'
     ];
+    // @codingStandardsIgnoreEnd
 
     public function sageLog($logType, $message)
     {
 
         try {
-            if (is_null($message)) {
+            if ($message === null) {
                 $message = "NULL";
             }
 

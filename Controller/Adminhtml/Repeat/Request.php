@@ -15,64 +15,64 @@ class Request extends \Magento\Backend\App\AbstractAction
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    protected $_quote;
+    private $_quote;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Checkout
      */
-    protected $_checkoutHelper;
+    private $_checkoutHelper;
 
     /**
      *  POST array
      */
-    protected $_postData;
+    private $_postData;
 
     /**
      * @var \Magento\Customer\Model\Session
      */
-    protected $_customerSession;
+    private $_customerSession;
 
     /**
      * @var \Magento\Backend\Model\Session\Quote
      */
-    protected $_quoteSession;
+    private $_quoteSession;
 
     /**
      * @var \Magento\Quote\Model\QuoteManagement
      */
-    protected $_quoteManagement;
+    private $_quoteManagement;
 
     /**
      * Sage Pay Suite Request Helper
      * @var \Ebizmarts\SagePaySuite\Helper\Request
      */
-    protected $_requestHelper;
+    private $_requestHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Shared
      */
-    protected $_sharedApi;
+    private $_sharedApi;
 
     /**
      * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
      */
-    protected $_transactionFactory;
+    private $_transactionFactory;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -138,7 +138,10 @@ class Request extends \Magento\Backend\App\AbstractAction
             );
 
             //set payment info for save order
-            $transactionId = str_replace("{", "", str_replace("}", "", $post_response["data"]["VPSTxId"])); //strip brackets
+
+            //strip brackets
+            $transactionId = str_replace("{", "", str_replace("}", "", $post_response["data"]["VPSTxId"]));
+
             $payment = $this->_quote->getPayment();
             $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_REPEAT);
             $payment->setTransactionId($transactionId);
@@ -189,18 +192,13 @@ class Request extends \Magento\Backend\App\AbstractAction
         return $resultJson;
     }
 
-    protected function _generateRequest($vendorTxCode)
+    private function _generateRequest($vendorTxCode)
     {
         $data = [];
 
         $data['VendorTxCode'] = $vendorTxCode;
         $data['Description']  = $this->_requestHelper->getOrderDescription(true);
         $data['ReferrerID']   = $this->_requestHelper->getReferrerId();
-
-        //basket XML
-//        if($this->_config->isSendBasket()) {
-//            $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote,true));
-//        }
 
         //populate payment amount information
         $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
@@ -211,7 +209,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         return $data;
     }
 
-    protected function _confirmPayment($transactionId, $order)
+    private function _confirmPayment($transactionId, $order)
     {
         $payment = $order->getPayment();
         $payment->setTransactionId($transactionId);

@@ -16,17 +16,17 @@ class Paypal implements ConfigProviderInterface
     /**
      * @var string
      */
-    protected $methodCode = Config::METHOD_PAYPAL;
+    private $methodCode = Config::METHOD_PAYPAL;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Form
      */
-    protected $method;
+    private $method;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @param PaymentHelper $paymentHelper
