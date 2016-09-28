@@ -11,18 +11,19 @@ class TokenTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\ResourceModel\Token
      */
-    protected $resourceTokenModel;
+    private $resourceTokenModel;
 
     /**
      * @var \Magento\Framework\App\Config\ScopeConfigInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $scopeConfigMock;
+    private $scopeConfigMock;
 
     /**
      * @var \Magento\Framework\DB\Adapter\AdapterInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $connectionMock;
+    private $connectionMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $selectMock = $this
@@ -63,6 +64,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testGetCustomerTokens()
     {
