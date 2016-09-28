@@ -13,8 +13,7 @@ class Cron extends \Magento\Framework\Logger\Handler\Base
      * File name
      * @var string
      */
-
-    protected $fileName = '/var/log/SagePaySuite/Cron.log';
+    protected $fileName = '/var/log/SagePaySuite/Cron.log'; // @codingStandardsIgnoreLine
 
     public function isHandling(array $record)
     {
