@@ -11,18 +11,19 @@ class TokenTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Token
      */
-    protected $tokenModel;
+    private $tokenModel;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Post|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $postApiMock;
+    private $postApiMock;
 
     /**
      * @var \Magento\Framework\Model\ResourceModel\Db\AbstractDb|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $resourceMock;
+    private $resourceMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
@@ -53,6 +54,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testSaveToken()
     {
