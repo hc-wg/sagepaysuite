@@ -11,8 +11,9 @@ class UpgradeSchemaTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Setup\UpgradeSchema
      */
-    protected $upgradeSchema;
+    private $upgradeSchema;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
@@ -21,6 +22,7 @@ class UpgradeSchemaTest extends \PHPUnit_Framework_TestCase
             []
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testUpgrade()
     {
