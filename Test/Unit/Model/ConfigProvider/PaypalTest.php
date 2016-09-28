@@ -11,13 +11,14 @@ class PaypalTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\ConfigProvider\Paypal
      */
-    protected $paypalConfigProviderModel;
+    private $paypalConfigProviderModel;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $configMock;
+    private $configMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $paypalModelMock = $this
@@ -58,6 +59,7 @@ class PaypalTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testGetConfig()
     {

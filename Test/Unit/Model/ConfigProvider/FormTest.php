@@ -11,13 +11,14 @@ class FormTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\ConfigProvider\Form
      */
-    protected $formConfigProviderModel;
+    private $formConfigProviderModel;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $configMock;
+    private $configMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $formModelMock = $this
@@ -58,6 +59,7 @@ class FormTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testGetConfig()
     {
