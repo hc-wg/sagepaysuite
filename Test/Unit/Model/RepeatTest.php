@@ -16,18 +16,19 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Repeat
      */
-    protected $repeatModel;
+    private $repeatModel;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Shared|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $sharedApiMock;
+    private $sharedApiMock;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $configMock;
+    private $configMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->configMock = $this
@@ -58,6 +59,7 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testCapture()
     {
