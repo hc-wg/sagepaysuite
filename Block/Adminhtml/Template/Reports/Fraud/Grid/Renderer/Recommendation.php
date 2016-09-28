@@ -22,10 +22,14 @@ class Recommendation extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\
     {
         $additionalInfo = $row->getData("additional_information");
         if (!empty($additionalInfo)) {
-            $additionalInfo = unserialize($additionalInfo);
+            $additionalInfo = unserialize($additionalInfo); //@codingStandardsIgnoreLine
         }
 
-        $html = array_key_exists("fraudscreenrecommendation", $additionalInfo) ? $additionalInfo["fraudscreenrecommendation"] : "";
+        $html = "";
+
+        if (array_key_exists("fraudscreenrecommendation", $additionalInfo)) {
+            $html = $additionalInfo["fraudscreenrecommendation"];
+        }
 
         switch ($html) {
             case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_CHALLENGE:

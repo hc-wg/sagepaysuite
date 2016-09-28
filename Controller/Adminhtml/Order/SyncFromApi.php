@@ -14,32 +14,32 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
      */
-    protected $_reportingApi;
+    private $_reportingApi;
 
     /**
      * @var \Magento\Sales\Model\OrderFactory
      */
-    protected $_orderFactory;
+    private $_orderFactory;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Fraud
      */
-    protected $_fraudHelper;
+    private $_fraudHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Magento\Sales\Model\Order\Payment\Transaction\Repository
      */
-    protected $_transactionRepository;
+    private $_transactionRepository;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -55,11 +55,11 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
     ) {
     
         parent::__construct($context);
-        $this->_reportingApi = $reportingApi;
-        $this->_orderFactory = $orderFactory;
-        $this->_suiteLogger = $suiteLogger;
-        $this->_fraudHelper = $fraudHelper;
-        $this->_suiteHelper = $suiteHelper;
+        $this->_reportingApi          = $reportingApi;
+        $this->_orderFactory          = $orderFactory;
+        $this->_suiteLogger           = $suiteLogger;
+        $this->_fraudHelper           = $fraudHelper;
+        $this->_suiteHelper           = $suiteHelper;
         $this->_transactionRepository = $transactionRepository;
     }
 
@@ -74,7 +74,8 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
                 throw new \Magento\Framework\Validator\Exception(__('Unable to sync from API: Invalid order id.'));
             }
 
-            $transactionDetails = $this->_reportingApi->getTransactionDetails($this->_suiteHelper->clearTransactionId($payment->getLastTransId()));
+            $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
+            $transactionDetails = $this->_reportingApi->getTransactionDetails($transactionId);
 
             $payment->setAdditionalInformation('vendorTxCode', (string)$transactionDetails->vendortxcode);
             $payment->setAdditionalInformation('statusDetail', (string)$transactionDetails->status);
@@ -85,7 +86,8 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
 
             //update fraud status
             if (!empty($payment->getLastTransId())) {
-                $transaction = $this->_transactionRepository->getByTransactionId($payment->getLastTransId(), $payment->getId(), $order->getId());
+                $transaction = $this->_transactionRepository
+                                ->getByTransactionId($payment->getLastTransId(), $payment->getId(), $order->getId());
                 if ((bool)$transaction->getSagepaysuiteFraudCheck() == false) {
                     $this->_fraudHelper->processFraudInformation($transaction, $payment);
                 }

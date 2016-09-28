@@ -14,17 +14,17 @@ class TokenList extends \Magento\Framework\View\Element\Template
     /**
      * @var \Magento\Customer\Helper\Session\CurrentCustomer
      */
-    protected $currentCustomer;
+    private $currentCustomer;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Token
      */
-    protected $_tokenModel;
+    private $_tokenModel;
 
     /**
      * @param \Magento\Framework\View\Element\Template\Context $context

@@ -15,7 +15,7 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
     /**
      * @var \Magento\Sales\Model\OrderFactory
      */
-    protected $_orderFactory;
+    private $_orderFactory;
 
     /**
      * @param \Magento\Backend\Block\Context $context

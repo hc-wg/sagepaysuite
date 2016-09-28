@@ -14,12 +14,12 @@ class Failure extends \Magento\Backend\App\AbstractAction
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Form
      */
-    protected $_formModel;
+    private $_formModel;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context

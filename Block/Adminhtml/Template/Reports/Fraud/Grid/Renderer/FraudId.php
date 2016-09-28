@@ -22,7 +22,7 @@ class FraudId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
     {
         $additionalInfo = $row->getData("additional_information");
         if (!empty($additionalInfo)) {
-            $additionalInfo = unserialize($additionalInfo);
+            $additionalInfo = unserialize($additionalInfo); //@codingStandardsIgnoreLine
         }
 
         return array_key_exists("fraudid", $additionalInfo) ? $additionalInfo["fraudid"] : "";
