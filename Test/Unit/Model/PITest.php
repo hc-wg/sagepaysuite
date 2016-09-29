@@ -138,6 +138,45 @@ class PITest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testRefundApiError()
+    {
+        $orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->expects($this->once())
+            ->method('getIncrementId')
+            ->will($this->returnValue(1000001));
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock->expects($this->once())
+            ->method('getOrder')
+            ->will($this->returnValue($orderMock));
+
+        $error = new \Magento\Framework\Phrase("The Transaction has already been Refunded.");
+        $exception = new \Ebizmarts\SagePaySuite\Model\Api\ApiException($error);
+        $this->sharedApiMock->expects($this->once())
+            ->method('refundTransaction')
+            ->with(self::TEST_VPSTXID, 100, 1000001)
+            ->willThrowException($exception);
+
+        $response = "";
+        try {
+            $this->piModel->refund($paymentMock, 100);
+        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+            $response = $e->getMessage();
+        }
+
+        $this->assertEquals(
+            'There was an error refunding Sage Pay transaction ' .
+            self::TEST_VPSTXID . ': The Transaction has already been Refunded.',
+            $response
+        );
+    }
+
     public function testCancel()
     {
         $paymentMock = $this

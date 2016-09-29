@@ -22,92 +22,92 @@ class PI extends \Magento\Payment\Model\Method\Cc
     /**
      * @var string
      */
-    protected $_code = \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI;
+    protected $_code = Config::METHOD_PI; // @codingStandardsIgnoreLine
 
     /**
      * @var string
      */
-    protected $_infoBlockType = 'Ebizmarts\SagePaySuite\Block\Info';
+    protected $_infoBlockType = 'Ebizmarts\SagePaySuite\Block\Info'; // @codingStandardsIgnoreLine
 
     /**
      * @var bool
      */
-    protected $_isGateway = true;
+    protected $_isGateway = true; // @codingStandardsIgnoreLine
 
     /**
      * @var bool
      */
-    protected $_canAuthorize = true;
+    protected $_canAuthorize = true; // @codingStandardsIgnoreLine
 
     /**
      * @var bool
      */
-    protected $_canCapture = true;
+    protected $_canCapture = true; // @codingStandardsIgnoreLine
 
     /**
      * @var bool
      */
-    protected $_canCapturePartial = true;
+    protected $_canCapturePartial = true; // @codingStandardsIgnoreLine
 
     /**
      * @var bool
      */
-    protected $_canRefund = true;
+    protected $_canRefund = true; // @codingStandardsIgnoreLine
 
     /**
      * @var bool
      */
-    protected $_canVoid = true;
+    protected $_canVoid = true; // @codingStandardsIgnoreLine
 
     /**
      * @var bool
      */
-    protected $_canUseInternal = true;
+    protected $_canUseInternal = true; // @codingStandardsIgnoreLine
 
     /**
      * @var bool
      */
-    protected $_canUseCheckout = true;
+    protected $_canUseCheckout = true; // @codingStandardsIgnoreLine
 
     /**
      * @var bool
      */
-    protected $_canSaveCc = false;
+    protected $_canSaveCc = false; // @codingStandardsIgnoreLine
 
     /**
      * @var bool
      */
-    protected $_canRefundInvoicePartial = true;
+    protected $_canRefundInvoicePartial = true; // @codingStandardsIgnoreLine
 
     /**
      * @var bool
      */
-    protected $_isInitializeNeeded = true;
+    protected $_isInitializeNeeded = true; // @codingStandardsIgnoreLine
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $config;
+    private $config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
-    protected $_pirestapi;
+    private $_pirestapi;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Shared
      */
-    protected $_sharedApi;
+    private $_sharedApi;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     private $_context;
 
@@ -163,11 +163,11 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $data
         );
 
-        $this->_context = $context;
-        $this->config = $config;
+        $this->_context     = $context;
+        $this->config       = $config;
         $this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
-        $this->_pirestapi = $pirestapi;
-        $this->_sharedApi = $sharedApi;
+        $this->_pirestapi   = $pirestapi;
+        $this->_sharedApi   = $sharedApi;
         $this->_suiteHelper = $suiteHelper;
         $this->_suiteLogger = $suiteLogger;
     }
@@ -212,10 +212,18 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $payment->setShouldCloseParentTransaction(1);
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
-            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
+            throw new LocalizedException(
+                __(
+                    'There was an error refunding Sage Pay transaction %1: %2',
+                    $transactionId,
+                    $apiException->getUserMessage()
+                )
+            );
         } catch (\Exception $e) {
             $this->_logger->critical($e);
-            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
+            throw new LocalizedException(
+                __('There was an error refunding Sage Pay transaction %1: %2', $transactionId, $e->getMessage())
+            );
         }
 
         return $this;
@@ -238,14 +246,18 @@ class PI extends \Magento\Payment\Model\Method\Cc
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             if ($apiException->getCode() == \Ebizmarts\SagePaySuite\Model\Api\ApiException::INVALID_TRANSACTION_STATE) {
                 //unable to void transaction
-                throw new LocalizedException(__('Unable to VOID Sage Pay transaction ' . $transaction_id . ': ' . $apiException->getUserMessage()));
+                throw new LocalizedException(
+                    __('Unable to VOID Sage Pay transaction %1: %2', $transaction_id, $apiException->getUserMessage())
+                );
             } else {
                 $this->_logger->critical($apiException);
                 throw $apiException;
             }
         } catch (\Exception $e) {
             $this->_logger->critical($e);
-            throw new LocalizedException(__('Unable to VOID Sage Pay transaction ' . $transaction_id . ': ' . $e->getMessage()));
+            throw new LocalizedException(
+                __('Unable to VOID Sage Pay transaction %1: %2', $transaction_id, $e->getMessage())
+            );
         }
 
         return $this;
@@ -273,7 +285,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      * @param \Magento\Framework\DataObject $stateObject
      * @return void
      */
-    public function initialize($paymentAction, $stateObject)
+    public function initialize($paymentAction, $stateObject) // @codingStandardsIgnoreLine
     {
         $payment = $this->getInfoInstance();
         $order = $payment->getOrder();
@@ -339,7 +351,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function canUseInternal()
     {
-        $configEnabled = (bool)(int)$this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI)->isMethodActiveMoto();
+        $configEnabled = (bool)(int)$this->config->setMethodCode(Config::METHOD_PI)->isMethodActiveMoto();
 
         return $this->_canUseInternal && $configEnabled;
     }
