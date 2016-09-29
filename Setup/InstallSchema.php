@@ -15,10 +15,10 @@ class InstallSchema implements InstallSchemaInterface
 {
     /**
      * {@inheritdoc}
-     * @SuppressWarnings(PHPMD.UnusedFunctionParameter)
      */
     public function install(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {
+        $myContext = $context;
         $installer = $setup;
 
         /**
