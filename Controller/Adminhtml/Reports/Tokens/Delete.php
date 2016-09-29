@@ -12,6 +12,11 @@ class Delete extends \Magento\Backend\App\Action
 {
 
     /**
+     * Authorization level of a basic admin session
+     */
+    const ADMIN_RESOURCE = 'Magento_Backend::admin';//TODO
+
+    /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
@@ -73,11 +78,5 @@ class Delete extends \Magento\Backend\App\Action
         }
 
         $this->_redirect('*/*/index');
-    }
-
-    protected function _isAllowed()
-    {
-        //@TODO
-        return true;
     }
 }
