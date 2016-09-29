@@ -119,7 +119,7 @@ class Reporting
         $xml .= $params;
         $xml .= '<password>' . $this->_config->getReportingApiPassword() . '</password>';
 
-        return md5($xml);
+        return hash('md5', $xml);
     }
 
     /**
