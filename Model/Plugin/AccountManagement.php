@@ -41,12 +41,12 @@ class AccountManagement
      * @return mixed
      */
     public function aroundIsEmailAvailable(
-        \Magento\Customer\Model\AccountManagement $accountManagement, // @codingStandardsIgnoreLine
+        \Magento\Customer\Model\AccountManagement $accountManagement,
         \Closure $proceed,
         $customerEmail,
         $websiteId = null
     ) {
-    
+        $accMgmnt = $accountManagement;
         $ret = $proceed($customerEmail,$websiteId);
         if ($this->_checkoutSession) {
             $quoteId = $this->_checkoutSession->getQuoteId();
