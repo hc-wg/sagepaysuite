@@ -80,7 +80,6 @@ class TokenTest extends \PHPUnit_Framework_TestCase
         $connectionMock->expects($this->any())->method('select')->willReturn($selectMock);
         $connectionMock->expects($this->any())->method('query')->willReturn($zendDbMock);
 
-
         $resourceMock = $this
             ->getMockBuilder('Magento\Framework\App\ResourceConnection')
             ->disableOriginalConstructor()
@@ -108,7 +107,6 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
         $this->assertCount(2, $result);
         $this->assertEquals($result[0]['token_id'], 389);
-
     }
 
     public function testGetTokenById()

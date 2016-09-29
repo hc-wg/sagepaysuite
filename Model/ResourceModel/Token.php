@@ -29,7 +29,10 @@ class Token extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     public function getCustomerTokens(\Ebizmarts\SagePaySuite\Model\Token $object, $customerId, $vendorname)
     {
         $connection = $this->getConnection();
-        $select     = $connection->select()->from($this->getMainTable())->where('customer_id=?', $customerId)->where('vendorname=?', $vendorname);
+        $select     = $connection->select()
+            ->from($this->getMainTable())
+            ->where('customer_id=?', $customerId)
+            ->where('vendorname=?', $vendorname);
 
         $data = [];
 
@@ -70,7 +73,10 @@ class Token extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     public function isTokenOwnedByCustomer($customerId, $tokenId)
     {
         $connection = $this->getConnection();
-        $select     = $connection->select()->from($this->getMainTable(), 'id')->where('customer_id=?', $customerId)->where('id=?', $tokenId);
+        $select     = $connection->select()
+            ->from($this->getMainTable(), 'id')
+            ->where('customer_id=?', $customerId)
+            ->where('id=?', $tokenId);
 
         $data = $connection->fetchOne($select);
 
