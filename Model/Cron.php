@@ -6,8 +6,10 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Magento\Store\Model\Store;
 use Magento\Sales\Model\Order;
+use \Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 class Cron
 {
@@ -15,47 +17,48 @@ class Cron
     /**
      * @var \Magento\Framework\App\ResourceConnection
      */
-    protected $_resource;
+    private $_resource;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Magento\Sales\Api\OrderPaymentRepositoryInterface
      */
-    protected $_orderPaymentRepository;
+    private $_orderPaymentRepository;
 
     /**
      * @var \Magento\Framework\ObjectManagerInterface
      */
-    protected $_objectManager;
+    private $_objectManager;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Magento\Sales\Model\OrderFactory
      */
-    protected $_orderFactory;
+    private $_orderFactory;
 
     /**
      * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
      */
-    protected $_transactionFactory;
+    private $_transactionFactory;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Fraud
      */
-    protected $_fraudHelper;
+    private $_fraudHelper;
 
     /**
+     * Cron constructor.
      * @param \Magento\Framework\App\ResourceConnection $resource
-     * @param Logger\Logger $suiteLogger
+     * @param Logger $suiteLogger
      * @param \Magento\Sales\Api\OrderPaymentRepositoryInterface $orderPaymentRepository
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param Config $config
@@ -73,15 +76,15 @@ class Cron
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Helper\Fraud $fraudHelper
     ) {
-    
-        $this->_resource = $resource;
-        $this->_suiteLogger = $suiteLogger;
+
+        $this->_resource               = $resource;
+        $this->_suiteLogger            = $suiteLogger;
         $this->_orderPaymentRepository = $orderPaymentRepository;
-        $this->_objectManager = $objectManager;
-        $this->_config = $config;
-        $this->_orderFactory = $orderFactory;
-        $this->_transactionFactory = $transactionFactory;
-        $this->_fraudHelper = $fraudHelper;
+        $this->_objectManager          = $objectManager;
+        $this->_config                 = $config;
+        $this->_orderFactory           = $orderFactory;
+        $this->_transactionFactory     = $transactionFactory;
+        $this->_fraudHelper            = $fraudHelper;
     }
 
     /**
@@ -89,29 +92,31 @@ class Cron
      */
     public function cancelPendingPaymentOrders()
     {
-        //$this->_suiteLogger->SageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON, "Running cancel pending payments...");
-
         $ordersTableName = $this->_resource->getTableName('sales_order');
-        $connection = $this->_resource->getConnection();
+        $connection      = $this->_resource->getConnection();
 
         $select = $connection->select()
             ->from($ordersTableName)
             ->where(
                 'state=?',
-                \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT
-            )->where(
+                Order::STATE_PENDING_PAYMENT
+            )
+            ->where(
                 'created_at <= now() - INTERVAL 15 MINUTE'
             )->where(
                 'created_at >= now() - INTERVAL 2 DAY'
-            )->limit(10);
+            )
+            ->limit(10);
 
-        foreach ($connection->fetchAll($select) as $orderArray) {
-            $order = $this->_orderFactory->create()->load($orderArray["entity_id"]);
+        $query = $connection->query($select);
+
+        while ($row = $query->fetch()) {
+            $order   = $this->_orderFactory->create()->load($row["entity_id"]);
             $orderId = $order->getEntityId();
 
             try {
                 $payment = $order->getPayment();
-                if (!is_null($payment) && !empty($payment->getLastTransId())) {
+                if ($payment !== null && !empty($payment->getLastTransId())) {
                     $transaction = $this->_transactionFactory->create()->load($payment->getLastTransId());
                     if (empty($transaction->getId())) {
                         /**
@@ -120,33 +125,33 @@ class Cron
                         $order->cancel()->save();
 
                         $this->_suiteLogger->sageLog(
-                            \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
+                            Logger::LOG_CRON,
                             ["OrderId" => $orderId,
                                 "Result" => "CANCELLED : No payment received."]
                         );
                     } else {
                         $this->_suiteLogger->sageLog(
-                            \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
+                            Logger::LOG_CRON,
                             ["OrderId" => $orderId,
                                 "Result" => "ERROR : Transaction found: " . $transaction->getTxnId()]
                         );
                     }
                 } else {
                     $this->_suiteLogger->sageLog(
-                        \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
+                        Logger::LOG_CRON,
                         ["OrderId" => $orderId,
                             "Result" => "ERROR : No payment found."]
                     );
                 }
-            } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+            } catch (ApiException $apiException) {
                 $this->_suiteLogger->sageLog(
-                    \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
+                    Logger::LOG_CRON,
                     ["OrderId" => $orderId,
                         "Result" => $apiException->getUserMessage()]
                 );
             } catch (\Exception $e) {
                 $this->_suiteLogger->sageLog(
-                    \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON,
+                    Logger::LOG_CRON,
                     ["OrderId" => $orderId,
                         "Result" => $e->getMessage()]
                 );
@@ -176,26 +181,28 @@ class Cron
                 'created_at >= now() - INTERVAL 2 DAY'
             )->limit(20);
 
-        foreach ($connection->fetchAll($select) as $trnArray) {
-            $transaction = $this->_transactionFactory->create()->load($trnArray["transaction_id"]);
+        $query = $connection->query($select);
+
+        while ($row = $query->fetch()) {
+            $transaction = $this->_transactionFactory->create()->load($row["transaction_id"]);
             $logData = [];
 
             try {
                 $payment = $this->_orderPaymentRepository->get($transaction->getPaymentId());
-                if (is_null($payment)) {
+                if ($payment === null) {
                     throw new \LocalizedException(__('Payment not found for this transaction'));
                 }
 
                 //process fraud information
                 $logData = $this->_fraudHelper->processFraudInformation($transaction, $payment);
-            } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+            } catch (ApiException $apiException) {
                 $logData["ERROR"] = $apiException->getUserMessage();
             } catch (\Exception $e) {
                 $logData["ERROR"] = $e->getMessage();
             }
 
             //log
-            $this->_suiteLogger->sageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON, $logData);
+            $this->_suiteLogger->sageLog(Logger::LOG_CRON, $logData);
         }
     }
 }
