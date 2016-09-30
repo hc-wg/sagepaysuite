@@ -14,8 +14,8 @@ class GuestServerRequestManagement extends ServerRequestManagement implements Gu
      */
     public function getQuoteById($cartId)
     {
-        $quoteIdMask = $this->quoteIdMaskFactory->create()->load($cartId, 'masked_id');
+        $quoteIdMask = $this->getQuoteIdMaskFactory()->create()->load($cartId, 'masked_id');
 
-        return $this->quoteRepository->get($quoteIdMask->getQuoteId());
+        return $this->getQuoteRepository()->get($quoteIdMask->getQuoteId());
     }
 }

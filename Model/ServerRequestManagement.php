@@ -75,12 +75,12 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
     /**
      * @var \Magento\Quote\Api\CartRepositoryInterface
      */
-    protected $quoteRepository;
+    private $quoteRepository;
 
     /**
      * @var \Magento\Quote\Model\QuoteIdMaskFactory
      */
-    protected $quoteIdMaskFactory;
+    private $quoteIdMaskFactory;
 
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Config $config,
@@ -282,5 +282,15 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
     public function getQuoteById($cartId)
     {
         return $this->quoteRepository->get($cartId);
+    }
+
+    public function getQuoteRepository()
+    {
+        return $this->quoteRepository;
+    }
+
+    public function getQuoteIdMaskFactory()
+    {
+        return $this->quoteIdMaskFactory;
     }
 }
