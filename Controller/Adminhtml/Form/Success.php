@@ -155,13 +155,9 @@ class Success extends \Magento\Backend\App\AbstractAction
             $transaction->save();
 
             //update invoice transaction id
-            $invoices = $order->getInvoiceCollection();
-            if (!empty($invoices)) {
-                foreach ($invoices as $_invoice) {
-                    $_invoice->setTransactionId($payment->getLastTransId());
-                    $_invoice->save();
-                }
-            }
+            $order->getInvoiceCollection()
+                ->setDataToAll('transaction_id', $payment->getLastTransId())
+                ->save();
 
             //add success url to response
             $route = 'sales/order/view';

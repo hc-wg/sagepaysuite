@@ -172,13 +172,9 @@ class Success extends \Magento\Framework\App\Action\Action
             $transaction->save();
 
             //update invoice transaction id
-            $invoices = $order->getInvoiceCollection();
-            if (!empty($invoices)) {
-                foreach ($invoices as $_invoice) {
-                    $_invoice->setTransactionId($payment->getLastTransId());
-                    $_invoice->save();
-                }
-            }
+            $order->getInvoiceCollection()
+                ->setDataToAll('transaction_id', $payment->getLastTransId())
+                ->save();
 
             $this->_redirect('checkout/onepage/success');
 
