@@ -15,7 +15,7 @@ class Index extends \Magento\Backend\App\Action
     /**
      * Authorization level of a basic admin session
      */
-    const ADMIN_RESOURCE = 'Magento_Backend::admin';//TODO
+    const ADMIN_RESOURCE = 'Ebizmarts_SagePaySuite::fraud_report_view';
 
     /**
      * @var \Psr\Log\LoggerInterface

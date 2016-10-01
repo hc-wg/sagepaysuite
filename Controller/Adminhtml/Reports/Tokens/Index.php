@@ -13,14 +13,19 @@ class Index extends \Magento\Backend\App\Action
 {
 
     /**
+     * Authorization level of a basic admin session
+     */
+    const ADMIN_RESOURCE = 'Ebizmarts_SagePaySuite::token_report_view';
+
+    /**
      * @var \Psr\Log\LoggerInterface
      */
-    protected $_logger;
+    private $_logger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
      */
-    protected $_reportingApi;
+    private $_reportingApi;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -34,7 +39,7 @@ class Index extends \Magento\Backend\App\Action
     
         parent::__construct($context);
 
-        $this->_logger = $logger;
+        $this->_logger       = $logger;
         $this->_reportingApi = $reportingApi;
     }
 
@@ -50,7 +55,9 @@ class Index extends \Magento\Backend\App\Action
             $this->messageManager->addWarning(__('Registered tokens in Sage Pay: ' . $tokenCount));
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
-            $this->messageManager->addError(__('Unable to check registered tokens in Sage Pay: ' . $apiException->getUserMessage()));
+            $this->messageManager->addError(
+                __("Unable to check registered tokens in Sage Pay: %1", $apiException->getUserMessage())
+            );
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             $this->messageManager->addError(__('Unable to check registered tokens in Sage Pay: ' . $e->getMessage()));
@@ -64,6 +71,7 @@ class Index extends \Magento\Backend\App\Action
      *
      * @return $this
      */
+    // @codingStandardsIgnoreStart
     protected function _initAction()
     {
         $this->_view->loadLayout();
@@ -82,14 +90,5 @@ class Index extends \Magento\Backend\App\Action
         $this->_view->getPage()->getConfig()->getTitle()->prepend(__('Sage Pay Credit Card Tokens'));
         return $this;
     }
-
-    /**
-     * ACL check
-     *
-     * @return bool
-     */
-    protected function _isAllowed()
-    {
-        return true;
-    }
+    // @codingStandardsIgnoreEnd
 }
