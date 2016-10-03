@@ -37,6 +37,11 @@ class Post
     private $_suiteLogger;
 
     /**
+     * @var \Ebizmarts\SagePaySuite\Helper\Request
+     */
+    private $suiteHelper;
+
+    /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
      * @param ApiExceptionFactory $apiExceptionFactory
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
@@ -45,13 +50,15 @@ class Post
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger
+        \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
+        \Ebizmarts\SagePaySuite\Helper\Request $suiteHelper
     ) {
 
         $this->_config              = $config;
         $this->_curlFactory         = $curlFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
         $this->_suiteLogger         = $suiteLogger;
+        $this->suiteHelper          = $suiteHelper;
     }
 
     private function _handleApiErrors($response, $expectedStatus, $defaultErrorMessage)
@@ -143,34 +150,14 @@ class Post
         //log response
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data);
 
-        $response_data = [];
+        $responseData = [];
         if ($response_status == 200) {
-            //parse response
-            $data = preg_split('/^\r?$/m', $data, 2);
-            $data = explode(PHP_EOL, $data[1]);
-
-            $dataCnt = count($data);
-            for ($i = 0; $i < $dataCnt; $i++) {
-                if (!empty($data[$i])) {
-                    $aux = explode("=", trim($data[$i]));
-                    $auxCnt = count($aux);
-                    if ($auxCnt == 2) {
-                        $response_data[$aux[0]] = $aux[1];
-                    } else {
-                        if ($auxCnt > 2) {
-                            $response_data[$aux[0]] = $aux[1];
-                            for ($j = 2; $j < $auxCnt; $j++) {
-                                $response_data[$aux[0]] .= "=" . $aux[$j];
-                            }
-                        }
-                    }
-                }
-            }
+            $responseData = $this->suiteHelper->rawResponseToArray($data);
         }
 
         $response = [
             "status" => $response_status,
-            "data" => $response_data
+            "data" => $responseData
         ];
 
         return $this->_handleApiErrors($response, $expectedStatus, $errorMessage);

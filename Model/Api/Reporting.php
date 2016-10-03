@@ -36,6 +36,11 @@ class Reporting
     private $_suiteLogger;
 
     /**
+     * @var \Magento\Framework\ObjectManager\ObjectManager
+     */
+    private $objectManager;
+
+    /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
      * @param ApiExceptionFactory $apiExceptionFactory
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
@@ -44,13 +49,15 @@ class Reporting
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        Logger $suiteLogger
+        Logger $suiteLogger,
+        \Magento\Framework\ObjectManager\ObjectManager $objectManager
     ) {
 
         $this->_config              = $config;
         $this->_curlFactory         = $curlFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
         $this->_suiteLogger         = $suiteLogger;
+        $this->objectManager        = $objectManager;
     }
 
     /**
@@ -85,7 +92,7 @@ class Reporting
         $curl->close();
 
         try {
-            $xml = new \SimpleXMLElement($data);
+            $xml = $this->objectManager->create('\SimpleXMLElement', ['data' => $data]);
         } catch (\Exception $e) {
             return false;
         }
