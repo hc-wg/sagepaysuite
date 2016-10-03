@@ -104,9 +104,9 @@ class Request extends \Magento\Backend\App\AbstractAction
     private function _generateFormCrypt()
     {
 
-        $encrypted_password = $this->_config->getFormEncryptedPassword();
+        $encryptedPassword = $this->_config->getFormEncryptedPassword();
 
-        if (empty($encrypted_password)) {
+        if (empty($encryptedPassword)) {
             throw new \Magento\Framework\Exception\LocalizedException(__('Invalid FORM encrypted password.'));
         }
 
@@ -158,13 +158,7 @@ class Request extends \Magento\Backend\App\AbstractAction
             }
         }
 
-        $encryptor = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
-        $encryptor->setBlockLength(128);
-        $encryptor->setKey($encrypted_password);
-        $encryptor->setIV($encrypted_password);
-        $crypt = $encryptor->encrypt($preCryptString);
-
-        return "@" . strtoupper(bin2hex($crypt));
+        return $this->getEncryptedRequest($encryptedPassword, $preCryptString);
     }
 
     private function _getServiceURL()
@@ -174,5 +168,31 @@ class Request extends \Magento\Backend\App\AbstractAction
         } else {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_FORM_REDIRECT_TEST;
         }
+    }
+
+    /**
+     * @return \Magento\Framework\ObjectManagerInterface
+     */
+    public function getObjManager()
+    {
+        return $this->_objectManager;
+    }
+
+    /**
+     * @param $encryptedPassword
+     * @param $preCryptString
+     * @return string
+     */
+    private function getEncryptedRequest($encryptedPassword, $preCryptString)
+    {
+        $encryptor = $this->getObjManager()
+            ->create('\phpseclib\Crypt\AES', ['mode' => \phpseclib\Crypt\Base::MODE_CBC]);
+        $encryptor->setBlockLength(128);
+        $encryptor->setKey($encryptedPassword);
+        $encryptor->setIV($encryptedPassword);
+
+        $crypt = $encryptor->encrypt($preCryptString);
+
+        return "@" . strtoupper(bin2hex($crypt));
     }
 }
