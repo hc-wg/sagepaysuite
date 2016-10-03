@@ -153,7 +153,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteOK()
     {
-        $invoiceCollectionMock = $this->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
+        $invoiceCollectionMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
             ->disableOriginalConstructor()
             ->getMock();
         $invoiceCollectionMock->expects($this->once())->method('setDataToAll')->willReturnSelf();
@@ -312,17 +313,18 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $orderFactoryMock,
         $transactionFactoryMock,
         $quoteMock
-    )
-    {
+    ) {
         $objectManagerHelper          = new ObjectManagerHelper($this);
         $this->serverNotifyController = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Controller\Server\Notify', [
+            'Ebizmarts\SagePaySuite\Controller\Server\Notify',
+            [
                 'context' => $contextMock,
                 'config' => $configMock,
                 'checkoutSession' => $checkoutSessionMock,
                 'orderFactory' => $orderFactoryMock,
                 'transactionFactory' => $transactionFactoryMock,
                 'quote' => $quoteMock
-        ]);
+            ]
+        );
     }
 }
