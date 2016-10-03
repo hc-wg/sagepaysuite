@@ -32,4 +32,8 @@
     <preference for="Ebizmarts\SagePaySuite\Api\GuestServerManagementInterface" type="Ebizmarts\SagePaySuite\Model\GuestServerRequestManagement" />
 
     <preference for="Ebizmarts\SagePaySuite\Api\Data\ResultInterface" type="Ebizmarts\SagePaySuite\Api\Data\Result" />
+    <preference for="Ebizmarts\SagePaySuite\Api\Data\FormResultInterface" type="Ebizmarts\SagePaySuite\Api\Data\FormResult" />
+
+    <preference for="Ebizmarts\SagePaySuite\Api\FormManagementInterface" type="Ebizmarts\SagePaySuite\Model\FormRequestManagement" />
+    <!--<preference for="Ebizmarts\SagePaySuite\Api\GuestServerManagementInterface" type="Ebizmarts\SagePaySuite\Model\GuestServerRequestManagement" />-->
 </config>

@@ -45,7 +45,7 @@ define(
 
                 //validations
                 if (!this.validate() || !additionalValidators.validate()) {
-                return false;
+                    return false;
                 }
 
                 fullScreenLoader.startLoader();
@@ -105,7 +105,7 @@ define(
                             JSON.stringify(payload)
                         ).done(function () {
 
-                                var serviceUrl = url.build('sagepaysuite/form/request');
+                                var serviceUrl = urlBuilder.createUrl('/sagepay/form/:cartId', {cartId: quote.getQuoteId()});
 
                                 //generate crypt and form data
                                 storage.get(serviceUrl).done(
