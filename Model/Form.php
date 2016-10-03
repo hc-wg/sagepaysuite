@@ -127,6 +127,9 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
 
     private $_context;
 
+    /** @var bool */
+    private $isInitializeNeeded = true;
+
     /**
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
@@ -382,5 +385,61 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         }
 
         return (bool)(int)$this->getConfigData('active' . $moto, $storeId);
+    }
+
+    /**
+     * Instantiate state and set it to state object
+     *
+     * @param string $paymentAction
+     * @param \Magento\Framework\DataObject $stateObject
+     * @return void
+     */
+    public function initialize($paymentAction, $stateObject)
+    {
+        //disable sales email
+        $payment = $this->getInfoInstance();
+        $order   = $payment->getOrder();
+        $order->setCanSendNewEmailFlag(false);
+
+        //set pending payment state
+        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
+        $stateObject->setStatus('pending_payment');
+        $stateObject->setIsNotified(false);
+    }
+
+    /**
+     * Flag if we need to run payment initialize while order place
+     *
+     * @return bool
+     * @api
+     */
+    public function isInitializeNeeded()
+    {
+        return true && $this->isInitializeNeeded;
+    }
+
+    /**
+     * Set initialized flag to capture payment
+     */
+    public function markAsInitialized()
+    {
+        $this->isInitializeNeeded = false;
+    }
+
+    /**
+     * Check void availability
+     * @return bool
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @internal param \Magento\Framework\Object $payment
+     */
+    public function canVoid()
+    {
+        $payment = $this->getInfoInstance();
+        $order = $payment->getOrder();
+        if ($order->getState() == \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
+            return false;
+        }
+
+        return $this->_canVoid;
     }
 }
