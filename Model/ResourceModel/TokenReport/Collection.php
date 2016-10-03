@@ -17,6 +17,7 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
      *
      * @var array
      */
+    // @codingStandardsIgnoreStart
     protected $_map = [
         'fields' => [
             'email' => 'customers.email',
@@ -25,12 +26,14 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
             'created_at' => 'main_table.created_at'
         ],
     ];
+    // @codingStandardsIgnoreEnd
 
     /**
      * Resource initializing
      *
      * @return void
      */
+    // @codingStandardsIgnoreStart
     protected function _construct()
     {
         $this->_init(
@@ -38,10 +41,12 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
             'Ebizmarts\SagePaySuite\Model\ResourceModel\Token'
         );
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * @return $this
      */
+    // @codingStandardsIgnoreStart
     protected function _initSelect()
     {
         parent::_initSelect();
@@ -51,6 +56,7 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
         )->order('customer_id ' . \Magento\Framework\DB\Select::SQL_DESC);
         return $this;
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * @inheritdoc

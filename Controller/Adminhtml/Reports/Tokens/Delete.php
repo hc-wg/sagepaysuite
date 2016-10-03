@@ -12,22 +12,27 @@ class Delete extends \Magento\Backend\App\Action
 {
 
     /**
+     * Authorization level of a basic admin session
+     */
+    const ADMIN_RESOURCE = 'Ebizmarts_SagePaySuite::token_report_delete';
+
+    /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    protected $_logger;
+    private $_logger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Token
      */
-    protected $_tokenModel;
+    private $_tokenModel;
 
-    protected $_tokenId;
+    private $_tokenId;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -44,8 +49,8 @@ class Delete extends \Magento\Backend\App\Action
     
         parent::__construct($context);
         $this->_suiteLogger = $suiteLogger;
-        $this->_logger = $logger;
-        $this->_tokenModel = $tokenModel;
+        $this->_logger      = $logger;
+        $this->_tokenModel  = $tokenModel;
     }
 
     public function execute()
@@ -73,10 +78,5 @@ class Delete extends \Magento\Backend\App\Action
         }
 
         $this->_redirect('*/*/index');
-    }
-
-    protected function _isAllowed()
-    {
-        return true;
     }
 }

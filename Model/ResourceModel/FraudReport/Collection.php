@@ -17,17 +17,20 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
      *
      * @var array
      */
+    // @codingStandardsIgnoreStart
     protected $_map = [
         'fields' => [
             'additional_information' => 'payments.additional_information'
         ],
     ];
+    // @codingStandardsIgnoreEnd
 
     /**
      * Resource initializing
      *
      * @return void
      */
+    // @codingStandardsIgnoreStart
     protected function _construct()
     {
         $this->_init(
@@ -35,10 +38,12 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
             'Magento\Sales\Model\ResourceModel\Order\Payment\Transaction'
         );
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * @return $this
      */
+    // @codingStandardsIgnoreStart
     protected function _initSelect()
     {
         parent::_initSelect();
@@ -48,6 +53,7 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
         )->where("sagepaysuite_fraud_check=1");
         return $this;
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * @inheritdoc

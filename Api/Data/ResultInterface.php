@@ -27,7 +27,6 @@ interface ResultInterface
      */
     public function setResponse($text);
 
-
     /**
      * @return string
      */

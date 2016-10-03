@@ -19,119 +19,118 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
     /**
      * @var string
      */
-    protected $_code = \Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER;
+    protected $_code = \Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER;// @codingStandardsIgnoreLine
 
     /**
      * @var string
      */
-    protected $_infoBlockType = 'Ebizmarts\SagePaySuite\Block\Info';
+    protected $_infoBlockType = 'Ebizmarts\SagePaySuite\Block\Info';// @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_isGateway = true;
+    protected $_isGateway = true;// @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canOrder = true;
+    protected $_canOrder = true;// @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canAuthorize = true;
+    protected $_canAuthorize = true;// @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canCapture = true;
+    protected $_canCapture = true;// @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canCapturePartial = true;
+    protected $_canCapturePartial = true;// @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canRefund = true;
+    protected $_canRefund = true;// @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canRefundInvoicePartial = true;
+    protected $_canRefundInvoicePartial = true;// @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canVoid = true;
+    protected $_canVoid = true;// @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canUseInternal = false;
+    protected $_canUseInternal = false;// @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canUseCheckout = true;
+    protected $_canUseCheckout = true;// @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canFetchTransactionInfo = true;
+    protected $_canFetchTransactionInfo = true;// @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canReviewPayment = true;
+    protected $_canReviewPayment = true;// @codingStandardsIgnoreLine
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
      */
-    protected $_transactionFactory;
+    private $_transactionFactory;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Shared
      */
-    protected $_sharedApi;
+    private $_sharedApi;
 
-
-    protected $_isInitializeNeeded = true;
+    protected $_isInitializeNeeded = true;// @codingStandardsIgnoreLine
 
 
     /**
@@ -167,10 +166,10 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
             $data
         );
 
-        $this->_suiteHelper = $suiteHelper;
+        $this->_suiteHelper        = $suiteHelper;
         $this->_transactionFactory = $transactionFactory;
-        $this->_sharedApi = $sharedApi;
-        $this->_config = $config;
+        $this->_sharedApi          = $sharedApi;
+        $this->_config             = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
     }
 
@@ -190,24 +189,34 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
 
             if ($payment->getLastTransId() && $order->getState() != \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
                 $transactionId = $payment->getLastTransId();
-                $paymentAction = $payment->getAdditionalInformation('paymentAction') ? $payment->getAdditionalInformation('paymentAction') : $this->_config->getSagepayPaymentAction();
+                $paymentAction = $payment->getAdditionalInformation('paymentAction') ?
+                    $payment->getAdditionalInformation('paymentAction') : $this->_config->getSagepayPaymentAction();
 
                 if ($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER) {
                     $action = 'releasing';
-                    $result = $this->_sharedApi->releaseTransaction($transactionId, $amount);
+                    $this->_sharedApi->releaseTransaction($transactionId, $amount);
                 } elseif ($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE) {
                     $action = 'authorizing';
-                    $result = $this->_sharedApi->authorizeTransaction($transactionId, $amount, $order->getIncrementId());
+                    $this->_sharedApi->authorizeTransaction($transactionId, $amount, $order->getIncrementId());
                 }
 
                 $payment->setIsTransactionClosed(1);
             }
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
-            throw new LocalizedException(__('There was an error ' . $action . ' Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
+            throw new LocalizedException(
+                __(
+                    "There was an error %1 Sage Pay transaction %2: %3",
+                    $action,
+                    $transactionId,
+                    $apiException->getUserMessage()
+                )
+            );
         } catch (\Exception $e) {
             $this->_logger->critical($e);
-            throw new LocalizedException(__('There was an error ' . $action . ' Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
+            throw new LocalizedException(
+                __("There was an error %1 Sage Pay transaction %2: %3", $action, $transactionId, $e->getMessage())
+            );
         }
 
         return $this;
@@ -242,27 +251,25 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
             $payment->setShouldCloseParentTransaction(1);
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
-            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
+            throw new LocalizedException(
+                __(
+                    "There was an error refunding Sage Pay transaction %1: %2",
+                    $transactionId,
+                    $apiException->getUserMessage()
+                )
+            );
         } catch (\Exception $e) {
             $this->_logger->critical($e);
-            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
+            throw new LocalizedException(
+                __(
+                    "There was an error refunding Sage Pay transaction %1: %2",
+                    $transactionId,
+                    $e->getMessage()
+                )
+            );
         }
 
         return $this;
-    }
-
-    /**
-     * Cancel payment
-     *
-     * @param \Magento\Framework\Object|\Magento\Payment\Model\InfoInterface|Payment $payment
-     * @return $this
-     */
-    public function cancel(\Magento\Payment\Model\InfoInterface $payment)
-    {
-//        if ($this->canVoid()) {
-//            $this->void($payment);
-//        }
-        return parent::cancel($payment);
     }
 
     /**
@@ -289,6 +296,7 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      * @param \Magento\Framework\DataObject $stateObject
      * @return void
      */
+    // @codingStandardsIgnoreStart
     public function initialize($paymentAction, $stateObject)
     {
         //disable sales email
@@ -301,6 +309,7 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
         $stateObject->setStatus('pending_payment');
         $stateObject->setIsNotified(false);
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * Return magento payment action

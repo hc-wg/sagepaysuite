@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 
@@ -16,52 +17,52 @@ class Notify extends \Magento\Framework\App\Action\Action
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Magento\Sales\Model\OrderFactory
      */
-    protected $_orderFactory;
+    private $_orderFactory;
 
     /**
      * @var OrderSender
      */
-    protected $_orderSender;
+    private $_orderSender;
 
     /**
      * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
      */
-    protected $_transactionFactory;
+    private $_transactionFactory;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    protected $_checkoutSession;
+    private $_checkoutSession;
 
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    protected $_quote;
+    private $_quote;
 
     /**
      * @var \Magento\Sales\Model\Order
      */
-    protected $_order;
+    private $_order;
 
     /**
      * @var array
      */
-    protected $_postData;
+    private $_postData;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Token
      */
-    protected $_tokenModel;
+    private $_tokenModel;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -84,15 +85,15 @@ class Notify extends \Magento\Framework\App\Action\Action
     
         parent::__construct($context);
 
-        $this->_suiteLogger = $suiteLogger;
-        $this->_orderFactory = $orderFactory;
-        $this->_orderSender = $orderSender;
+        $this->_suiteLogger        = $suiteLogger;
+        $this->_orderFactory       = $orderFactory;
+        $this->_orderSender        = $orderSender;
         $this->_transactionFactory = $transactionFactory;
-        $this->_config = $config;
+        $this->_config             = $config;
+        $this->_checkoutSession    = $checkoutSession;
+        $this->_tokenModel         = $tokenModel;
+        $this->_quote              = $quote;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
-        $this->_checkoutSession = $checkoutSession;
-        $this->_tokenModel = $tokenModel;
-        $this->_quote = $quote;
     }
 
     public function execute()
@@ -112,7 +113,7 @@ class Notify extends \Magento\Framework\App\Action\Action
 
             //find order with quote id
             $order = $this->_orderFactory->create()->loadByIncrementId($this->_quote->getReservedOrderId());
-            if (is_null($order) || is_null($order->getId())) {
+            if ($order === null || $order->getId() === null) {
                 return $this->_returnInvalid("Order was not found");
             }
             $this->_order = $order;
@@ -123,13 +124,7 @@ class Notify extends \Magento\Framework\App\Action\Action
             $transactionId = str_replace("{", "", str_replace("}", "", $this->_postData->VPSTxId)); //strip brackets
 
             //validate hash
-            $localMd5Hash = md5($this->_getVPSSignatureString($payment));
-
-            if (strtoupper($localMd5Hash) != $this->_postData->VPSSignature) {
-                //log full values for VPS signature
-                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, "INVALID SIGNATURE: " . $this->_getVPSSignatureString($payment));
-                throw new \Magento\Framework\Validator\Exception(__('Invalid VPS Signature'));
-            }
+            $this->validateSignature($payment);
 
             //update payment details
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
@@ -144,19 +139,7 @@ class Notify extends \Magento\Framework\App\Action\Action
                 throw new \Magento\Framework\Validator\Exception(__('Invalid transaction id'));
             }
 
-            if (isset($this->_postData->Token)) {
-                //save token
-
-                $this->_tokenModel->saveToken(
-                    $order->getCustomerId(),
-                    $this->_postData->Token,
-                    $this->_postData->CardType,
-                    $this->_postData->Last4Digits,
-                    substr($this->_postData->ExpiryDate, 0, 2),
-                    substr($this->_postData->ExpiryDate, 2),
-                    $this->_config->getVendorname()
-                );
-            }
+            $this->persistToken($order);
 
             /**
              * OK = Process executed without error.
@@ -203,8 +186,7 @@ class Notify extends \Magento\Framework\App\Action\Action
                 $this->_cancelOrder($order);
 
                 return $this->_returnAbort();
-            } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") { //Transaction succeeded or authenticated
-
+            } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
                 $sendEmail = true;
                 if ($payment->getAdditionalInformation('euroPayment') == true) {
                     //don't send email if EURO PAYMENT as it was already sent
@@ -214,7 +196,8 @@ class Notify extends \Magento\Framework\App\Action\Action
                 $this->_confirmPayment($transactionId, $sendEmail);
 
                 return $this->_returnOk();
-            } elseif ($status == "PENDING") { //Transaction in PENDING state (this is just for Euro Payments which are not yet available in this version)
+            } elseif ($status == "PENDING") {
+                //Transaction in PENDING state (this is just for Euro Payments)
 
                 $payment->setAdditionalInformation('euroPayment', true);
 
@@ -229,7 +212,7 @@ class Notify extends \Magento\Framework\App\Action\Action
 
                 return $this->_returnInvalid("Payment was not accepted, please try another payment method");
             }
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+        } catch (ApiException $apiException) {
             $this->_suiteLogger->logException($apiException);
 
             //cancel pending payment order
@@ -246,7 +229,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         }
     }
 
-    protected function _getVPSSignatureString($payment)
+    private function _getVPSSignatureString($payment)
     {
         return $this->_postData->VPSTxId .
         $this->_postData->VendorTxCode .
@@ -271,7 +254,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         (property_exists($this->_postData, 'BankAuthCode') === true ? $this->_postData->BankAuthCode : '');
     }
 
-    protected function _cancelOrder($order)
+    private function _cancelOrder($order)
     {
         try {
             $order->cancel()->save();
@@ -292,7 +275,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         }
     }
 
-    protected function _confirmPayment($transactionId, $sendEmail = true)
+    private function _confirmPayment($transactionId, $sendEmail = true)
     {
         //invoice
         $payment = $this->_order->getPayment();
@@ -334,16 +317,12 @@ class Notify extends \Magento\Framework\App\Action\Action
         $transaction->save();
 
         //update invoice transaction id
-        $invoices = $this->_order->getInvoiceCollection();
-        if (!empty($invoices)) {
-            foreach ($invoices as $_invoice) {
-                $_invoice->setTransactionId($payment->getLastTransId());
-                $_invoice->save();
-            }
-        }
+        $this->_order->getInvoiceCollection()
+            ->setDataToAll('transaction_id', $payment->getLastTransId())
+            ->save();
     }
 
-    protected function _returnAbort()
+    private function _returnAbort()
     {
         $strResponse = 'Status=OK' . "\r\n";
         $strResponse .= 'StatusDetail=Transaction ABORTED successfully' . "\r\n";
@@ -354,11 +333,9 @@ class Notify extends \Magento\Framework\App\Action\Action
 
         //log our response
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse);
-
-        return;
     }
 
-    protected function _returnOk()
+    private function _returnOk()
     {
         $strResponse = 'Status=OK' . "\r\n";
         $strResponse .= 'StatusDetail=Transaction completed successfully' . "\r\n";
@@ -369,11 +346,9 @@ class Notify extends \Magento\Framework\App\Action\Action
 
         //log our response
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse);
-
-        return;
     }
 
-    protected function _returnInvalid($message = 'Invalid transaction, please try another payment method')
+    private function _returnInvalid($message = 'Invalid transaction, please try another payment method')
     {
         $strResponse = 'Status=INVALID' . "\r\n";
         $strResponse .= 'StatusDetail=' . $message . "\r\n";
@@ -384,15 +359,13 @@ class Notify extends \Magento\Framework\App\Action\Action
 
         //log our response
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse);
-
-        return;
     }
 
-    protected function _getAbortRedirectUrl()
+    private function _getAbortRedirectUrl()
     {
         $url = $this->_url->getUrl('*/*/cancel', [
             '_secure' => true,
-            //'_store' => $this->getRequest()->getParam('_store')
+            //'_store' => $this->getRequest()->getParam('_store') @codingStandardsIgnoreLine
         ]);
 
         $url .= "?message=Transaction cancelled by customer";
@@ -400,11 +373,11 @@ class Notify extends \Magento\Framework\App\Action\Action
         return $url;
     }
 
-    protected function _getSuccessRedirectUrl()
+    private function _getSuccessRedirectUrl()
     {
         $url = $this->_url->getUrl('*/*/success', [
             '_secure' => true,
-            //'_store' => $this->getRequest()->getParam('_store')
+            //'_store' => $this->getRequest()->getParam('_store') @codingStandardsIgnoreLine
         ]);
 
         $url .= "?quoteid=" . $this->_quote->getId();
@@ -412,15 +385,53 @@ class Notify extends \Magento\Framework\App\Action\Action
         return $url;
     }
 
-    protected function _getFailedRedirectUrl($message)
+    private function _getFailedRedirectUrl($message)
     {
         $url = $this->_url->getUrl('*/*/cancel', [
             '_secure' => true,
-            //'_store' => $this->getRequest()->getParam('_store')
+            //'_store' => $this->getRequest()->getParam('_store') @codingStandardsIgnoreLine
         ]);
 
         $url .= "?message=" . $message;
 
         return $url;
+    }
+
+    /**
+     * @param $payment
+     * @throws \Magento\Framework\Validator\Exception
+     */
+    private function validateSignature($payment)
+    {
+        $localMd5Hash = hash('md5', $this->_getVPSSignatureString($payment));
+
+        if (strtoupper($localMd5Hash) != $this->_postData->VPSSignature) {
+            //log full values for VPS signature
+            $this->_suiteLogger->sageLog(
+                Logger::LOG_REQUEST,
+                "INVALID SIGNATURE: " . $this->_getVPSSignatureString($payment)
+            );
+            throw new \Magento\Framework\Validator\Exception(__('Invalid VPS Signature'));
+        }
+    }
+
+    /**
+     * @param $order
+     */
+    private function persistToken($order)
+    {
+        if (isset($this->_postData->Token)) {
+            //save token
+
+            $this->_tokenModel->saveToken(
+                $order->getCustomerId(),
+                $this->_postData->Token,
+                $this->_postData->CardType,
+                $this->_postData->Last4Digits,
+                substr($this->_postData->ExpiryDate, 0, 2),
+                substr($this->_postData->ExpiryDate, 2),
+                $this->_config->getVendorname()
+            );
+        }
     }
 }

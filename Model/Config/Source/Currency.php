@@ -23,13 +23,6 @@ class Currency implements ArrayInterface
                 'value' => \Ebizmarts\SagePaySuite\Model\Config::CURRENCY_BASE,
                 'label' => __('Base Currency'),
             ],
-            /**
-             * NOT WORKING AS EXPECTED
-             * */
-//            [
-//                'value' => \Ebizmarts\SagePaySuite\Model\Config::CURRENCY_STORE,
-//                'label' => __('Store Display Currency')
-//            ],
             [
                 'value' => \Ebizmarts\SagePaySuite\Model\Config::CURRENCY_SWITCHER,
                 'label' => __('Currency Switcher')

@@ -16,10 +16,12 @@ class Token extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      *
      * @return void
      */
+    // @codingStandardsIgnoreStart
     protected function _construct()
     {
         $this->_init('sagepaysuite_token', 'id');
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * Get tokens by customer id and vendorname
@@ -27,20 +29,19 @@ class Token extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     public function getCustomerTokens(\Ebizmarts\SagePaySuite\Model\Token $object, $customerId, $vendorname)
     {
         $connection = $this->getConnection();
-        $select = $connection->select()
-            ->from(
-                $this->getMainTable()
-            )->where(
-                'customer_id=?',
-                $customerId
-            )->where(
-                'vendorname=?',
-                $vendorname
-            );
+        $select     = $connection->select()
+            ->from($this->getMainTable())
+            ->where('customer_id=?', $customerId)
+            ->where('vendorname=?', $vendorname);
 
-        $data = $connection->fetchAll($select);
+        $data = [];
 
-        if ($data) {
+        $query = $connection->query($select);
+        while ($row = $query->fetch()) {
+            array_push($data, $row);
+        }
+
+        if (count($data)) {
             $object->setData($data);
         }
 
@@ -55,13 +56,7 @@ class Token extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     public function getTokenById($tokenId)
     {
         $connection = $this->getConnection();
-        $select = $connection->select()
-            ->from(
-                $this->getMainTable()
-            )->where(
-                'id=?',
-                $tokenId
-            );
+        $select     = $connection->select()->from($this->getMainTable())->where('id=?', $tokenId);
 
         $data = $connection->fetchRow($select);
 
@@ -78,23 +73,13 @@ class Token extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     public function isTokenOwnedByCustomer($customerId, $tokenId)
     {
         $connection = $this->getConnection();
-        $select = $connection->select()
-            ->from(
-                $this->getMainTable()
-            )->where(
-                'customer_id=?',
-                $customerId
-            )->where(
-                'id=?',
-                $tokenId
-            );
+        $select     = $connection->select()
+            ->from($this->getMainTable(), 'id')
+            ->where('customer_id=?', $customerId)
+            ->where('id=?', $tokenId);
 
-        $data = $connection->fetchAll($select);
+        $data = $connection->fetchOne($select);
 
-        if (count($data) == 1) {
-            return true;
-        }
-
-        return false;
+        return ($data !== false);
     }
 }

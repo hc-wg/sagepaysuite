@@ -14,28 +14,29 @@ class FailureTest extends \PHPUnit_Framework_TestCase
     /**
      * @var /Ebizmarts\SagePaySuite\Controller\Form\Failure
      */
-    protected $formFailureController;
+    private $formFailureController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
+    private $responseMock;
 
     /**
      * @var \Magento\Framework\App\Response\RedirectInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $redirectMock;
+    private $redirectMock;
 
     /**
      * @var Magento\Framework\Message\ManagerInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $messageManagerMock;
+    private $messageManagerMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->responseMock = $this
@@ -88,6 +89,7 @@ class FailureTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecute()
     {
@@ -102,7 +104,7 @@ class FailureTest extends \PHPUnit_Framework_TestCase
     /**
      * @param string $path
      */
-    protected function _expectRedirect($path)
+    private function _expectRedirect($path)
     {
         $this->redirectMock->expects($this->once())
             ->method('redirect')

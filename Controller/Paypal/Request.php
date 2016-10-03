@@ -16,44 +16,44 @@ class Request extends \Magento\Framework\App\Action\Action
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    protected $_quote;
+    private $_quote;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Post
      */
-    protected $_postApi;
+    private $_postApi;
 
     /**
      * Sage Pay Suite Request Helper
      * @var \Ebizmarts\SagePaySuite\Helper\Request
      */
-    protected $_requestHelper;
+    private $_requestHelper;
 
     /**
      * @var \Magento\Customer\Model\Session
      */
-    protected $_customerSession;
+    private $_customerSession;
 
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    protected $_checkoutSession;
+    private $_checkoutSession;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -70,15 +70,15 @@ class Request extends \Magento\Framework\App\Action\Action
     ) {
     
         parent::__construct($context);
-        $this->_config = $config;
+        $this->_config          = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
-        $this->_suiteHelper = $suiteHelper;
-        $this->_suiteLogger = $suiteLogger;
-        $this->_postApi = $postApi;
-        $this->_requestHelper = $requestHelper;
+        $this->_suiteHelper     = $suiteHelper;
+        $this->_suiteLogger     = $suiteLogger;
+        $this->_postApi         = $postApi;
+        $this->_requestHelper   = $requestHelper;
         $this->_customerSession = $customerSession;
         $this->_checkoutSession = $checkoutSession;
-        $this->_quote = $this->_checkoutSession->getQuote();
+        $this->_quote           = $this->_checkoutSession->getQuote();
     }
 
     public function execute()
@@ -117,7 +117,7 @@ class Request extends \Magento\Framework\App\Action\Action
         return $resultJson;
     }
 
-    protected function _getCallbackUrl()
+    private function _getCallbackUrl()
     {
         $url = $this->_url->getUrl('*/*/processing', [
             '_secure' => true,
@@ -129,7 +129,7 @@ class Request extends \Magento\Framework\App\Action\Action
         return $url;
     }
 
-    protected function _getServiceURL()
+    private function _getServiceURL()
     {
         if ($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_DIRECT_POST_LIVE;
@@ -141,7 +141,7 @@ class Request extends \Magento\Framework\App\Action\Action
     /**
      * return array
      */
-    protected function _generateRequest()
+    private function _generateRequest()
     {
         $data = [];
         $data["VPSProtocol"] = $this->_config->getVPSProtocol();
@@ -154,7 +154,10 @@ class Request extends \Magento\Framework\App\Action\Action
         $data["ReferrerID"] = $this->_requestHelper->getReferrerId();
 
         if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_DISABLED) {
-            $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote, $this->_config->isPaypalForceXml()));
+            $forceXmlBasket = $this->_config->isPaypalForceXml();
+
+            $basket = $this->_requestHelper->populateBasketInformation($this->_quote, $forceXmlBasket);
+            $data   = array_merge($data, $basket);
         }
 
         $data["CardType"] = "PAYPAL";

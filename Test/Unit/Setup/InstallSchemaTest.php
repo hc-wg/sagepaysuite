@@ -11,8 +11,9 @@ class InstallSchemaTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Setup\InstallSchema
      */
-    protected $installSchema;
+    private $installSchema;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
@@ -21,6 +22,7 @@ class InstallSchemaTest extends \PHPUnit_Framework_TestCase
             []
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testInstall()
     {
@@ -60,7 +62,6 @@ class InstallSchemaTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Framework\Setup\ModuleContextInterface')
             ->disableOriginalConstructor()
             ->getMock();
-
 
         $this->installSchema->install($schemaSetupMock, $moduleContextMock);
     }

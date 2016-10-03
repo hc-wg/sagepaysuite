@@ -15,19 +15,14 @@ class Token extends \Magento\Framework\Model\AbstractModel
 {
 
     /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $_logger;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Post
      */
-    protected $_postApi;
+    private $_postApi;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @param \Magento\Framework\Model\Context $context
@@ -59,10 +54,12 @@ class Token extends \Magento\Framework\Model\AbstractModel
      *
      * @return void
      */
+    // @codingStandardsIgnoreStart
     protected function _construct()
     {
         $this->_init('Ebizmarts\SagePaySuite\Model\ResourceModel\Token');
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * Saves a token to the db
@@ -129,7 +126,7 @@ class Token extends \Magento\Framework\Model\AbstractModel
     /**
      * delete token using Sage Pay API
      */
-    protected function _deleteFromSagePay()
+    private function _deleteFromSagePay()
     {
         try {
             if (empty($this->getVendorname()) || empty($this->getToken())) {
@@ -156,7 +153,7 @@ class Token extends \Magento\Framework\Model\AbstractModel
         }
     }
 
-    protected function _getRemoveServiceURL()
+    private function _getRemoveServiceURL()
     {
         if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_LIVE;
@@ -175,7 +172,7 @@ class Token extends \Magento\Framework\Model\AbstractModel
     {
         $token = $this->getResource()->getTokenById($tokenId);
 
-        if (is_null($token)) {
+        if ($token === null) {
             return null;
         }
 

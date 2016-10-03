@@ -15,13 +15,18 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
+
+    /**
+     * @var \Magento\Framework\ObjectManager\ObjectManager
+     */
+    private $objectManager;
 
     /**
      * @param Config $config
@@ -29,11 +34,13 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger
+        \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
+        \Magento\Framework\ObjectManager\ObjectManager $objectManager
     ) {
     
-        $this->_config = $config;
-        $this->_suiteLogger = $suiteLogger;
+        $this->_config       = $config;
+        $this->_suiteLogger  = $suiteLogger;
+        $this->objectManager = $objectManager;
     }
 
     public function populateAddressInformation($quote)
@@ -62,9 +69,6 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
         $data['BillingPhone'] = substr($billing_address->getTelephone(), 0, 20);
 
-        //not mandatory
-//        $data['BillingAddress2']   = ($this->getConfigData('mode') == 'test') ? 88 : $this->ss($billing->getStreet(2), 100);
-
         //mandatory
         $data['DeliverySurname']    = substr($shipping_address->getLastname(), 0, 20);
         $data['DeliveryFirstnames'] = substr($shipping_address->getFirstname(), 0, 20);
@@ -79,11 +83,6 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         $data['DeliveryPhone'] = substr($shipping_address->getTelephone(), 0, 20);
-
-        //not mandatory
-//        $data['DeliveryAddress2']   = ($this->getConfigData('mode') == 'test') ? 88 : $this->ss($billing->getStreet(2), 100);
-//        $data['DeliveryState'] = $billing->getRegionCode();
-//        $data['DeliveryPhone'] = $billing->getRegionCode();
 
         return $data;
     }
@@ -118,7 +117,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         $amount = 0;
 
         try {
-            $xml = new \SimpleXMLElement($basket);
+            $xml = $this->objectManager->create('\SimpleXMLElement', ['data' => $basket]);
         } catch (\Exception $ex) {
             return $amount;
         }
@@ -184,28 +183,17 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $quote \Magento\Quote\Model\Quote
      * @return string
      */
-    protected function _getBasketSage50($quote)
+    private function _getBasketSage50($quote)
     {
 
         $BASKET_SEP = ':';
         $BASKET_SEP_ESCAPE = '-';
 
         $basketArray = [];
-//        $useBaseMoney = false; //true
 
         $itemsCollection = $quote->getItemsCollection();
 
-//        $trnCurrency = (string)$this->getConfigData('trncurrency', $quote->getStoreId());
-//        if ($trnCurrency == 'store' or $trnCurrency == 'switcher') {
-//            $useBaseMoney = false;
-//        }
-
         foreach ($itemsCollection as $item) {
-//                //Avoid duplicates SKUs on basket
-//                if ($this->_isSkuDuplicatedInSageBasket($basketArray,$this->_cleanSage50BasketString($item->getSku())) == true) {
-//                    continue;
-//                }
-
             //Avoid configurables
             if ($item->getParentItem()) {
                 continue;
@@ -213,30 +201,13 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
             $itemQty = $item->getQty();
 
-//               if($useBaseMoney){
-//                    $itemDiscount = $item->getBaseDiscountAmount() / $itemQty;
-//                    $taxAmount = $item->getBaseTaxAmount() / $itemQty;
-//                    $itemValue = $item->getBasePriceInclTax() - $taxAmount - $itemDiscount;
-//
-//                }else{
             $itemDiscount = $item->getDiscountAmount() / $itemQty;
             $taxAmount = $item->getTaxAmount() / $itemQty;
             $itemValue = $item->getPriceInclTax() - $taxAmount - $itemDiscount;
-//                }
 
             $itemTotal = $itemValue + $taxAmount;
 
-            //Options
-//                $options = $item->_getProductOptions();
-//
             $_options = '';
-//                if (count($options) > 0) {
-//                    foreach ($options as $opt) {
-//                        $this->_logger->addDebug($opt->toString());
-//                        $_options .= $opt['label'] . '-' . $opt['value'] . '.';
-//                    }
-//                    $_options = '_' . substr($_options, 0, -1) . '_';
-//                }
 
             $newItem = [
                 "item" => "",
@@ -247,8 +218,12 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
                 "line_total" => 0
             ];
 
-            //[SKU] Name
-            $newItem["item"] = str_replace($BASKET_SEP, $BASKET_SEP_ESCAPE, '[' . $this->_cleanSage50BasketString($item->getSku()) . '] ' . $this->_cleanSage50BasketString($item->getName()) . $this->_cleanSage50BasketString($_options));
+            //[SKU] Name @codingStandardsIgnoreLine
+            $newItem["item"] = str_replace(
+                $BASKET_SEP,
+                $BASKET_SEP_ESCAPE,
+                $this->productDescSage50Basket($item, $_options)
+            );
 
             //Quantity
             $newItem["qty"] = $itemQty;
@@ -273,14 +248,8 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         $shippingDescription = $shippingAddress->getShippingDescription();
         $deliveryName = $shippingDescription ? $shippingDescription : 'Delivery';
 
-//        if($useBaseMoney) {
-//            $deliveryValue  = $shippingAddress->getBaseShippingAmount();
-//            $deliveryTax    = $shippingAddress->getBaseShippingTaxAmount();
-//        }
-//        else {
-            $deliveryValue  = $shippingAddress->getShippingAmount();
-            $deliveryTax    = $shippingAddress->getShippingTaxAmount();
-//        }
+        $deliveryValue  = $shippingAddress->getShippingAmount();
+        $deliveryTax    = $shippingAddress->getShippingTaxAmount();
         $deliveryAmount = $deliveryValue + $deliveryTax;
 
         //delivery item
@@ -310,10 +279,10 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $quote \Magento\Quote\Model\Quote
      * @return string
      */
-    protected function _getBasketXml($quote)
+    private function _getBasketXml($quote)
     {
-
-        $basket = new \SimpleXMLElement('<?xml version="1.0" encoding="utf-8" ?><basket />');
+        $basket = $this->objectManager
+            ->create('\SimpleXMLElement', ['data' => '<?xml version="1.0" encoding="utf-8" ?><basket />']);
 
         $shippingAdd = $quote->getShippingAddress();
         $billingAdd  = $quote->getBillingAddress();
@@ -327,15 +296,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
             $node = $basket->addChild('item', '');
 
-            $itemDesc = trim(substr($item->getName(), 0, 100));
-            $validDescription = preg_match_all("/.*/", $itemDesc, $matchesDescription);
-            if ($validDescription === 1) {
-                //<description>
-                $node->addChild('description', $this->_convertStringToSafeXMLChar($itemDesc));
-            } else {
-                //<description>
-                $node->addChild('description', $this->_convertStringToSafeXMLChar(substr(implode("", $matchesDescription[0]), 0, 100)));
-            }
+            $this->basketXmlProductDescription($item, $node);
 
             $this->basketXmlProductSku($item, $node);
 
@@ -370,65 +331,50 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
             $this->basketXmlMiddleName($shippingAdd, $node);
 
             //<recipientSal>
-            if ($shippingAdd->getPrefix()) {
-                $recipientSal = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getPrefix()), 0, 4));
-                if (!empty($recipientSal)) {
-                    $node->addChild('recipientSal', $recipientSal);
-                }
-            }
+            $this->basketXmlRecipientSalutation($shippingAdd, $node);
 
             //<recipientEmail>
-            if ($shippingAdd->getEmail()) {
-                $recipientEmail = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getEmail()), 0, 45));
-                if (!empty($recipientEmail)) {
-                    $node->addChild('recipientEmail', $recipientEmail);
-                }
-            }
+            $this->basketXmlRecipientEmail($shippingAdd, $node);
 
             //<recipientPhone>
-            $recipientPhone = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getTelephone()), 0, 20));
-            if (!empty($recipientPhone)) {
-                $node->addChild('recipientPhone', $recipientPhone);
-            }
+            $this->basketXmlRecipientPhone($shippingAdd, $node);
 
             //<recipientAdd1>
-            $address1 = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getStreetLine(1)), 0, 100));
+            $address1 = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getStreetLine(1)), 0, 100));
             if (!empty($address1)) {
                 $node->addChild('recipientAdd1', $address1);
             }
 
             //<recipientAdd2>
             if ($shippingAdd->getStreet(2)) {
-                $recipientAdd2 = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getStreetLine(2)), 0, 100));
+                $recipientAdd2 = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getStreetLine(2)), 0, 100));
                 if (!empty($recipientAdd2)) {
                     $node->addChild('recipientAdd2', $recipientAdd2);
                 }
             }
 
             //<recipientCity>
-            $recipientCity = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getCity()), 0, 40));
+            $recipientCity = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getCity()), 0, 40));
             if (!empty($recipientCity)) {
                 $node->addChild('recipientCity', $recipientCity);
             }
 
             //<recipientState>
-            if ($shippingAdd->getCountry() == 'US') {
-                if ($quote->getIsVirtual()) {
-                    $node->addChild('recipientState', $this->_convertStringToSafeXMLChar(substr(trim($billingAdd->getRegionCode()), 0, 2)));
-                } else {
-                    $node->addChild('recipientState', $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getRegionCode()), 0, 2)));
-                }
-            }
+            $this->basketXmlRecipientState($quote, $shippingAdd, $node, $billingAdd);
 
             //<recipientCountry>
-            $node->addChild('recipientCountry', $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getCountry()), 0, 2)));
+            $node->addChild('recipientCountry', $this->stringToSafeXMLChar(
+                substr(trim($shippingAdd->getCountry()), 0, 2)
+            ));
 
             //<recipientPostCode>
             $_postCode = '000';
             if ($shippingAdd->getPostcode()) {
                 $_postCode = $shippingAdd->getPostcode();
             }
-            $node->addChild('recipientPostCode', $this->_convertStringToSafeXMLChar($this->_sanitizePostcode(substr(trim($_postCode), 0, 9))));
+            $node->addChild('recipientPostCode', $this->stringToSafeXMLChar(
+                $this->_sanitizePostcode(substr(trim($_postCode), 0, 9))
+            ));
         }
 
         //Sum up shipping totals when using SERVER with MAC
@@ -466,25 +412,26 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $value
      * @return string
      */
-    protected function formatPrice($value)
+    private function formatPrice($value)
     {
         return number_format($value, 2, '.', '');
     }
 
-    protected function _cleanSage50BasketString($text)
+    private function _cleanSage50BasketString($text)
     {
         $pattern = '|[^a-zA-Z0-9\-\._]+|';
         $text = preg_replace($pattern, '', $text);
         return $text;
     }
 
-    protected function _convertStringToSafeXMLChar($string)
+    private function stringToSafeXMLChar($string)
     {
 
         $safe_regex = '/([a-zA-Z\s\d\+\'\"\/\\\&\:\,\.\-\{\}\@])/';
         $safe_string = "";
 
-        for ($i = 0; $i < strlen($string); $i++) {
+        $length = strlen($string);
+        for ($i = 0; $i < $length; $i++) {
             if (preg_match($safe_regex, substr($string, $i, 1)) != false) {
                 $safe_string .= substr($string, $i, 1);
             } else {
@@ -495,7 +442,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         return $safe_string;
     }
 
-    protected function _sanitizePostcode($text)
+    private function _sanitizePostcode($text)
     {
         return preg_replace("/[^a-zA-Z0-9-\s]/", "", $text);
     }
@@ -506,7 +453,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @param string $basket
      * @return boolean
      */
-    protected function _validateBasketXml($basket)
+    private function _validateBasketXml($basket)
     {
         //Validate max length
         $validLength  = $this->validateBasketXmlLength($basket);
@@ -542,7 +489,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
         $xml = null;
 
         try {
-            $xml = new \SimpleXMLElement($basket);
+            $xml = $this->objectManager->create('\SimpleXMLElement', ['data' => $basket]);
         } catch (\Exception $ex) {
             $valid = false;
         }
@@ -589,9 +536,9 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $shippingAdd
      * @param $node
      */
-    protected function basketXmlRecipientFName($shippingAdd, $node)
+    private function basketXmlRecipientFName($shippingAdd, $node)
     {
-        $recipientFName = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getFirstname()), 0, 20));
+        $recipientFName = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getFirstname()), 0, 20));
         if (!empty($recipientFName)) {
             $node->addChild('recipientFName', $recipientFName);
         }
@@ -601,9 +548,9 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $shippingAdd
      * @param $node
      */
-    protected function basketXmlRecipientLName($shippingAdd, $node)
+    private function basketXmlRecipientLName($shippingAdd, $node)
     {
-        $recipientLName = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getLastname()), 0, 20));
+        $recipientLName = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getLastname()), 0, 20));
         if (!empty($recipientLName)) {
             $node->addChild('recipientLName', $recipientLName);
         }
@@ -613,10 +560,10 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $shippingAdd
      * @param $node
      */
-    protected function basketXmlMiddleName($shippingAdd, $node)
+    private function basketXmlMiddleName($shippingAdd, $node)
     {
         if ($shippingAdd->getMiddlename()) {
-            $recipientMName = $this->_convertStringToSafeXMLChar(substr(trim($shippingAdd->getMiddlename()), 0, 1));
+            $recipientMName = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getMiddlename()), 0, 1));
             if (!empty($recipientMName)) {
                 $node->addChild('recipientMName', $recipientMName);
             }
@@ -627,7 +574,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $item
      * @param $node
      */
-    protected function basketXmlProductSku($item, $node)
+    private function basketXmlProductSku($item, $node)
     {
         $validSku = preg_match_all("/[\p{L}0-9\s\-]+/", $item->getSku(), $matchesSku);
         if ($validSku === 1) {
@@ -640,7 +587,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $shippingAdd
      * @param $basket
      */
-    protected function basketXmlFaxNumber($shippingAdd, $basket)
+    private function basketXmlFaxNumber($shippingAdd, $basket)
     {
         $validFax = preg_match_all("/[a-zA-Z0-9\-\s\(\)\+]+/", trim($shippingAdd->getFax()), $matchesFax);
         if ($validFax === 1) {
@@ -678,5 +625,122 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
             $i++;
         }
         return $amount;
+    }
+
+    /**
+     * @param $item
+     * @param $_options
+     * @return string
+     */
+    private function productDescSage50Basket($item, $_options)
+    {
+        $nameAdd = $this->_cleanSage50BasketString($item->getName()) . $this->_cleanSage50BasketString($_options);
+        return '[' . $this->_cleanSage50BasketString($item->getSku()) . '] ' . $nameAdd;
+    }
+
+    /**
+     * @param $item
+     * @param $node
+     */
+    private function basketXmlProductDescription($item, $node)
+    {
+        $itemDesc         = trim(substr($item->getName(), 0, 100));
+        $validDescription = preg_match_all("/.*/", $itemDesc, $matchesDescription);
+        if ($validDescription !== 1) {
+            //<description>
+            $itemDesc = substr(implode("", $matchesDescription[0]), 0, 100);
+        }
+
+        $node->addChild('description', $this->stringToSafeXMLChar($itemDesc));
+    }
+
+    /**
+     * @param $shippingAdd
+     * @param $node
+     */
+    private function basketXmlRecipientSalutation($shippingAdd, $node)
+    {
+        if ($shippingAdd->getPrefix()) {
+            $recipientSal = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getPrefix()), 0, 4));
+            if (!empty($recipientSal)) {
+                $node->addChild('recipientSal', $recipientSal);
+            }
+        }
+    }
+
+    /**
+     * @param $shippingAdd
+     * @param $node
+     */
+    private function basketXmlRecipientEmail($shippingAdd, $node)
+    {
+        if ($shippingAdd->getEmail()) {
+            $recipientEmail = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getEmail()), 0, 45));
+            if (!empty($recipientEmail)) {
+                $node->addChild('recipientEmail', $recipientEmail);
+            }
+        }
+    }
+
+    /**
+     * @param $shippingAdd
+     * @param $node
+     */
+    private function basketXmlRecipientPhone($shippingAdd, $node)
+    {
+        $recipientPhone = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getTelephone()), 0, 20));
+        if (!empty($recipientPhone)) {
+            $node->addChild('recipientPhone', $recipientPhone);
+        }
+    }
+
+    /**
+     * @param $quote
+     * @param $shippingAdd
+     * @param $node
+     * @param $billingAdd
+     */
+    private function basketXmlRecipientState($quote, $shippingAdd, $node, $billingAdd)
+    {
+        if ($shippingAdd->getCountry() == 'US') {
+            if ($quote->getIsVirtual()) {
+                $regionCode = substr(trim($billingAdd->getRegionCode()), 0, 2);
+                $node->addChild('recipientState', $this->stringToSafeXMLChar($regionCode));
+            } else {
+                $regionCode = substr(trim($shippingAdd->getRegionCode()), 0, 2);
+                $node->addChild('recipientState', $this->stringToSafeXMLChar($regionCode));
+            }
+        }
+    }
+
+    /**
+     * @param $data
+     * @return mixed
+     */
+    public function rawResponseToArray($data)
+    {
+        $output = [];
+
+        $responseString = preg_split('/^\r?$/m', $data, 2);
+
+        //Split response into name=value pairs
+        $responseArray = explode("\n", $responseString[1]);
+
+        // Tokenise the response
+        $dataCnt = count($responseArray);
+        for ($i = 0; $i < $dataCnt; $i++) {
+            // Find position of first "=" character
+            $splitAt = strpos($responseArray[$i], "=");
+
+            // Create an associative (hash) array with key/value pairs ('trim' strips excess whitespace)
+            if ($splitAt !== false) {
+                $arVal = (string)trim(substr($responseArray[$i], ($splitAt + 1)));
+                if (!empty($arVal)) {
+                    $output[trim(substr($responseArray[$i], 0, $splitAt))] = $arVal;
+                }
+            }
+        }
+
+        return $output;
     }
 }

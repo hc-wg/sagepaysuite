@@ -11,8 +11,9 @@ class TransactionIdTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer\TransactionId
      */
-    protected $transactionIdRendererBlock;
+    private $transactionIdRendererBlock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $columnMock = $this
@@ -28,6 +29,7 @@ class TransactionIdTest extends \PHPUnit_Framework_TestCase
 
         $this->transactionIdRendererBlock->setColumn($columnMock);
     }
+    // @codingStandardsIgnoreEnd
 
     public function testRender()
     {

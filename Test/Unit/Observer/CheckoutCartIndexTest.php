@@ -13,8 +13,9 @@ class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Observer\CheckoutCartIndex
      */
-    protected $checkoutCartIndexObserver;
+    private $checkoutCartIndexObserver;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $checkoutSessionMock = $this
@@ -83,6 +84,7 @@ class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecute()
     {

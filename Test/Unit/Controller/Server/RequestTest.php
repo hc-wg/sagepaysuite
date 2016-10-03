@@ -19,38 +19,29 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * TEST_POST_REQUEST
      */
-    protected $TEST_POST_REQUEST;
+    private $TEST_POST_REQUEST;
 
     /**
      * @var Delete
      */
-    protected $serverRequestController;
-
-    /**
-     * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $requestMock;
+    private $serverRequestController;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
-
-    /**
-     * @var CheckoutSession|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $checkoutSessionMock;
+    private $responseMock;
 
     /**
      * @var \Magento\Framework\UrlInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $urlBuilderMock;
+    private $urlBuilderMock;
 
     /**
      * @var \Magento\Framework\Controller\Result\Json|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $resultJson;
+    private $resultJson;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->TEST_POST_REQUEST = 'Content-Language: en-GB' . PHP_EOL . PHP_EOL . '{"save_token": "false", "token":"null"}';
@@ -210,6 +201,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecute()
     {
@@ -230,7 +222,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @param $result
      */
-    protected function _expectResultJson($result)
+    private function _expectResultJson($result)
     {
         $this->resultJson->expects($this->once())
             ->method('setData')

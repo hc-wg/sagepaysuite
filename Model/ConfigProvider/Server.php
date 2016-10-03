@@ -16,32 +16,32 @@ class Server implements ConfigProviderInterface
     /**
      * @var string
      */
-    protected $methodCode = Config::METHOD_SERVER;
+    private $methodCode = Config::METHOD_SERVER;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Server
      */
-    protected $method;
+    private $method;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Magento\Customer\Model\Session
-     */
+    private
     protected $_customerSession;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Token
-     */
+    private
     protected $_tokenModel;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @param PaymentHelper $paymentHelper

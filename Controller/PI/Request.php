@@ -16,59 +16,59 @@ class Request extends \Magento\Framework\App\Action\Action
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    protected $_quote;
+    private $_quote;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    protected $_logger;
+    private $_logger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
-    protected $_pirestapi;
+    private $_pirestapi;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Checkout
      */
-    protected $_checkoutHelper;
+    private $_checkoutHelper;
 
     /**
      *  POST array
      */
-    protected $_postData;
+    private $_postData;
 
     /**
      * @var \Magento\Customer\Model\Session
      */
-    protected $_customerSession;
+    private $_customerSession;
 
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    protected $_checkoutSession;
+    private $_checkoutSession;
 
     /**
      * Sage Pay Suite Request Helper
      * @var \Ebizmarts\SagePaySuite\Helper\Request
      */
-    protected $_requestHelper;
+    private $_requestHelper;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -94,19 +94,19 @@ class Request extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
     ) {
-    
+
         parent::__construct($context);
-        $this->_config = $config;
+        $this->_config          = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
-        $this->_suiteHelper = $suiteHelper;
-        $this->_suiteLogger = $suiteLogger;
-        $this->_pirestapi = $pirestapi;
-        $this->_logger = $logger;
-        $this->_checkoutHelper = $checkoutHelper;
+        $this->_suiteHelper     = $suiteHelper;
+        $this->_suiteLogger     = $suiteLogger;
+        $this->_pirestapi       = $pirestapi;
+        $this->_logger          = $logger;
+        $this->_checkoutHelper  = $checkoutHelper;
         $this->_customerSession = $customerSession;
         $this->_checkoutSession = $checkoutSession;
-        $this->_requestHelper = $requestHelper;
-        $this->_quote = $this->_checkoutSession->getQuote();
+        $this->_requestHelper   = $requestHelper;
+        $this->_quote           = $this->_checkoutSession->getQuote();
     }
 
     public function execute()
@@ -194,7 +194,9 @@ class Request extends \Magento\Framework\App\Action\Action
                     'response' => (array)$post_response
                 ];
             } else {
-                throw new \Magento\Framework\Validator\Exception(__('Invalid Sage Pay response, please use another payment method.'));
+                throw new \Magento\Framework\Validator\Exception(
+                    __('Invalid Sage Pay response, please use another payment method.')
+                );
             }
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_logger->critical($apiException);
@@ -215,12 +217,10 @@ class Request extends \Magento\Framework\App\Action\Action
         return $resultJson;
     }
 
-    protected function _generateRequest($vendorTxCode)
+    private function _generateRequest($vendorTxCode)
     {
 
         $billing_address = $this->_quote->getBillingAddress();
-//        $shipping_address = $this->_quote->getShippingAddress();
-//        $customer_data = $this->_getCustomerSession()->getCustomerDataObject();
 
         $data = [
             'transactionType' => $this->_config->getSagepayPaymentAction(),

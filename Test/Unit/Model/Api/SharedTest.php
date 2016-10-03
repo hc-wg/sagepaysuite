@@ -6,23 +6,27 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+use Ebizmarts\SagePaySuite\Model\Config;
+
 class SharedTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Shared
      */
-    protected $sharedApiModel;
+    private $sharedApiModel;
 
     /**
      * @var \Magento\Framework\HTTP\Adapter\Curl|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $curlMock;
+    private $curlMock;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $apiExceptionFactoryMock;
+    private $apiExceptionFactoryMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->apiExceptionFactoryMock = $this
@@ -53,6 +57,12 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('generateVendorTxCode')
             ->will($this->returnValue('1000000001-2016-12-12-12345'));
 
+        $suiteRequestHelperMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Request::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['populateAddressInformation'])
+            ->getMock();
+
         $this->curlMock = $this
             ->getMockBuilder('Magento\Framework\HTTP\Adapter\Curl')
             ->disableOriginalConstructor()
@@ -66,17 +76,58 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($this->curlMock));
 
+        $storerMock = $this
+            ->getMockBuilder('Magento\Store\Model\Store')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storerMock->expects($this->any())
+            ->method("getBaseCurrencyCode")
+            ->willReturn("USD");
+        $storerMock->expects($this->any())
+            ->method("getDefaultCurrencyCode")
+            ->willReturn("EUR");
+        $storerMock->expects($this->any())
+            ->method("getCurrentCurrencyCode")
+            ->willReturn("GBP");
+
+        $storeManagerMock = $this
+            ->getMockBuilder('Magento\Store\Model\StoreManagerInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storeManagerMock->expects($this->any())
+            ->method("getStore")
+            ->willReturn($storerMock);
+
+        $loggerMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $scopeConfigMock = $this
+            ->getMockBuilder(\Magento\Framework\App\Config\ScopeConfigInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
+            ->setMethods(['getMode'])
+            ->setConstructorArgs(
+                ['scopeConfig' => $scopeConfigMock, 'storeManager' => $storeManagerMock, 'logger' => $loggerMock]
+            )
+            ->getMock();
+        $configMock->method('getMode')->willReturn('test');
+
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $this->sharedApiModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Api\Shared',
             [
-                "reportingApi" => $reportingApiMock,
-                "suiteHelper" => $suiteHelperMock,
-                "curlFactory" => $curlFactoryMock,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock
+                "reportingApi"        => $reportingApiMock,
+                "suiteHelper"         => $suiteHelperMock,
+                "curlFactory"         => $curlFactoryMock,
+                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
+                "config"              => $configMock,
+                'suiteRequestHelper'  => $suiteRequestHelperMock
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testVoidTransaction()
     {
@@ -92,14 +143,17 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('getInfo')
             ->willReturn(200);
 
+        $stringWrite = "VPSProtocol=3.00&TxType=VOID&Vendor=&VendorTxCode=1000000001-2016-12-12-12345&VPSTxId=12345";
+        $stringWrite .= "&SecurityKey=fds87&TxAuthNo=879243978234&";
+
         $this->curlMock->expects($this->once())
             ->method('write')
             ->with(
                 \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_VOID_TEST,
+                Config::URL_SHARED_VOID_TEST,
                 '1.0',
                 [],
-                "VPSProtocol=&TxType=VOID&Vendor=&VendorTxCode=1000000001-2016-12-12-12345&VPSTxId=12345&SecurityKey=fds87&TxAuthNo=879243978234&"
+                $stringWrite
             );
 
         $this->assertEquals(
@@ -128,6 +182,11 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('getInfo')
             ->willReturn(200);
 
+        $stringWrite = "VPSProtocol=3.00&TxType=REFUND&Vendor=&VendorTxCode=1000000001-2016-12-12-12345&Amount=100.00";
+        $stringWrite .= "&Currency=USD&Description=Refund+issued+from+magento.&RelatedVPSTxId=12345";
+        $stringWrite .= "&RelatedVendorTxCode=1000000001-2016-12-12-12345678&RelatedSecurityKey=fds87";
+        $stringWrite .= "&RelatedTxAuthNo=879243978234&";
+
         $this->curlMock->expects($this->once())
             ->method('write')
             ->with(
@@ -135,7 +194,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                 \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REFUND_TEST,
                 '1.0',
                 [],
-                "VPSProtocol=&TxType=REFUND&Vendor=&VendorTxCode=1000000001-2016-12-12-12345&Amount=100.00&Currency=USD&Description=Refund+issued+from+magento.&RelatedVPSTxId=12345&RelatedVendorTxCode=1000000001-2016-12-12-12345678&RelatedSecurityKey=fds87&RelatedTxAuthNo=879243978234&"
+                $stringWrite
             );
 
         $this->assertEquals(
@@ -164,6 +223,11 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('getInfo')
             ->willReturn(200);
 
+        $stringWrite = "VPSProtocol=3.00&TxType=REFUND&Vendor=&VendorTxCode=1000000001-2016-12-12-12345&Amount=100.00";
+        $stringWrite .= "&Currency=USD&Description=Refund+issued+from+magento.&RelatedVPSTxId=12345&";
+        $stringWrite .= "RelatedVendorTxCode=1000000001-2016-12-12-12345678&RelatedSecurityKey=fds87";
+        $stringWrite .= "&RelatedTxAuthNo=879243978234&";
+
         $this->curlMock->expects($this->once())
             ->method('write')
             ->with(
@@ -171,7 +235,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                 \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REFUND_TEST,
                 '1.0',
                 [],
-                "VPSProtocol=&TxType=REFUND&Vendor=&VendorTxCode=1000000001-2016-12-12-12345&Amount=100.00&Currency=USD&Description=Refund+issued+from+magento.&RelatedVPSTxId=12345&RelatedVendorTxCode=1000000001-2016-12-12-12345678&RelatedSecurityKey=fds87&RelatedTxAuthNo=879243978234&"
+                $stringWrite
             );
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
@@ -208,6 +272,9 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('getInfo')
             ->willReturn(200);
 
+        $stringWrite = "VPSProtocol=3.00&TxType=RELEASE&Vendor=&VendorTxCode=1000000001-2016-12-12-12345678";
+        $stringWrite .= "&VPSTxId=12345&SecurityKey=fds87&TxAuthNo=879243978234&ReleaseAmount=100.00&";
+
         $this->curlMock->expects($this->once())
             ->method('write')
             ->with(
@@ -215,7 +282,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                 \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_RELEASE_TEST,
                 '1.0',
                 [],
-                "VPSProtocol=&TxType=RELEASE&Vendor=&VendorTxCode=1000000001-2016-12-12-12345678&VPSTxId=12345&SecurityKey=fds87&TxAuthNo=879243978234&ReleaseAmount=100.00&"
+                $stringWrite
             );
 
         $this->assertEquals(
@@ -244,14 +311,19 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('getInfo')
             ->willReturn(200);
 
+        $stringWrite = "VPSProtocol=3.00&TxType=AUTHORISE&Vendor=&VendorTxCode=1000000001-2016-12-12-12345";
+        $stringWrite .= "&Amount=100.00&Description=Authorize+transaction+from+Magento&RelatedVPSTxId=12345&";
+        $stringWrite .= "RelatedVendorTxCode=1000000001-2016-12-12-12345678&RelatedSecurityKey=fds87&";
+        $stringWrite .= "RelatedTxAuthNo=879243978234&";
+
         $this->curlMock->expects($this->once())
             ->method('write')
             ->with(
                 \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_AUTHORIZE_TEST,
+                \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_AUTHORISE_TEST,
                 '1.0',
                 [],
-                "VPSProtocol=&TxType=AUTHORISE&Vendor=&VendorTxCode=1000000001-2016-12-12-12345&Amount=100.00&Description=Authorize+transaction+from+Magento&RelatedVPSTxId=12345&RelatedVendorTxCode=1000000001-2016-12-12-12345678&RelatedSecurityKey=fds87&RelatedTxAuthNo=879243978234&"
+                $stringWrite
             );
 
         $this->assertEquals(
@@ -280,6 +352,10 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('getInfo')
             ->willReturn(200);
 
+        $stringWrite = "VPSProtocol=3.00&TxType=REPEAT&Vendor=&Description=Repeat+transaction+from+Magento&";
+        $stringWrite .= "RelatedVPSTxId=12345&RelatedVendorTxCode=1000000001-2016-12-12-12345678";
+        $stringWrite .= "&RelatedSecurityKey=fds87&RelatedTxAuthNo=879243978234&";
+
         $this->curlMock->expects($this->once())
             ->method('write')
             ->with(
@@ -287,7 +363,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                 \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REPEAT_TEST,
                 '1.0',
                 [],
-                "VPSProtocol=&TxType=REPEAT&Vendor=&Description=Repeat+transaction+from+Magento&RelatedVPSTxId=12345&RelatedVendorTxCode=1000000001-2016-12-12-12345678&RelatedSecurityKey=fds87&RelatedTxAuthNo=879243978234&"
+                $stringWrite
             );
 
         $this->assertEquals(

@@ -17,27 +17,27 @@ class SystemConfigEdit implements ObserverInterface
     /**
      * @var Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var Config
      */
-    protected $_suiteConfig;
+    private $_suiteConfig;
 
     /**
      * @var Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Magento\Framework\Message\ManagerInterface
      */
-    protected $_messageManager;
+    private $_messageManager;
 
     /**
      * @var Reporting
      */
-    protected $_reportingApi;
+    private $_reportingApi;
 
     /**
      * @param Logger $suiteLogger
@@ -93,7 +93,6 @@ class SystemConfigEdit implements ObserverInterface
             /**
              * VALIDATE PI CREDENTIALS
              */
-            //@toDO
         }
     }
 }

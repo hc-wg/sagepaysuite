@@ -8,79 +8,79 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
 {
 
     /** @var ResultInterface  */
-    protected $result;
+    private $result;
 
     /**
      * @var \Magento\Framework\UrlInterface
      */
-    protected $_coreUrl;
+    private $_coreUrl;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    protected $_quote;
+    private $_quote;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var string
      */
-    protected $_assignedVendorTxCode;
+    private $_assignedVendorTxCode;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Checkout
      */
-    protected $_checkoutHelper;
+    private $_checkoutHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Post
      */
-    protected $_postApi;
+    private $_postApi;
 
     /**
      * Sage Pay Suite Request Helper
      * @var \Ebizmarts\SagePaySuite\Helper\Request
      */
-    protected $_requestHelper;
+    private $_requestHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Token
      */
-    protected $_tokenModel;
+    private $_tokenModel;
 
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    protected $_checkoutSession;
+    private $_checkoutSession;
 
     /**
      * @var \Magento\Customer\Model\Session
      */
-    protected $_customerSession;
+    private $_customerSession;
 
     /**
      * @var \Magento\Quote\Api\CartRepositoryInterface
      */
-    protected $quoteRepository;
+    private $quoteRepository;
 
     /**
      * @var \Magento\Quote\Model\QuoteIdMaskFactory
      */
-    protected $quoteIdMaskFactory;
+    private $quoteIdMaskFactory;
 
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Config $config,
@@ -150,22 +150,6 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
             $payment       = $quote->getPayment();
             $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
 
-//            if (!$quote->isVirtual() && $quote->getShippingAddress()) {
-//                $quote->getShippingAddress()->setCollectShippingRates(true);
-//            }
-//
-//            $data = ['method' => Config::METHOD_SERVER];
-//            $data['checks'] = [
-//                \Magento\Payment\Model\Method\AbstractMethod::CHECK_USE_CHECKOUT,
-//                \Magento\Payment\Model\Method\AbstractMethod::CHECK_USE_FOR_COUNTRY,
-//                \Magento\Payment\Model\Method\AbstractMethod::CHECK_USE_FOR_CURRENCY,
-//                \Magento\Payment\Model\Method\AbstractMethod::CHECK_ORDER_TOTAL_MIN_MAX,
-//                \Magento\Payment\Model\Method\AbstractMethod::CHECK_ZERO_TOTAL,
-//            ];
-//            $payment = $quote->getPayment();
-//            $payment->importData($data);
-//            $this->quoteRepository->save($quote);
-
             //save order with pending payment
             $order = $this->_checkoutHelper->placeOrder($quote);
 
@@ -194,18 +178,22 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
             $this->_suiteLogger->logException($apiException);
 
             $this->result->setSuccess(false);
-            $this->result->setErrorMessage(__('Something went wrong while generating the Sage Pay request: ' . $apiException->getUserMessage()));
+            $this->result->setErrorMessage(
+                __('Something went wrong while generating the Sage Pay request: '. $apiException->getUserMessage())
+            );
         } catch (\Exception $e) {
             $this->_suiteLogger->logException($e);
 
             $this->result->setSuccess(false);
-            $this->result->setErrorMessage(__('Something went wrong while generating the Sage Pay request: ' . $e->getMessage()));
+            $this->result->setErrorMessage(
+                __('Something went wrong while generating the Sage Pay request: ' . $e->getMessage())
+            );
         }
 
         return $this->result;
     }
 
-    protected function _getNotificationUrl()
+    private function _getNotificationUrl()
     {
         $url = $this->_coreUrl->getUrl('sagepaysuite/server/notify', [
             '_secure' => true,
@@ -220,7 +208,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
     /**
      * @return string
      */
-    protected function _getServiceURL()
+    private function _getServiceURL()
     {
         if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_LIVE;
@@ -234,7 +222,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
      * @param $token
      * @return array
      */
-    protected function _generateRequest($save_token, $token)
+    private function _generateRequest($save_token, $token)
     {
 
         $data                    = [];
@@ -260,12 +248,15 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
 
         //token
         $customer_data = $this->_customerSession->getCustomerDataObject();
-        $slots         = $this->_tokenModel->isCustomerUsingMaxTokenSlots($customer_data->getId(), $this->_config->getVendorname());
+        $slots         = $this->_tokenModel->isCustomerUsingMaxTokenSlots(
+            $customer_data->getId(),
+            $this->_config->getVendorname()
+        );
         if ($save_token && !empty($customer_data) && !$slots) {
             //save token
             $data["CreateToken"] = 1;
         } else {
-            if ($token !== '%token%' && !is_null($token)) {
+            if ($token !== '%token%' && $token !== null) {
                 //use token
                 $data["StoreToken"] = 1;
                 $data["Token"]      = $token;
@@ -282,17 +273,6 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
             $data["Profile"] = "LOW";
         }
 
-        //not mandatory
-//        CustomerXML
-//        SurchargeXML
-//        VendorData
-//        Language
-//        Website
-//        FIRecipientAcctNumber
-//        FIRecipientSurname
-//        FIRecipientPostcode
-//        FIRecipientDoB
-
         return $data;
     }
 
@@ -302,5 +282,15 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
     public function getQuoteById($cartId)
     {
         return $this->quoteRepository->get($cartId);
+    }
+
+    public function getQuoteRepository()
+    {
+        return $this->quoteRepository;
+    }
+
+    public function getQuoteIdMaskFactory()
+    {
+        return $this->quoteIdMaskFactory;
     }
 }

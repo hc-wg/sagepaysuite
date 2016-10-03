@@ -13,19 +13,19 @@ class Cancel extends \Magento\Framework\App\Action\Action
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    protected $_logger;
+    private $_logger;
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    protected $_checkoutSession;
+    private $_checkoutSession;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -43,10 +43,10 @@ class Cancel extends \Magento\Framework\App\Action\Action
     ) {
     
         parent::__construct($context);
-        $this->_suiteLogger = $suiteLogger;
-        $this->_config = $config;
+        $this->_suiteLogger     = $suiteLogger;
+        $this->_config          = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
-        $this->_logger = $logger;
+        $this->_logger          = $logger;
         $this->_checkoutSession = $checkoutSession;
     }
 

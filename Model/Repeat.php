@@ -20,121 +20,121 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
     /**
      * @var string
      */
-    protected $_code = \Ebizmarts\SagePaySuite\Model\Config::METHOD_REPEAT;
+    protected $_code = \Ebizmarts\SagePaySuite\Model\Config::METHOD_REPEAT; // @codingStandardsIgnoreLine
 
     /**
      * @var string
      */
-    protected $_infoBlockType = 'Ebizmarts\SagePaySuite\Block\Info';
+    protected $_infoBlockType = 'Ebizmarts\SagePaySuite\Block\Info'; // @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_isGateway = true;
+    protected $_isGateway = true; // @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canOrder = true;
+    protected $_canOrder = true; // @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canAuthorize = true;
+    protected $_canAuthorize = true; // @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canCapture = true;
+    protected $_canCapture = true; // @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canCapturePartial = true;
+    protected $_canCapturePartial = true; // @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canRefund = true;
+    protected $_canRefund = true; // @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canRefundInvoicePartial = true;
+    protected $_canRefundInvoicePartial = true; // @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canVoid = true;
+    protected $_canVoid = true; // @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canUseInternal = true;
+    protected $_canUseInternal = true; // @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canUseCheckout = false;
+    protected $_canUseCheckout = false; // @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canFetchTransactionInfo = true;
+    protected $_canFetchTransactionInfo = true; // @codingStandardsIgnoreLine
 
     /**
      * Availability option
      *
      * @var bool
      */
-    protected $_canReviewPayment = true;
+    protected $_canReviewPayment = true; // @codingStandardsIgnoreLine
 
     /**
      * @var bool
      */
-    protected $_isInitializeNeeded = true;
+    protected $_isInitializeNeeded = true; // @codingStandardsIgnoreLine
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Shared
      */
-    protected $_sharedApi;
+    private $_sharedApi;
 
     /**
      * @var Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @param \Magento\Framework\Model\Context $context
@@ -182,8 +182,8 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
         );
 
         $this->_suiteHelper = $suiteHelper;
-        $this->_sharedApi = $sharedApi;
-        $this->_config = $config;
+        $this->_sharedApi   = $sharedApi;
+        $this->_config      = $config;
         $this->_suiteLogger = $suiteLogger;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_REPEAT);
     }
@@ -204,11 +204,15 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
         if ($payment->getLastTransId()) {
             try {
                 $transactionId = $payment->getLastTransId();
-                $paymentAction = $payment->getAdditionalInformation('paymentAction') ? $payment->getAdditionalInformation('paymentAction') : $this->_config->getSagepayPaymentAction();
+
+                $paymentAction = $this->_config->getSagepayPaymentAction();
+                if ($payment->getAdditionalInformation('paymentAction')) {
+                    $paymentAction = $payment->getAdditionalInformation('paymentAction');
+                }
 
                 if ($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED) {
                     $action = 'releasing';
-                    $result = $this->_sharedApi->releaseTransaction($transactionId, $amount);
+                    $this->_sharedApi->releaseTransaction($transactionId, $amount);
                 }
 
                 $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, "CAPTURE");
@@ -216,10 +220,24 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
                 $payment->setIsTransactionClosed(1);
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
                 $this->_suiteLogger->logException($apiException);
-                throw new LocalizedException(__('There was an error ' . $action . ' Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
+                throw new LocalizedException(
+                    __(
+                        'There was an error %1 Sage Pay transaction %2: %3',
+                        $action,
+                        $transactionId,
+                        $apiException->getUserMessage()
+                    )
+                );
             } catch (\Exception $e) {
                 $this->_suiteLogger->logException($e);
-                throw new LocalizedException(__('There was an error ' . $action . ' Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
+                throw new LocalizedException(
+                    __(
+                        'There was an error %1 Sage Pay transaction %2: %3',
+                        $action,
+                        $transactionId,
+                        $e->getMessage()
+                    )
+                );
             }
         }
         return $this;
@@ -245,10 +263,18 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
             $payment->setShouldCloseParentTransaction(1);
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->_suiteLogger->logException($apiException);
-            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $apiException->getUserMessage()));
+            throw new LocalizedException(
+                __(
+                    'There was an error refunding Sage Pay transaction %1: %2',
+                    $transactionId,
+                    $apiException->getUserMessage()
+                )
+            );
         } catch (\Exception $e) {
             $this->_suiteLogger->logException($e);
-            throw new LocalizedException(__('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $e->getMessage()));
+            throw new LocalizedException(
+                __('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $e->getMessage())
+            );
         }
 
         return $this;
@@ -273,8 +299,9 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function initialize($paymentAction, $stateObject)
     {
-        $payment = $this->getInfoInstance();
-        $order = $payment->getOrder();
+        $payAction = $paymentAction;
+        $payment   = $this->getInfoInstance();
+        $order     = $payment->getOrder();
 
         //disable sales email
         $order->setCanSendNewEmailFlag(false);

@@ -19,17 +19,17 @@ class Info extends \Magento\Backend\Block\Template
     /**
      * @var \Magento\Sales\Model\Order
      */
-    protected $_order;
+    private $_order;
 
     /**
      * @var Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @param \Magento\Backend\Block\Template\Context $context
@@ -62,10 +62,12 @@ class Info extends \Magento\Backend\Block\Template
     /**
      * @return string
      */
+    // @codingStandardsIgnoreStart
     protected function _toHtml()
     {
         return $this->_config->isSagePaySuiteMethod($this->getPayment()->getMethod()) ? parent::_toHtml() : '';
     }
+    // @codingStandardsIgnoreEnd
 
     public function getSyncFromApiUrl()
     {

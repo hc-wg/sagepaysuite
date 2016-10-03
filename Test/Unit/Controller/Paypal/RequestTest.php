@@ -19,38 +19,39 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Controller\Paypal\Request
      */
-    protected $paypalRequestController;
+    private $paypalRequestController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
+    private $responseMock;
 
     /**
      * @var CheckoutSession|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $checkoutSessionMock;
+    private $checkoutSessionMock;
 
     /**
      * @var \Magento\Framework\UrlInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $urlBuilderMock;
+    private $urlBuilderMock;
 
     /**
      * @var \Magento\Framework\Controller\Result\Json|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $resultJson;
+    private $resultJson;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Post
      */
-    protected $_postApiMock;
+    private $_postApiMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $quoteMock = $this
@@ -166,6 +167,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecuteOK()
     {
@@ -210,7 +212,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @param $result
      */
-    protected function _expectResultJson($result)
+    private function _expectResultJson($result)
     {
         $this->resultJson->expects($this->once())
             ->method('setData')

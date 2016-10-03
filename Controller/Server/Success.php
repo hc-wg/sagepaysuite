@@ -15,27 +15,27 @@ class Success extends \Magento\Framework\App\Action\Action
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    protected $_logger;
+    private $_logger;
 
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    protected $_checkoutSession;
+    private $_checkoutSession;
 
     /**
      * @var \Magento\Sales\Model\OrderFactory
      */
-    protected $_orderFactory;
+    private $_orderFactory;
 
     /**
      * @var \Magento\Quote\Model\QuoteFactory
      */
-    protected $_quoteFactory;
+    private $_quoteFactory;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -56,11 +56,11 @@ class Success extends \Magento\Framework\App\Action\Action
     
         parent::__construct($context);
 
-        $this->_suiteLogger = $suiteLogger;
-        $this->_logger = $logger;
+        $this->_suiteLogger     = $suiteLogger;
+        $this->_logger          = $logger;
         $this->_checkoutSession = $checkoutSession;
-        $this->_orderFactory = $orderFactory;
-        $this->_quoteFactory = $quoteFactory;
+        $this->_orderFactory    = $orderFactory;
+        $this->_quoteFactory    = $quoteFactory;
     }
 
     public function execute()

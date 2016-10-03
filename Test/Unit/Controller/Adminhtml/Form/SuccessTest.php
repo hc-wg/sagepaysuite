@@ -19,43 +19,44 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Controller\Adminhtml\Form\Success
      */
-    protected $formSuccessController;
+    private $formSuccessController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
+    private $responseMock;
 
     /**
      * @var \Magento\Framework\App\Response\RedirectInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $redirectMock;
+    private $redirectMock;
 
     /**
      * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $orderMock;
+    private $orderMock;
 
     /**
      * @var Ebizmarts\SagePaySuite\Helper\Checkout|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $checkoutHelperMock;
+    private $checkoutHelperMock;
 
     /**
      * @var \Magento\Quote\Model\QuoteManagement|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $_quoteManagementMock;
+    private $_quoteManagementMock;
 
     /**
      * @var \Magento\Framework\Message\ManagerInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $_messageManagerMock;
+    private $_messageManagerMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $paymentMock = $this
@@ -145,7 +146,8 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Model\Order')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->orderMock->expects($this->any())
+        $this->orderMock
+            ->expects($this->any())
             ->method('getPayment')
             ->will($this->returnValue($paymentMock));
 
@@ -201,9 +203,20 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecuteSUCCESS()
     {
+        $invoiceCollectionMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $invoiceCollectionMock->expects($this->once())->method('setDataToAll')->willReturnSelf();
+        $this->orderMock
+            ->expects($this->once())
+            ->method('getInvoiceCollection')
+            ->willReturn($invoiceCollectionMock);
+
         $this->_quoteManagementMock->expects($this->once())
             ->method("submit")
             ->willReturn($this->orderMock);

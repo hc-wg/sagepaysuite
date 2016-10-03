@@ -16,54 +16,54 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    protected $_quote;
+    private $_quote;
 
     /**
      * @var \Magento\Quote\Model\QuoteManagement
      */
-    protected $_quoteManagement;
+    private $_quoteManagement;
 
     /**
      * @var OrderSender
      */
-    protected $orderSender;
+    private $orderSender;
 
     /**
      * @var \Magento\Customer\Model\Session
      */
-    protected $_customerSession;
+    private $_customerSession;
 
     /**
      * Checkout data
      * @var \Magento\Checkout\Helper\Data
      */
-    protected $_checkoutData;
+    private $_checkoutData;
 
     /**
      * @var \Magento\Framework\DataObject\Copy
      */
-    protected $_objectCopyService;
+    private $_objectCopyService;
 
     /**
      * @var \Magento\Customer\Api\CustomerRepositoryInterface
      */
-    protected $_customerRepository;
+    private $_customerRepository;
 
     /**
      * @var \Magento\Framework\Api\DataObjectHelper
      */
-    protected $_dataObjectHelper;
+    private $_dataObjectHelper;
 
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    protected $_checkoutSession;
+    private $_checkoutSession;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
@@ -91,16 +91,16 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
     ) {
     
         parent::__construct($context);
-        $this->_quoteManagement = $quoteManagement;
-        $this->orderSender = $orderSender;
-        $this->_customerSession = $customerSession;
-        $this->_checkoutData = $checkoutData;
-        $this->_objectCopyService = $objectCopyService;
+        $this->_quoteManagement    = $quoteManagement;
+        $this->orderSender         = $orderSender;
+        $this->_customerSession    = $customerSession;
+        $this->_checkoutData       = $checkoutData;
+        $this->_objectCopyService  = $objectCopyService;
         $this->_customerRepository = $customerRepository;
-        $this->_dataObjectHelper = $dataObjectHelper;
-        $this->_checkoutSession = $checkoutSession;
-        $this->_suiteLogger = $suiteLogger;
-        $this->_quote = $this->_checkoutSession->getQuote();
+        $this->_dataObjectHelper   = $dataObjectHelper;
+        $this->_checkoutSession    = $checkoutSession;
+        $this->_suiteLogger        = $suiteLogger;
+        $this->_quote              = $this->_checkoutSession->getQuote();
     }
 
     /**
@@ -129,7 +129,9 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
         $order = $this->_quoteManagement->submit($this->_quote);
 
         if (!$order) {
-            throw new \Magento\Framework\Exception\LocalizedException(__('Can not save order. Please try another payment option.'));
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __('Can not save order. Please try another payment option.')
+            );
         }
 
         return $order;
@@ -140,7 +142,7 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
      *
      * @return string
      */
-    protected function _getCheckoutMethod()
+    private function _getCheckoutMethod()
     {
         if ($this->_customerSession->isLoggedIn()) {
             return \Magento\Checkout\Model\Type\Onepage::METHOD_CUSTOMER;
@@ -160,7 +162,7 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
      *
      * @return $this
      */
-    protected function _prepareGuestQuote()
+    private function _prepareGuestQuote()
     {
         $quote = $this->_quote;
 
@@ -177,7 +179,7 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
      *
      * @return void
      */
-    protected function _prepareNewCustomerQuote()
+    private function _prepareNewCustomerQuote()
     {
         $quote = $this->_quote;
         $billing = $quote->getBillingAddress();
@@ -220,9 +222,8 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
      * Prepare quote for customer order submit
      *
      * @return void
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    protected function _prepareCustomerQuote()
+    private function _prepareCustomerQuote()
     {
         $quote = $this->_quote;
         $billing = $quote->getBillingAddress();
