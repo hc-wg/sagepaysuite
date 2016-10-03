@@ -435,7 +435,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     public function canVoid()
     {
         $payment = $this->getInfoInstance();
-        $order = $payment->getOrder();
+        $order   = $payment->getOrder();
         if ($order->getState() == \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
             return false;
         }
