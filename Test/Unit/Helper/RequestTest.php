@@ -7,19 +7,24 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
 use Ebizmarts\SagePaySuite\Model\Config;
+use Symfony\Component\DependencyInjection\SimpleXMLElement;
 
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
+    private $objectManagerHelper;
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Request
      */
-    protected $requestHelper;
+    private $requestHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_configMock;
+    private $_configMock;
 
+    private $objectManagerMock;
+
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->_configMock = $this
@@ -27,15 +32,18 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->objectManagerMock = $this->getMockBuilder(\Magento\Framework\ObjectManager\ObjectManager::class)
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $this->requestHelper = $objectManagerHelper->getObject(
+        $this->objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->requestHelper = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Request',
-            [
-                'config' => $this->_configMock
-            ]
+            ['config' => $this->_configMock, 'objectManager' => $this->objectManagerMock]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * @dataProvider populateAddressInformationDataProvider
@@ -180,6 +188,15 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(200));
 
         $result = $data["result"];
+
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->requestHelper = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Helper\Request',
+            [
+                'config'        => $this->_configMock,
+                'objectManager' => $this->objectManagerMock
+            ]
+        );
 
         $this->assertEquals(
             $result,
@@ -379,34 +396,34 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         } elseif ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML) {
             $basket = [
                 'BasketXML' =>
-                    '<?xml version="1.0" encoding="utf-8"?>' .
-                    '<basket>' .
-                    '<item>' .
-                            '<description>' . $data['name'] . '</description>' .
-                            '<productSku>' . $data['sku'] . '</productSku>' .
-                            '<productCode>' . $data['product_id'] . '</productCode>' .
-                            '<quantity>' . $data['qty'] . '</quantity>' .
-                            '<unitNetAmount>' . number_format($data['price'], 2) . '</unitNetAmount>' .
-                            '<unitTaxAmount>' . number_format($data['unitTaxAmount'], 2) . '</unitTaxAmount>' .
-                            '<unitGrossAmount>' . number_format($data['unitGrossAmount'], 2) . '</unitGrossAmount>' .
-                            '<totalGrossAmount>' . number_format($data['totalGrossAmount'], 2) . '</totalGrossAmount>' .
-                            '<recipientFName>' . $data['firstName'] . '</recipientFName>' .
-                            '<recipientLName>' . $data['lastName'] . '</recipientLName>' .
-                            '<recipientMName>' . $data['middleName'] . '</recipientMName>' .
-                            '<recipientSal>' . $data['prefix'] . '</recipientSal>' .
-                            '<recipientEmail>' . $data['email'] . '</recipientEmail>' .
-                            '<recipientPhone>' . $data['telephone'] . '</recipientPhone>' .
-                            '<recipientAdd1>' . $data['streetLine'] . '</recipientAdd1>' .
-                            '<recipientAdd2>' . $data['streetLine'] . '</recipientAdd2>' .
-                            '<recipientCity>' . $data['city'] . '</recipientCity>' .
-                            '<recipientCountry>' . $data['country'] . '</recipientCountry>' .
-                            '<recipientPostCode>' . $data['postCode'] . '</recipientPostCode>' .
-                        '</item>' .
-                        '<deliveryNetAmount>' . number_format($data['shippingAmount'], 2) . '</deliveryNetAmount>' .
-                        '<deliveryTaxAmount>' . number_format($data['shippingTaxAmount'], 2) . '</deliveryTaxAmount>' .
-                        '<deliveryGrossAmount>' . number_format($data['deliveryGrossAmount'], 2) . '</deliveryGrossAmount>' .
-                        '<shippingFaxNo>' . $data['fax'] . '</shippingFaxNo>' .
-                    '</basket>'
+            '<?xml version="1.0" encoding="utf-8"?>' .
+            '<basket>' .
+            '<item>' .
+                    '<description>' . $data['name'] . '</description>' .
+                    '<productSku>' . $data['sku'] . '</productSku>' .
+                    '<productCode>' . $data['product_id'] . '</productCode>' .
+                    '<quantity>' . $data['qty'] . '</quantity>' .
+                    '<unitNetAmount>' . number_format($data['price'], 2) . '</unitNetAmount>' .
+                    '<unitTaxAmount>' . number_format($data['unitTaxAmount'], 2) . '</unitTaxAmount>' .
+                    '<unitGrossAmount>' . number_format($data['unitGrossAmount'], 2) . '</unitGrossAmount>' .
+                    '<totalGrossAmount>' . number_format($data['totalGrossAmount'], 2) . '</totalGrossAmount>' .
+                    '<recipientFName>' . $data['firstName'] . '</recipientFName>' .
+                    '<recipientLName>' . $data['lastName'] . '</recipientLName>' .
+                    '<recipientMName>' . $data['middleName'] . '</recipientMName>' .
+                    '<recipientSal>' . $data['prefix'] . '</recipientSal>' .
+                    '<recipientEmail>' . $data['email'] . '</recipientEmail>' .
+                    '<recipientPhone>' . $data['telephone'] . '</recipientPhone>' .
+                    '<recipientAdd1>' . $data['streetLine'] . '</recipientAdd1>' .
+                    '<recipientAdd2>' . $data['streetLine'] . '</recipientAdd2>' .
+                    '<recipientCity>' . $data['city'] . '</recipientCity>' .
+                    '<recipientCountry>' . $data['country'] . '</recipientCountry>' .
+                    '<recipientPostCode>' . $data['postCode'] . '</recipientPostCode>' .
+                '</item>' .
+                '<deliveryNetAmount>' . number_format($data['shippingAmount'], 2) . '</deliveryNetAmount>' .
+                '<deliveryTaxAmount>' . number_format($data['shippingTaxAmount'], 2) . '</deliveryTaxAmount>' .
+                '<deliveryGrossAmount>' . number_format($data['deliveryGrossAmount'], 2) . '</deliveryGrossAmount>' .
+                '<shippingFaxNo>' . $data['fax'] . '</shippingFaxNo>' .
+            '</basket>'
             ];
         }
 
@@ -439,7 +456,6 @@ class RequestTest extends \PHPUnit_Framework_TestCase
          $addressMock->expects($this->any())
              ->method('getShippingTaxAmount')
              ->willReturn($data['shippingTaxAmount']);
-        //no?
          $addressMock->expects($this->any())
              ->method('getFirstname')
              ->willReturn($data['firstName']);
@@ -461,11 +477,6 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $addressMock->expects($this->any())
             ->method('getStreetLine')
             ->willReturn($data['streetLine']);
-//TODO: Separate line 1 and line 2
-//        $addressMock->expects($this->any())
-//            ->method('getStreetLine')
-//            ->with(2)
-//            ->willReturn($data['streetLine1']);
         $addressMock->expects($this->any())
             ->method('getCity')
             ->willReturn($data['city']);
@@ -574,6 +585,16 @@ class RequestTest extends \PHPUnit_Framework_TestCase
              ->method('getBasketFormat')
              ->willReturn($data['format']);
 
+        $simpleInstance = new \SimpleXMLElement('<?xml version="1.0" encoding="utf-8" ?><basket />');
+        $this->objectManagerMock
+            ->method('create')
+            ->willReturn($simpleInstance);
+
+        $this->requestHelper = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Helper\Request',
+            ['config' => $this->_configMock, 'objectManager' => $this->objectManagerMock]
+        );
+
         $this->assertEquals(
             $basket,
             $this->requestHelper->populateBasketInformation($quoteMock)
@@ -595,6 +616,17 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidateBasketXmlAmounts($totalBasketAmount, $basket)
     {
+        $totalBasketAmount = null;
+
+        $simpleInstance = new \SimpleXMLElement($basket);
+        $this->objectManagerMock
+            ->method('create')
+            ->willReturn($simpleInstance);
+        $this->requestHelper = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Helper\Request',
+            ['config' => $this->_configMock, 'objectManager' => $this->objectManagerMock]
+        );
+
         $this->assertTrue($this->requestHelper->validateBasketXmlAmounts($basket));
     }
 
@@ -605,6 +637,15 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetBasketXmlTotals($totalBasketAmount, $basket)
     {
+        $simpleInstance = new \SimpleXMLElement($basket);
+        $this->objectManagerMock
+            ->method('create')
+            ->willReturn($simpleInstance);
+        $this->requestHelper = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Helper\Request',
+            ['config' => $this->_configMock, 'objectManager' => $this->objectManagerMock]
+        );
+
         $this->assertEquals($totalBasketAmount, $this->requestHelper->getBasketXmlTotalAmount($basket));
     }
 
@@ -1073,6 +1114,15 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $this->assertArrayHasKey('BasketXML', $requestData);
 
+        $simpleInstance = new \SimpleXMLElement($requestData['BasketXML']);
+        $this->objectManagerMock
+            ->method('create')
+            ->willReturn($simpleInstance);
+        $this->requestHelper = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Helper\Request',
+            ['config' => $this->_configMock, 'objectManager' => $this->objectManagerMock]
+        );
+
         $requestData = $this->requestHelper->unsetBasketXMLIfAmountsDontMatch($requestData);
 
         $this->assertArrayNotHasKey('BasketXML', $requestData);
@@ -1136,9 +1186,75 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('BasketXML', $requestData);
         $this->assertArrayHasKey('Amount', $requestData);
 
+        $simpleInstance = new \SimpleXMLElement($requestData['BasketXML']);
+        $this->objectManagerMock
+            ->method('create')
+            ->willReturn($simpleInstance);
+        $this->requestHelper = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Helper\Request',
+            ['config' => $this->_configMock, 'objectManager' => $this->objectManagerMock]
+        );
+
         $requestData = $this->requestHelper->unsetBasketXMLIfAmountsDontMatch($requestData);
 
         $this->assertArrayHasKey('BasketXML', $requestData);
         $this->assertArrayHasKey('Amount', $requestData);
+    }
+
+    public function testParseResponseProvider1()
+    {
+        $string = "HTTP/1.1 200 OK
+P3P: CP=\"CUR\"
+Content-Language: en-GB
+Content-Length: 150
+Date: Fri, 30 Sep 2016 21:14:42 GMT
+Server: undisclosed
+Set-Cookie: NSC_WJQ-uftu.tbhfqbz.dpn-Kbwb7=ffffffff09ebb88e45525d5f4f58455e445a4a423660;path=/;secure;httponly
+
+VPSProtocol=3.00
+Status=INVALID
+StatusDetail=4020 : Information received from an Invalid IP address.
+VPSTxId={9B26DAD6-77FB-B4DB-DB52-FD500A89C05E}";
+
+        $return = $this->requestHelper->rawResponseToArray($string);
+
+        $this->assertEquals(4, count($return));
+
+        $this->assertArrayHasKey('VPSProtocol', $return);
+        $this->assertArrayHasKey('Status', $return);
+        $this->assertArrayHasKey('StatusDetail', $return);
+        $this->assertArrayHasKey('VPSTxId', $return);
+
+        $this->assertEquals($return['VPSProtocol'], "3.00");
+        $this->assertEquals($return['Status'], "INVALID");
+        $this->assertEquals($return['StatusDetail'], "4020 : Information received from an Invalid IP address.");
+        $this->assertEquals($return['VPSTxId'], "{9B26DAD6-77FB-B4DB-DB52-FD500A89C05E}");
+    }
+
+    public function testParseResponseProvider2()
+    {
+        $string = "HTTP/1.1 200 OK
+P3P: CP=\"CUR\"
+Content-Language: en-GB
+Content-Length: 88
+Date: Fri, 30 Sep 2016 21:38:50 GMT
+Server: undisclosed
+Set-Cookie: NSC_WJQ-uftu.tbhfqbz.dpn-Kbwb7=ffffffff09ebb88e45525d5f4f58455e445a4a423660;path=/;secure;httponly
+
+VPSProtocol=3.00
+Status=INVALID
+StatusDetail=3190 : The token value format is invalid.";
+
+        $return = $this->requestHelper->rawResponseToArray($string);
+
+        $this->assertEquals(3, count($return));
+
+        $this->assertArrayHasKey('VPSProtocol', $return);
+        $this->assertArrayHasKey('Status', $return);
+        $this->assertArrayHasKey('StatusDetail', $return);
+
+        $this->assertEquals($return['VPSProtocol'], "3.00");
+        $this->assertEquals($return['Status'], "INVALID");
+        $this->assertEquals($return['StatusDetail'], "3190 : The token value format is invalid.");
     }
 }

@@ -33,7 +33,10 @@ class UpgradeSchemaTest extends \PHPUnit_Framework_TestCase
         $tableMock->expects($this->atLeastOnce())
             ->method('addColumn')
             ->willReturnSelf();
+        $tableMock->expects($this->once())
+            ->method('addIndex')
 
+            ->willReturnSelf();
         $connectionMock = $this
             ->getMockBuilder('Magento\Framework\DB\Adapter\AdapterInterface')
             ->disableOriginalConstructor()

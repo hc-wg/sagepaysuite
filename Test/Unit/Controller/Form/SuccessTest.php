@@ -163,6 +163,15 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteSUCCESS()
     {
+        $invoiceCollectionMock = $this->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $invoiceCollectionMock->expects($this->once())->method('setDataToAll')->willReturnSelf();
+        $this->orderMock
+            ->expects($this->once())
+            ->method('getInvoiceCollection')
+            ->willReturn($invoiceCollectionMock);
+
         $this->checkoutHelperMock->expects($this->any())
             ->method('placeOrder')
             ->will($this->returnValue($this->orderMock));

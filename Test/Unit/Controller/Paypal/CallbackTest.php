@@ -163,6 +163,15 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteSUCCESS()
     {
+        $invoiceCollectionMock = $this->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $invoiceCollectionMock->expects($this->once())->method('setDataToAll')->willReturnSelf();
+        $this->orderMock
+            ->expects($this->once())
+            ->method('getInvoiceCollection')
+            ->willReturn($invoiceCollectionMock);
+
         $this->requestMock->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[

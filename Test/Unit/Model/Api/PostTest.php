@@ -45,12 +45,19 @@ class PostTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($this->curlMock));
 
+        $suiteHelperMock = $this
+        ->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Request::class)
+            ->setMethods(['populateAddressInformation'])
+        ->disableOriginalConstructor()
+        ->getMock();
+
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $this->postApiModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Api\Post',
             [
                 "curlFactory" => $curlFactoryMock,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock
+                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
+                'suiteHelper' => $suiteHelperMock
             ]
         );
     }

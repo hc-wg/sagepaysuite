@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
 class ReportingTest extends \PHPUnit_Framework_TestCase
 {
+    private $curlMockFactory;
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
      */
@@ -23,6 +24,8 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
      */
     private $apiExceptionFactoryMock;
 
+    private $objectManagerMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -36,21 +39,23 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Framework\HTTP\Adapter\Curl')
             ->disableOriginalConstructor()
             ->getMock();
-        $curlFactoryMock = $this
-            ->getMockBuilder('Magento\Framework\HTTP\Adapter\CurlFactory')
-            ->setMethods(["create"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $curlFactoryMock->expects($this->any())
+        $this->curlMockFactory = $this->getMockBuilder('Magento\Framework\HTTP\Adapter\CurlFactory')->setMethods(["create"])->disableOriginalConstructor()->getMock();
+        $this->curlMockFactory->expects($this->any())
             ->method('create')
             ->will($this->returnValue($this->curlMock));
+
+        $this->objectManagerMock = $this->getMockBuilder(\Magento\Framework\ObjectManager\ObjectManager::class)
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $this->reportingApiModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Api\Reporting',
             [
-                "curlFactory" => $curlFactoryMock,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock
+                "curlFactory" => $this->curlMockFactory,
+                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
+                'objectManager' => $this->objectManagerMock
             ]
         );
     }
@@ -78,6 +83,24 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
                 [],
                 $xmlWrite
             );
+
+        $xmldata = '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
+                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
+                </vspaccess>';
+        $simpleInstance = new \SimpleXMLElement($xmldata);
+        $this->objectManagerMock
+            ->method('create')
+            ->willReturn($simpleInstance);
+
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->reportingApiModel = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\Reporting',
+            [
+                "curlFactory" => $this->curlMockFactory,
+                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
+                'objectManager' => $this->objectManagerMock
+            ]
+        );
 
         $this->assertEquals(
             (object)[
@@ -123,6 +146,24 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($apiException));
 
+        $xmldata = '<vspaccess><errorcode>2015</errorcode><error>INVALID STATUS</error>
+                <timestamp>04/11/2013 11:45:32</timestamp><vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid>
+                <vendortxcode>REF20131029-1-838</vendortxcode></vspaccess>';
+        $simpleInstance = new \SimpleXMLElement($xmldata);
+        $this->objectManagerMock
+            ->method('create')
+            ->willReturn($simpleInstance);
+
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->reportingApiModel = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\Reporting',
+            [
+                "curlFactory" => $this->curlMockFactory,
+                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
+                'objectManager' => $this->objectManagerMock
+            ]
+        );
+
         try {
             $this->reportingApiModel->getTransactionDetails("12345");
             $this->assertTrue(false);
@@ -158,6 +199,24 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
                 $xmlWrite
             );
 
+        $xmldata = '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
+                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
+                </vspaccess>';
+        $simpleInstance = new \SimpleXMLElement($xmldata);
+        $this->objectManagerMock
+            ->method('create')
+            ->willReturn($simpleInstance);
+
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->reportingApiModel = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\Reporting',
+            [
+                "curlFactory" => $this->curlMockFactory,
+                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
+                'objectManager' => $this->objectManagerMock
+            ]
+        );
+
         $this->assertEquals(
             (object)[
                 "errorcode" => '0000',
@@ -192,6 +251,24 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
                 [],
                 $xmlWrite
             );
+
+        $xmldata = '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
+                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
+                </vspaccess>';
+        $simpleInstance = new \SimpleXMLElement($xmldata);
+        $this->objectManagerMock
+            ->method('create')
+            ->willReturn($simpleInstance);
+
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->reportingApiModel = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\Reporting',
+            [
+                "curlFactory" => $this->curlMockFactory,
+                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
+                'objectManager' => $this->objectManagerMock
+            ]
+        );
 
         $this->assertEquals(
             (object)[
