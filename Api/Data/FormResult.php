@@ -89,5 +89,4 @@ class FormResult extends Result implements FormResultInterface
     {
         $this->setData(self::CRYPT, $crypt);
     }
-
 }
