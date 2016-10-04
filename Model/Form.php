@@ -394,6 +394,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      * @param \Magento\Framework\DataObject $stateObject
      * @return void
      */
+    // @codingStandardsIgnoreStart
     public function initialize($paymentAction, $stateObject)
     {
         //disable sales email
@@ -406,6 +407,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         $stateObject->setStatus('pending_payment');
         $stateObject->setIsNotified(false);
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * Flag if we need to run payment initialize while order place
