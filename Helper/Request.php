@@ -29,8 +29,10 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
     private $objectManager;
 
     /**
+     * Request constructor.
      * @param Config $config
      * @param Logger $suiteLogger
+     * @param \Magento\Framework\ObjectManager\ObjectManager $objectManager
      */
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Config $config,
