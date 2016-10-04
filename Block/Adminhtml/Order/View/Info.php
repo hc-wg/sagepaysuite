@@ -44,9 +44,8 @@ class Info extends \Magento\Backend\Block\Template
         array $data = []
     ) {
     
-        $this->_order = $registry->registry('current_order');
-        ;
-        $this->_config = $config;
+        $this->_order       = $registry->registry('current_order');
+        $this->_config      = $config;
         $this->_suiteHelper = $suiteHelper;
         parent::__construct($context, $data);
     }
@@ -59,15 +58,18 @@ class Info extends \Magento\Backend\Block\Template
         return $this->_order->getPayment();
     }
 
-    /**
-     * @return string
-     */
-    // @codingStandardsIgnoreStart
-    protected function _toHtml()
+    public function getTemplate()
     {
-        return $this->_config->isSagePaySuiteMethod($this->getPayment()->getMethod()) ? parent::_toHtml() : '';
+        $template = parent::getTemplate();
+
+        $isSagePayMethod = $this->_config->isSagePaySuiteMethod($this->getPayment()->getMethod());
+
+        if ($isSagePayMethod === false) {
+            $template = '';
+        }
+
+        return $template;
     }
-    // @codingStandardsIgnoreEnd
 
     public function getSyncFromApiUrl()
     {
