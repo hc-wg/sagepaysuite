@@ -105,7 +105,12 @@ define(
                             JSON.stringify(payload)
                         ).done(function () {
 
-                                var serviceUrl = urlBuilder.createUrl('/sagepay/form/:cartId', {cartId: quote.getQuoteId()});
+                                var serviceUrl = null;
+                                if (customer.isLoggedIn()) {
+                                    serviceUrl = urlBuilder.createUrl('/sagepay/form/:cartId', {cartId: quote.getQuoteId()});
+                                } else {
+                                    serviceUrl = urlBuilder.createUrl('/sagepay/form-guest/:cartId', {cartId: quote.getQuoteId()});
+                                }
 
                                 //generate crypt and form data
                                 storage.get(serviceUrl).done(
