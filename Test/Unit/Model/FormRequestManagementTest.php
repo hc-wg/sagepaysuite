@@ -29,8 +29,8 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $configMock->expects($this->once())->method('getFormEncryptedPassword')->willReturn("0303456nanana");
         $configMock->expects($this->once())->method('getBasketFormat')->willReturn("Disabled");
-        $configMock->expects($this->once())->method('getMode')->willReturn("test");
-        $configMock->expects($this->once())->method('getSagepayPaymentAction')->willReturn("PAYMENT");
+        $configMock->expects($this->exactly(2))->method('getMode')->willReturn("test");
+        $configMock->expects($this->exactly(2))->method('getSagepayPaymentAction')->willReturn("PAYMENT");
         $configMock->expects($this->once())->method('getVendorname')->willReturn("testebizmarts");
         $configMock->expects($this->once())->method('getFormVendorEmail')->willReturn("testvendor@ebizmarts.com");
         $configMock->expects($this->once())->method('getFormSendEmail')->willReturn(0);
@@ -43,6 +43,8 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Data::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $helperMock->expects($this->once())->method('generateVendorTxCode')->willReturn("00000024-2016-03-16");
+
         $suiteLoggerMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
             ->disableOriginalConstructor()
@@ -53,10 +55,10 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $requestHelperMock->expects($this->once())->method('populatePaymentAmount')->willReturn(
-          [
+            [
               'Amount' => 56.98,
               'Currency' => 'GBP',
-          ]
+            ]
         );
         $requestHelperMock->expects($this->once())->method('populateAddressInformation')->willReturn(
             [
@@ -80,7 +82,7 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
             ]
         );
 
-        $resultObject = $objectManagerHelper->getObject('\Ebizmarts\SagePaySuite\Api\Data\Result');
+        $resultObject = $objectManagerHelper->getObject('\Ebizmarts\SagePaySuite\Api\Data\FormResult');
 
         $checkoutSessionMock = $this
             ->getMockBuilder(\Magento\Checkout\Model\Session::class)
@@ -103,13 +105,22 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $paymentMock = $this->getMockBuilder(\Magento\Quote\Model\Quote\Payment::class)
+            ->setMethods(['setTransactionId', 'setLastTransId', 'setAdditionalInformation', 'save'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock->expects($this->once())->method('setTransactionId')->with("00000024-2016-03-16");
+        $paymentMock->expects($this->once())->method('setLastTransId')->with("00000024-2016-03-16");
+        $paymentMock->expects($this->exactly(4))->method('setAdditionalInformation');
+        $paymentMock->expects($this->once())->method('save')->willReturnSelf();
+
         $quoteMock = $this
             ->getMockBuilder(\Magento\Quote\Model\Quote::class)
             ->disableOriginalConstructor()
             ->getMock();
         $quoteMock->expects($this->once())->method('collectTotals')->willReturnSelf();
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
-        $quoteMock->expects($this->once())->method('save')->willReturnSelf();
+        $quoteMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
 
         $objectManagerMock = $this->getMockBuilder(\Magento\Framework\ObjectManager\ObjectManager::class)
             ->setMethods(['create'])
@@ -119,6 +130,17 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
         $objectManagerMock
             ->method('create')
             ->willReturn($phpseclib);
+
+        $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->expects($this->once())->method('getEntityId')->willReturn(45);
+        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
+
+        $checkoutHelperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Checkout::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $checkoutHelperMock->expects($this->once())->method('placeOrder')->willReturn($orderMock);
 
         $requestMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\FormRequestManagement::class)
@@ -130,6 +152,7 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
                     "suiteLogger"        => $suiteLoggerMock,
                     "requestHelper"      => $requestHelperMock,
                     "result"             => $resultObject,
+                    "checkoutHelper"     => $checkoutHelperMock,
                     "checkoutSession"    => $checkoutSessionMock,
                     "customerSession"    => $customerSessionMock,
                     "quoteRepository"    => $quoteRepoMock,
@@ -142,18 +165,17 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
 
         $requestMock->expects($this->once())->method('getQuoteById')->willReturn($quoteMock);
 
-        /** @var \Ebizmarts\SagePaySuite\Api\Data\ResultInterface $response */
+        /** @var \Ebizmarts\SagePaySuite\Api\Data\FormResultInterface $response */
         $response = $requestMock->getEncryptedRequest(456);
 
         $this->assertTrue($response->getSuccess());
-        $this->isJson($response->getResponse());
-
-        $jsonResp = json_decode($response->getResponse());
-        $this->assertEquals('https://test.sagepay.com/gateway/service/vspform-register.vsp', $jsonResp->redirect_url);
-        $this->assertEquals('3.00', $jsonResp->vps_protocol);
-        $this->assertEquals('PAYMENT', $jsonResp->tx_type);
-        $this->assertEquals('testebizmarts', $jsonResp->vendor);
-        $this->assertStringStartsWith('@', $jsonResp->crypt);
+        $this->assertEquals("PAYMENT", $response->getTxType());
+        $this->assertEquals("testebizmarts", $response->getVendor());
+        $this->assertEquals(
+            "https://test.sagepay.com/gateway/service/vspform-register.vsp",
+            $response->getRedirectUrl()
+        );
+        $this->assertEquals("3.00", $response->getVpsProtocol());
+        $this->assertStringStartsWith("@", $response->getCrypt());
     }
-
 }

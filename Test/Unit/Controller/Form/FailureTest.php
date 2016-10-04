@@ -32,7 +32,7 @@ class FailureTest extends \PHPUnit_Framework_TestCase
     private $redirectMock;
 
     /**
-     * @var Magento\Framework\Message\ManagerInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Magento\Framework\Message\ManagerInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $messageManagerMock;
 
@@ -80,12 +80,48 @@ class FailureTest extends \PHPUnit_Framework_TestCase
                 "StatusDetail" => "2000 : Invalid Card"
             ]));
 
+        $quoteMock = $this->getMockBuilder('\Magento\Quote\Model\Quote')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $quoteMock->expects($this->once())
+            ->method('load')
+            ->willReturnSelf();
+        $quoteFactoryMock = $this->getMockBuilder('\Magento\Quote\Model\QuoteFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(["create"])
+            ->getMock();
+        $quoteFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($quoteMock);
+
+        $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->expects($this->once())
+            ->method('loadByIncrementId')
+            ->willReturnSelf();
+        $orderMock->expects($this->once())
+            ->method('cancel')
+            ->willReturnSelf();
+        $orderFactoryMock = $this->getMockBuilder(\Magento\Sales\Model\OrderFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["create"])
+            ->getMock();
+        $orderFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($orderMock);
+
+        //@TODO: checkoutsessionmock setdata with
+
         $objectManagerHelper = new ObjectManagerHelper($this);
         $this->formFailureController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Form\Failure',
             [
-                'context' => $contextMock,
-                'formModel' => $formModelMock
+                'context'      => $contextMock,
+                'formModel'    => $formModelMock,
+                'quoteFactory' => $quoteFactoryMock,
+                'orderFactory' => $orderFactoryMock
+
             ]
         );
     }
