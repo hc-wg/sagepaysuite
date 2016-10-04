@@ -40,11 +40,18 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
         $postApiMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Api\Post::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        $vpsTxId = "{D4EE4DC0-55D2-6250-2884-2343D0610119}";
+        $nextUrl = "https://testcheckout.sagepay.com/gateway/service/cardselection?vpstxid=".$vpsTxId;
         $postApiMock->method('sendPost')->willReturn(
             [
                 'data' => [
-                    'VPSTxId'     => "F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F",
-                    "SecurityKey" => "AAABARR5kw"
+                    'VPSProtocol'  => "3.00",
+                    'Status'       => "OK",
+                    'StatusDetail' => "2014 : The Transaction was Registered Successfully.",
+                    'VPSTxId'      => $vpsTxId,
+                    "SecurityKey"  => "H8IBLZTYAC",
+                    "NextURL"      => $nextUrl
                 ]
             ]
         );
@@ -57,14 +64,15 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['setTransactionId', 'setLastTransId', 'setAdditionalInformation', 'save'])
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())->method('setTransactionId')->with("F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F");
-        $paymentMock->expects($this->once())->method('setLastTransId')->with("F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F");
+        $paymentMock->expects($this->once())->method('setTransactionId')->with("D4EE4DC0-55D2-6250-2884-2343D0610119");
+        $paymentMock->expects($this->once())->method('setLastTransId')->with("D4EE4DC0-55D2-6250-2884-2343D0610119");
         $paymentMock->expects($this->exactly(5))->method('setAdditionalInformation');
         $paymentMock->expects($this->once())->method('save')->willReturnSelf();
         $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
             ->disableOriginalConstructor()
             ->getMock();
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
+        $orderMock->expects($this->once())->method('getId')->willReturn(456);
 
         $checkoutHelperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Checkout::class)
             ->disableOriginalConstructor()
@@ -110,6 +118,7 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
         $tokenModelMock->expects($this->once())->method('isCustomerUsingMaxTokenSlots')->willReturn(false);
 
         $checkoutSessionMock = $this->getMockBuilder(\Magento\Checkout\Model\Session::class)
+            ->setMethods(['getQuote', 'setData'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -139,6 +148,10 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
         $quoteMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
 
         $checkoutSessionMock->method('getQuote')->willReturn($quoteMock);
+        $checkoutSessionMock->expects($this->once())->method('setData')->with(
+            "sagepaysuite_presaved_order_pending_payment",
+            456
+        );
 
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $resultObject        = $objectManagerHelper->getObject('\Ebizmarts\SagePaySuite\Api\Data\FormResult');
@@ -171,8 +184,16 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($response->getSuccess());
         $this->assertArrayHasKey('data', $response->getResponse());
-        $this->assertArrayHasKey('VPSTxId', $response->getResponse()['data']);
-        $this->assertArrayHasKey('SecurityKey', $response->getResponse()['data']);
-    }
 
+        $responseData = $response->getResponse()['data'];
+        $this->assertEquals("{D4EE4DC0-55D2-6250-2884-2343D0610119}", $responseData['VPSTxId']);
+        $this->assertEquals('H8IBLZTYAC', $responseData['SecurityKey']);
+        $this->assertEquals('3.00', $responseData['VPSProtocol']);
+        $this->assertEquals('OK', $responseData['Status']);
+        $this->assertEquals('2014 : The Transaction was Registered Successfully.', $responseData['StatusDetail']);
+        $this->assertEquals(
+            'https://testcheckout.sagepay.com/gateway/service/cardselection?vpstxid=' . $vpsTxId,
+            $responseData['NextURL']
+        );
+    }
 }
