@@ -9,7 +9,7 @@ interface FormManagementInterface
 {
 
     /**
-     * @param int $cartId
+     * @param string $cartId
      * @return \Ebizmarts\SagePaySuite\Api\Data\FormResultInterface
      */
     public function getEncryptedRequest($cartId);
