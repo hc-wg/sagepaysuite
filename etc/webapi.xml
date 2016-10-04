@@ -16,4 +16,17 @@
         </resources>
     </route>
 
+    <route url="/V1/sagepay/form/:cartId" method="GET">
+        <service class="Ebizmarts\SagePaySuite\Api\FormManagementInterface" method="getEncryptedRequest"/>
+        <resources>
+            <resource ref="self" />
+        </resources>
+    </route>
+
+    <route url="/V1/sagepay/form-guest/:cartId" method="GET">
+        <service class="Ebizmarts\SagePaySuite\Api\GuestFormManagementInterface" method="getEncryptedRequest"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
 </routes>
