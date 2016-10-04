@@ -147,7 +147,6 @@ class FormRequestManagement implements FormManagementInterface
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
             }
-
         } catch (\Exception $e) {
             $this->_suiteLogger->logException($e);
 
@@ -166,7 +165,7 @@ class FormRequestManagement implements FormManagementInterface
         $url = Config::URL_FORM_REDIRECT_LIVE;
 
         if ($this->_config->getMode()== Config::MODE_TEST) {
-           $url = Config::URL_FORM_REDIRECT_TEST;
+            $url = Config::URL_FORM_REDIRECT_TEST;
         }
 
         return $url;

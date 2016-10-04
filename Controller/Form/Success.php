@@ -168,13 +168,7 @@ class Success extends \Magento\Framework\App\Action\Action
 
             $redirect = 'sagepaysuite/form/failure';
             $status   = $response['Status'];
-            if ($status == "ABORT") { //Transaction canceled by customer
-                //cancel pending payment order
-                $this->_cancelOrder();
-                $this->_redirectToCartAndShowError(
-                    __('Transaction canceled.')
-                );
-            } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
+            if ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
                 $sendEmail = true;
                 if ($payment->getAdditionalInformation('euroPayment') == true) {
                     //don't send email if EURO PAYMENT as it was already sent
@@ -192,14 +186,6 @@ class Success extends \Magento\Framework\App\Action\Action
                 $this->orderSender->send($this->_order);
 
                 $redirect = 'checkout/onepage/success';
-            } else { //Transaction failed with NOTAUTHED, REJECTED, ERROR, INVALID or MALFORMED
-
-                //cancel pending payment order
-                $this->_order->cancel()->save();
-
-                $this->_redirectToCartAndShowError(
-                    __('Payment was not accepted, please try another payment method')
-                );
             }
 
             //prepare session to success page
@@ -257,27 +243,6 @@ class Success extends \Magento\Framework\App\Action\Action
                 break;
         }
         return [$action, $closed];
-    }
-
-    private function _cancelOrder()
-    {
-        try {
-            $this->_order->cancel()->save();
-
-            //recover quote
-            if ($this->_quote->getId()) {
-                $this->_quote->setIsActive(1);
-                $this->_quote->setReservedOrderId(null);
-                $this->_quote->save();
-
-                $this->_checkoutSession->replaceQuote($this->_quote);
-            }
-
-            //Unset data
-            $this->_checkoutSession->unsLastRealOrderId();
-        } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e);
-        }
     }
 
     private function _confirmPayment($transactionId, $sendEmail = true)
