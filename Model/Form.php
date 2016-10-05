@@ -17,100 +17,6 @@ use Magento\Framework\Exception\LocalizedException;
 class Form extends \Magento\Payment\Model\Method\AbstractMethod
 {
     /**
-     * @var string
-     */
-    protected $_code = \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM; // @codingStandardsIgnoreLine
-
-    /**
-     * @var string
-     */
-    protected $_infoBlockType = 'Ebizmarts\SagePaySuite\Block\Info'; // @codingStandardsIgnoreLine
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_isGateway = true; // @codingStandardsIgnoreLine
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canOrder = true; // @codingStandardsIgnoreLine
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canAuthorize = true; // @codingStandardsIgnoreLine
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canCapture = true; // @codingStandardsIgnoreLine
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canCapturePartial = true; // @codingStandardsIgnoreLine
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canRefund = true; // @codingStandardsIgnoreLine
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canRefundInvoicePartial = true; // @codingStandardsIgnoreLine
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canVoid = true; // @codingStandardsIgnoreLine
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canUseInternal = true; // @codingStandardsIgnoreLine
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canUseCheckout = true; // @codingStandardsIgnoreLine
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canFetchTransactionInfo = true; // @codingStandardsIgnoreLine
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canReviewPayment = true; // @codingStandardsIgnoreLine
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
     private $_suiteHelper;
@@ -125,6 +31,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     private $_sharedApi;
 
+    /** @var \Magento\Framework\Model\Context */
     private $_context;
 
     /** @var bool */
@@ -285,6 +192,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      * Return magento payment action
      *
      * @return mixed
+     * @code
      */
     public function getConfigPaymentAction()
     {
@@ -366,7 +274,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         $configEnabled = (bool)(int)$this->_config->setMethodCode(
             \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM
         )->isMethodActiveMoto();
-        return $this->_canUseInternal && $configEnabled;
+        return $configEnabled;
     }
 
     /**
@@ -417,7 +325,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function isInitializeNeeded()
     {
-        return true && $this->isInitializeNeeded;
+        return $this->isInitializeNeeded;
     }
 
     /**
@@ -442,6 +350,130 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
             return false;
         }
 
-        return $this->_canVoid;
+        return true;
+    }
+
+    /**
+     * Retrieve payment method code
+     *
+     * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function getCode()
+    {
+        return \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM;
+    }
+
+    public function getInfoBlockType()
+    {
+        return 'Ebizmarts\SagePaySuite\Block\Info';
+    }
+
+    /**
+     * Retrieve payment system relation flag
+     *
+     * @return bool
+     * @api
+     */
+    public function isGateway()
+    {
+        return true;
+    }
+
+    /**
+     * Check order availability
+     *
+     * @return bool
+     * @api
+     */
+    public function canOrder()
+    {
+        return true;
+    }
+
+    /**
+     * Check authorize availability
+     *
+     * @return bool
+     * @api
+     */
+    public function canAuthorize()
+    {
+        return true;
+    }
+
+    /**
+     * Check capture availability
+     *
+     * @return bool
+     * @api
+     */
+    public function canCapture()
+    {
+        return true;
+    }
+
+    /**
+     * Check partial capture availability
+     *
+     * @return bool
+     * @api
+     */
+    public function canCapturePartial()
+    {
+        return true;
+    }
+
+    /**
+     * Check refund availability
+     *
+     * @return bool
+     * @api
+     */
+    public function canRefund()
+    {
+        return true;
+    }
+
+    /**
+     * Check partial refund availability for invoice
+     *
+     * @return bool
+     * @api
+     */
+    public function canRefundPartialPerInvoice()
+    {
+        return true;
+    }
+
+    /**
+     * Can be used in regular checkout
+     *
+     * @return bool
+     */
+    public function canUseCheckout()
+    {
+        return true;
+    }
+
+    /**
+     * Check fetch transaction info availability
+     *
+     * @return bool
+     * @api
+     */
+    public function canFetchTransactionInfo()
+    {
+        return true;
+    }
+
+    /**
+     * Whether this method can accept or deny payment
+     * @return bool
+     * @api
+     */
+    public function canReviewPayment()
+    {
+        return true;
     }
 }
