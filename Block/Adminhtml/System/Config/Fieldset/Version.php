@@ -12,11 +12,6 @@ use Magento\Backend\Block\Template;
 class Version extends Template implements RendererInterface
 {
     /**
-     * @var string
-     */
-    protected $_template = 'Ebizmarts_SagePaySuite::system/config/fieldset/version.phtml'; // @codingStandardsIgnoreLine
-
-    /**
      * @var \Magento\Framework\App\ProductMetadataInterface
      */
     private $_metaData;
@@ -47,15 +42,27 @@ class Version extends Template implements RendererInterface
      * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
      * @return mixed
      */
-    // @codingStandardsIgnoreStart
     public function render(\Magento\Framework\Data\Form\Element\AbstractElement $element)
     {
-        return $this->toHtml();
+        $html = '';
+        if ($element->getData('group')['id'] == 'version') {
+            $html = $this->toHtml();
+        }
+        return $html;
     }
-    // @codingStandardsIgnoreEnd
 
     public function getVersion()
     {
         return $this->_suiteHelper->getVersion();
+    }
+
+    /**
+     * Get relevant path to template
+     *
+     * @return string
+     */
+    public function getTemplate()
+    {
+        return 'Ebizmarts_SagePaySuite::system/config/fieldset/version.phtml';
     }
 }
