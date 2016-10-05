@@ -168,6 +168,13 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
                     'payment_action' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER,
                     'expect' => \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE
                 ]
+            ],
+            'test default' => [
+                [
+                    'code' => \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM,
+                    'payment_action' => 'authorize_capture',
+                    'expect' => \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE
+                ]
             ]
         ];
     }
