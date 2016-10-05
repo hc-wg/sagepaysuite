@@ -47,6 +47,60 @@ class FraudTest extends \PHPUnit_Framework_TestCase
     }
     // @codingStandardsIgnoreEnd
 
+    public function testProcessFraudInformationNoResult()
+    {
+        $resp = new \stdClass();
+        $resp->errorcode = "0000";
+        $resp->fraudid = "someid";
+        $resp->fraudcode = "somecode";
+        $resp->fraudcodedetail = "somedetail";
+        $resp->fraudprovidername = "T3M";
+        $resp->rules = '';
+        $resp->fraudscreenrecommendation = "NORESULT";
+        $this->reportingApiMock->expects($this->once())->method('getFraudScreenDetail')->willReturn($resp);
+
+        $transactionMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock->expects($this->once())->method('setAdditionalInformation')
+            ->with("fraudscreenrecommendation", 'NORESULT')
+            ->willReturnSelf();
+
+        $return = $this->fraudHelperModel->processFraudInformation($transactionMock, $paymentMock);
+
+        $this->assertCount(2, $return);
+        $this->assertArrayHasKey('fraudscreenrecommendation', $return);
+        $this->assertEquals('NORESULT', $return['fraudscreenrecommendation']);
+    }
+
+    public function testProcessFraudInformationResponse()
+    {
+        $resp = new \stdClass();
+        $resp->errorcode = "0010";
+        $this->reportingApiMock->expects($this->once())->method('getFraudScreenDetail')->willReturn($resp);
+
+        $transactionMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $return = $this->fraudHelperModel->processFraudInformation($transactionMock, $paymentMock);
+
+        $this->assertArrayHasKey('ERROR', $return);
+        $this->assertEquals('Invalid Response: 0010', $return['ERROR']);
+    }
+
     /**
      * @dataProvider processFraudInformationDataProvider
      */
@@ -145,6 +199,17 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                         'fraudprovidername' => 'ReD',
                         'fraudrules' => '',
                         'Action' => 'Captured online, invoice # generated.'
+                    ]
+                ]
+            ],
+            'test live no result' => [
+                [
+                    'payment_mode' => 'test',
+                    'fraudscreenrecommendation' => 'NORESULT',
+                    'getAutoInvoiceFraudPassed' => false,
+                    'expects' => [
+                        'VPSTxId' => null,
+                        'Action'  => 'Marked as TEST',
                     ]
                 ]
             ]

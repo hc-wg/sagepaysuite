@@ -203,6 +203,17 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
+    /**
+     * @param Order\Payment\Transaction $transaction
+     * @param Order\Payment $payment
+     * @param $fraudscreenrecommendation
+     * @param $fraudid
+     * @param $fraudcodedetail
+     * @param $fraudprovidername
+     * @param $rules
+     * @return bool|string
+     * @codeCoverageIgnore
+     */
     private function _notification(
         \Magento\Sales\Model\Order\Payment\Transaction $transaction,
         \Magento\Sales\Model\Order\Payment $payment,
