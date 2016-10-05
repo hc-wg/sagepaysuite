@@ -40,6 +40,9 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
      */
     private $resultJson;
 
+    /** @var \Magento\Framework\Message\ManagerInterface */
+    private $messageManagerMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -69,13 +72,12 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
             ->method('getResponse')
             ->will($this->returnValue($this->responseMock));
 
-        $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
+            ->disableOriginalConstructor()->getMock();
 
         $contextMock->expects($this->any())
             ->method('getMessageManager')
-            ->will($this->returnValue($messageManagerMock));
+            ->will($this->returnValue($this->messageManagerMock));
 
         $this->redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
@@ -112,8 +114,8 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
         $this->deleteTokenController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Token\Delete',
             [
-                'context' => $contextMock,
-                'tokenModel' => $this->tokenModelMock,
+                'context'    => $contextMock,
+                'tokenModel' => $this->tokenModelMock
             ]
         );
     }
@@ -170,6 +172,22 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
         ]);
 
         $this->deleteTokenController->execute();
+    }
+
+    public function testNoTokenParam()
+    {
+        $this->requestMock->expects($this->at(0))->method('getParam')->with('token_id')->willReturn(null);
+
+        $this->_expectRedirect('sagepaysuite/customer/tokens');
+
+        $this->messageManagerMock
+            ->expects($this->once())
+            ->method('addError')
+            ->with(
+                'Something went wrong: Unable to delete token: Invalid token id.'
+            );
+
+        $this->assertFalse($this->deleteTokenController->execute());
     }
 
     /**

@@ -90,13 +90,6 @@ class Delete extends \Magento\Framework\App\Action\Action
                 'success' => true,
                 'response' => true
             ];
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->_logger->critical($apiException);
-
-            $responseContent = [
-                'success' => false,
-                'error_message' => __('Something went wrong: ' . $apiException->getUserMessage()),
-            ];
         } catch (\Exception $e) {
             $this->_logger->critical($e);
 
@@ -112,7 +105,7 @@ class Delete extends \Magento\Framework\App\Action\Action
                 $this->_redirect('sagepaysuite/customer/tokens');
                 return true;
             } else {
-                $this->messageManager->addError(__('Something went wrong: ' . $responseContent["error_message"]));
+                $this->messageManager->addError(__($responseContent["error_message"]));
                 $this->_redirect('sagepaysuite/customer/tokens');
                 return false;
             }
