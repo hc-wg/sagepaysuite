@@ -10,6 +10,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
 class DataTest extends \PHPUnit_Framework_TestCase
 {
+    private $objectManagerHelper;
     /**
      * Sage Pay Transaction ID
      */
@@ -50,9 +51,9 @@ class DataTest extends \PHPUnit_Framework_TestCase
         $dateTimeMock->expects($this->any())->method('gmtTimestamp')->willReturn('1456419355');
         $dateTimeMock->expects($this->any())->method('gmtDate')->willReturn('2016-02-25-085555');
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
 
-        $this->dataHelper = $objectManagerHelper->getObject(
+        $this->dataHelper = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Data',
             [
                 'loader'   => $this->loaderMock,
@@ -168,17 +169,76 @@ class DataTest extends \PHPUnit_Framework_TestCase
             'test PAYMENT' => [
                 [
                     'order_id' => '1000000000001',
-                    'action' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT,
+                    'action'   => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT,
                     'expected' => '1000000000001-2016-02-25-085555145641935'
                 ]
             ],
             'test REFUND' => [
                 [
                     'order_id' => '1000000000002',
-                    'action' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND,
+                    'action'   => \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND,
                     'expected' => 'R1000000000002-2016-02-25-08555514564193'
                 ]
+            ],
+            'test AUTHORISE' => [
+                [
+                    'order_id' => '1000000000004',
+                    'action'   => 'AUTHORISE',
+                    'expected' => 'A1000000000004-2016-02-25-08555514564193'
+                ]
+            ],
+            'test REPEAT' => [
+                [
+                    'order_id' => '100000005687',
+                    'action'   => 'REPEAT',
+                    'expected' => 'RT100000005687-2016-02-25-08555514564193'
+                ]
+            ],
+            'test REPEATDEFERRED' => [
+                [
+                    'order_id' => '000000004',
+                    'action'   => 'REPEATDEFERRED',
+                    'expected' => 'RT000000004-2016-02-25-0855551456419355'
+                ]
             ]
+        ];
+    }
+
+    public function testGetSagePayConfig()
+    {
+        $this->dataHelper = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Helper\Data',
+            [
+                'config'   => $this->configMock,
+            ]
+        );
+
+        $this->assertInstanceOf('\Ebizmarts\SagePaySuite\Model\Config', $this->dataHelper->getSagePayConfig());
+    }
+
+    /**
+     * @param $bool
+     * @param $code
+     * @dataProvider methodCodeIsSagePayProvider
+     */
+    public function testMethodCodeIsSagePay($bool, $code)
+    {
+        $this->dataHelper = $this->objectManagerHelper->getObject('Ebizmarts\SagePaySuite\Helper\Data');
+
+        $this->assertEquals($bool, $this->dataHelper->methodCodeIsSagePay($code));
+    }
+
+    public function methodCodeIsSagePayProvider()
+    {
+        return [
+            [true, 'sagepaysuiteform'],
+            [false, 'authorize_net'],
+            [true, 'sagepaysuiterepeat'],
+            [true, 'sagepaysuiteserver'],
+            [false, 'paypal'],
+            [true, 'sagepaysuitepaypal'],
+            [false, 'sagepaydirectpro'],
+            [true, 'sagepaysuitepi']
         ];
     }
 }

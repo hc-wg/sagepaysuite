@@ -1257,4 +1257,418 @@ StatusDetail=3190 : The token value format is invalid.";
         $this->assertEquals($return['Status'], "INVALID");
         $this->assertEquals($return['StatusDetail'], "3190 : The token value format is invalid.");
     }
+
+    public function testValidateBasketXmlLengthTooLong()
+    {
+        $basket = '<basket>
+                    <agentId>johnsmith</agentId>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <item>
+                        <description>Tour</description>
+                        <productSku>TIMESKU</productSku>
+                        <productCode>1234567</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>90.00</unitNetAmount>
+                        <unitTaxAmount>5.00</unitTaxAmount>
+                        <unitGrossAmount>95.00</unitGrossAmount>
+                        <totalGrossAmount>95.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientMName>M</recipientMName>
+                        <recipientSal>MR</recipientSal>
+                        <recipientEmail>firstname.lastname @test.com</recipientEmail>
+                        <recipientPhone>1234567890</recipientPhone>
+                        <recipientAdd1>add1</recipientAdd1>
+                        <recipientAdd2>add2</recipientAdd2>
+                        <recipientCity>city</recipientCity>
+                        <recipientState>CA</recipientState>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>ha412t</recipientPostCode>
+                        <itemShipNo>1123</itemShipNo>
+                        <itemGiftMsg>Happy Birthday</itemGiftMsg>
+                    </item>
+                    <deliveryNetAmount>5.00</deliveryNetAmount>
+                    <deliveryTaxAmount>0.00</deliveryTaxAmount>
+                    <deliveryGrossAmount>5.00</deliveryGrossAmount>
+                    <discounts> 
+                    <discount>
+                        <fixed>5</fixed>
+                        <description>Save 5 pounds</description>
+                    </discount>
+                    </discounts>
+                    <shipId>SHIP00002</shipId>
+                    <shippingMethod>N</shippingMethod>
+                    <shippingFaxNo>1234567890</shippingFaxNo>
+                    <hotel>
+                        <checkIn>2012-10-12</checkIn>
+                        <checkOut>2012-10-13</checkOut>
+                        <numberInParty>1</numberInParty>
+                        <guestName>Mr Smith</guestName>
+                        <folioRefNumber>A1000</folioRefNumber>
+                        <confirmedReservation>Y</confirmedReservation>
+                        <dailyRoomRate>150.00</dailyRoomRate>
+                    </hotel>
+                </basket>';
+
+        $this->assertFalse($this->requestHelper->validateBasketXmlLength($basket));
+    }
 }
