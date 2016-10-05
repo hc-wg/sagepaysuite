@@ -32,12 +32,17 @@ class Delete extends \Magento\Framework\App\Action\Action
     private $_isCustomerArea;
 
     /**
-     * @var Magento\Customer\Model\Session
+     * @var \Magento\Customer\Model\Session
      */
     private $_customerSession;
 
     /**
+     * Delete constructor.
      * @param \Magento\Framework\App\Action\Context $context
+     * @param Logger $suiteLogger
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Ebizmarts\SagePaySuite\Model\Token $tokenModel
+     * @param \Magento\Customer\Model\Session $customerSession
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
