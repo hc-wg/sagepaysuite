@@ -10,11 +10,7 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHe
 
 class SyncFromApiTest extends \PHPUnit_Framework_TestCase
 {
-
-    /**
-     * @var \Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi
-     */
-    private $syncFromApiController;
+    private $objectManagerHelper;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
@@ -32,12 +28,18 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
     private $redirectMock;
 
     /**
-     * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
+     * @var  \Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
     private $orderMock;
 
     // @codingStandardsIgnoreStart
     protected function setUp()
+    {
+        $this->objectManagerHelper   = new ObjectManagerHelper($this);
+    }
+    // @codingStandardsIgnoreEnd
+
+    public function testExecute()
     {
         $this->redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
@@ -144,8 +146,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
                 "threedresult" => "CHECKED"
             ]));
 
-        $objectManagerHelper = new ObjectManagerHelper($this);
-        $this->syncFromApiController = $objectManagerHelper->getObject(
+        $syncFromApiController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi',
             [
                 'context' => $contextMock,
@@ -153,11 +154,84 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
                 'reportingApi' => $reportingApiMock
             ]
         );
-    }
-    // @codingStandardsIgnoreEnd
 
-    public function testExecute()
-    {
-        $this->syncFromApiController->execute();
+        $syncFromApiController->execute();
     }
+
+    public function testExecuteNoParam()
+    {
+        $requestMock = $this
+            ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
+            ->setMethods(['getParam'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $requestMock->expects($this->once())
+            ->method('getParam')
+            ->with('order_id')
+            ->willReturn(null);
+
+        $actionFlagMock = $this
+            ->getMockBuilder('Magento\Framework\App\ActionFlag')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $sessionMock = $this
+            ->getMockBuilder('Magento\Backend\Model\Session')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $messageManagerMock->expects($this->once())
+            ->method('addError')
+            ->with('Something went wrong: Unable to sync from API: Invalid order id.');
+
+        $urlBuilderMock = $this
+            ->getMockBuilder('Magento\Framework\UrlInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $urlBuilderMock->expects($this->once())->method('getUrl')->with('sales/order/index/', []);
+
+        $helperMock = $this
+            ->getMockBuilder('Magento\Backend\Helper\Data')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $contextMock = $this->getMockBuilder('Magento\Backend\App\Action\Context')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $contextMock->expects($this->any())
+            ->method('getActionFlag')
+            ->will($this->returnValue($actionFlagMock));
+        $contextMock->expects($this->any())
+            ->method('getRequest')
+            ->willReturn($requestMock);
+        $contextMock->expects($this->any())
+            ->method('getBackendUrl')
+            ->will($this->returnValue($urlBuilderMock));
+        $contextMock->expects($this->any())
+            ->method('getMessageManager')
+            ->will($this->returnValue($messageManagerMock));
+        $contextMock->expects($this->any())
+            ->method('getSession')
+            ->will($this->returnValue($sessionMock));
+        $contextMock->expects($this->any())
+            ->method('getResponse')
+            ->will($this->returnValue($this
+                ->getMock('Magento\Framework\App\Response\Http', [], [], '', false)));
+        $contextMock->expects($this->any())
+            ->method('getHelper')
+            ->will($this->returnValue($helperMock));
+
+        $controller = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi',
+            [
+                'context' => $contextMock,
+            ]
+        );
+
+        $controller->execute();
+    }
+
 }
