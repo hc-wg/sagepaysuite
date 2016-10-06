@@ -10,40 +10,21 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHe
 
 class SyncFromApiTest extends \PHPUnit_Framework_TestCase
 {
+    /** @var \Magento\Framework\TestFramework\Unit\Helper\ObjectManager */
     private $objectManagerHelper;
-
-    /**
-     * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $requestMock;
-
-    /**
-     * @var Http|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $responseMock;
-
-    /**
-     * @var \Magento\Framework\App\Response\RedirectInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $redirectMock;
-
-    /**
-     * @var  \Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $orderMock;
 
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
-        $this->objectManagerHelper   = new ObjectManagerHelper($this);
+        $this->objectManagerHelper = new ObjectManagerHelper($this);
     }
     // @codingStandardsIgnoreEnd
 
     public function testExecute()
     {
-        $this->redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
+        $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
-        $this->responseMock = $this
+        $responseMock = $this
             ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
 
         $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
@@ -53,11 +34,11 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->method('addSuccess')
             ->with(__('Successfully synced from Sage Pay\'s API'));
 
-        $this->requestMock = $this
+        $requestMock = $this
             ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->requestMock->expects($this->any())
+        $requestMock->expects($this->any())
             ->method('getParam')
             ->will($this->returnValue(1));
 
@@ -86,16 +67,16 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $contextMock->expects($this->any())
             ->method('getResponse')
-            ->will($this->returnValue($this->responseMock));
+            ->will($this->returnValue($responseMock));
         $contextMock->expects($this->any())
             ->method('getRedirect')
-            ->will($this->returnValue($this->redirectMock));
+            ->will($this->returnValue($redirectMock));
         $contextMock->expects($this->any())
             ->method('getMessageManager')
             ->will($this->returnValue($messageManagerMock));
         $contextMock->expects($this->any())
             ->method('getRequest')
-            ->will($this->returnValue($this->requestMock));
+            ->will($this->returnValue($requestMock));
         $contextMock->expects($this->any())
             ->method('getBackendUrl')
             ->will($this->returnValue($urlBuilderMock));
@@ -111,17 +92,26 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
 
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->setMethods(['getLastTransId', 'setAdditionalInformation', 'save'])
             ->disableOriginalConstructor()
             ->getMock();
+        $paymentMock
+            ->expects($this->atLeastOnce())
+            ->method('setAdditionalInformation')
+            ->willReturnSelf();
+        $paymentMock
+            ->expects($this->exactly(3))
+            ->method('getLastTransId')
+            ->willReturn('463B3DE6-443F-585B-E75C-C727476DE98F');
 
-        $this->orderMock = $this
+        $orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->orderMock->expects($this->any())
+        $orderMock->expects($this->any())
             ->method('load')
             ->willReturnSelf();
-        $this->orderMock->expects($this->any())
+        $orderMock->expects($this->any())
             ->method('getPayment')
             ->will($this->returnValue($paymentMock));
 
@@ -132,7 +122,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $orderFactoryMock->expects($this->once())
             ->method('create')
-            ->will($this->returnValue($this->orderMock));
+            ->will($this->returnValue($orderMock));
 
         $reportingApiMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Reporting')
@@ -146,12 +136,35 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
                 "threedresult" => "CHECKED"
             ]));
 
+        $trnRepoMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\Order\Payment\Transaction\Repository::class)
+            ->setMethods(['getSagepaysuiteFraudCheck', 'getByTransactionId'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $trnRepoMock
+            ->expects($this->once())
+            ->method('getSagepaysuiteFraudCheck')
+            ->willReturn(false);
+        $trnRepoMock
+            ->expects($this->once())
+            ->method('getByTransactionId')
+            ->willReturnSelf();
+
+        $fraudHelperMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Fraud::class)
+            ->setMethods(['processFraudInformation'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $fraudHelperMock->expects($this->once())->method('processFraudInformation');
+
         $syncFromApiController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi',
             [
-                'context' => $contextMock,
-                'orderFactory' => $orderFactoryMock,
-                'reportingApi' => $reportingApiMock
+                'context'               => $contextMock,
+                'orderFactory'          => $orderFactoryMock,
+                'reportingApi'          => $reportingApiMock,
+                'transactionRepository' => $trnRepoMock,
+                'fraudHelper'           => $fraudHelperMock
             ]
         );
 
