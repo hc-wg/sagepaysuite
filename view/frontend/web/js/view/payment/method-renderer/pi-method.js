@@ -28,12 +28,6 @@ define(
             if (piConfig && !piConfig.licensed) {
                 $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
             }
-
-            if (piConfig && piConfig.mode && piConfig.mode == 'live') {
-                var sagepayjs = require(['sagepayjs_live']);
-            } else {
-                var sagepayjs = require(['sagepayjs_test']);
-            }
         });
 
         return Component.extend({
@@ -94,35 +88,38 @@ define(
                     };
                 }
 
-                return storage.post(
-                    serviceUrl,
-                    JSON.stringify(payload)
-                ).done(
-                    function () {
+                requirejs(['sagepayjs_' + window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.mode], function() {
+                    storage.post(
+                        serviceUrl,
+                        JSON.stringify(payload)
+                    ).done(
+                        function () {
 
-                        serviceUrl = url.build('sagepaysuite/pi/generateMerchantKey');
+                            serviceUrl = url.build('sagepaysuite/pi/generateMerchantKey');
 
-                        //generate merchant session key
-                        storage.get(serviceUrl).done(
-                            function (response) {
+                            //generate merchant session key
+                            storage.get(serviceUrl).done(
+                                function (response) {
 
-                                if (response.success) {
-                                    self.sagepayTokeniseCard(response.merchant_session_key);
-                                } else {
-                                    self.showPaymentError(response.error_message);
+                                    if (response.success) {
+                                        self.sagepayTokeniseCard(response.merchant_session_key);
+                                    } else {
+                                        self.showPaymentError(response.error_message);
+                                    }
                                 }
-                            }
-                        ).fail(
-                            function (response) {
-                                self.showPaymentError("Unable to create Sage Pay merchant session key.");
-                            }
-                        );
-                    }
-                ).fail(
-                    function (response) {
-                        self.showPaymentError("Unable to save billing address.");
-                    }
-                );
+                            ).fail(
+                                function (response) {
+                                    self.showPaymentError("Unable to create Sage Pay merchant session key.");
+                                }
+                            );
+                        }
+                    ).fail(
+                        function (response) {
+                            self.showPaymentError("Unable to save billing address.");
+                        }
+                    );
+                });
+
                 return false;
             },
 
@@ -143,8 +140,6 @@ define(
                     token_form.elements[4].setAttribute('value', document.getElementById(self.getCode() + '_cc_cid').value);
 
                     try {
-                        //console.log(token_form);
-
                         //request token
                         Sagepay.tokeniseCardDetails(token_form, function (status, response) {
 
@@ -176,6 +171,7 @@ define(
                                 self.showPaymentError(errorMessage);
                             }
                         });
+
                     } catch (err) {
                         console.log(err);
                         //errorProcessor.process(err);
