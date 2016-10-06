@@ -88,7 +88,7 @@ define(
                     };
                 }
 
-                requirejs(['sagepayjs_' + window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.mode], function() {
+                requirejs(['sagepayjs_' + window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.mode], function () {
                     storage.post(
                         serviceUrl,
                         JSON.stringify(payload)
@@ -171,7 +171,6 @@ define(
                                 self.showPaymentError(errorMessage);
                             }
                         });
-
                     } catch (err) {
                         console.log(err);
                         //errorProcessor.process(err);
