@@ -205,9 +205,9 @@ class Token extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Checks whether the customer is using all the available token slots
-     *
+     * Checks whether the customer is using all the available token slots.
      * @param $customerId
+     * @param $vendorname
      * @return bool
      */
     public function isCustomerUsingMaxTokenSlots($customerId, $vendorname)
