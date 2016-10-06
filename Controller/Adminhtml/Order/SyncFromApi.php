@@ -88,7 +88,7 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
             if (!empty($payment->getLastTransId())) {
                 $transaction = $this->_transactionRepository
                                 ->getByTransactionId($payment->getLastTransId(), $payment->getId(), $order->getId());
-                if ((bool)$transaction->getSagepaysuiteFraudCheck() == false) {
+                if ((bool)$transaction->getSagepaysuiteFraudCheck() === false) {
                     $this->_fraudHelper->processFraudInformation($transaction, $payment);
                 }
             }
