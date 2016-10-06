@@ -61,6 +61,31 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     }
     // @codingStandardsIgnoreEnd
 
+    public function testSetStoreId()
+    {
+        $this->configModel->setStoreId(59);
+        \PHPUnit_Framework_Assert::assertAttributeEquals(59, '_storeId', $this->configModel);
+    }
+
+    public function testIsMethodActiveMoto()
+    {
+        $this->configModel->setMethodCode('sagepaysuiteform');
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with(
+                'payment/sagepaysuiteform/active_moto',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn(true);
+
+        $this->assertEquals(
+            true,
+            $this->configModel->isMethodActiveMoto()
+        );
+    }
+
     public function testIsMethodActive()
     {
         $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
@@ -85,6 +110,73 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             \Ebizmarts\SagePaySuite\Model\Config::VPS_PROTOCOL,
             $this->configModel->getVPSProtocol()
+        );
+    }
+
+    public function testGetFormSendEmail()
+    {
+        $this->configModel->setMethodCode('sagepaysuiteform');
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with(
+                'payment/sagepaysuiteform/send_email',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn(1);
+
+        $this->assertEquals(1, $this->configModel->getFormSendEmail());
+    }
+
+    public function testIsPaypalForceXml()
+    {
+        $this->configModel->setMethodCode('sagepaysuitepaypal');
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with(
+                'payment/sagepaysuitepaypal/force_xml',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn(1);
+
+        $this->assertEquals(1, $this->configModel->isPaypalForceXml());
+    }
+
+    public function testGetFormVendorEmail()
+    {
+        $this->configModel->setMethodCode('sagepaysuiteform');
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with(
+                'payment/sagepaysuiteform/vendor_email',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn("me@example.com:me+1@example.com");
+
+        $this->assertEquals("me@example.com:me+1@example.com", $this->configModel->getFormVendorEmail());
+    }
+
+    public function testGetFormEmailMessage()
+    {
+        $this->configModel->setMethodCode('sagepaysuiteform');
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with(
+                'payment/sagepaysuiteform/email_message',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.");
+
+        $this->assertEquals(
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.",
+            $this->configModel->getFormEmailMessage()
         );
     }
 
@@ -115,16 +207,16 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         return [
             'test with pi' => [
                 [
-                    'code' => \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI,
+                    'code'           => \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI,
                     'payment_action' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT,
-                    'expect' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT_PI
+                    'expect'         => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT_PI
                 ]
             ],
             'test without form' => [
                 [
-                    'code' => \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM,
+                    'code'           => \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM,
                     'payment_action' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT,
-                    'expect' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT
+                    'expect'         => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT
                 ]
             ]
         ];
@@ -397,6 +489,25 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testGet3DsecureForcedDisable()
+    {
+        $this->configModel->setMethodCode('sagepaysuiteserver');
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with(
+                'sagepaysuite/advanced/threedsecure',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn('UseMSPSetting');
+
+        $this->assertEquals(
+            2,
+            $this->configModel->get3Dsecure(true)
+        );
+    }
+
     public function testGet3DsecureSERVER()
     {
         $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
@@ -412,6 +523,63 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             '0',
+            $this->configModel->get3Dsecure()
+        );
+    }
+
+    public function testGet3DsecurServer1()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with(
+                'sagepaysuite/advanced/threedsecure',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn(Config::MODE_3D_FORCE);
+
+        $this->assertEquals(
+            '1',
+            $this->configModel->get3Dsecure()
+        );
+    }
+
+    public function testGet3DsecurServer2()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with(
+                'sagepaysuite/advanced/threedsecure',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn(Config::MODE_3D_DISABLE);
+
+        $this->assertEquals(
+            '2',
+            $this->configModel->get3Dsecure()
+        );
+    }
+
+    public function testGet3DsecurServer3()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with(
+                'sagepaysuite/advanced/threedsecure',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn(Config::MODE_3D_IGNORE);
+
+        $this->assertEquals(
+            '3',
             $this->configModel->get3Dsecure()
         );
     }
@@ -450,6 +618,63 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             '0',
+            $this->configModel->getAvsCvc()
+        );
+    }
+
+    public function testGetAvsCvcSERVER1()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with(
+                'sagepaysuite/advanced/avscvc',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn(Config::MODE_AVSCVC_FORCE);
+
+        $this->assertEquals(
+            '1',
+            $this->configModel->getAvsCvc()
+        );
+    }
+
+    public function testGetAvsCvcSERVER2()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with(
+                'sagepaysuite/advanced/avscvc',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn(Config::MODE_AVSCVC_DISABLE);
+
+        $this->assertEquals(
+            '2',
+            $this->configModel->getAvsCvc()
+        );
+    }
+
+    public function testGetAvsCvcSERVER3()
+    {
+        $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with(
+                'sagepaysuite/advanced/avscvc',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn(Config::MODE_AVSCVC_IGNORE);
+
+        $this->assertEquals(
+            '3',
             $this->configModel->getAvsCvc()
         );
     }

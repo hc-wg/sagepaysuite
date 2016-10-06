@@ -228,15 +228,7 @@ class Config
 
         $path = $this->_getSpecificConfigPath($key);
 
-        if ($path !== null) {
-            $value = $this->_scopeConfig->getValue(
-                $path,
-                ScopeInterface::SCOPE_STORE,
-                $storeId
-            );
-            return $value;
-        }
-        return null;
+        return $this->_scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
@@ -298,22 +290,10 @@ class Config
 
     public function getSagepayPaymentAction()
     {
-        $action = $this->getValue("payment_action");
-
-        $sagePayAction = null;
-
         if ($this->_methodCode == self::METHOD_PI) {
-            switch ($action) {
-                case self::ACTION_PAYMENT:
-                    $sagePayAction = self::ACTION_PAYMENT_PI;
-                    break;
-                default:
-                    $sagePayAction = self::ACTION_PAYMENT_PI;
-                    break;
-            }
-            return $sagePayAction;
+            return self::ACTION_PAYMENT_PI;
         } else {
-            return $action;
+            return $this->getValue("payment_action");
         }
     }
 
