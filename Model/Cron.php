@@ -188,7 +188,7 @@ class Cron
 
                 $payment = $this->_orderPaymentRepository->get($transaction->getPaymentId());
                 if ($payment === null) {
-                    throw new \LocalizedException(__('Payment not found for this transaction'));
+                    throw new \Magento\Framework\Exception\LocalizedException(__('Payment not found for this transaction.'));
                 }
 
                 //process fraud information
