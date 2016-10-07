@@ -379,4 +379,159 @@ class CronTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf('\Ebizmarts\SagePaySuite\Model\Cron', $this->cronModel->cancelPendingPaymentOrders());
     }
+
+    public function testCheckFraudException()
+    {
+        $fraudModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $fraudModelMock
+            ->expects($this->once())
+            ->method('getShadowPaidPaymentTransactions')
+            ->willReturn([["transaction_id" => 67]]);
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->orderPaymentRepositoryMock->expects($this->any())
+            ->method('get')
+            ->willReturn(null);
+
+        $orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock->expects($this->any())
+            ->method('getOrder')
+            ->willReturn($orderMock);
+
+        $this->fraudHelper->expects($this->never())
+            ->method("processFraudInformation");
+
+        $trnInstanceMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\TransactionInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $trnInstanceMock->expects($this->once())->method('getPaymentId')->willReturn(1234);
+
+        $trnRepoMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\TransactionRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $trnRepoMock->expects($this->once())->method('get')->willReturn($trnInstanceMock);
+
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->setMethods(['sageLog'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock->expects($this->once())->method('sageLog')
+            ->with(
+                'Cron',
+                $this->logicalAnd(
+                    $this->contains("Payment not found for this transaction."),
+                    $this->arrayHasKey("ERROR"),
+                    $this->arrayHasKey("Trace")
+                )
+            );
+
+        $cronModel = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\Cron',
+            [
+                "suiteLogger"            => $loggerMock,
+                "config"                 => $this->configMock,
+                "orderFactory"           => $this->orderCollectionFactoryMock,
+                "transactionFactory"     => $this->transactionFactoryMock,
+                "orderPaymentRepository" => $this->orderPaymentRepositoryMock,
+                "fraudHelper"            => $this->fraudHelper,
+                "fraudModel"             => $fraudModelMock,
+                "transactionRepository"  => $trnRepoMock
+            ]
+        );
+
+        $cronModel->checkFraud();
+    }
+
+    public function testCheckFraudExceptionApi()
+    {
+        $fraudModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $fraudModelMock
+            ->expects($this->once())
+            ->method('getShadowPaidPaymentTransactions')
+            ->willReturn([["transaction_id" => 67]]);
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->orderPaymentRepositoryMock->expects($this->any())
+            ->method('get')
+            ->willReturn($this->returnValue($paymentMock));
+
+        $orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock->expects($this->any())
+            ->method('getOrder')
+            ->willReturn($orderMock);
+
+        $trnInstanceMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\TransactionInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $trnInstanceMock->expects($this->once())->method('getPaymentId')->willReturn(1234);
+
+        $trnRepoMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\TransactionRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $trnRepoMock->expects($this->once())->method('get')->willReturn($trnInstanceMock);
+
+        $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
+            new \Magento\Framework\Phrase("No transaction found.")
+        );
+
+        $this->fraudHelper->expects($this->once())
+            ->method("processFraudInformation")
+            ->willThrowException($apiException);
+
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->setMethods(['sageLog'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock->expects($this->once())->method('sageLog')
+            ->with(
+                'Cron',
+                $this->logicalAnd(
+                    $this->contains("No transaction found."),
+                    $this->arrayHasKey("ERROR"),
+                    $this->arrayHasKey("Trace")
+                )
+            );
+
+        $cronModel = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\Cron',
+            [
+                "suiteLogger"            => $loggerMock,
+                "config"                 => $this->configMock,
+                "orderFactory"           => $this->orderCollectionFactoryMock,
+                "transactionFactory"     => $this->transactionFactoryMock,
+                "orderPaymentRepository" => $this->orderPaymentRepositoryMock,
+                "fraudHelper"            => $this->fraudHelper,
+                "fraudModel"             => $fraudModelMock,
+                "transactionRepository"  => $trnRepoMock
+            ]
+        );
+
+        $cronModel->checkFraud();
+    }
 }
