@@ -76,6 +76,7 @@ class Cron
      * @param \Ebizmarts\SagePaySuite\Helper\Fraud $fraudHelper
      * @param ResourceModel\Fraud $fraudModel
      * @param \Magento\Framework\Api\SearchCriteriaBuilder $criteriaBuilder
+     * @param \Magento\Framework\Api\FilterBuilder $filterBuilder
      */
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,

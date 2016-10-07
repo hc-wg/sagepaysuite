@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
 class CronTest extends \PHPUnit_Framework_TestCase
 {
+    private $objectManagerHelper;
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Cron
      */
@@ -39,13 +40,15 @@ class CronTest extends \PHPUnit_Framework_TestCase
     private $orderPaymentRepositoryMock;
 
     /**
-     * @var Ebizmarts\SagePaySuite\Helper\Fraud|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Ebizmarts\SagePaySuite\Helper\Fraud|\PHPUnit_Framework_MockObject_MockObject
      */
     private $fraudHelper;
 
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
+        $this->objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+
         $this->fraudHelper = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Fraud')
             ->disableOriginalConstructor()
@@ -104,19 +107,6 @@ class CronTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Api\OrderPaymentRepositoryInterface')
             ->disableOriginalConstructor()
             ->getMock();
-
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->cronModel = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Model\Cron',
-            [
-                "config" => $this->configMock,
-                "resource" => $resourceMock,
-                "orderCollectionFactory" => $this->orderCollectionFactoryMock,
-                "transactionFactory" => $this->transactionFactoryMock,
-                "orderPaymentRepository" => $this->orderPaymentRepositoryMock,
-                "fraudHelper" => $this->fraudHelper
-            ]
-        );
     }
     // @codingStandardsIgnoreEnd
 
@@ -149,8 +139,7 @@ class CronTest extends \PHPUnit_Framework_TestCase
 
         $this->orderCollectionFactoryMock->method('load')->willReturn([$orderMock1, $orderMock2]);
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->cronModel = $objectManagerHelper->getObject(
+        $this->cronModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Cron',
             [
                 "config"                 => $this->configMock,
@@ -163,6 +152,143 @@ class CronTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->cronModel->cancelPendingPaymentOrders();
+    }
+
+    public function testCancelOrders()
+    {
+        $fraudModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $fraudModelMock
+            ->expects($this->once())
+            ->method('getOrdersToCancel')
+            ->willReturn([39, 139]);
+
+        $paymentMock1 = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock1->expects($this->any())
+            ->method('getLastTransId')
+            ->willReturn("463B3DE6-443F-585B-E75C-C727476DE98F");
+
+        $paymentMock2 = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock2->expects($this->any())
+            ->method('getLastTransId')
+            ->willReturn("B5690B3B-599B-49DB-AF36-780A7A53F09B");
+
+        $orderMock1 = $this
+            ->getMockBuilder(\Magento\Sales\Model\Order::class)
+            ->setMethods(['getPayment', 'getEntityId'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock1->expects($this->once())->method('getPayment')->willReturn($paymentMock1);
+        $orderMock1->expects($this->once())->method('getEntityId')->willReturn(39);
+
+        $orderMock2 = $this
+            ->getMockBuilder(\Magento\Sales\Model\Order::class)
+            ->setMethods(['cancel', 'save', 'getPayment', 'getEntityId'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock2->expects($this->once())->method('getPayment')->willReturn($paymentMock2);
+        $orderMock2->expects($this->once())->method('cancel')->willReturnSelf();
+        $orderMock2->expects($this->once())->method('save')->willReturnSelf();
+        $orderMock2->expects($this->once())->method('getEntityId')->willReturn(139);
+
+        $this->orderCollectionFactoryMock->method('load')->willReturn([$orderMock1, $orderMock2]);
+
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->setMethods(['sageLog'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->exactly(2))
+            ->method('sageLog')
+            ->withConsecutive(
+            ['Cron', ["OrderId" => 39,
+                      "Result" => "ERROR : Transaction found: 463B3DE6-443F-585B-E75C-C727476DE98F"]],
+            ['Cron', ["OrderId" => 139,
+                      "Result" => "CANCELLED : No payment received."]]
+        )
+        ->willReturn(true);
+
+        $orderPaymentRepository = $this
+            ->getMockBuilder(\Magento\Sales\Api\OrderPaymentRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $objectManagerMock = $this
+            ->getMockBuilder(\Magento\Framework\ObjectManagerInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $trnMock = $this->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Payment\Transaction\Collection::class)
+            ->setMethods(['getItems'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $trnMock
+            ->expects($this->any())
+            ->method('getItems')
+            ->willReturnOnConsecutiveCalls(
+            [
+                $this->getMockBuilder(\Magento\Sales\Api\Data\TransactionInterface::class)
+                    ->disableOriginalConstructor()
+                    ->getMock()
+            ],
+            []
+        );
+
+        $trnRepoMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\Order\Payment\Transaction\Repository::class)
+            ->setMethods(['getList'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $trnRepoMock->expects($this->exactly(2))->method('getList')->willReturn($trnMock);
+
+        $criteriaBuilderMock = $this
+            ->getMockBuilder(\Magento\Framework\Api\SearchCriteriaBuilder::class)
+            ->setMethods(['addFilters', 'create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $criteriaBuilderMock->expects($this->exactly(2))->method('addFilters')->willReturnSelf();
+        $criteriaBuilderMock->expects($this->exactly(2))->method('create')->willReturn(
+            $this->getMockBuilder(\Magento\Framework\Api\SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        );
+
+        $filterBuilderMock = $this
+            ->getMockBuilder(\Magento\Framework\Api\FilterBuilder::class)
+            ->setMethods(['setField', 'setConditionType', 'create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $filterBuilderMock->method('setField')->with('txn_id')->willReturnSelf();
+        $filterBuilderMock->method('setConditionType')->with('eq')->willReturnSelf();
+
+        $cronMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Cron::class)
+            ->setMethods(['checkFraud'])
+            ->setConstructorArgs(
+                [
+                    "suiteLogger"            => $loggerMock,
+                    "orderPaymentRepository" => $orderPaymentRepository,
+                    "objectManager"          => $objectManagerMock,
+                    "config"                 => $this->configMock,
+                    "orderCollectionFactory" => $this->orderCollectionFactoryMock,
+                    "transactionRepository"  => $trnRepoMock,
+                    "fraudHelper"            => $this->fraudHelper,
+                    "fraudModel"             => $fraudModelMock,
+                    "criteriaBuilder"        => $criteriaBuilderMock,
+                    "filterBuilder"          => $filterBuilderMock
+                ]
+        )
+        ->getMock();
+
+        $cronMock->cancelPendingPaymentOrders();
     }
 
     public function testCheckFraud()
@@ -208,8 +334,7 @@ class CronTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $trnRepoMock->expects($this->exactly(2))->method('get')->willReturn($trnInstanceMock);
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->cronModel = $objectManagerHelper->getObject(
+        $this->cronModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Cron',
             [
                 "config"                 => $this->configMock,
@@ -224,4 +349,25 @@ class CronTest extends \PHPUnit_Framework_TestCase
 
         $this->cronModel->checkFraud();
     }
+
+    public function testCancelPendingPaymentOrders1()
+    {
+        $fraudModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $fraudModelMock
+            ->expects($this->once())
+            ->method('getOrdersToCancel')
+            ->willReturn([]);
+
+        $this->cronModel = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\Cron',
+            [
+                "fraudModel"             => $fraudModelMock
+            ]
+        );
+
+        $this->assertInstanceOf('\Ebizmarts\SagePaySuite\Model\Cron', $this->cronModel->cancelPendingPaymentOrders());
+    }
+
 }
