@@ -155,24 +155,13 @@ class Callback3D extends \Magento\Framework\App\Action\Action
                 //send email
                 $this->_checkoutHelper->sendOrderEmail($order);
 
-                //create transaction record
-                switch ($this->_config->getSagepayPaymentAction()) {
-                    case \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT:
-                        $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
-                        $closed = true;
-                        break;
-                    default:
-                        $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
-                        $closed = true;
-                        break;
-                }
                 $transaction = $this->_transactionFactory->create();
                 $transaction->setOrderPaymentObject($payment);
                 $transaction->setTxnId($this->_transactionId);
                 $transaction->setOrderId($order->getEntityId());
-                $transaction->setTxnType($action);
+                $transaction->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE);
                 $transaction->setPaymentId($payment->getId());
-                $transaction->setIsClosed($closed);
+                $transaction->setIsClosed(true);
                 $transaction->save();
 
                 //update invoice transaction id
