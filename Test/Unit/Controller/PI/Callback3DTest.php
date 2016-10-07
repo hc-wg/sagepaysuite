@@ -59,8 +59,6 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
     }
     // @codingStandardsIgnoreEnd
 
-
-
     public function testExecuteSUCCESS()
     {
 

@@ -209,12 +209,22 @@ class CronTest extends \PHPUnit_Framework_TestCase
             ->expects($this->exactly(2))
             ->method('sageLog')
             ->withConsecutive(
-            ['Cron', ["OrderId" => 39,
-                      "Result" => "ERROR : Transaction found: 463B3DE6-443F-585B-E75C-C727476DE98F"]],
-            ['Cron', ["OrderId" => 139,
-                      "Result" => "CANCELLED : No payment received."]]
-        )
-        ->willReturn(true);
+                [
+                    'Cron',
+                    [
+                        "OrderId" => 39,
+                        "Result"  => "ERROR : Transaction found: 463B3DE6-443F-585B-E75C-C727476DE98F"
+                    ]
+                ],
+                [
+                    'Cron',
+                    [
+                        "OrderId" => 139,
+                        "Result"  => "CANCELLED : No payment received."
+                    ]
+                ]
+            )
+            ->willReturn(true);
 
         $orderPaymentRepository = $this
             ->getMockBuilder(\Magento\Sales\Api\OrderPaymentRepositoryInterface::class)
@@ -234,13 +244,13 @@ class CronTest extends \PHPUnit_Framework_TestCase
             ->expects($this->any())
             ->method('getItems')
             ->willReturnOnConsecutiveCalls(
-            [
-                $this->getMockBuilder(\Magento\Sales\Api\Data\TransactionInterface::class)
-                    ->disableOriginalConstructor()
-                    ->getMock()
-            ],
-            []
-        );
+                [
+                    $this->getMockBuilder(\Magento\Sales\Api\Data\TransactionInterface::class)
+                        ->disableOriginalConstructor()
+                        ->getMock()
+                ],
+                []
+            );
 
         $trnRepoMock = $this
             ->getMockBuilder(\Magento\Sales\Model\Order\Payment\Transaction\Repository::class)
@@ -285,8 +295,8 @@ class CronTest extends \PHPUnit_Framework_TestCase
                     "criteriaBuilder"        => $criteriaBuilderMock,
                     "filterBuilder"          => $filterBuilderMock
                 ]
-        )
-        ->getMock();
+            )
+            ->getMock();
 
         $cronMock->cancelPendingPaymentOrders();
     }
@@ -369,5 +379,4 @@ class CronTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf('\Ebizmarts\SagePaySuite\Model\Cron', $this->cronModel->cancelPendingPaymentOrders());
     }
-
 }
