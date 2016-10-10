@@ -544,6 +544,87 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $serverNotifyController->execute();
     }
 
+    public function testOrderDoesNotExist()
+    {
+        $this->quoteMock = $this->getMockBuilder('Magento\Quote\Model\Quote')->disableOriginalConstructor()->getMock();
+        $this->quoteMock->expects($this->once())
+            ->method('getId')
+            ->willReturn(123);
+        $this->quoteMock->expects($this->once())
+            ->method('load')
+            ->willReturnSelf();
+
+        $this->checkoutSessionMock = $this->getMockBuilder('Magento\Checkout\Model\Session')
+            ->disableOriginalConstructor()->getMock();
+
+        $this->responseMock = $this
+            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+
+        $this->requestMock = $this
+            ->getMockBuilder('Magento\Framework\App\Request\Http')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->urlBuilderMock = $this
+            ->getMockBuilder('Magento\Framework\UrlInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')
+            ->disableOriginalConstructor()->getMock();
+        $this->contextMock->expects($this->any())
+            ->method('getRequest')
+            ->will($this->returnValue($this->requestMock));
+        $this->contextMock->expects($this->any())
+            ->method('getResponse')
+            ->will($this->returnValue($this->responseMock));
+        $this->contextMock->expects($this->any())
+            ->method('getUrl')
+            ->will($this->returnValue($this->urlBuilderMock));
+
+        $this->configMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
+            ->disableOriginalConstructor()->getMock();
+
+        $this->orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->orderMock->expects($this->any())
+            ->method('getId')
+            ->will($this->returnValue(1));
+
+        $this->orderFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\OrderFactory')
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->orderFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($this->orderMock);
+
+        $this->transactionFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->controllerInstantiate(
+            $this->contextMock,
+            $this->configMock,
+            $this->checkoutSessionMock,
+            $this->orderFactoryMock,
+            $this->transactionFactoryMock,
+            $this->quoteMock
+        );
+
+        $this->_expectSetBody(
+            'Status=INVALID' . "\r\n" .
+            'StatusDetail=Order was not found' . "\r\n" .
+            'RedirectURL=?message=Order was not found' . "\r\n"
+        );
+
+        $this->serverNotifyController->execute();
+    }
+
     /**
      * @param $body
      */
