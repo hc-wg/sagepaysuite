@@ -16,6 +16,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
     private $contextMock;
     private $checkoutSessionMock;
     private $quoteMock;
+    private $objectManagerHelper;
 
     /**
      * Sage Pay Transaction ID
@@ -45,7 +46,13 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
     private $orderMock;
 
     // @codingStandardsIgnoreStart
-    protected function setUp()
+    public function setUp()
+    {
+        $this->objectManagerHelper = new ObjectManagerHelper($this);
+    }
+    // @codingStandardsIgnoreEnd
+
+    public function testExecuteOK()
     {
         $serverModelMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Server')
@@ -70,7 +77,6 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->quoteMock->expects($this->any())
             ->method('load')
             ->willReturnSelf();
-
 
         $this->checkoutSessionMock = $this->getMockBuilder('Magento\Checkout\Model\Session')
             ->disableOriginalConstructor()->getMock();
@@ -148,11 +154,6 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->transactionFactoryMock->expects($this->any())
             ->method('create')
             ->will($this->returnValue($transactionMock));
-    }
-    // @codingStandardsIgnoreEnd
-
-    public function testExecuteOK()
-    {
         $invoiceCollectionMock = $this
             ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
             ->disableOriginalConstructor()
@@ -205,6 +206,107 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteABORT()
     {
+        $serverModelMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Server')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock->expects($this->any())
+            ->method('getLastTransId')
+            ->will($this->returnValue(self::TEST_VPSTXID));
+        $paymentMock->expects($this->any())
+            ->method('getMethodInstance')
+            ->will($this->returnValue($serverModelMock));
+
+        $this->quoteMock = $this->getMockBuilder('Magento\Quote\Model\Quote')->disableOriginalConstructor()->getMock();
+        $this->quoteMock->expects($this->any())
+            ->method('getId')
+            ->will($this->returnValue(1));
+        $this->quoteMock->expects($this->any())
+            ->method('load')
+            ->willReturnSelf();
+
+        $this->checkoutSessionMock = $this->getMockBuilder('Magento\Checkout\Model\Session')
+            ->disableOriginalConstructor()->getMock();
+
+        $this->responseMock = $this
+            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+
+        $this->requestMock = $this
+            ->getMockBuilder('Magento\Framework\App\Request\Http')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->urlBuilderMock = $this
+            ->getMockBuilder('Magento\Framework\UrlInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')
+            ->disableOriginalConstructor()->getMock();
+        $this->contextMock->expects($this->any())
+            ->method('getRequest')
+            ->will($this->returnValue($this->requestMock));
+        $this->contextMock->expects($this->any())
+            ->method('getResponse')
+            ->will($this->returnValue($this->responseMock));
+        $this->contextMock->expects($this->any())
+            ->method('getUrl')
+            ->will($this->returnValue($this->urlBuilderMock));
+
+        $this->configMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
+            ->disableOriginalConstructor()->getMock();
+        $this->configMock->expects($this->any())
+            ->method('getSagepayPaymentAction')
+            ->will($this->returnValue("PAYMENT"));
+        $this->configMock->expects($this->any())
+            ->method('getVendorname')
+            ->will($this->returnValue("testebizmarts"));
+
+        $this->orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->orderMock->expects($this->any())
+            ->method('getPayment')
+            ->will($this->returnValue($paymentMock));
+        $this->orderMock->expects($this->any())
+            ->method('loadByIncrementId')
+            ->willReturnSelf();
+        $this->orderMock->expects($this->any())
+            ->method('place')
+            ->willReturnSelf();
+        $this->orderMock->expects($this->any())
+            ->method('getId')
+            ->will($this->returnValue(1));
+        $this->orderMock->expects($this->any())
+            ->method('cancel')
+            ->willReturnSelf();
+
+        $this->orderFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\OrderFactory')
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->orderFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($this->orderMock);
+
+        $transactionMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->transactionFactoryMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
+            ->setMethods(['create'])->disableOriginalConstructor()->getMock();
+        $this->transactionFactoryMock->expects($this->any())
+            ->method('create')
+            ->will($this->returnValue($transactionMock));
+
         $this->requestMock->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
@@ -247,6 +349,107 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteERROR()
     {
+        $serverModelMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Server')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock->expects($this->any())
+            ->method('getLastTransId')
+            ->will($this->returnValue(self::TEST_VPSTXID));
+        $paymentMock->expects($this->any())
+            ->method('getMethodInstance')
+            ->will($this->returnValue($serverModelMock));
+
+        $this->quoteMock = $this->getMockBuilder('Magento\Quote\Model\Quote')->disableOriginalConstructor()->getMock();
+        $this->quoteMock->expects($this->any())
+            ->method('getId')
+            ->will($this->returnValue(1));
+        $this->quoteMock->expects($this->any())
+            ->method('load')
+            ->willReturnSelf();
+
+        $this->checkoutSessionMock = $this->getMockBuilder('Magento\Checkout\Model\Session')
+            ->disableOriginalConstructor()->getMock();
+
+        $this->responseMock = $this
+            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+
+        $this->requestMock = $this
+            ->getMockBuilder('Magento\Framework\App\Request\Http')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->urlBuilderMock = $this
+            ->getMockBuilder('Magento\Framework\UrlInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')
+            ->disableOriginalConstructor()->getMock();
+        $this->contextMock->expects($this->any())
+            ->method('getRequest')
+            ->will($this->returnValue($this->requestMock));
+        $this->contextMock->expects($this->any())
+            ->method('getResponse')
+            ->will($this->returnValue($this->responseMock));
+        $this->contextMock->expects($this->any())
+            ->method('getUrl')
+            ->will($this->returnValue($this->urlBuilderMock));
+
+        $this->configMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
+            ->disableOriginalConstructor()->getMock();
+        $this->configMock->expects($this->any())
+            ->method('getSagepayPaymentAction')
+            ->will($this->returnValue("PAYMENT"));
+        $this->configMock->expects($this->any())
+            ->method('getVendorname')
+            ->will($this->returnValue("testebizmarts"));
+
+        $this->orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->orderMock->expects($this->any())
+            ->method('getPayment')
+            ->will($this->returnValue($paymentMock));
+        $this->orderMock->expects($this->any())
+            ->method('loadByIncrementId')
+            ->willReturnSelf();
+        $this->orderMock->expects($this->any())
+            ->method('place')
+            ->willReturnSelf();
+        $this->orderMock->expects($this->any())
+            ->method('getId')
+            ->will($this->returnValue(1));
+        $this->orderMock->expects($this->any())
+            ->method('cancel')
+            ->willReturnSelf();
+
+        $this->orderFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\OrderFactory')
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->orderFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($this->orderMock);
+
+        $transactionMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->transactionFactoryMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
+            ->setMethods(['create'])->disableOriginalConstructor()->getMock();
+        $this->transactionFactoryMock->expects($this->any())
+            ->method('create')
+            ->will($this->returnValue($transactionMock));
+
         $this->requestMock->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
@@ -288,6 +491,59 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->serverNotifyController->execute();
     }
 
+    public function testExecuteNoQuote()
+    {
+        $this->responseMock = $this
+            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+
+        $this->requestMock = $this
+            ->getMockBuilder('Magento\Framework\App\Request\Http')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->urlBuilderMock = $this
+            ->getMockBuilder('Magento\Framework\UrlInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')
+            ->disableOriginalConstructor()->getMock();
+        $this->contextMock->expects($this->any())
+            ->method('getRequest')
+            ->will($this->returnValue($this->requestMock));
+        $this->contextMock->expects($this->any())
+            ->method('getResponse')
+            ->will($this->returnValue($this->responseMock));
+        $this->contextMock->expects($this->any())
+            ->method('getUrl')
+            ->will($this->returnValue($this->urlBuilderMock));
+
+        $quoteMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)
+            ->setMethods(['getId', 'load'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $quoteMock->expects($this->once())->method('load')->willReturnSelf();
+        $quoteMock->expects($this->once())->method('getId')->willReturn(null);
+
+        $this->responseMock->expects($this->once())
+            ->method('setBody')
+            ->with('Status=INVALID' . "\r\n" .
+                'StatusDetail=Unable to find quote' . "\r\n" .
+                'RedirectURL=?message=Unable to find quote' . "\r\n");
+
+        $serverNotifyController = $this
+            ->objectManagerHelper
+            ->getObject(
+                'Ebizmarts\SagePaySuite\Controller\Server\Notify',
+                [
+                    'context' => $this->contextMock,
+                    'quote'   => $quoteMock
+                ]
+            );
+
+        $serverNotifyController->execute();
+    }
+
     /**
      * @param $body
      */
@@ -314,16 +570,15 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $transactionFactoryMock,
         $quoteMock
     ) {
-        $objectManagerHelper          = new ObjectManagerHelper($this);
-        $this->serverNotifyController = $objectManagerHelper->getObject(
+        $this->serverNotifyController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Server\Notify',
             [
-                'context' => $contextMock,
-                'config' => $configMock,
-                'checkoutSession' => $checkoutSessionMock,
-                'orderFactory' => $orderFactoryMock,
+                'context'            => $contextMock,
+                'config'             => $configMock,
+                'checkoutSession'    => $checkoutSessionMock,
+                'orderFactory'       => $orderFactoryMock,
                 'transactionFactory' => $transactionFactoryMock,
-                'quote' => $quoteMock
+                'quote'              => $quoteMock
             ]
         );
     }
