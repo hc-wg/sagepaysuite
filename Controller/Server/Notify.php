@@ -65,11 +65,16 @@ class Notify extends \Magento\Framework\App\Action\Action
     private $_tokenModel;
 
     /**
+     * Notify constructor.
      * @param \Magento\Framework\App\Action\Context $context
      * @param Logger $suiteLogger
      * @param \Magento\Sales\Model\OrderFactory $orderFactory
      * @param OrderSender $orderSender
      * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
+     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Ebizmarts\SagePaySuite\Model\Token $tokenModel
+     * @param \Magento\Quote\Model\Quote $quote
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
