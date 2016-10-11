@@ -168,6 +168,10 @@ class FraudTest extends \PHPUnit_Framework_TestCase
 
         $fraudModelMock->expects($this->once())->method('resetUniqueField');
 
-        $fraudModelMock->__construct();
+        $fraudModelMock->__construct(
+            $this->getMockBuilder(\Magento\Framework\Model\ResourceModel\Db\Context::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        );
     }
 }
