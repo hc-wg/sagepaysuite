@@ -192,14 +192,7 @@ class Notify extends \Magento\Framework\App\Action\Action
 
                 return $this->_returnAbort();
             } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
-                $sendEmail = true;
-                if ($payment->getAdditionalInformation('euroPayment') == true) {
-                    //don't send email if EURO PAYMENT as it was already sent
-                    $sendEmail = false;
-                }
-
-                $this->_confirmPayment($transactionId, $sendEmail);
-
+                $this->_confirmPayment($transactionId);
                 return $this->_returnOk();
             } elseif ($status == "PENDING") {
                 //Transaction in PENDING state (this is just for Euro Payments)
@@ -280,15 +273,15 @@ class Notify extends \Magento\Framework\App\Action\Action
         }
     }
 
-    private function _confirmPayment($transactionId, $sendEmail = true)
+    private function _confirmPayment($transactionId)
     {
         //invoice
         $payment = $this->_order->getPayment();
         $payment->getMethodInstance()->markAsInitialized();
         $this->_order->place()->save();
 
-        //send email
-        if ($sendEmail) {
+        if ((bool)$payment->getAdditionalInformation('euroPayment') !== true) {
+            //don't send email if EURO PAYMENT as it was already sent
             $this->_orderSender->send($this->_order);
         }
 
