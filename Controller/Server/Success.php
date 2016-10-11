@@ -81,7 +81,7 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
         } catch (\Exception $e) {
             $this->_logger->critical($e);
-            $this->messageManager->addSuccess(__('Order created successfully'));
+            $this->messageManager->addError(__('An error ocurred.'));
         }
 
         //redirect to success via javascript
