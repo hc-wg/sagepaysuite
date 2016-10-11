@@ -158,4 +158,16 @@ class FraudTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals([['transaction_id' => 198]], $fraudModelMock->getShadowPaidPaymentTransactions());
     }
+
+    public function testConstructIsCallingResetter()
+    {
+        $fraudModelMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $fraudModelMock->expects($this->once())->method('resetUniqueField');
+
+        $fraudModelMock->__construct();
+    }
 }
