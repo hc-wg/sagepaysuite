@@ -129,7 +129,7 @@ class Success extends \Magento\Framework\App\Action\Action
             //decode response
             $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
             if (!array_key_exists("VPSTxId", $response)) {
-                throw new \Magento\Framework\Exception\LocalizedException('Invalid response from Sage Pay');
+                throw new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay.'));
             }
 
             //log response
@@ -143,7 +143,7 @@ class Success extends \Magento\Framework\App\Action\Action
             }
 
             $transactionId = $response["VPSTxId"];
-            $transactionId = str_replace("{", "", str_replace("}", "", $transactionId)); //strip brackets
+            $transactionId = str_replace(["{", "}"], ["", ""], $transactionId); //strip brackets
 
             $payment = $this->_order->getPayment();
 
@@ -169,14 +169,7 @@ class Success extends \Magento\Framework\App\Action\Action
             $redirect = 'sagepaysuite/form/failure';
             $status   = $response['Status'];
             if ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
-                $sendEmail = true;
-                if ($payment->getAdditionalInformation('euroPayment') == true) {
-                    //don't send email if EURO PAYMENT as it was already sent
-                    $sendEmail = false;
-                }
-
-                $this->_confirmPayment($transactionId, $sendEmail);
-
+                $this->_confirmPayment($transactionId);
                 $redirect = 'checkout/onepage/success';
             } elseif ($status == "PENDING") {
                 //Transaction in PENDING state (this is just for Euro Payments)
@@ -245,15 +238,15 @@ class Success extends \Magento\Framework\App\Action\Action
         return [$action, $closed];
     }
 
-    private function _confirmPayment($transactionId, $sendEmail = true)
+    private function _confirmPayment($transactionId)
     {
         //invoice
         $payment = $this->_order->getPayment();
         $payment->getMethodInstance()->markAsInitialized();
         $this->_order->place()->save();
 
-        //send email
-        if ($sendEmail) {
+        if ((bool)$payment->getAdditionalInformation('euroPayment') !== true) {
+            //don't send email if EURO PAYMENT as it was already sent
             $this->orderSender->send($this->_order);
         }
 
