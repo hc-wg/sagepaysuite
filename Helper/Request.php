@@ -283,6 +283,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      */
     private function _getBasketXml($quote)
     {
+        /** @var \SimpleXMLElement $basket */
         $basket = $this->objectManager
             ->create('\SimpleXMLElement', ['data' => '<?xml version="1.0" encoding="utf-8" ?><basket />']);
 
@@ -437,7 +438,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
             if (preg_match($safe_regex, substr($string, $i, 1)) != false) {
                 $safe_string .= substr($string, $i, 1);
             } else {
-                $safe_string .= '-';
+                $safe_string .= '';
             }
         }
 
@@ -646,7 +647,8 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      */
     private function basketXmlProductDescription($item, $node)
     {
-        $itemDesc         = trim(substr($item->getName(), 0, 100));
+        $itemDesc = trim(substr($item->getName(), 0, 100));
+        $itemDesc = html_entity_decode($itemDesc, ENT_QUOTES, "utf-8"); //@codingStandardsIgnoreLine
         $validDescription = preg_match_all("/.*/", $itemDesc, $matchesDescription);
         if ($validDescription !== 1) {
             //<description>

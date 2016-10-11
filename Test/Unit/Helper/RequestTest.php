@@ -326,6 +326,45 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                         'isMultishipping' => false,
                         'method' => 'sagepayserver',
                     ]
+                ]
+            ,
+            'test XML special chars' =>
+                [
+                    [
+                        'name' => 'Pursuit Lumaflex&trade; Tone Band',
+                        'expected_name' => 'Pursuit Lumaflex Tone Band',
+                        'sku' => '24-UG02',
+                        'product_id' => 56,
+                        'id' => null,
+                        'qty' => 1,
+                        'taxAmount' => 0,
+                        'unitTaxAmount' => 0,
+                        'unitGrossAmount' => 16,
+                        'totalGrossAmount' => 16,
+                        'firstName' => 'first name',
+                        'lastName' => 'last name',
+                        'middleName' => 'm',
+                        'prefix' => 'pref',
+                        'email' => 'email',
+                        'telephone' => '123456',
+                        'streetLine' => 'streetLine',
+                        'city' => 'city',
+                        'country' => 'co',
+                        'postCode' => '11222',
+                        'shippingAmount' => 15,
+                        'shippingTaxAmount' => 1,
+                        'deliveryGrossAmount' => 16,
+                        'priceInclTax' => 16,
+                        'price' => 16,
+                        'fax' => '11222',
+                        'parentItem' => false,
+                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML,
+                        'shippingDescription' => 'desc',
+                        'regionCode' => 'rc',
+                        'allAddresses' => [],
+                        'isMultishipping' => false,
+                        'method' => 'sagepayserver',
+                    ]
                 ],
             'test XML with tax' =>
                 [
@@ -394,12 +433,17 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                     ($data['shippingAmount'] + $data['shippingTaxAmount'])
             ];
         } elseif ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML) {
+            $xmlDesc = "<description>{$data['name']}</description>";
+            if (array_key_exists('expected_name', $data)) {
+                $xmlDesc = "<description>{$data['expected_name']}</description>";
+            }
+
             $basket = [
                 'BasketXML' =>
             '<?xml version="1.0" encoding="utf-8"?>' .
             '<basket>' .
             '<item>' .
-                    '<description>' . $data['name'] . '</description>' .
+                    $xmlDesc .
                     '<productSku>' . $data['sku'] . '</productSku>' .
                     '<productCode>' . $data['product_id'] . '</productCode>' .
                     '<quantity>' . $data['qty'] . '</quantity>' .
@@ -596,8 +640,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->assertEquals(
-            $basket,
-            $this->requestHelper->populateBasketInformation($quoteMock)
+            current($basket),
+            current($this->requestHelper->populateBasketInformation($quoteMock))
         );
     }
 
