@@ -60,18 +60,19 @@ define([
 
             var serviceUrl = this.options.url.generateMerchantKey;
 
-            $.ajax({
-                url: serviceUrl,
-                data: {form_key: window.FORM_KEY},
-                type: 'POST',
-                showLoader: true
-            }).done(function (response) {
-                if (response.success) {
-                    self.sagepayTokeniseCard(response.merchant_session_key);
-                } else {
-                    console.log(response);
-                    self.showPaymentError(response.error_message ? response.error_message : response.message);
-                }
+            require(['sagepayjs_' + this.options.mode], function () {
+                $.ajax({
+                    url: serviceUrl,
+                    data: {form_key: window.FORM_KEY},
+                    type: 'POST',
+                    showLoader: true
+                }).done(function (response) {
+                    if (response.success) {
+                        self.sagepayTokeniseCard(response.merchant_session_key);
+                    } else {
+                        self.showPaymentError(response.error_message ? response.error_message : response.message);
+                    }
+                });
             });
 
             return false;
@@ -178,16 +179,6 @@ define([
 
             var serviceUrl = this.options.url.request;
 
-            // var payload = {
-            //     merchant_session_key: self.merchantSessionKey,
-            //     card_identifier: self.cardIdentifier,
-            //     card_type: self.creditCardType,
-            //     card_exp_month: self.creditCardExpMonth,
-            //     card_exp_year: self.creditCardExpYear,
-            //     card_last4: self.creditCardLast4,
-            //     form_key: window.FORM_KEY
-            // };
-
             var formData = jQuery("#edit_form").serialize();
             formData += "&merchant_session_key=" + self.merchantSessionKey;
             formData += "&card_identifier=" + self.cardIdentifier;
@@ -256,14 +247,6 @@ define([
 
         },
         _create: function () {
-
-            if (this.options.mode == 'live') {
-                var sagepayjs = require(['sagepayjs_live']);
-            } else {
-                var sagepayjs = require(['sagepayjs_test']);
-            }
-
-
             $('#edit_form').on('changePaymentMethod', this.prepare.bind(this));
             $('#edit_form').on('changePaymentData', this.changePaymentData.bind(this));
             $('#edit_form').trigger(
