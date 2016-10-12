@@ -29,7 +29,7 @@ class FormTest extends \PHPUnit_Framework_TestCase
 
     public function testDecodeSagePayResponse()
     {
-        $encryptorMock = $this->objectManagerHelper->getObject(
+        $encryptor = $this->objectManagerHelper->getObject(
             '\phpseclib\Crypt\AES',
             ['mode' => 2]
         );
@@ -37,7 +37,7 @@ class FormTest extends \PHPUnit_Framework_TestCase
         $objectManagerMock = $this->getMockBuilder(\Magento\Framework\App\ObjectManager::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $objectManagerMock->expects($this->once())->method('create')->willReturn($encryptorMock);
+        $objectManagerMock->expects($this->once())->method('create')->willReturn($encryptor);
         \Magento\Framework\App\ObjectManager::setInstance($objectManagerMock);
 
         $crypt = "@77a9f5fb9cbfc11c6f3d5d6b424c7e840ad2573a3dcab681978e33a10202f0483177475ac5a76752c8b10a736d13fe83bb";
@@ -89,6 +89,35 @@ class FormTest extends \PHPUnit_Framework_TestCase
         $this->assertArraySubset(['ExpiryDate' => '0120'], $response);
         $this->assertArraySubset(['Amount' => '214.00'], $response);
         $this->assertArraySubset(['BankAuthCode' => '999778'], $response);
+    }
+
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     * @expectedExceptionMessage Invalid encryption string
+     */
+    public function testDecodeSagePayInvalidResponse()
+    {
+        $crypt = "77a9f5fb9cbrtyfc11c6f3d5d6b424c7e840ad2573a3dcab681978e33a10202f0483177475ac5a76752c8b10a736d13fe83";
+
+        $configMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock
+            ->expects($this->once())
+            ->method('getFormEncryptedPassword')
+            ->willReturn('4BMxx5kDvDshzS6Q');
+
+        /** @var \Ebizmarts\SagePaySuite\Model\Form $formModelMock */
+        $formModelMock = $this
+            ->objectManagerHelper
+            ->getObject(
+                '\Ebizmarts\SagePaySuite\Model\Form',
+                [
+                    'config' => $configMock,
+                ]
+            );
+
+        $formModelMock->decodeSagePayResponse($crypt);
     }
 
     public function testGetCode()
