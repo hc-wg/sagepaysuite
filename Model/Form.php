@@ -211,16 +211,19 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         if (empty($crypt)) {
             throw new LocalizedException(__('Invalid response from Sage Pay'));
         } else {
+            $response = [];
+
             $cryptPass  = $this->_config->getFormEncryptedPassword();
             $strDecoded = $this->getDecryptedRequest($cryptPass, $crypt);
 
-            $responseRaw = explode('&', $strDecoded);
-            $response = [];
+            if (false !== $strDecoded) {
+                $responseRaw = explode('&', $strDecoded);
 
-            $responseRawCnt = count($responseRaw);
-            for ($i = 0; $i < $responseRawCnt; $i++) {
-                $strField = explode('=', $responseRaw[$i]);
-                $response[$strField[0]] = $strField[1];
+                $responseRawCnt = count($responseRaw);
+                for ($i = 0; $i < $responseRawCnt; $i++) {
+                    $strField = explode('=', $responseRaw[$i]);
+                    $response[$strField[0]] = $strField[1];
+                }
             }
 
             return $response;
