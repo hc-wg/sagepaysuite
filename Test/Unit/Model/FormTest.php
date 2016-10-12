@@ -71,24 +71,24 @@ class FormTest extends \PHPUnit_Framework_TestCase
 
         $response = $formModelMock->decodeSagePayResponse($crypt);
 
-        $this->assertArraySubset(['VendorTxCode' => '000000034-2016-10-11-1900471476212447'], $response);
-        $this->assertArraySubset(['VPSTxId' => '{20CBE649-B3A3-9A95-0A57-4CB9E2EDAC19}'], $response);
-        $this->assertArraySubset(['Status' => 'OK'], $response);
-        $this->assertArraySubset(['StatusDetail' => '0000 : The Authorisation was Successful.'], $response);
-        $this->assertArraySubset(['TxAuthNo' => '12745378'], $response);
-        $this->assertArraySubset(['AVSCV2' => 'SECURITY CODE MATCH ONLY'], $response);
-        $this->assertArraySubset(['AddressResult' => 'NOTMATCHED'], $response);
-        $this->assertArraySubset(['PostCodeResult' => 'NOTMATCHED'], $response);
-        $this->assertArraySubset(['CV2Result' => 'MATCHED'], $response);
-        $this->assertArraySubset(['GiftAid' => '0'], $response);
-        $this->assertArraySubset(['3DSecureStatus' => 'OK'], $response);
-        $this->assertArraySubset(['CAVV' => 'AAABARR5kwAAAAAAAAAAAAAAAAA'], $response);
-        $this->assertArraySubset(['CardType' => 'MC'], $response);
-        $this->assertArraySubset(['Last4Digits' => '0001'], $response);
-        $this->assertArraySubset(['DeclineCode' => '00'], $response);
-        $this->assertArraySubset(['ExpiryDate' => '0120'], $response);
-        $this->assertArraySubset(['Amount' => '214.00'], $response);
-        $this->assertArraySubset(['BankAuthCode' => '999778'], $response);
+        $this->assertEquals('000000034-2016-10-11-1900471476212447', $response['VendorTxCode']);
+        $this->assertEquals('{20CBE649-B3A3-9A95-0A57-4CB9E2EDAC19}', $response['VPSTxId']);
+        $this->assertEquals('OK', $response['Status']);
+        $this->assertEquals('0000 : The Authorisation was Successful.', $response['StatusDetail']);
+        $this->assertEquals('12745378', $response['TxAuthNo']);
+        $this->assertEquals('SECURITY CODE MATCH ONLY', $response['AVSCV2']);
+        $this->assertEquals('NOTMATCHED', $response['AddressResult']);
+        $this->assertEquals('NOTMATCHED', $response['PostCodeResult']);
+        $this->assertEquals('MATCHED', $response['CV2Result']);
+        $this->assertEquals('0', $response['GiftAid']);
+        $this->assertEquals('OK', $response['3DSecureStatus']);
+        $this->assertEquals('AAABARR5kwAAAAAAAAAAAAAAAAA', $response['CAVV']);
+        $this->assertEquals('MC', $response['CardType']);
+        $this->assertEquals('0001', $response['Last4Digits']);
+        $this->assertEquals('00', $response['DeclineCode']);
+        $this->assertEquals('0120', $response['ExpiryDate']);
+        $this->assertEquals('214.00', $response['Amount']);
+        $this->assertEquals('999778', $response['BankAuthCode']);
     }
 
     /**
