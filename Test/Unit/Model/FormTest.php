@@ -27,6 +27,70 @@ class FormTest extends \PHPUnit_Framework_TestCase
         $this->formModelObject->decodeSagePayResponse("");
     }
 
+    public function testDecodeSagePayResponse()
+    {
+        $encryptorMock = $this->objectManagerHelper->getObject(
+            '\phpseclib\Crypt\AES',
+            ['mode' => 2]
+        );
+
+        $objectManagerMock = $this->getMockBuilder(\Magento\Framework\App\ObjectManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $objectManagerMock->expects($this->once())->method('create')->willReturn($encryptorMock);
+        \Magento\Framework\App\ObjectManager::setInstance($objectManagerMock);
+
+        $crypt = "@77a9f5fb9cbfc11c6f3d5d6b424c7e840ad2573a3dcab681978e33a10202f0483177475ac5a76752c8b10a736d13fe83bb";
+        $crypt .= "f34446f55a4276008bdf1cf59d7c3fb2325524cb427779a1143320584e971664954712c5b2ed8f25d638156d2110457862a";
+        $crypt .= "24d7ca7e6f0580b6462462548a83ba3636ffebb14dea013a5983894fb0dd21b9cad9f6fdfe57b5b49a4a70c7d5d7a371b16";
+        $crypt .= "f9526cf3cebcef863dbffd3f89dadc418e3d032e731e70a77eee20359865ab60b5303d5dd275553968ef5711541ab00df1c";
+        $crypt .= "cc2fb44212ea630682c032183f54050ddf5e68f4a768876464f543a4b1719eda6dad8fea96011938b50ff318b804ff7f9e9";
+        $crypt .= "7b909d104afc04daa2add570b3f7356f40db80029be49451504fe7b32e1f18b988bf426f98e8b58e925691cef817c7f58af";
+        $crypt .= "3fefd0707f7acff1c14e260a7fe7e60cf157f7becde9d6dc23c62cea96f56795d0cd8743cd5398f5a7b05294f6b2b6e32";
+        $crypt .= "a178066aa08523319325ceb2e61b830a4ad34c1b65bcffb03d0cf293c1115de933159b1d1a69b220dbbfe9aab49c1366904";
+        $crypt .= "7b893893eea229eccebef511fe7bf45f4be3ab6f8d10a5d0a0b81669c60a49eaf79129a57e1b702a0866d150155c77a8a2";
+        $crypt .= "49245e78e";
+
+        $configMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock
+            ->expects($this->once())
+            ->method('getFormEncryptedPassword')
+            ->willReturn('4BMxx5kDvDshzS6Q');
+
+        /** @var \Ebizmarts\SagePaySuite\Model\Form $formModelMock */
+        $formModelMock = $this
+            ->objectManagerHelper
+            ->getObject(
+                '\Ebizmarts\SagePaySuite\Model\Form',
+                [
+                    'config' => $configMock,
+                ]
+            );
+
+        $response = $formModelMock->decodeSagePayResponse($crypt);
+
+        $this->assertArraySubset(['VendorTxCode' => '000000034-2016-10-11-1900471476212447'], $response);
+        $this->assertArraySubset(['VPSTxId' => '{20CBE649-B3A3-9A95-0A57-4CB9E2EDAC19}'], $response);
+        $this->assertArraySubset(['Status' => 'OK'], $response);
+        $this->assertArraySubset(['StatusDetail' => '0000 : The Authorisation was Successful.'], $response);
+        $this->assertArraySubset(['TxAuthNo' => '12745378'], $response);
+        $this->assertArraySubset(['AVSCV2' => 'SECURITY CODE MATCH ONLY'], $response);
+        $this->assertArraySubset(['AddressResult' => 'NOTMATCHED'], $response);
+        $this->assertArraySubset(['PostCodeResult' => 'NOTMATCHED'], $response);
+        $this->assertArraySubset(['CV2Result' => 'MATCHED'], $response);
+        $this->assertArraySubset(['GiftAid' => '0'], $response);
+        $this->assertArraySubset(['3DSecureStatus' => 'OK'], $response);
+        $this->assertArraySubset(['CAVV' => 'AAABARR5kwAAAAAAAAAAAAAAAAA'], $response);
+        $this->assertArraySubset(['CardType' => 'MC'], $response);
+        $this->assertArraySubset(['Last4Digits' => '0001'], $response);
+        $this->assertArraySubset(['DeclineCode' => '00'], $response);
+        $this->assertArraySubset(['ExpiryDate' => '0120'], $response);
+        $this->assertArraySubset(['Amount' => '214.00'], $response);
+        $this->assertArraySubset(['BankAuthCode' => '999778'], $response);
+    }
+
     public function testGetCode()
     {
         $this->assertEquals('sagepaysuiteform', $this->formModelObject->getCode());
@@ -264,5 +328,22 @@ class FormTest extends \PHPUnit_Framework_TestCase
         $this->formModelObject->setInfoInstance($infoInstanceMock);
 
         $this->assertTrue($this->formModelObject->canVoid());
+    }
+
+    public function testGetConfigPaymentAction()
+    {
+        $configMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock->expects($this->once())->method('getPaymentAction')->willReturn('authorize_capture');
+
+        $formModelMock = $this->objectManagerHelper->getObject(
+            '\Ebizmarts\SagePaySuite\Model\Form',
+            [
+                'config' => $configMock,
+            ]
+        );
+
+        $this->assertEquals('authorize_capture', $formModelMock->getConfigPaymentAction());
     }
 }
