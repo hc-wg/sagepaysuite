@@ -644,4 +644,70 @@ class FormTest extends \PHPUnit_Framework_TestCase
 
         $formModel->refund($paymentMock, 48.67);
     }
+
+    public function testCaptureDeferred()
+    {
+        $configMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock
+            ->expects($this->once())
+            ->method('getSagepayPaymentAction')
+            ->willReturn('PAYMENT');
+
+        $sharedApiMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Api\Shared::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sharedApiMock
+            ->expects($this->once())
+            ->method('releaseTransaction')
+            ->with('20CBE649-B3A3-9A95-0A57-4CB9E2EDAC19', 48.67);
+
+        /** @var \Ebizmarts\SagePaySuite\Model\Form $formModelMock */
+        $formModel = $this
+            ->objectManagerHelper
+            ->getObject(
+                '\Ebizmarts\SagePaySuite\Model\Form',
+                [
+                    'sharedApi' => $sharedApiMock,
+                    'config'    => $configMock
+                ]
+            );
+
+        $paymentMock = $this->getMockBuilder(\Magento\Payment\Model\InfoInterface::class)
+            ->setMethods(
+                [
+                    'getLastTransId',
+                    'encrypt',
+                    'decrypt',
+                    'hasAdditionalInformation',
+                    'unsAdditionalInformation',
+                    'getMethodInstance',
+                    'getAdditionalInformation',
+                    'setAdditionalInformation',
+                    'getOrder',
+                    'setIsTransactionClosed',
+                    'setShouldCloseParentTransaction'
+                ]
+            )
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock
+            ->expects($this->exactly(2))
+            ->method('getLastTransId')
+            ->willReturn('20CBE649-B3A3-9A95-0A57-4CB9E2EDAC19');
+        $paymentMock
+            ->expects($this->once())
+            ->method('setIsTransactionClosed')
+            ->with(1);
+        $paymentMock
+        ->expects($this->exactly(2))
+        ->method('getAdditionalInformation')
+        ->with('paymentAction')
+        ->willReturn('DEFERRED');
+
+        $refundResult = $formModel->capture($paymentMock, 48.67);
+
+        $this->assertInstanceOf('\Ebizmarts\SagePaySuite\Model\Form', $refundResult);
+    }
 }
