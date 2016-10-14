@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
 class PITest extends \PHPUnit_Framework_TestCase
 {
+    private $objectManagerHelper;
     /**
      * Sage Pay Transaction ID
      */
@@ -31,6 +32,8 @@ class PITest extends \PHPUnit_Framework_TestCase
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
+        $this->objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+
         $this->configMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
             ->disableOriginalConstructor()
@@ -49,8 +52,7 @@ class PITest extends \PHPUnit_Framework_TestCase
             ->method('clearTransactionId')
             ->will($this->returnValue(self::TEST_VPSTXID));
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->piModel = $objectManagerHelper->getObject(
+        $this->piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
             [
                 "config" => $this->configMock,
@@ -314,5 +316,58 @@ class PITest extends \PHPUnit_Framework_TestCase
                 $e->getMessage()
             );
         }
+    }
+
+    public function testAssignData()
+    {
+        $objMock = $this->getMockBuilder(\Magento\Framework\DataObject::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $objMock
+            ->expects($this->exactly(4))
+            ->method('getData')
+            ->withConsecutive(
+                ['additional_data'],
+                ['cc_last4'],
+                ['merchant_session_key'],
+                ['card_identifier']
+            )
+            ->willReturnOnConsecutiveCalls([], '0006', 'some_key', 'card_id_string');
+
+        $infoMock = $this->getMockBuilder(\Magento\Payment\Model\InfoInterface::class)
+            ->setMethods(
+                [
+                    'getInfoInstance',
+                    'encrypt',
+                    'decrypt',
+                    'setAdditionalInformation',
+                    'hasAdditionalInformation',
+                    'getAdditionalInformation',
+                    'getMethodInstance',
+                    'unsAdditionalInformation',
+                    'addData'
+                ]
+            )
+            ->disableOriginalConstructor()
+            ->getMock();
+        $infoMock->expects($this->exactly(3))
+            ->method('setAdditionalInformation')
+            ->withConsecutive(
+                ['cc_last4', '0006'],
+                ['merchant_session_key', 'some_key'],
+                ['card_identifier', 'card_id_string']
+            );
+
+        /** @var \Ebizmarts\SagePaySuite\Model\PI $piModelMock */
+        $piModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PI::class)
+            ->setMethods(['getInfoInstance'])
+        ->disableOriginalConstructor()
+        ->getMock();
+
+        $piModelMock->expects($this->exactly(2))->method('getInfoInstance')->willReturn($infoMock);
+
+        $return = $piModelMock->assignData($objMock);
+
+        $this->assertInstanceOf('\Ebizmarts\SagePaySuite\Model\PI', $return);
     }
 }
