@@ -370,4 +370,99 @@ class PITest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf('\Ebizmarts\SagePaySuite\Model\PI', $return);
     }
+
+    public function testCanUseInternal()
+    {
+        $configMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock->expects($this->any())->method('setMethodCode')->with('sagepaysuitepi')->willReturnSelf();
+        $configMock->expects($this->once())->method('isMethodActiveMoto')->willReturn(1);
+
+        $form = $this->objectManagerHelper->getObject(
+            '\Ebizmarts\SagePaySuite\Model\PI',
+            [
+                'config' => $configMock,
+            ]
+        );
+
+        $this->assertTrue($form->canUseInternal());
+    }
+
+    public function testIsActive()
+    {
+        $scopeConfigMock = $this->getMockBuilder(\Magento\Framework\App\Config\ScopeConfigInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $scopeConfigMock->expects($this->any())->method('getValue')
+            ->with('payment/sagepaysuitepi/active_moto')
+            ->willReturn(1);
+
+        $appStateMock = $this->getMockBuilder(\Magento\Framework\App\State::class)
+            ->disableOriginalConstructor()->getMock();
+        $appStateMock->expects($this->once())->method('getAreaCode')->willReturn('adminhtml');
+
+        $contextMock = $this->getMockBuilder(\Magento\Framework\Model\Context::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $contextMock->expects($this->any())->method('getAppState')->willReturn($appStateMock);
+
+        $form = $this->objectManagerHelper->getObject(
+            '\Ebizmarts\SagePaySuite\Model\PI',
+            [
+                'context'     => $contextMock,
+                'scopeConfig' => $scopeConfigMock
+            ]
+        );
+
+        $this->assertTrue($form->isActive());
+    }
+
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     * @expectedExceptionMessage You can't use the payment type you selected to make payments to the billing country.
+     */
+    public function testValidateException()
+    {
+        $addressMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote\Address')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $addressMock->expects($this->once())
+            ->method('getCountryId')
+            ->willReturn("US");
+
+        $orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->expects($this->once())
+            ->method('getBillingAddress')
+            ->willReturn($addressMock);
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock->expects($this->once())
+            ->method('getCcType')
+            ->will($this->returnValue("MI"));
+        $paymentMock->expects($this->once())
+            ->method('getOrder')
+            ->will($this->returnValue($orderMock));
+
+        $this->configMock->expects($this->once())
+            ->method('getAllowedCcTypes')
+            ->willReturn("MC,MI");
+        $this->configMock->expects($this->once())
+            ->method('getAreSpecificCountriesAllowed')
+            ->willReturn(1);
+        $this->configMock->expects($this->once())
+            ->method('getSpecificCountries')
+            ->willReturn('UY,UK');
+
+        $this->piModel->setInfoInstance($paymentMock);
+
+        $this->piModel->validate();
+    }
 }
