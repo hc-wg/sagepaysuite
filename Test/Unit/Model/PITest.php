@@ -465,4 +465,50 @@ class PITest extends \PHPUnit_Framework_TestCase
 
         $this->piModel->validate();
     }
+
+    public function testValidateOk()
+    {
+        $addressMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote\Address')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $addressMock->expects($this->once())
+            ->method('getCountryId')
+            ->willReturn("GB");
+
+        $orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->expects($this->once())
+            ->method('getBillingAddress')
+            ->willReturn($addressMock);
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock->expects($this->once())
+            ->method('getCcType')
+            ->will($this->returnValue("MI"));
+        $paymentMock->expects($this->once())
+            ->method('getOrder')
+            ->will($this->returnValue($orderMock));
+
+        $this->configMock->expects($this->once())
+            ->method('getAllowedCcTypes')
+            ->willReturn("MC,MI");
+        $this->configMock->expects($this->once())
+            ->method('getAreSpecificCountriesAllowed')
+            ->willReturn(1);
+        $this->configMock->expects($this->once())
+            ->method('getSpecificCountries')
+            ->willReturn('UY,GB');
+
+        $this->piModel->setInfoInstance($paymentMock);
+
+        $return = $this->piModel->validate();
+
+        $this->assertInstanceOf('\Ebizmarts\SagePaySuite\Model\PI', $return);
+    }
 }
