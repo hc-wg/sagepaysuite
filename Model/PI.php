@@ -242,7 +242,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $transaction_id = $payment->getLastTransId();
 
         try {
-            $result = $this->_sharedApi->voidTransaction($transaction_id);
+            $this->_sharedApi->voidTransaction($transaction_id);
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             if ($apiException->getCode() == \Ebizmarts\SagePaySuite\Model\Api\ApiException::INVALID_TRANSACTION_STATE) {
                 //unable to void transaction
