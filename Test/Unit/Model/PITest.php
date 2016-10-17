@@ -179,15 +179,135 @@ class PITest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     * @expectedExceptionMessage Unable to VOID Sage Pay transaction
+     */
+    public function testVoidInvalidTransactionState()
+    {
+        $paymentMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\Order\Payment::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getLastTransId')
+            ->willReturn(self::TEST_VPSTXID);
+
+        $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
+            new \Magento\Framework\Phrase("No transaction found."),
+            null,
+            '5004'
+        );
+        $sharedApiMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Api\Shared::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sharedApiMock
+            ->expects($this->once())
+            ->method('voidTransaction')
+            ->with(self::TEST_VPSTXID)
+            ->willThrowException($apiException);
+
+        /** @var \Ebizmarts\SagePaySuite\Model\PI $piModel */
+        $piModel = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\PI',
+            [
+                'sharedApi' => $sharedApiMock
+            ]
+        );
+
+        $piModel->void($paymentMock);
+    }
+
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     * @expectedExceptionMessage Unable to VOID Sage Pay transaction
+     */
+    public function testVoidException()
+    {
+        $paymentMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\Order\Payment::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getLastTransId')
+            ->willReturn(self::TEST_VPSTXID);
+
+        $exception = new \Magento\Framework\Exception\LocalizedException(
+            __("No transaction found.")
+        );
+        $sharedApiMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Api\Shared::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sharedApiMock
+            ->expects($this->once())
+            ->method('voidTransaction')
+            ->with(self::TEST_VPSTXID)
+            ->willThrowException($exception);
+
+        /** @var \Ebizmarts\SagePaySuite\Model\PI $piModel */
+        $piModel = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\PI',
+            [
+                'sharedApi' => $sharedApiMock
+            ]
+        );
+
+        $piModel->void($paymentMock);
+    }
+
+    /**
+     * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage No transaction found.
+     */
+    public function testVoidException2()
+    {
+        $paymentMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\Order\Payment::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getLastTransId')
+            ->willReturn(self::TEST_VPSTXID);
+
+        $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
+            new \Magento\Framework\Phrase("No transaction found.")
+        );
+        $sharedApiMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Api\Shared::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sharedApiMock
+            ->expects($this->once())
+            ->method('voidTransaction')
+            ->with(self::TEST_VPSTXID)
+            ->willThrowException($apiException);
+
+        /** @var \Ebizmarts\SagePaySuite\Model\PI $piModel */
+        $piModel = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\PI',
+            [
+                'sharedApi' => $sharedApiMock
+            ]
+        );
+
+        $piModel->void($paymentMock);
+    }
+
     public function testCancel()
     {
         $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->getMockBuilder(\Magento\Sales\Model\Order\Payment::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())
+        $paymentMock
+            ->expects($this->once())
             ->method('getLastTransId')
-            ->will($this->returnValue(self::TEST_VPSTXID));
+            ->willReturn(self::TEST_VPSTXID);
 
         $this->sharedApiMock->expects($this->once())
             ->method('voidTransaction')
