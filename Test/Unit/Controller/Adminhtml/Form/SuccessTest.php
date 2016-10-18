@@ -37,12 +37,12 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     private $redirectMock;
 
     /**
-     * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
+     * @var  \Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
     private $orderMock;
 
     /**
-     * @var Ebizmarts\SagePaySuite\Helper\Checkout|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Ebizmarts\SagePaySuite\Helper\Checkout|\PHPUnit_Framework_MockObject_MockObject
      */
     private $checkoutHelperMock;
 
@@ -63,6 +63,14 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('setCcExpMonth')
+            ->with('04');
+        $paymentMock
+            ->expects($this->once())
+            ->method('setCcExpYear')
+            ->with('19');
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
@@ -177,11 +185,13 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
         $formModelMock->expects($this->any())
             ->method('decodeSagePayResponse')
             ->will($this->returnValue([
-                "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
-                "CardType" => "VISA",
-                "Last4Digits" => "0006",
-                "StatusDetail" => "OK_STATUS_DETAIL",
-                "VendorTxCode" => "100000001-2016-12-12-12346789"
+                "VPSTxId"        => "{" . self::TEST_VPSTXID . "}",
+                "CardType"       => "VISA",
+                "Last4Digits"    => "0006",
+                "StatusDetail"   => "OK_STATUS_DETAIL",
+                "VendorTxCode"   => "100000001-2016-12-12-12346789",
+                "ExpiryDate"     => "0419",
+                "3DSecureStatus" => "OK"
             ]));
 
         $this->_quoteManagementMock = $this

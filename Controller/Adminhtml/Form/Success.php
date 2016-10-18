@@ -85,7 +85,7 @@ class Success extends \Magento\Backend\App\AbstractAction
 
     /**
      * FORM success callback
-     * @throws Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function execute()
     {
@@ -95,7 +95,7 @@ class Success extends \Magento\Backend\App\AbstractAction
             //decode response
             $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
             if (!array_key_exists("VPSTxId", $response)) {
-                throw new \Magento\Framework\Exception\LocalizedException('Invalid response from Sage Pay');
+                throw new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay'));
             }
 
             //log response

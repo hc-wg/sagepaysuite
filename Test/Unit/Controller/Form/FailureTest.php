@@ -10,46 +10,19 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHe
 
 class FailureTest extends \PHPUnit_Framework_TestCase
 {
-
-    /**
-     * @var /Ebizmarts\SagePaySuite\Controller\Form\Failure
-     */
-    private $formFailureController;
-
-    /**
-     * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $requestMock;
-
-    /**
-     * @var Http|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $responseMock;
-
-    /**
-     * @var \Magento\Framework\App\Response\RedirectInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $redirectMock;
-
-    /**
-     * @var \Magento\Framework\Message\ManagerInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $messageManagerMock;
-
-    // @codingStandardsIgnoreStart
-    protected function setUp()
+    public function testExecute()
     {
-        $this->responseMock = $this
+        $responseMock = $this
             ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
 
-        $this->requestMock = $this
+        $requestMock = $this
             ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
+        $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
-        $this->messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
+        $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -58,16 +31,16 @@ class FailureTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $contextMock->expects($this->any())
             ->method('getRequest')
-            ->will($this->returnValue($this->requestMock));
+            ->will($this->returnValue($requestMock));
         $contextMock->expects($this->any())
             ->method('getResponse')
-            ->will($this->returnValue($this->responseMock));
+            ->will($this->returnValue($responseMock));
         $contextMock->expects($this->any())
             ->method('getRedirect')
-            ->will($this->returnValue($this->redirectMock));
+            ->will($this->returnValue($redirectMock));
         $contextMock->expects($this->any())
             ->method('getMessageManager')
-            ->will($this->returnValue($this->messageManagerMock));
+            ->will($this->returnValue($messageManagerMock));
 
         $formModelMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Form')
@@ -83,9 +56,26 @@ class FailureTest extends \PHPUnit_Framework_TestCase
         $quoteMock = $this->getMockBuilder('\Magento\Quote\Model\Quote')
             ->disableOriginalConstructor()
             ->getMock();
-        $quoteMock->expects($this->once())
+        $quoteMock
+            ->expects($this->once())
             ->method('load')
             ->willReturnSelf();
+        $quoteMock
+            ->expects($this->once())
+            ->method('getId')
+            ->willReturn(1234);
+        $quoteMock
+            ->expects($this->once())
+            ->method('setIsActive')
+            ->with(1);
+        $quoteMock
+            ->expects($this->once())
+            ->method('setReservedOrderId')
+            ->with(null);
+        $quoteMock
+            ->expects($this->once())
+            ->method('save');
+
         $quoteFactoryMock = $this->getMockBuilder('\Magento\Quote\Model\QuoteFactory')
             ->disableOriginalConstructor()
             ->setMethods(["create"])
@@ -111,10 +101,8 @@ class FailureTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->willReturn($orderMock);
 
-        //@TODO: checkoutsessionmock setdata with
-
         $objectManagerHelper = new ObjectManagerHelper($this);
-        $this->formFailureController = $objectManagerHelper->getObject(
+        $formFailureController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Form\Failure',
             [
                 'context'      => $contextMock,
@@ -124,26 +112,81 @@ class FailureTest extends \PHPUnit_Framework_TestCase
 
             ]
         );
-    }
-    // @codingStandardsIgnoreEnd
 
-    public function testExecute()
-    {
-        $this->messageManagerMock->expects($this->once())
+        $messageManagerMock->expects($this->once())
             ->method('addError')
             ->with("REJECTED: Invalid Card");
 
-        $this->_expectRedirect("checkout/cart");
-        $this->formFailureController->execute();
+        $redirectMock
+            ->expects($this->once())
+            ->method('redirect')
+            ->with($this->anything(), "checkout/cart", []);
+
+        $formFailureController->execute();
     }
 
-    /**
-     * @param string $path
-     */
-    private function _expectRedirect($path)
+    public function testExecuteException()
     {
-        $this->redirectMock->expects($this->once())
-            ->method('redirect')
-            ->with($this->anything(), $path, []);
+        $responseMock = $this
+            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+
+        $requestMock = $this
+            ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
+
+        $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $contextMock->expects($this->any())
+            ->method('getRequest')
+            ->will($this->returnValue($requestMock));
+        $contextMock->expects($this->any())
+            ->method('getResponse')
+            ->will($this->returnValue($responseMock));
+        $contextMock->expects($this->any())
+            ->method('getRedirect')
+            ->will($this->returnValue($redirectMock));
+        $contextMock->expects($this->any())
+            ->method('getMessageManager')
+            ->will($this->returnValue($messageManagerMock));
+
+        $formModelMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Form')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $formModelMock->expects($this->any())
+            ->method('decodeSagePayResponse')
+            ->willReturn([]);
+
+        $loggerMock = $this->getMockBuilder(\Psr\Log\LoggerInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock->expects($this->once())->method('critical')->with(
+            new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay'))
+        );
+
+        $objectManagerHelper = new ObjectManagerHelper($this);
+        $formFailureController = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\Form\Failure',
+            [
+                'context'   => $contextMock,
+                'formModel' => $formModelMock,
+                'logger'    => $loggerMock
+            ]
+        );
+
+        $messageManagerMock
+            ->expects($this->once())
+            ->method('addError')
+            ->with(__('Invalid response from Sage Pay'));
+
+        $formFailureController->execute();
     }
 }
