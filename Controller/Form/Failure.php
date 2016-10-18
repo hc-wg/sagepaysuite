@@ -87,7 +87,7 @@ class Failure extends \Magento\Framework\App\Action\Action
             $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
 
             if (!array_key_exists("Status", $response) || !array_key_exists("StatusDetail", $response)) {
-                throw new \Magento\Framework\Exception\LocalizedException('Invalid response from Sage Pay');
+                throw new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay'));
             }
 
             $this->_quote = $this->_quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
