@@ -4,6 +4,14 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
 class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
 {
+    private $objectManagerHelper;
+
+    // @codingStandardsIgnoreStart
+    protected function setUp()
+    {
+        $this->objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+    }
+    // @codingStandardsIgnoreEnd
 
     public function testSavePaymentInformationAndPlaceOrderNoToken()
     {
@@ -153,8 +161,7 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
             456
         );
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $resultObject        = $objectManagerHelper->getObject('\Ebizmarts\SagePaySuite\Api\Data\FormResult');
+        $resultObject = $this->objectManagerHelper->getObject('\Ebizmarts\SagePaySuite\Api\Data\FormResult');
 
         /** @var \Ebizmarts\SagePaySuite\Model\ServerRequestManagement $requestManager */
         $requestManager = $this
@@ -218,13 +225,13 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $configMock->expects($this->once())->method('getBasketFormat')->willReturn("Disabled");
         $configMock->expects($this->once())->method('getSagepayPaymentAction')->willReturn("PAYMENT");
-        $configMock->expects($this->once())->method('getMode')->willReturn("test");
-        $configMock->expects($this->exactly(2))->method('getVendorname')->willReturn("testebizmarts");
+        $configMock->expects($this->once())->method('getMode')->willReturn("live");
+        $configMock->expects($this->exactly(2))->method('getVendorname')->willReturn("liveebizmarts");
         $configMock->expects($this->once())->method('get3Dsecure')->willReturn(0);
         $configMock->expects($this->once())->method('getAvsCvc')->willReturn(0);
         $configMock->expects($this->once())->method('isGiftAidEnabled')->willReturn(0);
         $configMock->expects($this->once())->method('getPaypalBillingAgreement')->willReturn(0);
-        $configMock->expects($this->once())->method('isServerLowProfileEnabled')->willReturn(0);
+        $configMock->expects($this->once())->method('isServerLowProfileEnabled')->willReturn(1);
 
         $helperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Data::class)
             ->disableOriginalConstructor()
@@ -319,8 +326,7 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
 
         $checkoutSessionMock->method('getQuote')->willReturn($quoteMock);
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $resultObject        = $objectManagerHelper->getObject('\Ebizmarts\SagePaySuite\Api\Data\FormResult');
+        $resultObject = $this->objectManagerHelper->getObject('\Ebizmarts\SagePaySuite\Api\Data\FormResult');
 
         /** @var \Ebizmarts\SagePaySuite\Model\ServerRequestManagement $requestManager */
         $requestManager = $this
@@ -353,5 +359,73 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
             "Something went wrong while generating the Sage Pay request: Sage Pay is not available.",
             $response->getErrorMessage()
         );
+    }
+
+    public function testGetQuoteById()
+    {
+        /** @var \Magento\Quote\Api\Data\CartInterface $cartMock */
+        $cartMock = $this->getMockBuilder(\Magento\Quote\Api\Data\CartInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $cartMock->expects($this->once())->method('getId')->willReturn(9876);
+
+        $quoteRepositoryMock = $this->getMockBuilder(\Magento\Quote\Api\CartRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $quoteRepositoryMock->expects($this->once())
+            ->method('get')
+            ->with(9876)
+            ->willReturn($cartMock);
+
+        /** @var \Ebizmarts\SagePaySuite\Model\ServerRequestManagement $requestManager */
+        $requestManager = $this->objectManagerHelper->getObject(
+            '\Ebizmarts\SagePaySuite\Model\ServerRequestManagement',
+            [
+                'quoteRepository'    => $quoteRepositoryMock
+            ]
+        );
+
+        $return = $requestManager->getQuoteById(9876);
+
+        $this->assertEquals(9876, $return->getId());
+        $this->assertSame($cartMock, $return);
+    }
+
+    public function testGetQuoteRepository()
+    {
+        $quoteRepositoryMock = $this->getMockBuilder(\Magento\Quote\Api\CartRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var \Ebizmarts\SagePaySuite\Model\ServerRequestManagement $requestManager */
+        $requestManager = $this->objectManagerHelper->getObject(
+            '\Ebizmarts\SagePaySuite\Model\ServerRequestManagement',
+            [
+                'quoteRepository'    => $quoteRepositoryMock
+            ]
+        );
+
+        $return = $requestManager->getQuoteRepository();
+
+        $this->assertSame($quoteRepositoryMock, $return);
+    }
+
+    public function testGetQuoteIdMaskFactory()
+    {
+        $quoteIdMaskFactoryMock = $this->getMockBuilder(\Magento\Quote\Model\QuoteIdMaskFactory::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var \Ebizmarts\SagePaySuite\Model\ServerRequestManagement $requestManager */
+        $requestManager = $this->objectManagerHelper->getObject(
+            '\Ebizmarts\SagePaySuite\Model\ServerRequestManagement',
+            [
+                'quoteIdMaskFactory' => $quoteIdMaskFactoryMock
+            ]
+        );
+
+        $return = $requestManager->getQuoteIdMaskFactory();
+
+        $this->assertSame($quoteIdMaskFactoryMock, $return);
     }
 }
