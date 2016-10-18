@@ -45,6 +45,9 @@ class Request extends \Magento\Backend\App\AbstractAction
      */
     private $_quoteSession;
 
+    /** @var \Magento\Framework\ObjectManagerInterface */
+    private $objectManager;
+
     /**
      * @param \Magento\Backend\App\Action\Context $context
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
@@ -63,13 +66,14 @@ class Request extends \Magento\Backend\App\AbstractAction
     ) {
     
         parent::__construct($context);
-        $this->_config = $config;
+        $this->_config        = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
-        $this->_suiteHelper = $suiteHelper;
-        $this->_suiteLogger = $suiteLogger;
+        $this->_suiteHelper   = $suiteHelper;
+        $this->_suiteLogger   = $suiteLogger;
         $this->_requestHelper = $requestHelper;
-        $this->_quoteSession = $quoteSession;
-        $this->_quote = $this->_quoteSession->getQuote();
+        $this->_quoteSession  = $quoteSession;
+        $this->_quote         = $this->_quoteSession->getQuote();
+        $this->objectManager  = $context->getObjectManager();
     }
 
     public function execute()
@@ -175,7 +179,7 @@ class Request extends \Magento\Backend\App\AbstractAction
      */
     public function getObjManager()
     {
-        return $this->_objectManager;
+        return $this->objectManager;
     }
 
     /**
@@ -185,7 +189,8 @@ class Request extends \Magento\Backend\App\AbstractAction
      */
     private function getEncryptedRequest($encryptedPassword, $preCryptString)
     {
-        $encryptor = $this->getObjManager()
+        $encryptor = $this
+            ->getObjManager()
             ->create('\phpseclib\Crypt\AES', ['mode' => \phpseclib\Crypt\Base::MODE_CBC]);
         $encryptor->setBlockLength(128);
         $encryptor->setKey($encryptedPassword);
