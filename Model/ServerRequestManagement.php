@@ -281,7 +281,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
      */
     public function getQuoteById($cartId)
     {
-        return $this->quoteRepository->get($cartId);
+        return $this->getQuoteRepository()->get($cartId);
     }
 
     public function getQuoteRepository()
