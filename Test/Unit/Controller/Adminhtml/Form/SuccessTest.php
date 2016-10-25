@@ -59,6 +59,12 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
+        $formModelMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Form::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $formModelMock->method('markAsInitialized')->willReturnSelf();
+
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
@@ -71,6 +77,8 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('setCcExpYear')
             ->with('19');
+
+        $paymentMock->method('getMethodInstance')->willReturn($formModelMock);
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
@@ -217,6 +225,11 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteSUCCESS()
     {
+        $this->orderMock
+            ->expects($this->once())
+            ->method('place')
+            ->willReturnSelf();
+
         $invoiceCollectionMock = $this
             ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
             ->disableOriginalConstructor()
