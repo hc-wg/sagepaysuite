@@ -110,7 +110,6 @@ class Success extends \Magento\Backend\App\AbstractAction
             $payment = $this->_quote->getPayment();
             $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
             $payment->setTransactionId($transactionId);
-            $payment->setLastTransId($transactionId);
             $payment->setCcType($response["CardType"]);
             $payment->setCcLast4($response["Last4Digits"]);
             if (array_key_exists("ExpiryDate", $response)) {
@@ -130,17 +129,16 @@ class Success extends \Magento\Backend\App\AbstractAction
 
             //an order may be created
             if ($order) {
-            //send email
+                //send email
                 $this->_checkoutHelper->sendOrderEmail($order);
             } else {
                 throw new \Magento\Framework\Exception\LocalizedException(__('Can not create order'));
             }
 
             $payment = $order->getPayment();
-            $payment->setTransactionId($transactionId);
             $payment->setLastTransId($transactionId);
-            $payment->setIsTransactionClosed(1);
-            $payment->save();
+            $payment->getMethodInstance()->markAsInitialized();
+            $order->place()->save();
 
             list($action, $closed) = $this->getActionClosedForPaymentAction();
 
