@@ -6,8 +6,8 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-	
-	<type name="Magento\Customer\Model\AccountManagement">
+
+    <type name="Magento\Customer\Model\AccountManagement">
         <plugin name="sagepaysuiteaccountmanagement" type="Ebizmarts\SagePaySuite\Model\Plugin\AccountManagement" sortOrder="10"/>
     </type>
 
@@ -36,4 +36,7 @@
 
     <preference for="Ebizmarts\SagePaySuite\Api\FormManagementInterface" type="Ebizmarts\SagePaySuite\Model\FormRequestManagement" />
     <preference for="Ebizmarts\SagePaySuite\Api\GuestFormManagementInterface" type="Ebizmarts\SagePaySuite\Model\GuestFormRequestManagement" />
+
+    <preference for="Ebizmarts\SagePaySuite\Api\PayPalManagementInterface" type="Ebizmarts\SagePaySuite\Model\PayPalRequestManagement" />
+    <preference for="Ebizmarts\SagePaySuite\Api\GuestPayPalManagementInterface" type="Ebizmarts\SagePaySuite\Model\GuestPayPalRequestManagement" />
 </config>

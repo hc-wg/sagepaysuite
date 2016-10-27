@@ -34,7 +34,7 @@ class Processing extends \Magento\Framework\View\Element\Template
                 src="' . $this->getViewFileUrl('Ebizmarts_SagePaySuite::images/ajax-loader.gif') . '"
                 >Processing payment, please wait...</p></div>';
             $html .= '<form id="paypal_post_form" method="POST"
-            action="' . $this->getUrl('sagepaysuite/paypal/callback', ['_secure' => true]) . '">';
+            action="' . $this->getUrl('sagepaysuite/paypal/callback', ['_secure' => true, 'quoteid' => $this->getRequest()->getParam('quoteid')]) . '">';
             $postData  = get_object_vars($postData);
             $keys      = array_keys($postData);
             $keysCount = count($keys);

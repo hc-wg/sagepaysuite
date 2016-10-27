@@ -125,8 +125,24 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
      */
     private $_sharedApi;
 
+    /** @var bool */
+    private $isInitializeNeeded = true;
+
     /**
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     * Paypal constructor.
+     * @param \Magento\Framework\Model\Context $context
+     * @param \Magento\Framework\Registry $registry
+     * @param \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory
+     * @param \Magento\Framework\Api\AttributeValueFactory $customAttributeFactory
+     * @param \Magento\Payment\Helper\Data $paymentData
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param \Magento\Payment\Model\Method\Logger $logger
+     * @param Api\Shared $sharedApi
+     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+     * @param Config $config
+     * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
+     * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
+     * @param array $data
      */
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -264,6 +280,28 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
     }
 
     /**
+     * Instantiate state and set it to state object
+     *
+     * @param string $paymentAction
+     * @param \Magento\Framework\DataObject $stateObject
+     * @return void
+     */
+    // @codingStandardsIgnoreStart
+    public function initialize($paymentAction, $stateObject)
+    {
+        //disable sales email
+        $payment = $this->getInfoInstance();
+        $order   = $payment->getOrder();
+        $order->setCanSendNewEmailFlag(false);
+
+        //set pending payment state
+        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
+        $stateObject->setStatus('pending_payment');
+        $stateObject->setIsNotified(false);
+    }
+    // @codingStandardsIgnoreEnd
+
+    /**
      * Return magento payment action
      *
      * @return mixed
@@ -271,5 +309,24 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
     public function getConfigPaymentAction()
     {
         return $this->_config->getPaymentAction();
+    }
+
+    /**
+     * Flag if we need to run payment initialize while order place
+     *
+     * @return bool
+     * @api
+     */
+    public function isInitializeNeeded()
+    {
+        return $this->isInitializeNeeded;
+    }
+
+    /**
+     * Set initialized flag to capture payment
+     */
+    public function markAsInitialized()
+    {
+        $this->isInitializeNeeded = false;
     }
 }

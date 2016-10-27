@@ -32,11 +32,6 @@ class Callback extends \Magento\Framework\App\Action\Action
     private $_transactionFactory;
 
     /**
-     * @var \Magento\Customer\Model\Session
-     */
-    private $_customerSession;
-
-    /**
      * @var \Magento\Checkout\Model\Session
      */
     private $_checkoutSession;
@@ -54,46 +49,67 @@ class Callback extends \Magento\Framework\App\Action\Action
 
     private $_postData;
 
-    /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\Post
-     */
+    /** @var \Magento\Sales\Model\OrderFactory */
+    private $_orderFactory;
+
+    /** @var \Ebizmarts\SagePaySuite\Model\Api\Post */
     private $_postApi;
 
+    /** @var \Magento\Sales\Model\Order */
+    private $_order;
+
+    /** @var \Magento\Sales\Model\Order\Email\Sender\OrderSender */
+    private $orderSender;
+
     /**
-     * Success constructor.
+     * @var \Magento\Quote\Model\QuoteFactory
+     */
+    private $_quoteFactory;
+
+    /**
+     * Callback constructor.
      * @param \Magento\Framework\App\Action\Context $context
      * @param \Magento\Customer\Model\Session $customerSession
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
-     * @param \Magento\Checkout\Helper\Data $checkoutData
-     * @param \Magento\Quote\Model\QuoteManagement $quoteManagement
-     * @param OrderSender $orderSender
      * @param \Psr\Log\LoggerInterface $logger
+     * @param Logger $suiteLogger
      * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
+     * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
+     * @param \Ebizmarts\SagePaySuite\Model\Api\Post $postApi
+     * @param \Magento\Quote\Model\Quote $quote
+     * @param \Magento\Sales\Model\OrderFactory $orderFactory
+     * @param \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Magento\Customer\Model\Session $customerSession,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Psr\Log\LoggerInterface $logger,
         Logger $suiteLogger,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Ebizmarts\SagePaySuite\Model\Api\Post $postApi
+        \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
+        \Magento\Quote\Model\Quote $quote,
+        \Magento\Sales\Model\OrderFactory $orderFactory,
+        \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory
     ) {
     
         parent::__construct($context);
         $this->_config             = $config;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
         $this->_logger             = $logger;
         $this->_transactionFactory = $transactionFactory;
-        $this->_customerSession    = $customerSession;
         $this->_checkoutSession    = $checkoutSession;
         $this->_checkoutHelper     = $checkoutHelper;
         $this->_suiteLogger        = $suiteLogger;
         $this->_postApi            = $postApi;
-        $this->_quote              = $this->_checkoutSession->getQuote();
+        $this->_quote              = $quote;
+        $this->_orderFactory       = $orderFactory;
+        $this->orderSender         = $orderSender;
+        $this->_quoteFactory       = $quoteFactory;
+
+        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
     }
 
     /**
@@ -122,67 +138,51 @@ class Callback extends \Magento\Framework\App\Action\Action
                 }
             }
 
+            $this->_quote = $this->_quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
+            if (empty($this->_quote->getId())) {
+                throw new \Magento\Framework\Exception\LocalizedException(
+                    __("Unable to find payment data.")
+                );
+            }
+
+            $order = $this->_order = $this->_orderFactory->create()->loadByIncrementId($this->_quote->getReservedOrderId());
+            if ($order === null || $order->getId() === null) {
+                throw new \Magento\Framework\Exception\LocalizedException(__("Invalid order."));
+            }
+
             //send COMPLETION post to sagepay
-            $completion_response = $this->_sendCompletionPost()["data"];
+            $completionResponse = $this->_sendCompletionPost()["data"];
 
             /**
              *  SUCCESSFULLY COMPLETED PAYMENT (CAPTURE, DEFER or AUTH)
              */
 
-            $transactionId = $completion_response["VPSTxId"];
+            $transactionId = $completionResponse["VPSTxId"];
             $transactionId = str_replace("{", "", str_replace("}", "", $transactionId)); //strip brackets
 
-            //import payment info for save order
-            $payment = $this->_quote->getPayment();
-            $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
-            $payment->setTransactionId($transactionId);
-            $payment->setLastTransId($transactionId);
-            $payment->setCcType("PayPal");
-            $payment->setAdditionalInformation('statusDetail', $completion_response["StatusDetail"]);
-            $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
-            $payment->setAdditionalInformation('mode', $this->_config->getMode());
-            $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
+            $payment = $order->getPayment();
 
-            $order = $this->_checkoutHelper->placeOrder();
-            $quoteId = $this->_quote->getId();
+            //update payment details
+            if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
+                $payment->setAdditionalInformation('statusDetail', $completionResponse['StatusDetail']);
+                $payment->setAdditionalInformation('threeDStatus', $completionResponse['3DSecureStatus']);
+                $payment->setCcType("PayPal");
+                $payment->setLastTransId($transactionId);
+                $payment->save();
+            } else {
+                throw new \Magento\Framework\Validator\Exception(__('Invalid transaction id'));
+            }
+
+            $this->_confirmPayment($transactionId);
 
             //prepare session to success or cancellation page
             $this->_checkoutSession->clearHelperData();
-            $this->_checkoutSession->setLastQuoteId($quoteId);
-            $this->_checkoutSession->setLastSuccessQuoteId($quoteId);
-
-            //an order may be created
-            if ($order) {
-                $this->_checkoutSession->setLastOrderId($order->getId());
-                $this->_checkoutSession->setLastRealOrderId($order->getIncrementId());
-                $this->_checkoutSession->setLastOrderStatus($order->getStatus());
-
-                //send email
-                $this->_checkoutHelper->sendOrderEmail($order);
-            }
-
-            $payment = $order->getPayment();
-            $payment->setTransactionId($transactionId);
-            $payment->setLastTransId($transactionId);
-            $payment->setIsTransactionClosed(1);
-            $payment->save();
-
-            list($action, $closed) = $this->getActionClosedForPaymentAction();
-
-            //create transaction record
-            $transaction = $this->_transactionFactory->create();
-            $transaction->setOrderPaymentObject($payment);
-            $transaction->setTxnId($transactionId);
-            $transaction->setOrderId($order->getEntityId());
-            $transaction->setTxnType($action);
-            $transaction->setPaymentId($payment->getId());
-            $transaction->setIsClosed($closed);
-            $transaction->save();
-
-            //update invoice transaction id
-            $order->getInvoiceCollection()
-                ->setDataToAll('transaction_id', $payment->getLastTransId())
-                ->save();
+            $this->_checkoutSession->setLastQuoteId($this->_quote->getId());
+            $this->_checkoutSession->setLastSuccessQuoteId($this->_quote->getId());
+            $this->_checkoutSession->setLastOrderId($order->getId());
+            $this->_checkoutSession->setLastRealOrderId($order->getIncrementId());
+            $this->_checkoutSession->setLastOrderStatus($order->getStatus());
+            $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
 
             $this->_redirect('checkout/onepage/success');
 
@@ -197,10 +197,10 @@ class Callback extends \Magento\Framework\App\Action\Action
     {
         $request = [
             "VPSProtocol" => $this->_config->getVPSProtocol(),
-            "TxType" => "COMPLETE",
-            "VPSTxId" => $this->_postData->VPSTxId,
-            "Amount" => number_format($this->_quote->getGrandTotal(), 2, '.', ''),
-            "Accept" => "YES"
+            "TxType"      => "COMPLETE",
+            "VPSTxId"     => $this->_postData->VPSTxId,
+            "Amount"      => number_format($this->_quote->getGrandTotal(), 2, '.', ''),
+            "Accept"      => "YES"
         ];
 
         return $this->_postApi->sendPost(
@@ -256,5 +256,32 @@ class Callback extends \Magento\Framework\App\Action\Action
                 break;
         }
         return [$action, $closed];
+    }
+
+
+
+    private function _confirmPayment($transactionId)
+    {
+        //invoice
+        $payment = $this->_order->getPayment();
+        $payment->getMethodInstance()->markAsInitialized();
+        $this->_order->place()->save();
+
+        $this->orderSender->send($this->_order);
+
+        list($action, $closed) = $this->getActionClosedForPaymentAction();
+        $transaction = $this->_transactionFactory->create();
+        $transaction->setOrderPaymentObject($payment);
+        $transaction->setTxnId($transactionId);
+        $transaction->setOrderId($this->_order->getEntityId());
+        $transaction->setTxnType($action);
+        $transaction->setPaymentId($payment->getId());
+        $transaction->setIsClosed($closed);
+        $transaction->save();
+
+        //update invoice transaction id
+        $this->_order->getInvoiceCollection()
+            ->setDataToAll('transaction_id', $payment->getLastTransId())
+            ->save();
     }
 }
