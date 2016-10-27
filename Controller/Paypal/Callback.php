@@ -145,7 +145,9 @@ class Callback extends \Magento\Framework\App\Action\Action
                 );
             }
 
-            $order = $this->_order = $this->_orderFactory->create()->loadByIncrementId($this->_quote->getReservedOrderId());
+            $order = $this->_order = $this->_orderFactory->create()->loadByIncrementId(
+                $this->_quote->getReservedOrderId()
+            );
             if ($order === null || $order->getId() === null) {
                 throw new \Magento\Framework\Exception\LocalizedException(__("Invalid order."));
             }
@@ -257,8 +259,6 @@ class Callback extends \Magento\Framework\App\Action\Action
         }
         return [$action, $closed];
     }
-
-
 
     private function _confirmPayment($transactionId)
     {

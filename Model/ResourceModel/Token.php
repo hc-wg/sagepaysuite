@@ -25,6 +25,10 @@ class Token extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 
     /**
      * Get tokens by customer id and vendorname
+     * @param \Ebizmarts\SagePaySuite\Model\Token $object
+     * @param $customerId
+     * @param $vendorname
+     * @return array
      */
     public function getCustomerTokens(\Ebizmarts\SagePaySuite\Model\Token $object, $customerId, $vendorname)
     {
@@ -52,6 +56,8 @@ class Token extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 
     /**
      * Get tokens by customer id and vendorname
+     * @param $tokenId
+     * @return array
      */
     public function getTokenById($tokenId)
     {
@@ -65,7 +71,6 @@ class Token extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 
     /**
      * Checks if token is owned by customer
-     *
      * @param $customerId
      * @param $tokenId
      * @return bool

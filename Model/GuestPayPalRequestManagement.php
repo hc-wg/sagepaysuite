@@ -2,7 +2,9 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-class GuestPayPalRequestManagement extends PayPalRequestManagement implements \Ebizmarts\SagePaySuite\Api\GuestPayPalManagementInterface
+use \Ebizmarts\SagePaySuite\Api\GuestPayPalManagementInterface;
+
+class GuestPayPalRequestManagement extends PayPalRequestManagement implements GuestPayPalManagementInterface
 {
     /**
      * {@inheritDoc}
