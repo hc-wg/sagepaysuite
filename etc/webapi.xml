@@ -29,4 +29,18 @@
             <resource ref="anonymous" />
         </resources>
     </route>
+
+    <route url="/V1/sagepay/paypal/:cartId" method="GET">
+        <service class="Ebizmarts\SagePaySuite\Api\PayPalManagementInterface" method="savePaymentInformationAndPlaceOrder"/>
+        <resources>
+            <resource ref="self" />
+        </resources>
+    </route>
+
+    <route url="/V1/sagepay/paypal-guest/:cartId" method="GET">
+        <service class="Ebizmarts\SagePaySuite\Api\GuestPayPalManagementInterface" method="savePaymentInformationAndPlaceOrder"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
 </routes>

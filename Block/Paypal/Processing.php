@@ -27,6 +27,11 @@ class Processing extends \Magento\Framework\View\Element\Template
         $html .= '<div class="container"><img
                  src="' . $this->getViewFileUrl('Ebizmarts_SagePaySuite::images/paypal_checkout.png') . '">';
 
+        $callbackUrl = $this->getUrl(
+            'sagepaysuite/paypal/callback',
+            ['_secure' => true, 'quoteid' => $this->getRequest()->getParam('quoteid')]
+        );
+
         //form POST
         $postData = $this->getData("paypal_post");
         if (!empty($postData) && is_object($postData) && $postData->Status) {
@@ -34,7 +39,7 @@ class Processing extends \Magento\Framework\View\Element\Template
                 src="' . $this->getViewFileUrl('Ebizmarts_SagePaySuite::images/ajax-loader.gif') . '"
                 >Processing payment, please wait...</p></div>';
             $html .= '<form id="paypal_post_form" method="POST"
-            action="' . $this->getUrl('sagepaysuite/paypal/callback', ['_secure' => true]) . '">';
+            action="' . $callbackUrl . '">';
             $postData  = get_object_vars($postData);
             $keys      = array_keys($postData);
             $keysCount = count($keys);
