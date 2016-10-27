@@ -120,22 +120,22 @@ define(
                                 //generate crypt and form data
                                 storage.get(paypalServiceUrl)
                                     .done(
-                                    function (response) {
-                                        if (response.success) {
-                                            if (response.response[1].PayPalRedirectURL) {
-                                                window.location.href = response.response[1].PayPalRedirectURL;
+                                        function (response) {
+                                            if (response.success) {
+                                                if (response.response[1].PayPalRedirectURL) {
+                                                    window.location.href = response.response[1].PayPalRedirectURL;
+                                                } else {
+                                                    self.showPaymentError("Invalid response from PayPal, please try again later.");
+                                                }
                                             } else {
-                                                self.showPaymentError("Invalid response from PayPal, please try again later.");
+                                                self.showPaymentError(response.error_message);
                                             }
-                                        } else {
-                                            self.showPaymentError(response.error_message);
                                         }
-                                    }
-                                ).fail(
-                                    function (response) {
-                                        self.showPaymentError("Unable to submit form to PayPal.");
-                                    }
-                                );
+                                    ).fail(
+                                        function (response) {
+                                            self.showPaymentError("Unable to submit form to PayPal.");
+                                        }
+                                    );
                             }
                         ).fail(
                             function (response) {
