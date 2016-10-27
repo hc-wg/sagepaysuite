@@ -45,7 +45,6 @@ class PayPalRequestManagement implements \Ebizmarts\SagePaySuite\Api\PayPalManag
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
-        \Ebizmarts\SagePaySuite\Api\Data\Result $result,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Customer\Model\Session $customerSession,
