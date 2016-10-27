@@ -510,9 +510,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $pirestapiMock->expects($this->any())
             ->method('submit3D')
-            ->will($this->returnValue((object)[
-                "status" => "CardNotEnrolled"
-            ]));
+            ->willReturn(new \stdClass());
         $pirestapiMock->expects($this->any())
             ->method('transactionDetails')
             ->will($this->returnValue((object)[
