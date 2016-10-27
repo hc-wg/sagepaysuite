@@ -69,7 +69,6 @@ class Callback extends \Magento\Framework\App\Action\Action
     /**
      * Callback constructor.
      * @param \Magento\Framework\App\Action\Context $context
-     * @param \Magento\Customer\Model\Session $customerSession
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
      * @param \Psr\Log\LoggerInterface $logger
@@ -80,6 +79,7 @@ class Callback extends \Magento\Framework\App\Action\Action
      * @param \Magento\Quote\Model\Quote $quote
      * @param \Magento\Sales\Model\OrderFactory $orderFactory
      * @param \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender
+     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
