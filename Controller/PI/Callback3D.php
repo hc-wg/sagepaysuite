@@ -103,14 +103,14 @@ class Callback3D extends \Magento\Framework\App\Action\Action
             $this->_transactionId = $this->getRequest()->getParam("transactionId");
             $submit3D_result = $this->_pirestapi->submit3D($paRes, $this->_transactionId);
 
-            if (isset($submit3D_result->status) && $submit3D_result->status == "Authenticated") {
+            if (isset($submit3D_result->status)) {
                 //request transaction details to confirm payment
-                $transaction_details_result = $this->_pirestapi->transactionDetails($this->_transactionId);
+                $transactionDetailsResult = $this->_pirestapi->transactionDetails($this->_transactionId);
 
                 //log transaction details response
-                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $transaction_details_result);
+                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $transactionDetailsResult);
 
-                $this->_confirmPayment($transaction_details_result);
+                $this->_confirmPayment($transactionDetailsResult);
 
                 //remove order pre-saved flag from checkout
                 $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
