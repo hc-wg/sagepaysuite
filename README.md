@@ -1,12 +1,12 @@
 # Sage Pay Suite integration for Magento 2
 
-[CHANGELOG](https://github.com/ebizmarts/magento2-sage-pay-suite/blob/devel_martin/CHANGELOG.md)
+[CHANGELOG](https://github.com/ebizmarts/magento2-sage-pay-suite/blob/master/CHANGELOG.md)
 
 ## Installation Instructions
 
 __Requirements__
 
-  - The ZIP file named **Ebizmarts_SagePaySuiteM2-1.1.7.zip**
+  - The ZIP file named **Ebizmarts_SagePaySuiteM2-1.1.8.zip**
   - Access to the Magento 2 server via SSH
   - The unzip command should be available, check by running `which unzip`
   - [Composer](https://getcomposer.org/) needs to be installed in the server
@@ -14,7 +14,7 @@ __Requirements__
 __Installation__
 
   1. Check file integrity by running this command on the terminal
-  `php -r "if (hash_file('SHA384', 'Ebizmarts_SagePaySuiteM2-1.1.7.zip') === '9731b4501ba878bf99f60ed15837874459e836f3f8ea267ffb9a609edf42f197ea9a75d9cd64ca29074df612a40aa0f9') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('Ebizmarts_SagePaySuiteM2-1.1.7.zip'); } echo PHP_EOL;"`
+  `php -r "if (hash_file('SHA384', 'Ebizmarts_SagePaySuiteM2-1.1.8.zip') === 'b3866003bad42d0e7f800ede08873fd667c8593d910a598d3b50554bfaabab29651b7a2e1ee9efce591966ef9ce3afb8') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('Ebizmarts_SagePaySuiteM2-1.1.8.zip'); } echo PHP_EOL;"`
   
   2. Upload the ZIP file to the Magento 2 server
 
@@ -33,7 +33,7 @@ __Installation__
    
   7. Uncompress Sage Pay Suite package
   
-    $ unzip /PATH/TO/PACKAGE/Ebizmarts_SagePaySuiteM2-1.1.7.zip
+    $ unzip /PATH/TO/PACKAGE/Ebizmarts_SagePaySuiteM2-1.1.8.zip
 
   8. This will create the following content in $MAGENTO_FOLDER$/app/code
     <pre>
