@@ -16,22 +16,22 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Magento\Framework\Mail\Template\TransportBuilder
      */
-    protected $_mailTransportBuilder;
+    private $_mailTransportBuilder;
 
     /**
      * \Ebizmarts\SagePaySuite\Model\Api\Reporting
      */
-    protected $_reportingApi;
+    private $_reportingApi;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
@@ -47,10 +47,10 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
     ) {
     
         parent::__construct($context);
-        $this->_suiteLogger = $suiteLogger;
-        $this->_config = $config;
+        $this->_suiteLogger          = $suiteLogger;
+        $this->_config               = $config;
         $this->_mailTransportBuilder = $mailTransportBuilder;
-        $this->_reportingApi = $reportingApi;
+        $this->_reportingApi         = $reportingApi;
     }
 
     /**
@@ -114,21 +114,27 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
                      */
 
                     //auto-invoice
-                    $autoInvoiceActioned = $this->_processAutoInvoice($transaction, $payment, $fraudscreenrecommendation);
+                    $autoInvoiceActioned = $this->_processAutoInvoice(
+                        $transaction,
+                        $payment,
+                        $fraudscreenrecommendation
+                    );
                     if (!empty($autoInvoiceActioned)) {
                         $logData["Action"] = $autoInvoiceActioned;
                     }
 
+                    // @codingStandardsIgnoreStart
                     //notification
-//                    $notificationActioned = $this->_notification($transaction, $payment,
-//                        $fraudscreenrecommendation,
-//                        $fraudid,
-//                        $fraudcodedetail,
-//                        $fraudprovidername,
-//                        $rules);
-//                    if (!empty($notificationActioned)) {
-//                        $logData["Notification"] = $notificationActioned;
-//                    }
+                    /*$notificationActioned = $this->_notification($transaction, $payment,
+                        $fraudscreenrecommendation,
+                        $fraudid,
+                        $fraudcodedetail,
+                        $fraudprovidername,
+                        $rules);
+                    if (!empty($notificationActioned)) {
+                        $logData["Notification"] = $notificationActioned;
+                    }*/
+                    // @codingStandardsIgnoreEnd
 
                     /**
                      * END process fraud actions
@@ -160,15 +166,22 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
                     $logData["fraudscreenrecommendation"] = $fraudscreenrecommendation;
                 }
             } else {
-                $logData["ERROR"] = "Invalid Response: " . (!empty($response) && isset($response->errorcode) ? $response->errorcode : "INVALID");
+                $responseErrorCodeShow = "INVALID";
+                if (!empty($response) && isset($response->errorcode)) {
+                    $responseErrorCodeShow = $response->errorcode;
+                }
+                $logData["ERROR"] = "Invalid Response: " . $responseErrorCodeShow;
             }
         }
 
         return $logData;
     }
 
-    protected function _processAutoInvoice(\Magento\Sales\Model\Order\Payment\Transaction $transaction, \Magento\Sales\Model\Order\Payment $payment, $fraudscreenrecommendation)
-    {
+    private function _processAutoInvoice(
+        \Magento\Sales\Model\Order\Payment\Transaction $transaction,
+        \Magento\Sales\Model\Order\Payment $payment,
+        $fraudscreenrecommendation
+    ) {
         //auto-invoice authorized order for full amount if ACCEPT or OK
         if ((bool)$this->_config->getAutoInvoiceFraudPassed() == true &&
             $transaction->getTxnType() == \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH &&
@@ -190,7 +203,18 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
-    protected function _notification(
+    /**
+     * @param Order\Payment\Transaction $transaction
+     * @param Order\Payment $payment
+     * @param $fraudscreenrecommendation
+     * @param $fraudid
+     * @param $fraudcodedetail
+     * @param $fraudprovidername
+     * @param $rules
+     * @return bool|string
+     * @codeCoverageIgnore
+     */
+    private function _notification(
         \Magento\Sales\Model\Order\Payment\Transaction $transaction,
         \Magento\Sales\Model\Order\Payment $payment,
         $fraudscreenrecommendation,
@@ -213,14 +237,23 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
             ) {
                 $template = "sagepaysuite_fraud_notification";
                 $transport = $this->_mailTransportBuilder->setTemplateIdentifier($template)
-                    ->addTo($this->scopeConfig->getValue('trans_email/ident_sales/email', \Magento\Store\Model\ScopeInterface::SCOPE_STORE))
-                    ->setFrom($this->scopeConfig->getValue("contact/email/sender_email_identity", \Magento\Store\Model\ScopeInterface::SCOPE_STORE))
+                    ->addTo(
+                        $this->scopeConfig->getValue(
+                            'trans_email/ident_sales/email',
+                            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                        )
+                    )
+                    ->setFrom(
+                        $this->scopeConfig->getValue(
+                            "contact/email/sender_email_identity",
+                            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                        )
+                    )
                     ->setTemplateOptions(['area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
                         'store' => Store::DEFAULT_STORE_ID])
                     ->setTemplateVars([
                         'transaction_id' => $transaction->getTransactionId(),
                         'order_id' => $payment->getOrder()->getIncrementId(),
-//                        'order_url' => $this->_urlBuilder->getUrl('sales/order/view/', array('order_id' => $payment->getOrder()->getEntityId())),
                         'vps_tx_id' => $transaction->getTxnId(),
                         'fraud_id' => $fraudid,
                         'recommendation' => $fraudscreenrecommendation,
@@ -231,7 +264,11 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
                     ->getTransport();
                 $transport->sendMessage();
 
-                return "Email sent to " . $this->scopeConfig->getValue('trans_email/ident_sales/email', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                $identSales = $this->scopeConfig->getValue(
+                    'trans_email/ident_sales/email',
+                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                );
+                return "Email sent to " . $identSales;
             }
         }
 

@@ -18,22 +18,27 @@ class Reporting
      * @var \Magento\Framework\HTTP\Adapter\CurlFactory
      *
      */
-    protected $_curlFactory;
+    private $_curlFactory;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
      */
-    protected $_apiExceptionFactory;
+    private $_apiExceptionFactory;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
+
+    /**
+     * @var \Magento\Framework\ObjectManager\ObjectManager
+     */
+    private $objectManager;
 
     /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
@@ -44,20 +49,22 @@ class Reporting
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        Logger $suiteLogger
+        Logger $suiteLogger,
+        \Magento\Framework\ObjectManager\ObjectManager $objectManager
     ) {
-    
-        $this->_config = $config;
-        $this->_curlFactory = $curlFactory;
+
+        $this->_config              = $config;
+        $this->_curlFactory         = $curlFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
-        $this->_suiteLogger = $suiteLogger;
+        $this->_suiteLogger         = $suiteLogger;
+        $this->objectManager        = $objectManager;
     }
 
     /**
      * @param $xml
      * @return bool|\SimpleXMLElement
      */
-    protected function _executeRequest($xml)
+    private function _executeRequest($xml)
     {
         $curl = $this->_curlFactory->create();
 
@@ -85,7 +92,7 @@ class Reporting
         $curl->close();
 
         try {
-            $xml = new \SimpleXMLElement($data);
+            $xml = $this->objectManager->create('\SimpleXMLElement', ['data' => $data]);
         } catch (\Exception $e) {
             return false;
         }
@@ -96,7 +103,7 @@ class Reporting
     /**
      * Returns url for each enviroment according the configuration.
      */
-    protected function _getServiceUrl()
+    private function _getServiceUrl()
     {
         if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_LIVE;
@@ -111,7 +118,7 @@ class Reporting
      * @param string $command Param request to the API.
      * @return string MD5 hash signature.
      */
-    protected function _getXmlSignature($command, $params)
+    private function _getXmlSignature($command, $params)
     {
         $xml = '<command>' . $command . '</command>';
         $xml .= '<vendor>' . $this->_config->getVendorname() . '</vendor>';
@@ -119,7 +126,7 @@ class Reporting
         $xml .= $params;
         $xml .= '<password>' . $this->_config->getReportingApiPassword() . '</password>';
 
-        return md5($xml);
+        return hash('md5', $xml);
     }
 
     /**
@@ -129,7 +136,7 @@ class Reporting
      * @param string $params Parameters used for each command.
      * @return string Xml string to be used into the API connection.
      */
-    protected function _createXml($command, $params = null)
+    private function _createXml($command, $params = null)
     {
         $xml = '';
         $xml .= '<vspaccess>';
@@ -137,7 +144,7 @@ class Reporting
         $xml .= '<vendor>' . $this->_config->getVendorname() . '</vendor>';
         $xml .= '<user>' . $this->_config->getReportingApiUser() . '</user>';
 
-        if (!is_null($params)) {
+        if ($params !== null) {
             $xml .= $params;
         }
 
@@ -151,7 +158,7 @@ class Reporting
      * @return mixed
      * @throws
      */
-    protected function _handleApiErrors($response)
+    private function _handleApiErrors($response)
     {
         //parse xml as object
         $response = (object)((array)$response);

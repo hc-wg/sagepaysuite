@@ -4,7 +4,9 @@ namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite;
 
-class GuestServerRequestManagement extends ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\GuestServerManagementInterface
+use \Ebizmarts\SagePaySuite\Api\GuestServerManagementInterface;
+
+class GuestServerRequestManagement extends ServerRequestManagement implements GuestServerManagementInterface
 {
 
     /**
@@ -12,8 +14,8 @@ class GuestServerRequestManagement extends ServerRequestManagement implements \E
      */
     public function getQuoteById($cartId)
     {
-        $quoteIdMask = $this->quoteIdMaskFactory->create()->load($cartId, 'masked_id');
+        $quoteIdMask = $this->getQuoteIdMaskFactory()->create()->load($cartId, 'masked_id');
 
-        return $this->quoteRepository->get($quoteIdMask->getQuoteId());
+        return $this->getQuoteRepository()->get($quoteIdMask->getQuoteId());
     }
 }

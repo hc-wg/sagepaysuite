@@ -13,20 +13,11 @@ define([
 ], function ($, url, ui, $t) {
     "use strict";
 
-    //load sagepay library
-    //if(sagepaysuitepi_config && this.options.mode == 'live'){
-    // if(false) {
-    //     var sagepayjs = require(['sagepayjs_live']);
-    // }
-    // else {
-    //     var sagepayjs = require(['sagepayjs_test']);
-    // }
-
     /**
      * Disable card server validation in admin
      */
     if (typeof order !== 'undefined') {
-    order.addExcludedPaymentMethod('sagepaysuitepi');
+        order.addExcludedPaymentMethod('sagepaysuitepi');
     }
 
     $.widget('mage.sagepaysuitepiCcForm', {
@@ -55,22 +46,33 @@ define([
         },
         submitAdminOrder: function () {
 
+            $('#edit_form').validate().form();
+            $('#edit_form').trigger('afterValidate.beforeSubmit');
+            $('body').trigger('processStop');
+
+            // validate parent form
+            if ($('#edit_form').validate().errorList.length) {
+                return false;
+            }
+
             var self = this;
             self.resetPaymentErrors();
 
             var serviceUrl = this.options.url.generateMerchantKey;
 
-            jQuery.ajax({
-                url: serviceUrl,
-                data: {form_key: window.FORM_KEY},
-                type: 'POST'
-            }).done(function (response) {
-                if (response.success) {
-                    self.sagepayTokeniseCard(response.merchant_session_key);
-                } else {
-                    console.log(response);
-                    self.showPaymentError(response.error_message ? response.error_message : response.message);
-                }
+            require(['sagepayjs_' + this.options.mode], function () {
+                $.ajax({
+                    url: serviceUrl,
+                    data: {form_key: window.FORM_KEY},
+                    type: 'POST',
+                    showLoader: true
+                }).done(function (response) {
+                    if (response.success) {
+                        self.sagepayTokeniseCard(response.merchant_session_key);
+                    } else {
+                        self.showPaymentError(response.error_message ? response.error_message : response.message);
+                    }
+                });
             });
 
             return false;
@@ -177,16 +179,6 @@ define([
 
             var serviceUrl = this.options.url.request;
 
-            // var payload = {
-            //     merchant_session_key: self.merchantSessionKey,
-            //     card_identifier: self.cardIdentifier,
-            //     card_type: self.creditCardType,
-            //     card_exp_month: self.creditCardExpMonth,
-            //     card_exp_year: self.creditCardExpYear,
-            //     card_last4: self.creditCardLast4,
-            //     form_key: window.FORM_KEY
-            // };
-
             var formData = jQuery("#edit_form").serialize();
             formData += "&merchant_session_key=" + self.merchantSessionKey;
             formData += "&card_identifier=" + self.cardIdentifier;
@@ -195,10 +187,11 @@ define([
             formData += "&card_exp_year=" + self.creditCardExpYear;
             formData += "&card_last4=" + self.creditCardLast4;
 
-            jQuery.ajax({
+            $.ajax({
                 url: serviceUrl,
                 data: formData,
-                type: 'POST'
+                type: 'POST',
+                showLoader: true
             }).done(function (response) {
 
                 if (response.success == true) {
@@ -254,14 +247,6 @@ define([
 
         },
         _create: function () {
-
-            if (this.options.mode == 'live') {
-                var sagepayjs = require(['sagepayjs_live']);
-            } else {
-                var sagepayjs = require(['sagepayjs_test']);
-            }
-
-
             $('#edit_form').on('changePaymentMethod', this.prepare.bind(this));
             $('#edit_form').on('changePaymentData', this.changePaymentData.bind(this));
             $('#edit_form').trigger(

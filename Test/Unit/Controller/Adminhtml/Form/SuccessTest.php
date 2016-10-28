@@ -19,49 +19,66 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Controller\Adminhtml\Form\Success
      */
-    protected $formSuccessController;
+    private $formSuccessController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
+    private $responseMock;
 
     /**
      * @var \Magento\Framework\App\Response\RedirectInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $redirectMock;
+    private $redirectMock;
 
     /**
-     * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
+     * @var  \Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $orderMock;
+    private $orderMock;
 
     /**
-     * @var Ebizmarts\SagePaySuite\Helper\Checkout|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Ebizmarts\SagePaySuite\Helper\Checkout|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $checkoutHelperMock;
+    private $checkoutHelperMock;
 
     /**
      * @var \Magento\Quote\Model\QuoteManagement|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $_quoteManagementMock;
+    private $_quoteManagementMock;
 
     /**
      * @var \Magento\Framework\Message\ManagerInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $_messageManagerMock;
+    private $_messageManagerMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
+        $formModelMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Form::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $formModelMock->method('markAsInitialized')->willReturnSelf();
+
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('setCcExpMonth')
+            ->with('04');
+        $paymentMock
+            ->expects($this->once())
+            ->method('setCcExpYear')
+            ->with('19');
+
+        $paymentMock->method('getMethodInstance')->willReturn($formModelMock);
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
@@ -145,7 +162,8 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Model\Order')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->orderMock->expects($this->any())
+        $this->orderMock
+            ->expects($this->any())
             ->method('getPayment')
             ->will($this->returnValue($paymentMock));
 
@@ -175,11 +193,13 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
         $formModelMock->expects($this->any())
             ->method('decodeSagePayResponse')
             ->will($this->returnValue([
-                "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
-                "CardType" => "VISA",
-                "Last4Digits" => "0006",
-                "StatusDetail" => "OK_STATUS_DETAIL",
-                "VendorTxCode" => "100000001-2016-12-12-12346789"
+                "VPSTxId"        => "{" . self::TEST_VPSTXID . "}",
+                "CardType"       => "VISA",
+                "Last4Digits"    => "0006",
+                "StatusDetail"   => "OK_STATUS_DETAIL",
+                "VendorTxCode"   => "100000001-2016-12-12-12346789",
+                "ExpiryDate"     => "0419",
+                "3DSecureStatus" => "OK"
             ]));
 
         $this->_quoteManagementMock = $this
@@ -201,9 +221,25 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecuteSUCCESS()
     {
+        $this->orderMock
+            ->expects($this->once())
+            ->method('place')
+            ->willReturnSelf();
+
+        $invoiceCollectionMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $invoiceCollectionMock->expects($this->once())->method('setDataToAll')->willReturnSelf();
+        $this->orderMock
+            ->expects($this->once())
+            ->method('getInvoiceCollection')
+            ->willReturn($invoiceCollectionMock);
+
         $this->_quoteManagementMock->expects($this->once())
             ->method("submit")
             ->willReturn($this->orderMock);

@@ -16,34 +16,37 @@ class Request extends \Magento\Backend\App\AbstractAction
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    protected $_quote;
+    private $_quote;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * Sage Pay Suite Request Helper
      * @var \Ebizmarts\SagePaySuite\Helper\Request
      */
-    protected $_requestHelper;
+    private $_requestHelper;
 
     /**
      * @var \Magento\Backend\Model\Session\Quote
      */
-    protected $_quoteSession;
+    private $_quoteSession;
+
+    /** @var \Magento\Framework\ObjectManagerInterface */
+    private $objectManager;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -63,13 +66,14 @@ class Request extends \Magento\Backend\App\AbstractAction
     ) {
     
         parent::__construct($context);
-        $this->_config = $config;
+        $this->_config        = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
-        $this->_suiteHelper = $suiteHelper;
-        $this->_suiteLogger = $suiteLogger;
+        $this->_suiteHelper   = $suiteHelper;
+        $this->_suiteLogger   = $suiteLogger;
         $this->_requestHelper = $requestHelper;
-        $this->_quoteSession = $quoteSession;
-        $this->_quote = $this->_quoteSession->getQuote();
+        $this->_quoteSession  = $quoteSession;
+        $this->_quote         = $this->_quoteSession->getQuote();
+        $this->objectManager  = $context->getObjectManager();
     }
 
     public function execute()
@@ -101,12 +105,12 @@ class Request extends \Magento\Backend\App\AbstractAction
         return $resultJson;
     }
 
-    protected function _generateFormCrypt()
+    private function _generateFormCrypt()
     {
 
-        $encrypted_password = $this->_config->getFormEncryptedPassword();
+        $encryptedPassword = $this->_config->getFormEncryptedPassword();
 
-        if (empty($encrypted_password)) {
+        if (empty($encryptedPassword)) {
             throw new \Magento\Framework\Exception\LocalizedException(__('Invalid FORM encrypted password.'));
         }
 
@@ -132,8 +136,12 @@ class Request extends \Magento\Backend\App\AbstractAction
         //populate payment amount information
         $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
 
+        $data = $this->_requestHelper->unsetBasketXMLIfAmountsDontMatch($data);
+
         //populate address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
+
+        $data["CardHolder"]    = $data['BillingFirstnames'] . ' ' . $data['BillingSurname'];
 
         //3D rules
         $data["Apply3DSecure"] = $this->_config->get3Dsecure(true);
@@ -143,11 +151,6 @@ class Request extends \Magento\Backend\App\AbstractAction
 
         //gif aid
         $data["AllowGiftAid"] = (int)$this->_config->isGiftAidEnabled();
-
-//        $data['CustomerXML']  = $this->getConfigData('avscv2');
-//        $data['SurchargeXML']  = $this->getConfigData('avscv2');
-//        $data['VendorData']  = $this->getConfigData('avscv2');
-//        $data['Website']        = $this->getConfigData('referrer_id');
 
         //log request
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data);
@@ -159,21 +162,42 @@ class Request extends \Magento\Backend\App\AbstractAction
             }
         }
 
-        $encryptor = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
-        $encryptor->setBlockLength(128);
-        $encryptor->setKey($encrypted_password);
-        $encryptor->setIV($encrypted_password);
-        $crypt = $encryptor->encrypt($preCryptString);
-
-        return "@" . strtoupper(bin2hex($crypt));
+        return $this->getEncryptedRequest($encryptedPassword, $preCryptString);
     }
 
-    protected function _getServiceURL()
+    private function _getServiceURL()
     {
         if ($this->_config->getMode()== \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_FORM_REDIRECT_LIVE;
         } else {
             return \Ebizmarts\SagePaySuite\Model\Config::URL_FORM_REDIRECT_TEST;
         }
+    }
+
+    /**
+     * @return \Magento\Framework\ObjectManagerInterface
+     */
+    public function getObjManager()
+    {
+        return $this->objectManager;
+    }
+
+    /**
+     * @param $encryptedPassword
+     * @param $preCryptString
+     * @return string
+     */
+    private function getEncryptedRequest($encryptedPassword, $preCryptString)
+    {
+        $encryptor = $this
+            ->getObjManager()
+            ->create('\phpseclib\Crypt\AES', ['mode' => \phpseclib\Crypt\Base::MODE_CBC]);
+        $encryptor->setBlockLength(128);
+        $encryptor->setKey($encryptedPassword);
+        $encryptor->setIV($encryptedPassword);
+
+        $crypt = $encryptor->encrypt($preCryptString);
+
+        return "@" . strtoupper(bin2hex($crypt));
     }
 }

@@ -19,17 +19,17 @@ class Info extends \Magento\Backend\Block\Template
     /**
      * @var \Magento\Sales\Model\Order
      */
-    protected $_order;
+    private $_order;
 
     /**
      * @var Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @param \Magento\Backend\Block\Template\Context $context
@@ -44,9 +44,8 @@ class Info extends \Magento\Backend\Block\Template
         array $data = []
     ) {
     
-        $this->_order = $registry->registry('current_order');
-        ;
-        $this->_config = $config;
+        $this->_order       = $registry->registry('current_order');
+        $this->_config      = $config;
         $this->_suiteHelper = $suiteHelper;
         parent::__construct($context, $data);
     }
@@ -59,12 +58,17 @@ class Info extends \Magento\Backend\Block\Template
         return $this->_order->getPayment();
     }
 
-    /**
-     * @return string
-     */
-    protected function _toHtml()
+    public function getTemplate()
     {
-        return $this->_config->isSagePaySuiteMethod($this->getPayment()->getMethod()) ? parent::_toHtml() : '';
+        $template = parent::getTemplate();
+
+        $isSagePayMethod = $this->_config->isSagePaySuiteMethod($this->getPayment()->getMethod());
+
+        if ($isSagePayMethod === false) {
+            $template = '';
+        }
+
+        return $template;
     }
 
     public function getSyncFromApiUrl()

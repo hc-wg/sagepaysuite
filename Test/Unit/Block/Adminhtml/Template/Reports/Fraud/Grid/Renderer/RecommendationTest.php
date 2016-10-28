@@ -11,8 +11,9 @@ class RecommendationTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer\Recommendation
      */
-    protected $recommendationRendererBlock;
+    private $recommendationRendererBlock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $columnMock = $this
@@ -28,6 +29,7 @@ class RecommendationTest extends \PHPUnit_Framework_TestCase
 
         $this->recommendationRendererBlock->setColumn($columnMock);
     }
+    // @codingStandardsIgnoreEnd
 
     public function testRender()
     {

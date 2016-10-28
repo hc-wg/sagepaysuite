@@ -11,8 +11,9 @@ class PaymentActionTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config\Source\PaymentAction
      */
-    protected $paymentActionModel;
+    private $paymentActionModel;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
@@ -21,6 +22,7 @@ class PaymentActionTest extends \PHPUnit_Framework_TestCase
             []
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testToOptionArray()
     {

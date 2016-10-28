@@ -6,20 +6,11 @@
 
 namespace Ebizmarts\SagePaySuite\Helper;
 
-function time()
-{
-    return "1456419355";
-}
-
-function date()
-{
-    return "2016-02-25-085555";
-}
-
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
 class DataTest extends \PHPUnit_Framework_TestCase
 {
+    private $objectManagerHelper;
     /**
      * Sage Pay Transaction ID
      */
@@ -28,18 +19,19 @@ class DataTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $dataHelper;
+    private $dataHelper;
 
     /**
      * @var \Magento\Framework\Module\ModuleList\Loader|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $loaderMock;
+    private $loaderMock;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $configMock;
+    private $configMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->loaderMock = $this
@@ -52,16 +44,25 @@ class DataTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $dateTimeMock = $this->getMockBuilder(\Magento\Framework\Stdlib\DateTime\DateTime::class)
+        ->setMethods(['gmtTimestamp', 'gmtDate'])
+        ->disableOriginalConstructor()
+        ->getMock();
+        $dateTimeMock->expects($this->any())->method('gmtTimestamp')->willReturn('1456419355');
+        $dateTimeMock->expects($this->any())->method('gmtDate')->willReturn('2016-02-25-085555');
 
-        $this->dataHelper = $objectManagerHelper->getObject(
+        $this->objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+
+        $this->dataHelper = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Data',
             [
-                'loader' => $this->loaderMock,
-                'config' => $this->configMock
+                'loader'   => $this->loaderMock,
+                'config'   => $this->configMock,
+                'dateTime' => $dateTimeMock,
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * @dataProvider getVersionDataProvider
@@ -123,7 +124,6 @@ class DataTest extends \PHPUnit_Framework_TestCase
             ->method('getLicense')
             ->will($this->returnValue("010b6116a7a99954fd2f3ad27e9706b2b5f5f51c"));
 
-
         $this->assertEquals(
             $data['expected'],
             $this->dataHelper->verify()
@@ -169,17 +169,76 @@ class DataTest extends \PHPUnit_Framework_TestCase
             'test PAYMENT' => [
                 [
                     'order_id' => '1000000000001',
-                    'action' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT,
+                    'action'   => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT,
                     'expected' => '1000000000001-2016-02-25-085555145641935'
                 ]
             ],
             'test REFUND' => [
                 [
                     'order_id' => '1000000000002',
-                    'action' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND,
+                    'action'   => \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND,
                     'expected' => 'R1000000000002-2016-02-25-08555514564193'
                 ]
+            ],
+            'test AUTHORISE' => [
+                [
+                    'order_id' => '1000000000004',
+                    'action'   => 'AUTHORISE',
+                    'expected' => 'A1000000000004-2016-02-25-08555514564193'
+                ]
+            ],
+            'test REPEAT' => [
+                [
+                    'order_id' => '100000005687',
+                    'action'   => 'REPEAT',
+                    'expected' => 'RT100000005687-2016-02-25-08555514564193'
+                ]
+            ],
+            'test REPEATDEFERRED' => [
+                [
+                    'order_id' => '000000004',
+                    'action'   => 'REPEATDEFERRED',
+                    'expected' => 'RT000000004-2016-02-25-0855551456419355'
+                ]
             ]
+        ];
+    }
+
+    public function testGetSagePayConfig()
+    {
+        $this->dataHelper = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Helper\Data',
+            [
+                'config'   => $this->configMock,
+            ]
+        );
+
+        $this->assertInstanceOf('\Ebizmarts\SagePaySuite\Model\Config', $this->dataHelper->getSagePayConfig());
+    }
+
+    /**
+     * @param $bool
+     * @param $code
+     * @dataProvider methodCodeIsSagePayProvider
+     */
+    public function testMethodCodeIsSagePay($bool, $code)
+    {
+        $this->dataHelper = $this->objectManagerHelper->getObject('Ebizmarts\SagePaySuite\Helper\Data');
+
+        $this->assertEquals($bool, $this->dataHelper->methodCodeIsSagePay($code));
+    }
+
+    public function methodCodeIsSagePayProvider()
+    {
+        return [
+            [true, 'sagepaysuiteform'],
+            [false, 'authorize_net'],
+            [true, 'sagepaysuiterepeat'],
+            [true, 'sagepaysuiteserver'],
+            [false, 'paypal'],
+            [true, 'sagepaysuitepaypal'],
+            [false, 'sagepaydirectpro'],
+            [true, 'sagepaysuitepi']
         ];
     }
 }

@@ -11,13 +11,14 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Plugin\AccountManagement
      */
-    protected $pluginAccountManagementModel;
+    private $pluginAccountManagementModel;
 
     /**
      * @var \Magento\Quote\Model\Quote|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $quoteMock;
+    private $quoteMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->quoteMock = $this
@@ -45,7 +46,6 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getQuoteId')
             ->will($this->returnValue(1));
 
-
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $this->pluginAccountManagementModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Plugin\AccountManagement',
@@ -55,6 +55,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testAroundIsEmailAvailable()
     {
@@ -68,7 +69,12 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->quoteMock->expects($this->once())
             ->method('save');
 
-        $this->pluginAccountManagementModel->aroundIsEmailAvailable($accountManagementMock, $proceed, "test@example.com", null);
+        $this->pluginAccountManagementModel->aroundIsEmailAvailable(
+            $accountManagementMock,
+            $proceed,
+            "test@example.com",
+            null
+        );
     }
 
     private function getProceedClosure($result, $email, $storeId)

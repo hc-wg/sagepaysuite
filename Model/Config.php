@@ -33,17 +33,17 @@ class Config
     /**
      * Actions
      */
-    const ACTION_PAYMENT = 'PAYMENT';
-    const ACTION_PAYMENT_PI = 'Payment';
-    const ACTION_DEFER = 'DEFERRED';
-    const ACTION_AUTHENTICATE = 'AUTHENTICATE';
-    const ACTION_VOID = 'VOID';
-    const ACTION_REFUND = 'REFUND';
-    const ACTION_RELEASE = 'RELEASE';
-    const ACTION_REPEAT = 'REPEAT';
+    const ACTION_PAYMENT         = 'PAYMENT';
+    const ACTION_PAYMENT_PI      = 'Payment';
+    const ACTION_DEFER           = 'DEFERRED';
+    const ACTION_AUTHENTICATE    = 'AUTHENTICATE';
+    const ACTION_VOID            = 'VOID';
+    const ACTION_REFUND          = 'REFUND';
+    const ACTION_RELEASE         = 'RELEASE';
+    const ACTION_REPEAT          = 'REPEAT';
     const ACTION_REPEAT_DEFERRED = 'REPEATDEFERRED';
-    const ACTION_AUTHORISE = 'AUTHORISE';
-    const ACTION_POST = 'post';
+    const ACTION_AUTHORISE       = 'AUTHORISE';
+    const ACTION_POST            = 'post';
 
     /**
      * SagePay MODES
@@ -77,37 +77,39 @@ class Config
     /**
      * Currency settings
      */
-    const CURRENCY_BASE = "base_currency";
-    const CURRENCY_STORE = "store_currency";
+    const CURRENCY_BASE     = "base_currency";
+    const CURRENCY_STORE    = "store_currency";
     const CURRENCY_SWITCHER = "switcher_currency";
 
     /**
      * SagePay URLs
      */
-    const URL_FORM_REDIRECT_LIVE = 'https://live.sagepay.com/gateway/service/vspform-register.vsp';
-    const URL_FORM_REDIRECT_TEST = 'https://test.sagepay.com/gateway/service/vspform-register.vsp';
-    const URL_PI_API_LIVE = 'https://live.sagepay.com/api/v1/';
-    const URL_PI_API_TEST = 'https://test.sagepay.com/api/v1/';
-    const URL_REPORTING_API_TEST = 'https://test.sagepay.com/access/access.htm';
-    const URL_REPORTING_API_LIVE = 'https://live.sagepay.com/access/access.htm';
-    const URL_SHARED_VOID_TEST = 'https://test.sagepay.com/gateway/service/void.vsp';
-    const URL_SHARED_VOID_LIVE = 'https://live.sagepay.com/gateway/service/void.vsp';
-    const URL_SHARED_REFUND_TEST = 'https://test.sagepay.com/gateway/service/refund.vsp';
-    const URL_SHARED_REFUND_LIVE = 'https://live.sagepay.com/gateway/service/refund.vsp';
-    const URL_SHARED_RELEASE_TEST = 'https://test.sagepay.com/gateway/service/release.vsp';
-    const URL_SHARED_RELEASE_LIVE = 'https://live.sagepay.com/gateway/service/release.vsp';
-    const URL_SHARED_AUTHORIZE_TEST = 'https://test.sagepay.com/gateway/service/authorise.vsp';
-    const URL_SHARED_AUTHORIZE_LIVE = 'https://live.sagepay.com/gateway/service/authorise.vsp';
-    const URL_SHARED_REPEAT_TEST = 'https://test.sagepay.com/gateway/service/repeat.vsp';
-    const URL_SHARED_REPEAT_LIVE = 'https://live.sagepay.com/gateway/service/repeat.vsp';
-    const URL_SERVER_POST_TEST = 'https://test.sagepay.com/gateway/service/vspserver-register.vsp';
-    const URL_SERVER_POST_LIVE = 'https://live.sagepay.com/gateway/service/vspserver-register.vsp';
-    const URL_DIRECT_POST_TEST = 'https://test.sagepay.com/gateway/service/vspdirect-register.vsp';
-    const URL_DIRECT_POST_LIVE = 'https://live.sagepay.com/gateway/service/vspdirect-register.vsp';
-    const URL_PAYPAL_COMPLETION_TEST = 'https://test.sagepay.com/gateway/service/complete.vsp';
-    const URL_PAYPAL_COMPLETION_LIVE = 'https://live.sagepay.com/gateway/service/complete.vsp';
-    const URL_TOKEN_POST_REMOVE_LIVE = 'https://live.sagepay.com/gateway/service/removetoken.vsp';
-    const URL_TOKEN_POST_REMOVE_TEST = 'https://test.sagepay.com/gateway/service/removetoken.vsp';
+    const URL_FORM_REDIRECT_LIVE         = 'https://live.sagepay.com/gateway/service/vspform-register.vsp';
+    const URL_FORM_REDIRECT_TEST         = 'https://test.sagepay.com/gateway/service/vspform-register.vsp';
+    const URL_PI_API_LIVE                = 'https://live.sagepay.com/api/v1/';
+    const URL_PI_API_TEST                = 'https://test.sagepay.com/api/v1/';
+    const URL_REPORTING_API_TEST         = 'https://test.sagepay.com/access/access.htm';
+    const URL_REPORTING_API_LIVE         = 'https://live.sagepay.com/access/access.htm';
+    const URL_SHARED_VOID_TEST           = 'https://test.sagepay.com/gateway/service/void.vsp';
+    const URL_SHARED_VOID_LIVE           = 'https://live.sagepay.com/gateway/service/void.vsp';
+    const URL_SHARED_REFUND_TEST         = 'https://test.sagepay.com/gateway/service/refund.vsp';
+    const URL_SHARED_REFUND_LIVE         = 'https://live.sagepay.com/gateway/service/refund.vsp';
+    const URL_SHARED_RELEASE_TEST        = 'https://test.sagepay.com/gateway/service/release.vsp';
+    const URL_SHARED_RELEASE_LIVE        = 'https://live.sagepay.com/gateway/service/release.vsp';
+    const URL_SHARED_AUTHORISE_TEST      = 'https://test.sagepay.com/gateway/service/authorise.vsp';
+    const URL_SHARED_AUTHORISE_LIVE      = 'https://live.sagepay.com/gateway/service/authorise.vsp';
+    const URL_SHARED_REPEATDEFERRED_TEST = 'https://test.sagepay.com/gateway/service/repeat.vsp';
+    const URL_SHARED_REPEATDEFERRED_LIVE = 'https://live.sagepay.com/gateway/service/repeat.vsp';
+    const URL_SHARED_REPEAT_TEST         = 'https://test.sagepay.com/gateway/service/repeat.vsp';
+    const URL_SHARED_REPEAT_LIVE         = 'https://live.sagepay.com/gateway/service/repeat.vsp';
+    const URL_SERVER_POST_TEST           = 'https://test.sagepay.com/gateway/service/vspserver-register.vsp';
+    const URL_SERVER_POST_LIVE           = 'https://live.sagepay.com/gateway/service/vspserver-register.vsp';
+    const URL_DIRECT_POST_TEST           = 'https://test.sagepay.com/gateway/service/vspdirect-register.vsp';
+    const URL_DIRECT_POST_LIVE           = 'https://live.sagepay.com/gateway/service/vspdirect-register.vsp';
+    const URL_PAYPAL_COMPLETION_TEST     = 'https://test.sagepay.com/gateway/service/complete.vsp';
+    const URL_PAYPAL_COMPLETION_LIVE     = 'https://live.sagepay.com/gateway/service/complete.vsp';
+    const URL_TOKEN_POST_REMOVE_LIVE     = 'https://live.sagepay.com/gateway/service/removetoken.vsp';
+    const URL_TOKEN_POST_REMOVE_TEST     = 'https://test.sagepay.com/gateway/service/removetoken.vsp';
 
     /**
      * SagePay Status Codes
@@ -131,7 +133,6 @@ class Config
     const REDSTATUS_CHALLENGE = 'CHALLENGE';
     const REDSTATUS_NOTCHECKED = 'NOTCHECKED';
 
-
     /**
      * Basket Formats
      */
@@ -149,44 +150,32 @@ class Config
      *
      * @var string
      */
-    protected $_methodCode;
-
-    /**
-     * Current payment method instance
-     *
-     * @var MethodInterface
-     */
-    protected $_methodInstance;
+    private $_methodCode;
 
     /**
      * Current store id
      *
      * @var int
      */
-    protected $_storeId;
-
-    /**
-     * @var \Magento\Directory\Model\Config\Source\Country
-     */
-    protected $_sourceCountry;
+    private $_storeId;
 
     /**
      * Store manager
      *
      * @var \Magento\Store\Model\StoreManagerInterface
      */
-    protected $_storeManager;
+    private $_storeManager;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var ScopeConfigInterface
      */
-    protected $_scopeConfig;
+    private $_scopeConfig;
 
     /**
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
@@ -197,17 +186,19 @@ class Config
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger
     ) {
     
-        $this->_scopeConfig = $scopeConfig;
+        $this->_scopeConfig  = $scopeConfig;
         $this->_storeManager = $storeManager;
-        $this->_suiteLogger = $suiteLogger;
+        $this->_suiteLogger  = $suiteLogger;
     }
 
     /**
-     * @param string $methodCode
+     * @param $methodCode
+     * @return $this
      */
     public function setMethodCode($methodCode)
     {
         $this->_methodCode = $methodCode;
+        return $this;
     }
 
     /**
@@ -231,21 +222,13 @@ class Config
      */
     public function getValue($key, $storeId = null)
     {
-        if (is_null($storeId)) {
+        if ($storeId === null) {
             $storeId = $this->_storeId;
         }
 
         $path = $this->_getSpecificConfigPath($key);
 
-        if ($path !== null) {
-            $value = $this->_scopeConfig->getValue(
-                $path,
-                ScopeInterface::SCOPE_STORE,
-                $storeId
-            );
-            return $value;
-        }
-        return null;
+        return $this->_scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
@@ -266,17 +249,17 @@ class Config
      * @param string $fieldName
      * @return string|null
      */
-    protected function _getSpecificConfigPath($fieldName)
+    private function _getSpecificConfigPath($fieldName)
     {
         return "payment/{$this->_methodCode}/{$fieldName}";
     }
 
-    protected function _getGlobalConfigPath($fieldName)
+    private function _getGlobalConfigPath($fieldName)
     {
         return "sagepaysuite/global/{$fieldName}";
     }
 
-    protected function _getAdvancedConfigPath($fieldName)
+    private function _getAdvancedConfigPath($fieldName)
     {
         return "sagepaysuite/advanced/{$fieldName}";
     }
@@ -291,6 +274,15 @@ class Config
         return $this->getValue("active");
     }
 
+    /**
+     * Check whether method active for backend transactions.
+     *
+     */
+    public function isMethodActiveMoto()
+    {
+        return $this->getValue("active_moto");
+    }
+
     public function getVPSProtocol()
     {
         return self::VPS_PROTOCOL;
@@ -298,19 +290,10 @@ class Config
 
     public function getSagepayPaymentAction()
     {
-        $action = $this->getValue("payment_action");
-
         if ($this->_methodCode == self::METHOD_PI) {
-            switch ($action) {
-                case self::ACTION_PAYMENT:
-                    return self::ACTION_PAYMENT_PI;
-                    break;
-                default:
-                    return self::ACTION_PAYMENT_PI;
-                    break;
-            }
+            return self::ACTION_PAYMENT_PI;
         } else {
-            return $action;
+            return $this->getValue("payment_action");
         }
     }
 
@@ -318,20 +301,24 @@ class Config
     {
         $action = $this->getValue("payment_action");
 
+        $magentoAction = null;
+
         switch ($action) {
             case self::ACTION_PAYMENT:
             case self::ACTION_REPEAT:
-                return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
+                $magentoAction = \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
                 break;
             case self::ACTION_DEFER:
             case self::ACTION_AUTHENTICATE:
             case self::ACTION_REPEAT_DEFERRED:
-                return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE;
+                $magentoAction = \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE;
                 break;
             default:
-                return \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
+                $magentoAction = \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
                 break;
         }
+
+        return $magentoAction;
     }
 
     public function getVendorname()
@@ -432,7 +419,8 @@ class Config
 
     /**
      * return 3D secure rules setting
-     * @return string
+     * @param bool $forceDisable
+     * @return mixed|string
      */
     public function get3Dsecure($forceDisable = false)
     {
@@ -446,25 +434,11 @@ class Config
             $config_value = self::MODE_3D_DISABLE;
         }
 
-        if ($this->_methodCode == self::METHOD_PI) {
-            return $config_value;
-        } else {
-            //for old integrations
-            switch ($config_value) {
-                case self::MODE_3D_FORCE:
-                    return '1';
-                    break;
-                case self::MODE_3D_DISABLE:
-                    return '2';
-                    break;
-                case self::MODE_3D_IGNORE:
-                    return '3';
-                    break;
-                default:
-                    return '0';
-                    break;
-            }
+        if ($this->_methodCode != self::METHOD_PI) {
+            $config_value = $this->getThreeDSecureLegacyIntegrations($config_value);
         }
+
+        return $config_value;
     }
 
     /**
@@ -473,31 +447,17 @@ class Config
      */
     public function getAvsCvc()
     {
-        $config_value = $this->_scopeConfig->getValue(
+        $configValue = $this->_scopeConfig->getValue(
             $this->_getAdvancedConfigPath("avscvc"),
             ScopeInterface::SCOPE_STORE,
             $this->_storeId
         );
 
-        if ($this->_methodCode == self::METHOD_PI) {
-            return $config_value;
-        } else {
-            //for old integrations
-            switch ($config_value) {
-                case self::MODE_AVSCVC_FORCE:
-                    return '1';
-                    break;
-                case self::MODE_AVSCVC_DISABLE:
-                    return '2';
-                    break;
-                case self::MODE_AVSCVC_IGNORE:
-                    return '3';
-                    break;
-                default:
-                    return '0';
-                    break;
-            }
+        if ($this->_methodCode != self::METHOD_PI) {
+            $configValue = $this->getAvsCvcLegacyIntegrations($configValue);
         }
+
+        return $configValue;
     }
 
     public function getAutoInvoiceFraudPassed()
@@ -616,5 +576,67 @@ class Config
         $methodCode == self::METHOD_FORM ||
         $methodCode == self::METHOD_SERVER ||
         $methodCode == self::METHOD_REPEAT;
+    }
+
+    /**
+     * @param $configValue
+     * @return string
+     */
+    private function getThreeDSecureLegacyIntegrations($configValue)
+    {
+        //for old integrations
+        switch ($configValue) {
+            case self::MODE_3D_FORCE:
+                $return = '1';
+                break;
+            case self::MODE_3D_DISABLE:
+                $return = '2';
+                break;
+            case self::MODE_3D_IGNORE:
+                $return = '3';
+                break;
+            default:
+                $return = '0';
+                break;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $action
+     * @return null|string
+     */
+    public function getServiceUrl($action)
+    {
+        $mode = $this->getMode();
+
+        $constantName = sprintf("self::URL_SHARED_%s_%s", strtoupper($action), strtoupper($mode));
+
+        return constant($constantName);
+    }
+
+    /**
+     * @param $configValue
+     * @return string
+     */
+    private function getAvsCvcLegacyIntegrations($configValue)
+    {
+        switch ($configValue) {
+            case self::MODE_AVSCVC_FORCE:
+                $return = '1';
+                break;
+            case self::MODE_AVSCVC_DISABLE:
+                $return = '2';
+                break;
+            case self::MODE_AVSCVC_IGNORE:
+                $return = '3';
+                break;
+            default:
+                $return = '0';
+                break;
+        }
+
+        return $return;
     }
 }

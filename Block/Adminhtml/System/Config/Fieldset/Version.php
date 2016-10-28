@@ -6,20 +6,20 @@
 
 namespace Ebizmarts\SagePaySuite\Block\Adminhtml\System\Config\Fieldset;
 
-class Version extends \Magento\Backend\Block\Template implements \Magento\Framework\Data\Form\Element\Renderer\RendererInterface
+use Magento\Framework\Data\Form\Element\Renderer\RendererInterface;
+use Magento\Backend\Block\Template;
+
+class Version extends Template implements RendererInterface
 {
-    /**
-     * @var string
-     */
-    protected $_template = 'Ebizmarts_SagePaySuite::system/config/fieldset/version.phtml';
     /**
      * @var \Magento\Framework\App\ProductMetadataInterface
      */
-    protected $_metaData;
+    private $_metaData;
+
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @param \Magento\Backend\Block\Template\Context $context
@@ -35,7 +35,7 @@ class Version extends \Magento\Backend\Block\Template implements \Magento\Framew
     ) {
     
         parent::__construct($context, $data);
-        $this->_metaData = $productMetaData;
+        $this->_metaData    = $productMetaData;
         $this->_suiteHelper = $suiteHelper;
     }
     /**
@@ -44,7 +44,11 @@ class Version extends \Magento\Backend\Block\Template implements \Magento\Framew
      */
     public function render(\Magento\Framework\Data\Form\Element\AbstractElement $element)
     {
-        return $this->toHtml();
+        $html = '';
+        if ($element->getData('group')['id'] == 'version') {
+            $html = $this->toHtml();
+        }
+        return $html;
     }
 
     public function getVersion()
@@ -52,22 +56,13 @@ class Version extends \Magento\Backend\Block\Template implements \Magento\Framew
         return $this->_suiteHelper->getVersion();
     }
 
-    public function getPxParams()
+    /**
+     * Get relevant path to template
+     *
+     * @return string
+     */
+    public function getTemplate()
     {
-        $extension = "Sage Pay Suite M2;{$this->getVersion()}";
-        $mageEdition = $this->_metaData->getEdition();
-        switch ($mageEdition) {
-            case 'Community':
-                $mageEdition = 'CE';
-                break;
-            case 'Enterprise':
-                $mageEdition = 'EE';
-                break;
-        }
-        $mageVersion = $this->_metaData->getVersion();
-        $mage = "Magento {$mageEdition};{$mageVersion}";
-        $hash = md5($extension . '_' . $mage . '_' . $extension);
-
-        return "ext=$extension&mage={$mage}&ctrl={$hash}";
+        return 'Ebizmarts_SagePaySuite::system/config/fieldset/version.phtml';
     }
 }

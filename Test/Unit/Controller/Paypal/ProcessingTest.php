@@ -14,18 +14,19 @@ class ProcessingTest extends \PHPUnit_Framework_TestCase
     /**
      * @var /Ebizmarts\SagePaySuite\Controller\Paypal\Processing
      */
-    protected $paypalProcessingController;
+    private $paypalProcessingController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
+    private $responseMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->responseMock = $this
@@ -90,6 +91,7 @@ class ProcessingTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecute()
     {
@@ -103,7 +105,7 @@ class ProcessingTest extends \PHPUnit_Framework_TestCase
     /**
      * @param $body
      */
-    protected function _expectSetBody($body)
+    private function _expectSetBody($body)
     {
         $this->responseMock->expects($this->atLeastOnce())
             ->method('setBody')

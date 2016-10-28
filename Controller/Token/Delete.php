@@ -16,28 +16,33 @@ class Delete extends \Magento\Framework\App\Action\Action
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    protected $_logger;
+    private $_logger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Token
      */
-    protected $_tokenModel;
+    private $_tokenModel;
 
-    protected $_tokenId;
-    protected $_isCustomerArea;
+    private $_tokenId;
+    private $_isCustomerArea;
 
     /**
-     * @var Magento\Customer\Model\Session
+     * @var \Magento\Customer\Model\Session
      */
-    protected $_customerSession;
+    private $_customerSession;
 
     /**
+     * Delete constructor.
      * @param \Magento\Framework\App\Action\Context $context
+     * @param Logger $suiteLogger
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Ebizmarts\SagePaySuite\Model\Token $tokenModel
+     * @param \Magento\Customer\Model\Session $customerSession
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -48,11 +53,11 @@ class Delete extends \Magento\Framework\App\Action\Action
     ) {
     
         parent::__construct($context);
-        $this->_suiteLogger = $suiteLogger;
-        $this->_logger = $logger;
-        $this->_tokenModel = $tokenModel;
+        $this->_suiteLogger     = $suiteLogger;
+        $this->_logger          = $logger;
+        $this->_tokenModel      = $tokenModel;
         $this->_customerSession = $customerSession;
-        $this->_isCustomerArea = true;
+        $this->_isCustomerArea  = true;
     }
 
     public function execute()
@@ -75,20 +80,15 @@ class Delete extends \Magento\Framework\App\Action\Action
                 //delete
                 $token->deleteToken();
             } else {
-                throw new \Magento\Framework\Validator\Exception(__('Unable to delete token: Token is not owned by you'));
+                throw new \Magento\Framework\Validator\Exception(
+                    __('Unable to delete token: Token is not owned by you')
+                );
             }
 
             //prepare response
             $responseContent = [
                 'success' => true,
                 'response' => true
-            ];
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->_logger->critical($apiException);
-
-            $responseContent = [
-                'success' => false,
-                'error_message' => __('Something went wrong: ' . $apiException->getUserMessage()),
             ];
         } catch (\Exception $e) {
             $this->_logger->critical($e);
@@ -105,7 +105,7 @@ class Delete extends \Magento\Framework\App\Action\Action
                 $this->_redirect('sagepaysuite/customer/tokens');
                 return true;
             } else {
-                $this->messageManager->addError(__('Something went wrong: ' . $responseContent["error_message"]));
+                $this->messageManager->addError(__($responseContent["error_message"]));
                 $this->_redirect('sagepaysuite/customer/tokens');
                 return false;
             }

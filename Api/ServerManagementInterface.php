@@ -10,13 +10,10 @@ interface ServerManagementInterface
 {
 
     /**
-     * Set payment information and place order for a specified cart.
-     *
-     * @param mixed $cartId
-     * @param bool $save_token
-     * @param string $token
-     * @throws \Magento\Framework\Exception\CouldNotSaveException
-     * @return \Ebizmarts\SagePaySuite\Api\Data\ResultInterface
+     * @param $cartId
+     * @param $save_token
+     * @param $token
+     * @return mixed
      */
     public function savePaymentInformationAndPlaceOrder($cartId, $save_token, $token);
 

@@ -8,24 +8,26 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
 class TokenTest extends \PHPUnit_Framework_TestCase
 {
+    private $objectManagerHelper;
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Token
      */
-    protected $tokenModel;
+    private $tokenModel;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Post|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $postApiMock;
+    private $postApiMock;
 
     /**
      * @var \Magento\Framework\Model\ResourceModel\Db\AbstractDb|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $resourceMock;
+    private $resourceMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
 
         $this->resourceMock = $this
             ->getMockBuilder('Magento\Framework\Model\ResourceModel\Db\AbstractDb')
@@ -44,13 +46,35 @@ class TokenTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->tokenModel = $objectManagerHelper->getObject(
+        $this->tokenModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Token',
             [
                 'resource' => $this->resourceMock,
-                "config" => $configMock,
-                "postApi" => $this->postApiMock
+                "config"   => $configMock,
+                "postApi"  => $this->postApiMock
             ]
+        );
+    }
+    // @codingStandardsIgnoreEnd
+
+    public function testSaveTokenNoCustomerId()
+    {
+        $token = $this->tokenModel->saveToken(
+            null,
+            'fsd587fds78dfsfdsa687dsa',
+            'VISA',
+            '0006',
+            '02',
+            '22',
+            'testebizmarts'
+        );
+
+        $this->assertEmpty(
+            $token->getToken()
+        );
+
+        $this->assertEmpty(
+            $token->getVendorname()
         );
     }
 
@@ -85,6 +109,69 @@ class TokenTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testGetCustomerTokensEmpty()
+    {
+        $this->assertEquals(
+            [],
+            $this->tokenModel->getCustomerTokens(null, 'testebizmarts')
+        );
+    }
+
+    public function testDeleteTokenException()
+    {
+        $exception = new \Exception('No token available.');
+
+        $this->postApiMock->expects($this->once())
+            ->method('sendPost')
+            ->with(
+                [
+                    "VPSProtocol" => null,
+                    "TxType" => "REMOVETOKEN",
+                    "Vendor" => 'testebizmarts',
+                    "Token" => 'fsd587fds78dfsfdsa687dsa'
+                ],
+                \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_LIVE,
+                ["OK"]
+            )
+        ->willThrowException($exception);
+
+        $configMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock->expects($this->once())->method('getMode')->willReturn('live');
+
+        $loggerMock  = $this->getMockBuilder(\Psr\Log\LoggerInterface::class)
+            ->setMethods(['critical', 'emergency', 'alert', 'error', 'warning', 'notice', 'info', 'debug', 'log'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock->expects($this->once())->method('critical')->with($exception);
+        $contextMock = $this->getMockBuilder(\Magento\Framework\Model\Context::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $contextMock->expects($this->exactly(2))->method('getLogger')->willReturn($loggerMock);
+
+        $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\Token',
+            [
+                'resource' => $this->resourceMock,
+                "config"   => $configMock,
+                'postApi'  => $this->postApiMock,
+                'context'  => $contextMock
+            ]
+        )
+            ->saveToken(
+                1,
+                'fsd587fds78dfsfdsa687dsa',
+                'VISA',
+                '0006',
+                '02',
+                '22',
+                'testebizmarts'
+            )
+            ->deleteToken();
+    }
+
     public function testDeleteToken()
     {
         $token = $this->tokenModel->saveToken(
@@ -111,6 +198,46 @@ class TokenTest extends \PHPUnit_Framework_TestCase
             );
 
         $token->deleteToken();
+    }
+
+    public function testDeleteToken2()
+    {
+        $token = $this->tokenModel->saveToken(
+            1,
+            'fsd587fds78dfsfdsa687dsa',
+            'VISA',
+            '0006',
+            '02',
+            '22',
+            ''
+        );
+
+        $token->deleteToken();
+    }
+
+    public function testDeleteTokenDelete()
+    {
+        /** @var \Ebizmarts\SagePaySuite\Model\Token $tokenModelMock */
+        $tokenModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Token::class)
+            ->setMethods(['getId', 'delete'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $tokenModelMock->expects($this->once())->method('getId')->willReturn(456);
+        $tokenModelMock->expects($this->once())->method('delete');
+
+        $tokenModelMock->deleteToken();
+    }
+
+    public function testLoadToken1()
+    {
+        $this->resourceMock->expects($this->any())
+            ->method('getTokenById')
+            ->willReturn(null);
+
+        $token = $this->tokenModel->loadToken(1);
+
+        $this->assertNull($token);
     }
 
     public function testLoadToken()
@@ -143,6 +270,26 @@ class TokenTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsOwnedByCustomer1()
+    {
+        $resourceMock = $this->getMockBuilder(\Magento\Framework\Model\ResourceModel\Db\AbstractDb::class)
+            ->setMethods(['isTokenOwnedByCustomer', '_construct'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $resourceMock->expects($this->once())->method('isTokenOwnedByCustomer')->with(121, 456)->willReturn(true);
+
+        /** @var \Ebizmarts\SagePaySuite\Model\Token|\PHPUnit_Framework_MockObject_MockObject $tokenModelMock */
+        $tokenModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Token::class)
+            ->setMethods(['getResource', 'getId'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $tokenModelMock->expects($this->once())->method('getResource')->willReturn($resourceMock);
+
+        $tokenModelMock->expects($this->exactly(2))->method('getId')->willReturn(456);
+
+        $tokenModelMock->isOwnedByCustomer(121);
+    }
+
     public function testIsOwnedByCustomer()
     {
         $this->assertEquals(
@@ -160,6 +307,14 @@ class TokenTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             false,
             $this->tokenModel->isCustomerUsingMaxTokenSlots(1, 'testebizmarts')
+        );
+    }
+
+    public function testIsCustomerUsingMaxTokenSlots1()
+    {
+        $this->assertEquals(
+            true,
+            $this->tokenModel->isCustomerUsingMaxTokenSlots(null, 'testebizmarts')
         );
     }
 }

@@ -14,22 +14,22 @@ class CheckoutCartIndex implements ObserverInterface
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    protected $_checkoutSession;
+    private $_checkoutSession;
 
     /**
      * @var Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Magento\Sales\Model\OrderFactory
      */
-    protected $_orderFactory;
+    private $_orderFactory;
 
     /**
      * @var \Magento\Quote\Model\QuoteFactory
      */
-    protected $_quoteFactory;
+    private $_quoteFactory;
 
     public function __construct(
         \Magento\Checkout\Model\Session $checkoutSession,
@@ -48,6 +48,7 @@ class CheckoutCartIndex implements ObserverInterface
      * Checkout Cart index observer
      *
      * @param \Magento\Framework\Event\Observer $observer
+     * @return \Magento\Framework\Event\Observer
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
@@ -58,7 +59,9 @@ class CheckoutCartIndex implements ObserverInterface
 
         if (!empty($presavedOrderId)) {
             $order = $this->_orderFactory->create()->load($presavedOrderId);
-            if (!is_null($order) && !is_null($order->getId()) && $order->getState() == \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
+            if ($order !== null && $order->getId() !== null
+                && $order->getState() == \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT
+            ) {
                 $quote = $this->_checkoutSession->getQuote();
                 if (empty($quote) || empty($quote->getId())) {
                 //cancel order
@@ -78,5 +81,6 @@ class CheckoutCartIndex implements ObserverInterface
                 }
             }
         }
+        return $observer;
     }
 }

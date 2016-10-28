@@ -13,31 +13,25 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     /**
      * @var Delete
      */
-    protected $serverSuccessController;
+    private $serverSuccessController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
-
-    /**
-     * @var CheckoutSession|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $checkoutSessionMock;
+    private $responseMock;
 
     /**
      * @var \Magento\Framework\UrlInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $urlBuilderMock;
+    private $urlBuilderMock;
 
-    protected function setUp()
+    public function testExecute()
     {
-
         $checkoutSessionMock = $this
             ->getMockBuilder('\Magento\Checkout\Model\Session')
             ->disableOriginalConstructor()
@@ -103,16 +97,13 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
         $this->serverSuccessController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Server\Success',
             [
-                'context' => $contextMock,
-                'orderFactory' => $orderFactoryMock,
-                'quoteFactory' => $quoteFactoryMock,
+                'context'         => $contextMock,
+                'orderFactory'    => $orderFactoryMock,
+                'quoteFactory'    => $quoteFactoryMock,
                 'checkoutSession' => $checkoutSessionMock,
             ]
         );
-    }
 
-    public function testExecute()
-    {
         $this->_expectSetBody(
             '<script>window.top.location.href = "'
             . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true])
@@ -122,10 +113,76 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
         $this->serverSuccessController->execute();
     }
 
+    public function testException()
+    {
+        $messageManagerMock = $this->getMockBuilder('\Magento\Framework\Message\ManagerInterface')
+        ->disableOriginalConstructor()
+        ->getMock();
+
+        $urlMock = $this->getMockBuilder(\Magento\Framework\UrlInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $contextMock->expects($this->any())
+            ->method('getResponse')
+            ->willReturn($this
+                ->getMock('Magento\Framework\App\Response\Http', [], [], '', false));
+        $contextMock->expects($this->any())
+            ->method('getMessageManager')
+            ->willReturn($messageManagerMock);
+        $contextMock->expects($this->any())
+            ->method('getUrl')
+            ->willReturn($urlMock);
+
+        $expectedException = new \Exception("Could not load quote.");
+        $quoteFactoryMock = $this
+            ->getMockBuilder(\Magento\Quote\Model\QuoteFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["create"])
+            ->getMock();
+        $quoteFactoryMock->expects($this->once())
+            ->method('create')
+            ->willThrowException($expectedException);
+
+        $loggerMock = $this
+            ->getMockBuilder(\Psr\Log\LoggerInterface::class)
+            ->disableOriginalConstructor()
+            ->setMethods(
+                [
+                    "critical",
+                    "emergency",
+                    "alert",
+                    "error",
+                    "warning",
+                    "info",
+                    "debug",
+                    "log",
+                    "notice"
+                ]
+            )
+            ->getMock();
+        $loggerMock->expects($this->once())->method('critical')->with($expectedException);
+
+        $objectManagerHelper = new ObjectManagerHelper($this);
+        $serverSuccessController = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\Server\Success',
+            [
+                'context'      => $contextMock,
+                'quoteFactory' => $quoteFactoryMock,
+                'logger'       => $loggerMock,
+            ]
+        );
+
+        $serverSuccessController->execute();
+    }
+
     /**
      * @param $body
      */
-    protected function _expectSetBody($body)
+    private function _expectSetBody($body)
     {
         $this->responseMock->expects($this->once())
             ->method('setBody')

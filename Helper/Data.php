@@ -6,18 +6,25 @@
 
 namespace Ebizmarts\SagePaySuite\Helper;
 
+use \Ebizmarts\SagePaySuite\Model\Config;
+
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
 
     /**
      * @var \Magento\Framework\Module\ModuleList\Loader
      */
-    protected $_loader;
+    private $_loader;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
+
+    /**
+     * @var \Magento\Framework\Stdlib\DateTime\DateTime
+     */
+    private $dateTime;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
@@ -25,11 +32,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function __construct(
         \Magento\Framework\Module\ModuleList\Loader $loader,
         \Magento\Framework\App\Helper\Context $context,
-        \Ebizmarts\SagePaySuite\Model\Config $config
+        \Ebizmarts\SagePaySuite\Model\Config $config,
+        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
     ) {
         parent::__construct($context);
-        $this->_loader = $loader;
-        $this->_config = $config;
+        $this->_loader  = $loader;
+        $this->_config  = $config;
+        $this->dateTime = $dateTime;
     }
 
     /**
@@ -46,32 +55,38 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param string $action
      * @return string
      */
-    public function generateVendorTxCode($order_id = "", $action = \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT)
+    public function generateVendorTxCode($order_id = "", $action = Config::ACTION_PAYMENT)
     {
-
         $prefix = "";
+
         switch ($action) {
-            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_REFUND:
+            case Config::ACTION_REFUND:
                 $prefix = "R";
                 break;
-            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE:
+            case Config::ACTION_AUTHORISE:
                 $prefix = "A";
                 break;
-            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT:
-            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED:
+            case Config::ACTION_REPEAT:
+            case Config::ACTION_REPEAT_DEFERRED:
                 $prefix = "RT";
                 break;
         }
 
-        return substr($prefix . $order_id . "-" . date('Y-m-d-His') . time(), 0, 40);
+        $date = $this->dateTime->gmtDate('Y-m-d-His');
+        $time = $this->dateTime->gmtTimestamp();
+
+        return substr($prefix . $order_id . "-" . $date . $time, 0, 40);
     }
 
     /**
      * Verify license
      * @return bool
      */
+    // @codingStandardsIgnoreStart
     public function verify()
     {
+        $storeId = (int)$this->_getRequest()->getParam('store', \Magento\Store\Model\Store::DEFAULT_STORE_ID);
+        $this->_config->setStoreId($storeId);
         $domain = preg_replace("/^http:\/\//", "", $this->_config->getStoreDomain());
         $domain = preg_replace("/^https:\/\//", "", $domain);
         $domain = preg_replace("/^www\./", "", $domain);
@@ -82,6 +97,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $key = hash('sha1', $md5 . 'EbizmartsV2');
         return ($key == $this->_config->getLicense());
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * Get module version
@@ -116,5 +132,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             }
         }
         return $transactionId;
+    }
+
+    /**
+     * @param string $methodCode
+     * @return bool
+     */
+    public function methodCodeIsSagePay($methodCode)
+    {
+        return $methodCode == \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM
+            or $methodCode == \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL
+            or $methodCode == \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI
+            or $methodCode == \Ebizmarts\SagePaySuite\Model\Config::METHOD_REPEAT
+            or $methodCode == \Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER;
     }
 }

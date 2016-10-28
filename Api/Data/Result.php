@@ -37,7 +37,6 @@ class Result extends \Magento\Framework\Api\AbstractExtensibleObject implements 
         $this->setData(self::RESPONSE, $text);
     }
 
-
     /**
      * @return string
      */

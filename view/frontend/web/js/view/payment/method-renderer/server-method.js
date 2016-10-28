@@ -191,16 +191,30 @@ define(
              * Create SERVER modal
              */
             openSERVERModal: function (nextURL) {
-                this.modal = $("<div class='sagepaysuiteserver-scroll-wrapper'><iframe class='sagepaysuiteserver_embed_iframe' src='" + nextURL + "'></iframe></div>").modal({
-                    modalClass: 'sagepaysuiteserver-modal',
-                    title: "Sage Pay Secure Gateway",
-                    type: 'slide',
-                    responsive: true,
-                    clickableOverlay: false,
-                    closeOnEscape: false,
-                    buttons: []
-                });
-                this.modal.modal('openModal');
+
+                if (this.sagePayIsMobile()) {
+                    location.href = nextURL;
+                } else {
+                    this.modal = $("<div class='sagepaysuiteserver-scroll-wrapper'><iframe class='sagepaysuiteserver_embed_iframe' src='" + nextURL + "'></iframe></div>").modal({
+                        modalClass: 'sagepaysuiteserver-modal',
+                        title: "Sage Pay Secure Gateway",
+                        type: 'slide',
+                        responsive: true,
+                        clickableOverlay: false,
+                        closeOnEscape: false,
+                        buttons: []
+                    });
+                    this.modal.modal('openModal');
+                }
+
+            },
+            sagePayIsMobile: function () {
+                return (navigator.userAgent.match(/BlackBerry/i) ||
+                navigator.userAgent.match(/webOS/i) ||
+                navigator.userAgent.match(/Android/i) ||
+                navigator.userAgent.match(/iPhone/i) ||
+                navigator.userAgent.match(/iPod/i) ||
+                navigator.userAgent.match(/iPad/i));
             },
             showPaymentError: function (message) {
 

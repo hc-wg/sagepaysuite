@@ -17,22 +17,22 @@ class PI extends CcGenericConfigProvider
     /**
      * @var string
      */
-    protected $methodCode = Config::METHOD_PI;
+    private $methodCode = Config::METHOD_PI;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Form
      */
-    protected $method;
+    private $method;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    protected $_suiteHelper;
+    private $_suiteHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @param CcConfig $ccConfig
@@ -52,7 +52,6 @@ class PI extends CcGenericConfigProvider
         $this->_suiteHelper = $suiteHelper;
         $this->_config = $config;
     }
-
 
     /**
      * @return array|void

@@ -11,8 +11,9 @@ class OrderIdTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer\OrderId
      */
-    protected $orderIdRendererBlock;
+    private $orderIdRendererBlock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $orderMock = $this
@@ -47,6 +48,7 @@ class OrderIdTest extends \PHPUnit_Framework_TestCase
 
         $this->orderIdRendererBlock->setColumn($columnMock);
     }
+    // @codingStandardsIgnoreEnd
 
     public function testRender()
     {

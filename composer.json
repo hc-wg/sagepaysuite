@@ -1,13 +1,16 @@
 {
     "name": "ebizmarts/sagepaysuite",
-    "description": "Sage Pay's payment gateway integration for Europe.",
+    "description": "Official Sage Pay integration for Magento 2.",
     "require": {
         "magento/community-edition": "2.1.*",
-        "php": "5.6.*",
+        "php": "~5.6.0|7.0.2|~7.0.6",
         "phpseclib/phpseclib": "2.0.*"
     },
+    "suggest": {
+        "magento/project-enterprise-edition": "2.1.*"
+    },
     "type": "magento2-module",
-    "version": "1.1.5.3",
+    "version": "1.1.8",
     "autoload": {
         "psr-4": {"Ebizmarts\\SagePaySuite\\":""},
         "files": ["registration.php"]
@@ -17,7 +20,7 @@
         "AFL-3.0"
     ],
     "support": {
-        "email": "info@ebizmarts.com",
+        "email": "sagepay@ebizmarts-desk.zendesk.com",
         "wiki": "http://wiki.ebizmarts.com",
         "forum": "http://ebizmarts.com/forums/view/2"
     },

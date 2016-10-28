@@ -11,18 +11,19 @@ class PostTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Post
      */
-    protected $postApiModel;
+    private $postApiModel;
 
     /**
      * @var \Magento\Framework\HTTP\Adapter\Curl|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $curlMock;
+    private $curlMock;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $apiExceptionFactoryMock;
+    private $apiExceptionFactoryMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->apiExceptionFactoryMock = $this
@@ -44,15 +45,23 @@ class PostTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($this->curlMock));
 
+        $suiteHelperMock = $this
+        ->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Request::class)
+            ->setMethods(['populateAddressInformation'])
+        ->disableOriginalConstructor()
+        ->getMock();
+
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $this->postApiModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Api\Post',
             [
                 "curlFactory" => $curlFactoryMock,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock
+                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
+                'suiteHelper' => $suiteHelperMock
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testSendPost()
     {

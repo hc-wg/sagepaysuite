@@ -13,43 +13,43 @@ class Success extends \Magento\Backend\App\AbstractAction
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    protected $_quote;
+    private $_quote;
 
     /**
      * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
      */
-    protected $_transactionFactory;
+    private $_transactionFactory;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Checkout
      */
-    protected $_checkoutHelper;
+    private $_checkoutHelper;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Form
      */
-    protected $_formModel;
+    private $_formModel;
 
     /**
      * @var \Magento\Backend\Model\Session\Quote
      */
-    protected $_quoteSession;
+    private $_quoteSession;
 
     /**
      * @var \Magento\Quote\Model\QuoteManagement
      */
-    protected $_quoteManagement;
+    private $_quoteManagement;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -85,7 +85,7 @@ class Success extends \Magento\Backend\App\AbstractAction
 
     /**
      * FORM success callback
-     * @throws Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function execute()
     {
@@ -95,14 +95,13 @@ class Success extends \Magento\Backend\App\AbstractAction
             //decode response
             $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
             if (!array_key_exists("VPSTxId", $response)) {
-                throw new \Magento\Framework\Exception\LocalizedException('Invalid response from Sage Pay');
+                throw new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay'));
             }
 
             //log response
             $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
 
             $this->_quote = $this->_quoteSession->getQuote();
-            //$this->_quote->save();
 
             $transactionId = $response["VPSTxId"];
             $transactionId = str_replace("{", "", str_replace("}", "", $transactionId)); //strip brackets
@@ -111,7 +110,6 @@ class Success extends \Magento\Backend\App\AbstractAction
             $payment = $this->_quote->getPayment();
             $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
             $payment->setTransactionId($transactionId);
-            $payment->setLastTransId($transactionId);
             $payment->setCcType($response["CardType"]);
             $payment->setCcLast4($response["Last4Digits"]);
             if (array_key_exists("ExpiryDate", $response)) {
@@ -131,36 +129,18 @@ class Success extends \Magento\Backend\App\AbstractAction
 
             //an order may be created
             if ($order) {
-            //send email
+                //send email
                 $this->_checkoutHelper->sendOrderEmail($order);
             } else {
                 throw new \Magento\Framework\Exception\LocalizedException(__('Can not create order'));
             }
 
             $payment = $order->getPayment();
-            $payment->setTransactionId($transactionId);
             $payment->setLastTransId($transactionId);
-            $payment->setIsTransactionClosed(1);
-            $payment->save();
+            $payment->getMethodInstance()->markAsInitialized();
+            $order->place()->save();
 
-            switch ($this->_config->getSagepayPaymentAction()) {
-                case \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT:
-                    $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
-                    $closed = true;
-                    break;
-                case \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER:
-                    $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
-                    $closed = false;
-                    break;
-                case \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE:
-                    $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
-                    $closed = false;
-                    break;
-                default:
-                    $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
-                    $closed = true;
-                    break;
-            }
+            list($action, $closed) = $this->getActionClosedForPaymentAction();
 
             //create transaction record
             $transaction = $this->_transactionFactory->create();
@@ -173,13 +153,9 @@ class Success extends \Magento\Backend\App\AbstractAction
             $transaction->save();
 
             //update invoice transaction id
-            $invoices = $order->getInvoiceCollection();
-            if (!empty($invoices)) {
-                foreach ($invoices as $_invoice) {
-                    $_invoice->setTransactionId($payment->getLastTransId());
-                    $_invoice->save();
-                }
-            }
+            $order->getInvoiceCollection()
+                ->setDataToAll('transaction_id', $payment->getLastTransId())
+                ->save();
 
             //add success url to response
             $route = 'sales/order/view';
@@ -197,12 +173,39 @@ class Success extends \Magento\Backend\App\AbstractAction
                 $param['order_id'] = $order->getId();
                 $url = $this->_backendUrl->getUrl($route, $param);
             } else {
-                $this->messageManager->addError("Your payment was successful but the order was NOT created: " . $e->getMessage());
+                $this->messageManager
+                    ->addError("Your payment was successful but the order was NOT created: " . $e->getMessage());
                 $route = 'sales/order/view';
                 $url = $this->_backendUrl->getUrl($route, []);
             }
 
             $this->_redirect($url);
         }
+    }
+
+    /**
+     * @return array
+     */
+    private function getActionClosedForPaymentAction()
+    {
+        switch ($this->_config->getSagepayPaymentAction()) {
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT:
+                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
+                $closed = true;
+                break;
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER:
+                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
+                $closed = false;
+                break;
+            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE:
+                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
+                $closed = false;
+                break;
+            default:
+                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
+                $closed = true;
+                break;
+        }
+        return [$action, $closed];
     }
 }

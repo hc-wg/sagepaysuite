@@ -19,44 +19,34 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Controller\Adminhtml\PI\Request
      */
-    protected $piRequestController;
-
-    /**
-     * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $requestMock;
+    private $piRequestController;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
-
-    /**
-     * @var QuoteSession|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $quoteSessionMock;
+    private $responseMock;
 
     /**
      * @var  \Magento\Quote\Model\QuoteManagement|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $quoteManagementMock;
+    private $quoteManagementMock;
 
     /**
      * @var  \Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $orderMock;
+    private $orderMock;
 
     /**
      * @var \Magento\Framework\Controller\Result\Json|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $resultJson;
+    private $resultJson;
 
     /**
      * @var \Magento\Sales\Model\AdminOrder\Create
      */
     private $adminOrder;
-    private $objectManager;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
 
@@ -192,7 +182,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $this->quoteManagementMock = $this
             ->getMockBuilder('Magento\Quote\Model\QuoteManagement')
-            ->setConstructorArgs(array('context' => $contextMock))
+            ->setConstructorArgs(['context' => $contextMock])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -207,10 +197,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('getOrderDescription')
             ->will($this->returnValue("description"));
 
-        $this->adminOrder = $this->getMock('Magento\Sales\Model\AdminOrder\Create', array(), array(), '', false);
+        $this->adminOrder = $this->getMock('Magento\Sales\Model\AdminOrder\Create', [], [], '', false);
         $this->adminOrder->method('setIsValidate')->willReturnSelf();
         $this->adminOrder->method('importPostData')->willReturnSelf();
-        $objManager = $this->getMock('\Magento\Framework\ObjectManager\ObjectManager', array(), array(), '', false);
+        $objManager = $this->getMock('\Magento\Framework\ObjectManager\ObjectManager', [], [], '', false);
         $objManager->method('get')->willReturn($this->adminOrder);
         $contextMock->method('getObjectManager')
             ->willReturn($objManager);
@@ -229,11 +219,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecuteSUCCESS()
     {
         $this->adminOrder->method('createOrder')->willReturn($this->orderMock);
-
 
         $this->quoteManagementMock->expects($this->any())
             ->method('submit')
@@ -269,7 +259,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @param $result
      */
-    protected function _expectResultJson($result)
+    private function _expectResultJson($result)
     {
         $this->resultJson->expects($this->once())
             ->method('setData')

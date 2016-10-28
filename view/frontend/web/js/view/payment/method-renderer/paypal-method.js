@@ -104,27 +104,38 @@ define(
                         ).done(
                             function () {
 
-                                var serviceUrl = url.build('sagepaysuite/paypal/request');
+                                var paypalServiceUrl = null;
+                                if (customer.isLoggedIn()) {
+                                    paypalServiceUrl = urlBuilder.createUrl(
+                                        '/sagepay/paypal/:cartId',
+                                        {cartId: quote.getQuoteId()}
+                                    );
+                                } else {
+                                    paypalServiceUrl = urlBuilder.createUrl(
+                                        '/sagepay/paypal-guest/:cartId',
+                                        {cartId: quote.getQuoteId()}
+                                    );
+                                }
 
                                 //generate crypt and form data
-                                storage.get(serviceUrl).done(
-                                    function (response) {
-
-                                        if (response.success) {
-                                            if (response.response.data.PayPalRedirectURL) {
-                                                window.location.href = response.response.data.PayPalRedirectURL;
+                                storage.get(paypalServiceUrl)
+                                    .done(
+                                        function (response) {
+                                            if (response.success) {
+                                                if (response.response[1].PayPalRedirectURL) {
+                                                    window.location.href = response.response[1].PayPalRedirectURL;
+                                                } else {
+                                                    self.showPaymentError("Invalid response from PayPal, please try again later.");
+                                                }
                                             } else {
-                                                self.showPaymentError("Invalid response from PayPal, please try another payment method");
+                                                self.showPaymentError(response.error_message);
                                             }
-                                        } else {
-                                            self.showPaymentError(response.error_message);
                                         }
-                                    }
-                                ).fail(
-                                    function (response) {
-                                        self.showPaymentError("Unable to submit form to PayPal.");
-                                    }
-                                );
+                                    ).fail(
+                                        function (response) {
+                                            self.showPaymentError("Unable to submit form to PayPal.");
+                                        }
+                                    );
                             }
                         ).fail(
                             function (response) {

@@ -10,6 +10,7 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHe
 
 class Callback3DTest extends \PHPUnit_Framework_TestCase
 {
+    private $objectManagerHelper;
 
     /**
      * Sage Pay Transaction ID
@@ -19,40 +20,48 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
     /**
      * @var /Ebizmarts\SagePaySuite\Controller\PI\Callback3D
      */
-    protected $piCallback3DController;
+    private $piCallback3DController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
+    private $responseMock;
 
     /**
      * @var CheckoutSession|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $checkoutSessionMock;
+    private $checkoutSessionMock;
 
     /**
      * @var \Magento\Framework\App\Response\RedirectInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $redirectMock;
+    private $redirectMock;
 
     /**
-     * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
+     * @var  \Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $orderMock;
+    private $orderMock;
 
     /**
      * @var \Magento\Framework\UrlInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $urlBuilderMock;
+    private $urlBuilderMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
+        $this->objectManagerHelper = new ObjectManagerHelper($this);
+    }
+    // @codingStandardsIgnoreEnd
+
+    public function testExecuteSUCCESS()
+    {
+
         $piModelMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\PI')
             ->disableOriginalConstructor()
@@ -180,8 +189,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $objectManagerHelper = new ObjectManagerHelper($this);
-        $this->piCallback3DController = $objectManagerHelper->getObject(
+        $this->piCallback3DController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\PI\Callback3D',
             [
                 'context' => $contextMock,
@@ -193,10 +201,17 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
                 'transactionFactory' => $transactionFactoryMock
             ]
         );
-    }
 
-    public function testExecuteSUCCESS()
-    {
+        $invoiceCollectionMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $invoiceCollectionMock->expects($this->once())->method('setDataToAll')->willReturnSelf();
+        $this->orderMock
+            ->expects($this->once())
+            ->method('getInvoiceCollection')
+            ->willReturn($invoiceCollectionMock);
+
         $this->orderMock->expects($this->any())
             ->method('load')
             ->willReturnSelf();
@@ -212,6 +227,147 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteERROR()
     {
+
+        $piModelMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\PI')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock->expects($this->any())
+            ->method('getMethodInstance')
+            ->will($this->returnValue($piModelMock));
+
+        $checkoutSessionMock = $this
+            ->getMockBuilder('Magento\Checkout\Model\Session')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->urlBuilderMock = $this
+            ->getMockBuilder('Magento\Framework\UrlInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->responseMock = $this
+            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+
+        $this->requestMock = $this
+            ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->requestMock->expects($this->any())
+            ->method('getParam')
+            ->will($this->returnValue(self::TEST_VPSTXID));
+        $this->requestMock->expects($this->once())
+            ->method('getPost')
+            ->will($this->returnValue((object)[
+                "PaRes" => "123456780"
+            ]));
+
+        $this->redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
+
+        $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $contextMock->expects($this->any())
+            ->method('getRequest')
+            ->will($this->returnValue($this->requestMock));
+        $contextMock->expects($this->any())
+            ->method('getResponse')
+            ->will($this->returnValue($this->responseMock));
+        $contextMock->expects($this->any())
+            ->method('getRedirect')
+            ->will($this->returnValue($this->redirectMock));
+        $contextMock->expects($this->any())
+            ->method('getMessageManager')
+            ->will($this->returnValue($messageManagerMock));
+        $contextMock->expects($this->any())
+            ->method('getUrl')
+            ->will($this->returnValue($this->urlBuilderMock));
+
+        $configMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->orderMock->expects($this->any())
+            ->method('getPayment')
+            ->will($this->returnValue($paymentMock));
+        $this->orderMock->expects($this->any())
+            ->method('place')
+            ->willReturnSelf();
+
+        $orderFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\OrderFactory')
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderFactoryMock->expects($this->once())
+            ->method('create')
+            ->will($this->returnValue($this->orderMock));
+
+        $transactionMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $transactionFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $transactionFactoryMock->expects($this->any())
+            ->method('create')
+            ->will($this->returnValue($transactionMock));
+
+        $pirestapiMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\PIRest')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $pirestapiMock->expects($this->any())
+            ->method('submit3D')
+            ->will($this->returnValue((object)[
+                "status" => "Authenticated"
+            ]));
+        $pirestapiMock->expects($this->any())
+            ->method('transactionDetails')
+            ->will($this->returnValue((object)[
+                "statusCode" => \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS,
+                "statusDetail" => "OK Status",
+                "3DSecure" => (object)[
+                    "status" => "OK"
+                ],
+            ]));
+
+        $checkoutHelperMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Checkout')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->piCallback3DController = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\PI\Callback3D',
+            [
+                'context' => $contextMock,
+                'config' => $configMock,
+                'checkoutSession' => $checkoutSessionMock,
+                'orderFactory' => $orderFactoryMock,
+                'checkoutHelper' => $checkoutHelperMock,
+                'pirestapi' => $pirestapiMock,
+                'transactionFactory' => $transactionFactoryMock
+            ]
+        );
+
         $this->orderMock->expects($this->any())
             ->method('load')
             ->willReturn(null);
@@ -228,10 +384,166 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
     /**
      * @param $body
      */
-    protected function _expectSetBody($body)
+    private function _expectSetBody($body)
     {
         $this->responseMock->expects($this->once())
             ->method('setBody')
             ->with($body);
+    }
+
+    public function testSuccessInvalid3d()
+    {
+        $piModelMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\PI')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock->expects($this->any())
+            ->method('getMethodInstance')
+            ->will($this->returnValue($piModelMock));
+
+        $checkoutSessionMock = $this
+            ->getMockBuilder('Magento\Checkout\Model\Session')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $urlBuilderMock = $this
+            ->getMockBuilder('Magento\Framework\UrlInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->responseMock = $this
+            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+
+        $this->requestMock = $this
+            ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->requestMock->expects($this->any())
+            ->method('getParam')
+            ->will($this->returnValue(self::TEST_VPSTXID));
+        $this->requestMock->expects($this->once())
+            ->method('getPost')
+            ->will($this->returnValue((object)[
+                "PaRes" => "123456780"
+            ]));
+
+        $this->redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
+
+        $messageManagerMock = $this->getMockBuilder(\Magento\Framework\Message\ManagerInterface::class)
+            ->setMethods(
+                [
+                    'addError',
+                    'getMessages',
+                    'getDefaultGroup',
+                    'addMessage',
+                    'addMessages',
+                    'addWarning',
+                    'addNotice',
+                    'addSuccess',
+                    'addErrorMessage',
+                    'addWarningMessage',
+                    'addNoticeMessage',
+                    'addSuccessMessage',
+                    'addComplexErrorMessage',
+                    'addComplexWarningMessage',
+                    'addComplexNoticeMessage',
+                    'addComplexSuccessMessage',
+                    'addUniqueMessages',
+                    'addException',
+                    'addExceptionMessage',
+                    'createMessage'
+                ]
+            )
+            ->disableOriginalConstructor()
+            ->getMock();
+        $messageManagerMock
+            ->expects($this->once())
+            ->method('addError')
+            ->with("Invalid 3D secure authentication.");
+
+        $contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $contextMock->expects($this->any())
+            ->method('getRequest')
+            ->will($this->returnValue($this->requestMock));
+        $contextMock->expects($this->any())
+            ->method('getResponse')
+            ->will($this->returnValue($this->responseMock));
+        $contextMock->expects($this->any())
+            ->method('getRedirect')
+            ->will($this->returnValue($this->redirectMock));
+        $contextMock->expects($this->any())
+            ->method('getMessageManager')
+            ->will($this->returnValue($messageManagerMock));
+        $contextMock->expects($this->any())
+            ->method('getUrl')
+            ->will($this->returnValue($urlBuilderMock));
+
+        $configMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $transactionMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $transactionFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $transactionFactoryMock->expects($this->any())
+            ->method('create')
+            ->will($this->returnValue($transactionMock));
+
+        $pirestapiMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\PIRest')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $pirestapiMock->expects($this->any())
+            ->method('submit3D')
+            ->willReturn(new \stdClass());
+        $pirestapiMock->expects($this->any())
+            ->method('transactionDetails')
+            ->will($this->returnValue((object)[
+                "statusCode" => \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS,
+                "statusDetail" => "OK Status",
+                "3DSecure" => (object)[
+                    "status" => "OK"
+                ],
+            ]));
+
+        $checkoutHelperMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Checkout')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $controller = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\PI\Callback3D',
+            [
+                'context'            => $contextMock,
+                'config'             => $configMock,
+                'checkoutSession'    => $checkoutSessionMock,
+                'checkoutHelper'     => $checkoutHelperMock,
+                'pirestapi'          => $pirestapiMock,
+                'transactionFactory' => $transactionFactoryMock
+            ]
+        );
+
+        $this->_expectSetBody(
+            '<script>window.top.location.href = "'
+            . $urlBuilderMock->getUrl('checkout/cart', ['_secure' => true])
+            . '";</script>'
+        );
+
+        $controller->execute();
     }
 }

@@ -11,13 +11,14 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\ConfigProvider\Server
      */
-    protected $serverConfigProviderModel;
+    private $serverConfigProviderModel;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $configMock;
+    private $configMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $serverModelMock = $this
@@ -76,6 +77,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testGetConfig()
     {

@@ -14,7 +14,7 @@ class Request extends \Magento\Framework\Logger\Handler\Base
      * @var string
      */
 
-    protected $fileName = '/var/log/SagePaySuite/Request.log';
+    protected $fileName = '/var/log/SagePaySuite/Request.log'; // @codingStandardsIgnoreLine
 
     public function isHandling(array $record)
     {

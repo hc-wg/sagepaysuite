@@ -19,34 +19,37 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
     /**
      * @var /Ebizmarts\SagePaySuite\Controller\Paypal\Callback
      */
-    protected $paypalCallbackController;
+    private $paypalCallbackController;
 
     /**
      * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $requestMock;
+    private $requestMock;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
+    private $responseMock;
 
     /**
      * @var \Magento\Framework\App\Response\RedirectInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $redirectMock;
+    private $redirectMock;
 
     /**
-     * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $orderMock;
+    private $orderMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
+        $paymentMock->method('getLastTransId')->willReturn(self::TEST_VPSTXID);
+        $paymentMock->method('getMethodInstance')->willReturnSelf();
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
@@ -109,6 +112,8 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
         $this->orderMock->expects($this->any())
             ->method('getPayment')
             ->will($this->returnValue($paymentMock));
+        $this->orderMock->method('getId')->willReturn(70);
+        $this->orderMock->method('place')->willReturnSelf();
 
         $transactionMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
@@ -132,8 +137,9 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ->method('sendPost')
             ->will($this->returnValue([
                 "data" => [
-                    "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
-                    "StatusDetail" => "OK STATUS"
+                    "VPSTxId"        => "{" . self::TEST_VPSTXID . "}",
+                    "StatusDetail"   => "OK STATUS",
+                    "3DSecureStatus" => "NOTCHECKED",
                 ]
             ]));
 
@@ -145,22 +151,53 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ->method('placeOrder')
             ->will($this->returnValue($this->orderMock));
 
+        $quoteMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $quoteMock->method('getId')->willReturn(69);
+        $quoteFactoryMock = $this->getMockBuilder(\Magento\Quote\Model\QuoteFactory::class)
+            ->setMethods(['create', 'load'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $quoteFactoryMock->method('create')->willReturnSelf();
+        $quoteFactoryMock->method('load')->willReturn($quoteMock);
+
+        $orderFactoryMock = $this->getMockBuilder(\Magento\Sales\Model\OrderFactory::class)
+            ->setMethods(['create', 'loadByIncrementId'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderFactoryMock->method('create')->willReturnSelf();
+        $orderFactoryMock->method('loadByIncrementId')->willReturn($this->orderMock);
+
         $objectManagerHelper = new ObjectManagerHelper($this);
         $this->paypalCallbackController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Paypal\Callback',
             [
-                'context' => $contextMock,
-                'config' => $configMock,
-                'checkoutSession' => $checkoutSessionMock,
-                'checkoutHelper' => $checkoutHelperMock,
-                'postApi' => $postApiMock,
-                'transactionFactory' => $transactionFactoryMock
+                'context'            => $contextMock,
+                'config'             => $configMock,
+                'checkoutSession'    => $checkoutSessionMock,
+                'checkoutHelper'     => $checkoutHelperMock,
+                'postApi'            => $postApiMock,
+                'transactionFactory' => $transactionFactoryMock,
+                'quoteFactory'       => $quoteFactoryMock,
+                'orderFactory'       => $orderFactoryMock
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecuteSUCCESS()
     {
+        $invoiceCollectionMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $invoiceCollectionMock->expects($this->once())->method('setDataToAll')->willReturnSelf();
+        $this->orderMock
+            ->expects($this->once())
+            ->method('getInvoiceCollection')
+            ->willReturn($invoiceCollectionMock);
+
         $this->requestMock->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
@@ -189,7 +226,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
     /**
      * @param string $path
      */
-    protected function _expectRedirect($path)
+    private function _expectRedirect($path)
     {
         $this->redirectMock->expects($this->once())
             ->method('redirect')

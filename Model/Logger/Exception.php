@@ -14,7 +14,7 @@ class Exception extends \Magento\Framework\Logger\Handler\Base
      * @var string
      */
 
-    protected $fileName = '/var/log/SagePaySuite/Exception.log';
+    protected $fileName = '/var/log/SagePaySuite/Exception.log'; // @codingStandardsIgnoreLine
 
     public function isHandling(array $record)
     {

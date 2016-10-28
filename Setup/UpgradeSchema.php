@@ -10,9 +10,6 @@ use Magento\Framework\Setup\UpgradeSchemaInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
 
-/**
- * @codeCoverageIgnore
- */
 class UpgradeSchema implements UpgradeSchemaInterface
 {
     /**
@@ -31,9 +28,10 @@ class UpgradeSchema implements UpgradeSchemaInterface
             /**
              * Create table 'sagepaysuite_token'
              */
-            $table = $installer->getConnection()->newTable(
-                $installer->getTable('sagepaysuite_token')
-            )->addColumn(
+            $table = $installer
+                ->getConnection()
+                ->newTable($installer->getTable('sagepaysuite_token'))
+            ->addColumn(
                 'id',
                 \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                 null,
@@ -93,7 +91,8 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 null,
                 ['unsigned' => true],
                 'Store Id'
-            );
+            )
+            ->addIndex($installer->getIdxName('sagepaysuite_token', ['customer_id']), ['customer_id']);
 
             $installer->getConnection()->createTable($table);
         }

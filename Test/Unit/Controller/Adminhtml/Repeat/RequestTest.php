@@ -19,38 +19,29 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Controller\Adminhtml\Repeat\Request
      */
-    protected $repeatRequestController;
-
-    /**
-     * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $requestMock;
+    private $repeatRequestController;
 
     /**
      * @var Http|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $responseMock;
-
-    /**
-     * @var QuoteSession|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $quoteSessionMock;
+    private $responseMock;
 
     /**
      * @var  \Magento\Quote\Model\QuoteManagement|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $quoteManagementMock;
+    private $quoteManagementMock;
 
     /**
      * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $orderMock;
+    private $orderMock;
 
     /**
      * @var \Magento\Framework\Controller\Result\Json|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $resultJson;
+    private $resultJson;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $repeatModelMock = $this
@@ -212,6 +203,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ]
         );
     }
+    // @codingStandardsIgnoreEnd
 
     public function testExecuteSUCCESS()
     {
@@ -250,7 +242,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @param $result
      */
-    protected function _expectResultJson($result)
+    private function _expectResultJson($result)
     {
         $this->resultJson->expects($this->once())
             ->method('setData')

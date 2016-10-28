@@ -18,6 +18,7 @@ class Container extends \Magento\Backend\Block\Widget\Grid\Container
      *
      * @return void
      */
+    // @codingStandardsIgnoreStart
     protected function _construct()
     {
         $this->_blockGroup = 'Ebizmarts_SagePaySuite';
@@ -26,4 +27,5 @@ class Container extends \Magento\Backend\Block\Widget\Grid\Container
         parent::_construct();
         $this->buttonList->remove('add');
     }
+    // @codingStandardsIgnoreEnd
 }

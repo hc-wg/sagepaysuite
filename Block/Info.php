@@ -16,6 +16,7 @@ class Info extends \Magento\Payment\Block\Info\Cc
      * @param null $transport
      * @return mixed
      */
+    // @codingStandardsIgnoreStart
     protected function _prepareSpecificInformation($transport = null)
     {
         $transport = parent::_prepareSpecificInformation($transport);
@@ -28,4 +29,5 @@ class Info extends \Magento\Payment\Block\Info\Cc
 
         return $transport->addData($info);
     }
+    // @codingStandardsIgnoreEnd
 }

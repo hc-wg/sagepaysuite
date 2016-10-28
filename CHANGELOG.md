@@ -1,9 +1,31 @@
+1.1.8 (28/10/2016)
+=============
+**This release requires Magento 2.1.0 at least.**
+* Improvements
+    * Enable disable form and pi on moto, different config.
+    * Add CardHolder to FORM requests for ReD validation.
+    * Add index on sagepaysuite_token table.
+* Bug fixes
+    * Remove reference to legacy code Mage::logException.
+    * Redirect to Sage Pay on server integration when on mobile.
+    * Validate moto order when using pi before submitting to sagepay.
+    * Sage Pay Logo loading via HTTPS everywhere now.
+    * Sage Pay PI does not show a progress indicator once the place order button is pressed.
+    * Don't show "My Saved Credit Cards" link on My Account if not enabled.
+    * BasketXML fixes specially for PayPal.
+    * Fixed many issues with frontend orders, changed requests to webapis.
+    * Fix logo disappearing on checkout.
+    * Fix moto order stuck in pending_payment status.
+    * Fix cancelled orders in pi frontend when 3D secure is not Authenticated.
+    * Specific ACL on admin controllers.
+    * Many performance and standards compliance improvements.
+
 1.1.7 (18/08/2016)
 =============
 **This release requires Magento 2.1.0 at least.**
 * Improvements
     * Coding standards for Magento Marketplace.
-* Bugfixes
+* Bug fixes
     * Basket display issue, decimal places.
     * MOTO customer create account for PI integration fixed.
 
@@ -12,20 +34,20 @@
 **This release requires Magento 2.1.0 at least.**
 * Improvements
     * Change PI wording for Direct.
-* Bugfixes
+* Bug fixes
     * Order with custom option=file with SERVER integration was not working.
     * MOTO fixes.
 
 1.1.5.2 (28/06/2016)
 =============
-* Bugfixes
+* Bug fixes
     * Billing address not updated from checkout.
 
 1.1.5 (09/05/2016)
 =============
 * New Features
     * License and Reporting credentials validated in config.
-* Bugfixes
+* Bug fixes
     * Compilation error with fraud helper in version 2.0.4.
     * Filename of fraud grid in admin with lowercase letter.
 
@@ -49,7 +71,7 @@
     * Translations backbone.
     * SERVER VPS hash validation.
     * Recover quote when end user clicks on back button after order was pre saved.
-* Bugfixes
+* Bug fixes
     * Various fixes to meet magento2 coding standarts.
 
 1.1.2 (01/02/2016)
@@ -60,7 +82,7 @@
     * Fraud report CRON.
     * Token list in frontend customer area.
     * Unit tests additions.
-* Bugfixes
+* Bug fixes
     * Virtual products state address error.
 
 1.1.0 (15/01/2016)

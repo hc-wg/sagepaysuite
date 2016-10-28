@@ -24,23 +24,23 @@ class PIRest
      * @var \Magento\Framework\HTTP\Adapter\CurlFactory
      *
      */
-    protected $_curlFactory;
+    private $_curlFactory;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    protected $_config;
+    private $_config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
      */
-    protected $_apiExceptionFactory;
+    private $_apiExceptionFactory;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    protected $_suiteLogger;
+    private $_suiteLogger;
 
     /**
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
@@ -54,12 +54,12 @@ class PIRest
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         Logger $suiteLogger
     ) {
-    
-        $this->_config = $config;
+
+        $this->_config              = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
-        $this->_curlFactory = $curlFactory;
+        $this->_curlFactory         = $curlFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
-        $this->_suiteLogger = $suiteLogger;
+        $this->_suiteLogger         = $suiteLogger;
     }
 
     /**
@@ -69,7 +69,7 @@ class PIRest
      * @param $body
      * @return array
      */
-    protected function _executePostRequest($url, $body)
+    private function _executePostRequest($url, $body)
     {
 
         $curl = $this->_curlFactory->create();
@@ -112,7 +112,7 @@ class PIRest
      * @param $url
      * @return array
      */
-    protected function _executeRequest($url)
+    private function _executeRequest($url)
     {
 
         $curl = $this->_curlFactory->create();
@@ -151,7 +151,7 @@ class PIRest
     /**
      * Returns url for each enviroment according the configuration.
      */
-    protected function _getServiceUrl($action, $vpsTxId = null)
+    private function _getServiceUrl($action, $vpsTxId = null)
     {
         switch ($action) {
             case self::ACTION_TRANSACTION_DETAILS:
@@ -267,7 +267,7 @@ class PIRest
         $jsonBody = json_encode(["paRes" => $paRes]);
 
         //log request
-        //$this->_suiteLogger->SageLog(Logger::LOG_REQUEST,$jsonBody);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $jsonBody);
 
         $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
 
