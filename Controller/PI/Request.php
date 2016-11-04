@@ -219,38 +219,56 @@ class Request extends \Magento\Framework\App\Action\Action
 
     private function _generateRequest($vendorTxCode)
     {
-
-        $billing_address = $this->_quote->getBillingAddress();
+        $billingAddress  = $this->_quote->getBillingAddress();
+        $shippingAddress = $this->_quote->getIsVirtual() ? $billingAddress : $this->_quote->getShippingAddress();
 
         $data = [
             'transactionType' => $this->_config->getSagepayPaymentAction(),
-            'paymentMethod' => [
-                'card' => [
+            'paymentMethod'   => [
+                'card'        => [
                     'merchantSessionKey' => $this->_postData->merchant_session_key,
-                    'cardIdentifier' => $this->_postData->card_identifier,
+                    'cardIdentifier'     => $this->_postData->card_identifier,
                 ]
             ],
-            'vendorTxCode' => $vendorTxCode,
-            'description' => $this->_requestHelper->getOrderDescription(),
-            'customerFirstName' => $billing_address->getFirstname(),
-            'customerLastName' => $billing_address->getLastname(),
-            'billingAddress' => [
-                'address1' => $billing_address->getStreetLine(1),
-                'city' => $billing_address->getCity(),
-                'postalCode' => $billing_address->getPostCode(),
-                'country' => $billing_address->getCountryId()
-            ],
-            'entryMethod' => "Ecommerce",
-            'apply3DSecure' => $this->_config->get3Dsecure(),
-            'applyAvsCvcCheck' => $this->_config->getAvsCvc(),
-            'referrerId' => $this->_requestHelper->getReferrerId()
+            'vendorTxCode'      => $vendorTxCode,
+            'description'       => $this->_requestHelper->getOrderDescription(),
+            'customerFirstName' => $billingAddress->getFirstname(),
+            'customerLastName'  => $billingAddress->getLastname(),
+            'entryMethod'       => "Ecommerce",
+            'apply3DSecure'     => $this->_config->get3Dsecure(),
+            'applyAvsCvcCheck'  => $this->_config->getAvsCvc(),
+            'referrerId'        => $this->_requestHelper->getReferrerId(),
+            'customerEmail'     => $billingAddress->getEmail(),
+            'customerPhone'     => $billingAddress->getTelephone()
         ];
+
+        $data['billingAddress'] = [
+            'address1'      => $billingAddress->getStreetLine(1),
+            'city'          => $billingAddress->getCity(),
+            'postalCode'    => $billingAddress->getPostCode(),
+            'country'       => $billingAddress->getCountryId()
+        ];
+        if ($data['billingAddress']['country'] == 'US') {
+            $data['billingAddress']['state'] = substr($billingAddress->getRegionCode(), 0, 2);
+        }
+
+        $data['shippingDetails'] = [
+            'recipientFirstName' => $shippingAddress->getFirstname(),
+            'recipientLastName'  => $shippingAddress->getLastname(),
+            'shippingAddress1'   => $shippingAddress->getStreetLine(1),
+            'shippingCity'       => $shippingAddress->getCity(),
+            'shippingPostalCode' => $shippingAddress->getPostCode(),
+            'shippingCountry'    => $shippingAddress->getCountryId()
+        ];
+        if ($data['shippingDetails']['shippingCountry'] == 'US') {
+            $data['shippingDetails']['shippingState'] = substr($shippingAddress->getRegionCode(), 0, 2);
+        }
 
         //populate payment amount information
         $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote, true));
 
-        if ($billing_address->getCountryId() == "US") {
-            $data["billingAddress"]["state"] = substr($billing_address->getRegionCode(), 0, 2);
+        if ($billingAddress->getCountryId() == "US") {
+            $data["billingAddress"]["state"] = substr($billingAddress->getRegionCode(), 0, 2);
         }
 
         return $data;
