@@ -158,9 +158,13 @@ define([
                         } else {
                             var errorMessages = "";
 
-                            var errorsCount = response.responseJSON.errors.length;
-                            for (var i = 0; i < errorsCount; i++) {
-                                errorMessages += "<br />" + response.responseJSON.errors[i].clientMessage;
+                            if(status === 401) {
+                                errorMessages += response.description;
+                            } else {
+                                var errorsCount = response.responseJSON.errors.length;
+                                for (var i = 0; i < errorsCount; i++) {
+                                    errorMessages += "<br />" + response.responseJSON.errors[i].clientMessage;
+                                }
                             }
 
                             self.showPaymentError(errorMessages);
