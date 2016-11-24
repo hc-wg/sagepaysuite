@@ -200,14 +200,21 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function refund(InfoInterface $payment, $amount)
     {
-
         try {
-            $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
-            $order = $payment->getOrder();
+            /** @var \Magento\Sales\Model\Order $order */
+            $order        = $payment->getOrder();
+            $vpsTxId      = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
+            $vendorTxCode = $this->_suiteHelper->generateVendorTxCode($order->getIncrementId(), Config::ACTION_REFUND);
+            $description  = 'Magento backend refund.';
 
-            $result = $this->_sharedApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
-            $result = $result["data"];
+            $refundResult = $this->_pirestapi->refund(
+                $vendorTxCode,
+                $vpsTxId,
+                $amount * 100,
+                $order->getOrderCurrencyCode(), $description
+            );
 
+            $payment->setTransactionId($refundResult->transactionId);
             $payment->setIsTransactionClosed(1);
             $payment->setShouldCloseParentTransaction(1);
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
@@ -215,14 +222,14 @@ class PI extends \Magento\Payment\Model\Method\Cc
             throw new LocalizedException(
                 __(
                     'There was an error refunding Sage Pay transaction %1: %2',
-                    $transactionId,
+                    $vpsTxId,
                     $apiException->getUserMessage()
                 )
             );
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             throw new LocalizedException(
-                __('There was an error refunding Sage Pay transaction %1: %2', $transactionId, $e->getMessage())
+                __('There was an error refunding Sage Pay transaction %1: %2', $vpsTxId, $e->getMessage())
             );
         }
 
@@ -239,15 +246,15 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function void(InfoInterface $payment)
     {
-        $transaction_id = $payment->getLastTransId();
+        $transactionId = $payment->getLastTransId();
 
         try {
-            $this->_sharedApi->voidTransaction($transaction_id);
+            $this->_pirestapi->void($transactionId);
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             if ($apiException->getCode() == \Ebizmarts\SagePaySuite\Model\Api\ApiException::INVALID_TRANSACTION_STATE) {
                 //unable to void transaction
                 throw new LocalizedException(
-                    __('Unable to VOID Sage Pay transaction %1: %2', $transaction_id, $apiException->getUserMessage())
+                    __('Unable to VOID Sage Pay transaction %1: %2', $transactionId, $apiException->getUserMessage())
                 );
             } else {
                 $this->_logger->critical($apiException);
@@ -256,7 +263,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             throw new LocalizedException(
-                __('Unable to VOID Sage Pay transaction %1: %2', $transaction_id, $e->getMessage())
+                __('Unable to VOID Sage Pay transaction %1: %2', $transactionId, $e->getMessage())
             );
         }
 

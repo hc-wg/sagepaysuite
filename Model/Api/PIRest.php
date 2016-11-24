@@ -15,10 +15,11 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
  */
 class PIRest
 {
-    const ACTION_GENERATE_MERCHANT_KEY = 'merchant-session-keys';
-    const ACTION_CAPTURE_TRANSACTION   = 'transactions';
-    const ACTION_SUBMIT_3D             = '3d-secure';
-    const ACTION_TRANSACTION_DETAILS   = 'transaction_details';
+    const ACTION_GENERATE_MERCHANT_KEY    = 'merchant-session-keys';
+    const ACTION_TRANSACTIONS             = 'transactions';
+    const ACTION_TRANSACTION_INSTRUCTIONS = 'transactions/%s/instructions';
+    const ACTION_SUBMIT_3D                = '3d-secure';
+    const ACTION_TRANSACTION_DETAILS      = 'transaction_details';
 
     /**
      * @var \Magento\Framework\HTTP\Adapter\CurlFactory
@@ -150,6 +151,9 @@ class PIRest
 
     /**
      * Returns url for each enviroment according the configuration.
+     * @param $action
+     * @param null $vpsTxId
+     * @return string
      */
     private function _getServiceUrl($action, $vpsTxId = null)
     {
@@ -159,6 +163,9 @@ class PIRest
                 break;
             case self::ACTION_SUBMIT_3D:
                 $endpoint = "transactions/" . $vpsTxId . "/" . $action;
+                break;
+            case self::ACTION_TRANSACTION_INSTRUCTIONS:
+                $endpoint = sprintf(self::ACTION_TRANSACTION_INSTRUCTIONS, $vpsTxId);
                 break;
             default:
                 $endpoint = $action;
@@ -181,7 +188,16 @@ class PIRest
     public function generateMerchantKey()
     {
         $jsonBody = json_encode(["vendorName" => $this->_config->getVendorname()]);
-        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_GENERATE_MERCHANT_KEY), $jsonBody);
+
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $jsonBody);
+
+        $url = $this->_getServiceUrl(self::ACTION_GENERATE_MERCHANT_KEY);
+
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $url);
+
+        $result = $this->_executePostRequest($url, $jsonBody);
+
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
 
         if ($result["status"] == 201) {
             return $result["data"]->merchantSessionKey;
@@ -211,7 +227,7 @@ class PIRest
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $payment_request);
 
         $jsonRequest = json_encode($payment_request);
-        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_CAPTURE_TRANSACTION), $jsonRequest);
+        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
 
         //log result
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
@@ -279,6 +295,129 @@ class PIRest
         } else {
             $error_code = $result["data"]->code;
             $error_msg = $result["data"]->description;
+
+            $exception = $this->_apiExceptionFactory->create([
+                'phrase' => __($error_msg),
+                'code' => $error_code
+            ]);
+
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $vendorTxCode
+     * @param $refTransactionId
+     * @param $amount
+     * @param $currency
+     * @param $description
+     * @return mixed
+     */
+    public function refund($vendorTxCode, $refTransactionId, $amount, $currency, $description)
+    {
+        $requestData = [
+            'transactionType'        => 'Refund',
+            'vendorTxCode'           => $vendorTxCode,
+            'referenceTransactionId' => $refTransactionId,
+            'amount'                 => $amount,
+            'currency'               => $currency,
+            'description'            => $description
+        ];
+
+        //log request
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $requestData);
+
+        $jsonRequest = json_encode($requestData);
+        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
+
+        //log result
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
+
+        if ($result["status"] == 201) {
+            //success
+            return $result["data"];
+        } elseif ($result["status"] == 202) {
+            //authentication required
+            return $result["data"];
+        } else {
+            $error_code = 0;
+            $error_msg = "Unable to capture Sage Pay transaction";
+
+            $errors = $result["data"];
+            if (isset($errors->errors) && count($errors->errors) > 0) {
+                $errors = $errors->errors[0];
+            }
+
+            if (isset($errors->code)) {
+                $error_code = $errors->code;
+            }
+            if (isset($errors->description)) {
+                $error_msg = $errors->description;
+            }
+            if (isset($errors->property)) {
+                $error_msg .= ': ' . $errors->property;
+            }
+
+            if (isset($errors->statusDetail)) {
+                $error_msg = $errors->statusDetail;
+            }
+
+            $exception = $this->_apiExceptionFactory->create([
+                'phrase' => __($error_msg),
+                'code' => $error_code
+            ]);
+
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $transactionId
+     * @return mixed
+     */
+    public function void($transactionId)
+    {
+        $requestData = ['instructionType' => 'void'];
+
+        //log request
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $requestData);
+
+        $jsonRequest = json_encode($requestData);
+        $result = $this->_executePostRequest(
+            $this->_getServiceUrl(self::ACTION_TRANSACTION_INSTRUCTIONS, $transactionId), $jsonRequest
+        );
+
+        //log result
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
+
+        if ($result["status"] == 201) {
+            //success
+            return $result["data"];
+        } elseif ($result["status"] == 202) {
+            //authentication required
+            return $result["data"];
+        } else {
+            $error_code = 0;
+            $error_msg = "Unable to capture Sage Pay transaction";
+
+            $errors = $result["data"];
+            if (isset($errors->errors) && count($errors->errors) > 0) {
+                $errors = $errors->errors[0];
+            }
+
+            if (isset($errors->code)) {
+                $error_code = $errors->code;
+            }
+            if (isset($errors->description)) {
+                $error_msg = $errors->description;
+            }
+            if (isset($errors->property)) {
+                $error_msg .= ': ' . $errors->property;
+            }
+
+            if (isset($errors->statusDetail)) {
+                $error_msg = $errors->statusDetail;
+            }
 
             $exception = $this->_apiExceptionFactory->create([
                 'phrase' => __($error_msg),
