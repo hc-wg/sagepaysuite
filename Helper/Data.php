@@ -142,7 +142,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $methodCode == \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM
             or $methodCode == \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL
-            or $methodCode == \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI
             or $methodCode == \Ebizmarts\SagePaySuite\Model\Config::METHOD_REPEAT
             or $methodCode == \Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER;
     }

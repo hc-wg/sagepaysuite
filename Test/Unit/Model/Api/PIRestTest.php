@@ -148,7 +148,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->with(
                 \Zend_Http_Client::POST,
                 \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_CAPTURE_TRANSACTION,
+                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_TRANSACTIONS,
                 '1.0',
                 ['Content-type: application/json'],
                 '{"Amount":"100.00"}'
@@ -184,7 +184,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->with(
                 \Zend_Http_Client::POST,
                 \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_CAPTURE_TRANSACTION,
+                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_TRANSACTIONS,
                 '1.0',
                 ['Content-type: application/json'],
                 '{"Amount":"100.00"}'
