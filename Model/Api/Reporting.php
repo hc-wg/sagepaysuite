@@ -66,6 +66,8 @@ class Reporting
      */
     private function _executeRequest($xml)
     {
+        $this->_suiteLogger->sageLog('Request', $xml);
+
         $curl = $this->_curlFactory->create();
 
         $curl->setConfig(
@@ -87,6 +89,9 @@ class Reporting
         if ($data === false) {
             return false;
         }
+
+        $this->_suiteLogger->sageLog('Request', $data);
+
         $data = preg_split('/^\r?$/m', $data, 2);
         $data = trim($data[1]);
         $curl->close();
