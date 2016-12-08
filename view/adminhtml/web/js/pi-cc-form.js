@@ -45,16 +45,21 @@ define([
         },
         fieldObserver: function () {
         },
+        isValidOrderForm: function () {
+            return $('#edit_form').validate().form();
+        },
         validate : function() {
-            var isValid = true;
-            this.inputs.each(function(elemIndex) {
-                console.log($('#' + this.options.code + '_' + elemIndex));
-                if ($('#' + this.options.code + '_' + elemIndex)) {
-                    if (!$('#edit_form').validate().element($('#' + this.options.code + '_' + elemIndex))) {
-                        isValid = false;
+            var isValid = this.isValidOrderForm();
+
+            if(isValid) {
+                this.inputs.each(function(elemIndex) {
+                    if ($('#' + this.options.code + '_' + elemIndex)) {
+                        if (!$('#edit_form').validate().element($('#' + this.options.code + '_' + elemIndex))) {
+                            isValid = false;
+                        }
                     }
-                }
-            }, this);
+                }, this);
+            }
 
             return isValid;
         },
