@@ -9,8 +9,9 @@ define([
     "jquery",
     'mage/url',
     "jquery/ui",
-    'mage/translate'
-], function ($, url, ui, $t) {
+    'mage/translate',
+    "mage/backend/validation"
+], function ($, url, ui, $t, $validation) {
     "use strict";
 
     /**
@@ -30,7 +31,7 @@ define([
         creditCardLast4: '',
         merchantSessionKey: '',
         cardIdentifier: '',
-
+        inputs : ['cc_number', 'expiration', 'expiration_yr', 'cc_cid'],
         prepare: function (event, method) {
             if (method === this.options.code) {
                 this.preparePayment();
@@ -44,6 +45,24 @@ define([
         },
         fieldObserver: function () {
         },
+        isValidOrderForm: function () {
+            return $('#edit_form').validate().form();
+        },
+        validate : function() {
+            var isValid = this.isValidOrderForm();
+
+            if(isValid) {
+                this.inputs.each(function(elemIndex) {
+                    if ($('#' + this.options.code + '_' + elemIndex)) {
+                        if (!$('#edit_form').validate().element($('#' + this.options.code + '_' + elemIndex))) {
+                            isValid = false;
+                        }
+                    }
+                }, this);
+            }
+
+            return isValid;
+        },
         submitAdminOrder: function () {
 
             $('#edit_form').validate().form();
@@ -51,7 +70,7 @@ define([
             $('body').trigger('processStop');
 
             // validate parent form
-            if ($('#edit_form').validate().errorList.length) {
+            if (!this.validate() || $('#edit_form').validate().errorList.length) {
                 return false;
             }
 
