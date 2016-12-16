@@ -39,4 +39,7 @@
 
     <preference for="Ebizmarts\SagePaySuite\Api\PayPalManagementInterface" type="Ebizmarts\SagePaySuite\Model\PayPalRequestManagement" />
     <preference for="Ebizmarts\SagePaySuite\Api\GuestPayPalManagementInterface" type="Ebizmarts\SagePaySuite\Model\GuestPayPalRequestManagement" />
+
+    <preference for="\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface" type="\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse" />
+    <preference for="\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterface" type="\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRule" />
 </config>
