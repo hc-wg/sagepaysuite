@@ -302,8 +302,27 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
         $fraudResponseMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getFraudScreenRecommendation']) //This is so all other methods are not mocked.
+            ->setMethods(['setFraudId']) //This is so all other methods are not mocked.
             ->getMock();
+
+        $fraudResponseFactoryMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterfaceFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create']) //This is so all other methods are not mocked.
+            ->getMock();
+        $fraudResponseFactoryMock->expects($this->once())->method('create')->willReturn($fraudResponseMock);
+
+        $fraudResponseRuleMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRule::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getCustomAttribute']) //This is so all other methods are not mocked.
+            ->getMock();
+        $fraudResponseRuleFactoryMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterfaceFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create']) //This is so all other methods are not mocked.
+            ->getMock();
+        $fraudResponseRuleFactoryMock->expects($this->exactly(2))->method('create')->willReturn($fraudResponseRuleMock);
 
         $this->curlMock->expects($this->once())
             ->method('read')
@@ -357,7 +376,8 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
                 "curlFactory"         => $this->curlMockFactory,
                 "apiExceptionFactory" => $this->apiExceptionFactoryMock,
                 "objectManager"       => $this->objectManagerMock,
-                "fraudResponse"       => $fraudResponseMock
+                "fraudResponse"       => $fraudResponseFactoryMock,
+                "fraudScreenRule"     => $fraudResponseRuleFactoryMock
             ]
         );
 
@@ -369,6 +389,13 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('4985075328', $response->getThirdmanId());
         $this->assertEquals('37', $response->getThirdmanScore());
         $this->assertEquals('HOLD', $response->getThirdmanAction());
-        //$this->assertEquals('Accept', $response->getFraudCodeDetail());
+        $this->assertCount(2, $response->getThirdmanRules());
+
+        $firstRule = current($response->getThirdmanRules());
+        $this->assertEquals('10', $firstRule->getScore());
+        $this->assertEquals(
+            'No Match on Electoral Roll, or Electoral Roll not available at billing address',
+            $firstRule->getDescription()
+        );
     }
 }
