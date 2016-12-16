@@ -239,6 +239,13 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['setThirdmanAction']) //This is so all other methods are not mocked.
             ->getMock();
 
+        $fraudResponseFactoryMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterfaceFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create']) //This is so all other methods are not mocked.
+            ->getMock();
+        $fraudResponseFactoryMock->expects($this->once())->method('create')->willReturn($fraudResponseMock);
+
         $this->curlMock->expects($this->once())
             ->method('read')
             ->willReturn(
@@ -282,7 +289,7 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
                 "curlFactory"         => $this->curlMockFactory,
                 "apiExceptionFactory" => $this->apiExceptionFactoryMock,
                 "objectManager"       => $this->objectManagerMock,
-                "fraudResponse"       => $fraudResponseMock
+                "fraudResponse"       => $fraudResponseFactoryMock
             ]
         );
 
