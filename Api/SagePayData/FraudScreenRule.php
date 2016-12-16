@@ -10,7 +10,7 @@ class FraudScreenRule extends \Magento\Framework\Api\AbstractExtensibleObject im
      */
     public function getDescription()
     {
-        $this->_get(self::DESCRIPTION);
+        return $this->_get(self::DESCRIPTION);
     }
 
     /**
@@ -18,7 +18,7 @@ class FraudScreenRule extends \Magento\Framework\Api\AbstractExtensibleObject im
      */
     public function getScore()
     {
-        $this->_get(self::SCORE);
+        return $this->_get(self::SCORE);
     }
 
     /**
