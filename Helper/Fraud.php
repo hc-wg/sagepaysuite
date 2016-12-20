@@ -135,7 +135,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
                      */
                     $this->saveFraudInformation($response, $payment);
 
-                    array_merge($logData, $this->getFraudInformationToLog($response, $payment));
+                    $logData = array_merge($logData, $this->getFraudInformationToLog($response, $payment));
 
                 } else {
                     $recommendation = $this->getFraudScreenRecommendation($response);
@@ -148,8 +148,8 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
                 }
             } else {
                 $responseErrorCodeShow = "INVALID";
-                if (!empty($response) && isset($response->errorcode)) {
-                    $responseErrorCodeShow = $response->errorcode;
+                if ($response->getErrorCode()) {
+                    $responseErrorCodeShow = $response->getErrorCode();
                 }
                 $logData["ERROR"] = "Invalid Response: " . $responseErrorCodeShow;
             }
