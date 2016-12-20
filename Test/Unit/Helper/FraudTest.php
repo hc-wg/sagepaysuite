@@ -87,9 +87,14 @@ class FraudTest extends \PHPUnit_Framework_TestCase
 
     public function testProcessFraudInformationResponse()
     {
-        $resp = new \stdClass();
-        $resp->errorcode = "0010";
-        $this->reportingApiMock->expects($this->once())->method('getFraudScreenDetail')->willReturn($resp);
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudResponse */
+        $fraudResponse = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse::class)
+            ->setMethods(['setFraudScreenRecommendation'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $fraudResponse->setErrorCode("0010");
+
+        $this->reportingApiMock->expects($this->once())->method('getFraudScreenDetail')->willReturn($fraudResponse);
 
         $transactionMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
@@ -125,12 +130,41 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->method('getAdditionalInformation')
             ->willReturn($data['payment_mode']);
 
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudResponseMock */
         $fraudResponseMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface::class)
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse::class)
             ->disableOriginalConstructor()
+            ->setMethods(['setTimestamp']) //This is so all other methods are not mocked.
             ->getMock();
+        $fraudResponseMock->setErrorCode('0000');
 
         if ($data['payment_mode'] == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
+
+            if (array_key_exists('fraudid', $data['expects'])) {
+                $fraudResponseMock->setThirdmanId($data['expects']['fraudid']);
+            }
+            if (array_key_exists('fraudid', $data['expects'])) {
+                $fraudResponseMock->setFraudId($data['expects']['fraudid']);
+            }
+            if (array_key_exists('fraudprovidername', $data['expects'])) {
+                $fraudResponseMock->setFraudProviderName($data['expects']['fraudprovidername']);
+            }
+            if (array_key_exists('fraudscreenrecommendation', $data['expects'])) {
+                $fraudResponseMock->setThirdmanAction($data['expects']['fraudscreenrecommendation']);
+            }
+            if (array_key_exists('fraudscreenrecommendation', $data)) {
+                $fraudResponseMock->setFraudScreenRecommendation($data['fraudscreenrecommendation']);
+            }
+            if (array_key_exists('fraudcode', $data['expects'])) {
+                $fraudResponseMock->setThirdmanScore($data['expects']['fraudcode']);
+            }
+            if (array_key_exists('fraudcode', $data['expects'])) {
+                $fraudResponseMock->setFraudCode($data['expects']['fraudcode']);
+            }
+            if (array_key_exists('fraudcodedetail', $data['expects'])) {
+                $fraudResponseMock->setFraudCodeDetail($data['expects']['fraudcodedetail']);
+            }
+
             $this->reportingApiMock->expects($this->once())
                 ->method('getFraudScreenDetail')
                 ->willReturn($fraudResponseMock);
@@ -144,6 +178,15 @@ class FraudTest extends \PHPUnit_Framework_TestCase
 //                    "rules" => ""
 //                ]));
 
+            $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+            $this->fraudHelperModel = $objectManagerHelper->getObject(
+                'Ebizmarts\SagePaySuite\Helper\Fraud',
+                [
+                    "config" => $this->configMock,
+                    "reportingApi" => $this->reportingApiMock
+                ]
+            );
+
             $orderMock = $this
                 ->getMockBuilder('Magento\Sales\Model\Order')
                 ->disableOriginalConstructor()
@@ -153,7 +196,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 ->method('getOrder')
                 ->willReturn($orderMock);
 
-            $this->configMock->expects($this->once())
+            $this->configMock->expects($this->any())
                 ->method('getAutoInvoiceFraudPassed')
                 ->willReturn($data['getAutoInvoiceFraudPassed']);
         }
@@ -186,13 +229,13 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT,
                     'getAutoInvoiceFraudPassed' => false,
                     'expects' => [
-                        'VPSTxId' => null,
+                        'VPSTxId'     => null,
+                        'fraudrules' => null,
                         'fraudscreenrecommendation' => 'REJECT',
-                        'fraudid' => '12345',
-                        'fraudcode' => '765',
-                        'fraudcodedetail' => 'Fraud card',
-                        'fraudprovidername' => 'ReD',
-                        'fraudrules' => '',
+                        'fraudid' => '4985075328',
+                        'fraudcode' => null,
+                        'fraudcodedetail' => 'REJECT',
+                        'fraudprovidername' => 'T3M',
                         'Action' => 'Marked as FRAUD.'
                     ]
                 ]
@@ -203,26 +246,28 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT,
                     'getAutoInvoiceFraudPassed' => false,
                     'expects' => [
+                        'VPSTxId'     => null,
                         'fraudprovidername' => 'T3M',
-                        't3mid' => '4985075328',
-                        't3mscore' => '37',
-                        't3maction' => 'HOLD',
+                        'fraudscreenrecommendation' => 'HOLD',
+                        'fraudid' => '4985075328',
+                        'fraudcode' => '37',
+                        'fraudcodedetail' => 'HOLD',
+                        'fraudrules' => null
                     ]
                 ]
             ],
             'test live ok' => [
                 [
                     'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
-                    'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_OK,
+                    'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_ACCEPT,
                     'getAutoInvoiceFraudPassed' => true,
                     'expects' => [
                         'VPSTxId' => null,
-                        'fraudscreenrecommendation' => 'OK',
+                        'fraudscreenrecommendation' => 'ACCEPT',
                         'fraudid' => '12345',
                         'fraudcode' => '765',
                         'fraudcodedetail' => 'Fraud card',
                         'fraudprovidername' => 'ReD',
-                        'fraudrules' => '',
                         'Action' => 'Captured online, invoice # generated.'
                     ]
                 ]
