@@ -84,21 +84,12 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
             //get transaction data from sagepay
             $response = $this->_reportingApi->getFraudScreenDetail($sagepayVpsTxId);
 
-            if (!empty($response) && isset($response->errorcode) && $response->errorcode == "0000") {
-                $fraudscreenrecommendation = (string)$response->fraudscreenrecommendation;
-                $fraudid = (string)$response->fraudid;
-                $fraudcode = (string)$response->fraudcode;
-                $fraudcodedetail = (string)$response->fraudcodedetail;
-                $fraudprovidername = (string)$response->fraudprovidername;
-                $rules = (string)$response->rules;
+            if ($response->getErrorCode() == "0000") {
 
-                if ($fraudscreenrecommendation != \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT &&
-                    $fraudscreenrecommendation != \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_NOTCHECKED
-                ) {
+                if ($this->fraudCheckAvailable($response)) {
+
                     //mark payment as fraud
-                    if ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT ||
-                        $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY
-                    ) {
+                    if ($this->transactionIsFraud($response)) {
                         $payment->setIsFraudDetected(true);
                         $payment->getOrder()->setStatus(Order::STATUS_FRAUD);
                         $payment->save();
@@ -117,13 +108,12 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
                     $autoInvoiceActioned = $this->_processAutoInvoice(
                         $transaction,
                         $payment,
-                        $fraudscreenrecommendation
+                        $this->isPassedFraudCheck($response)
                     );
                     if (!empty($autoInvoiceActioned)) {
                         $logData["Action"] = $autoInvoiceActioned;
                     }
 
-                    // @codingStandardsIgnoreStart
                     //notification
                     /*$notificationActioned = $this->_notification($transaction, $payment,
                         $fraudscreenrecommendation,
@@ -134,7 +124,6 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
                     if (!empty($notificationActioned)) {
                         $logData["Notification"] = $notificationActioned;
                     }*/
-                    // @codingStandardsIgnoreEnd
 
                     /**
                      * END process fraud actions
@@ -144,31 +133,23 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
                      * save fraud information in the payment as the transaction
                      * additional info of the transactions does not seem to be working
                      */
-                    $payment->setAdditionalInformation("fraudscreenrecommendation", (string)$fraudscreenrecommendation);
-                    $payment->setAdditionalInformation("fraudid", (string)$fraudid);
-                    $payment->setAdditionalInformation("fraudcode", (string)$fraudcode);
-                    $payment->setAdditionalInformation("fraudcodedetail", (string)$fraudcodedetail);
-                    $payment->setAdditionalInformation("fraudprovidername", (string)$fraudprovidername);
-                    $payment->setAdditionalInformation("fraudrules", (string)$rules);
-                    $payment->save();
+                    $this->saveFraudInformation($response, $payment);
 
-                    $logData["fraudscreenrecommendation"] = $fraudscreenrecommendation;
-                    $logData["fraudid"] = $fraudid;
-                    $logData["fraudcode"] = $fraudcode;
-                    $logData["fraudcodedetail"] = $fraudcodedetail;
-                    $logData["fraudprovidername"] = $fraudprovidername;
-                    $logData["fraudrules"] = $rules;
+                    $logData = array_merge($logData, $this->getFraudInformationToLog($response, $payment));
+
                 } else {
+                    $recommendation = $this->getFraudScreenRecommendation($response);
+
                     //save the "not checked" or "no result" status
-                    $payment->setAdditionalInformation("fraudscreenrecommendation", (string)$fraudscreenrecommendation);
+                    $payment->setAdditionalInformation("fraudscreenrecommendation", $recommendation);
                     $payment->save();
 
-                    $logData["fraudscreenrecommendation"] = $fraudscreenrecommendation;
+                    $logData["fraudscreenrecommendation"] = $recommendation;
                 }
             } else {
                 $responseErrorCodeShow = "INVALID";
-                if (!empty($response) && isset($response->errorcode)) {
-                    $responseErrorCodeShow = $response->errorcode;
+                if ($response->getErrorCode()) {
+                    $responseErrorCodeShow = $response->getErrorCode();
                 }
                 $logData["ERROR"] = "Invalid Response: " . $responseErrorCodeShow;
             }
@@ -177,17 +158,147 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         return $logData;
     }
 
+    /**
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudData
+     * @return string
+     */
+    private function getFraudScreenRecommendation($fraudData) {
+        $recommendation = '';
+
+        $fraudprovidername = $fraudData->getFraudProviderName();
+
+        if ($fraudprovidername == 'ReD') {
+            $recommendation = $fraudData->getFraudScreenRecommendation();
+        } else if ($fraudprovidername == 'T3M') {
+            $recommendation = $fraudData->getThirdmanAction();
+        }
+
+        return $recommendation;
+    }
+
+    /**
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudData
+     * @return bool
+     */
+    private function isPassedFraudCheck($fraudData) {
+        $passed = false;
+
+        $fraudprovidername = $fraudData->getFraudProviderName();
+
+        if ($fraudprovidername == 'ReD') {
+            $passed = $fraudData->getFraudScreenRecommendation() == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_ACCEPT;
+        } else if ($fraudprovidername == 'T3M') {
+            $passed = $fraudData->getThirdmanAction() == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_OK;
+        }
+
+        return $passed;
+    }
+
+    /**
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudData
+     * @return array
+     */
+    private function getFraudInformationToLog($fraudData) {
+        $logData = [];
+
+        $fraudprovidername = $fraudData->getFraudProviderName();
+
+        if ($fraudprovidername == 'ReD') {
+            $fraudscreenrecommendation = $fraudData->getFraudScreenRecommendation();
+            $fraudid                   = $fraudData->getFraudId();
+            $fraudcode                 = $fraudData->getFraudCode();
+            $fraudcodedetail           = $fraudData->getFraudCodeDetail();
+        } else if ($fraudprovidername == 'T3M') {
+            $fraudscreenrecommendation = $fraudData->getThirdmanAction();
+            $fraudid                   = $fraudData->getThirdmanId();
+            $fraudcode                 = $fraudData->getThirdmanScore();
+            $fraudcodedetail           = $fraudData->getThirdmanAction();
+            $logData["fraudrules"]     = $fraudData->getThirdmanRules();
+        }
+
+        $logData["fraudscreenrecommendation"] = $fraudscreenrecommendation;
+        $logData["fraudid"]                   = $fraudid;
+        $logData["fraudcode"]                 = $fraudcode;
+        $logData["fraudcodedetail"]           = $fraudcodedetail;
+        $logData["fraudprovidername"]         = $fraudprovidername;
+
+        return $logData;
+    }
+
+    /**
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudData
+     * @param $payment
+     */
+    private function saveFraudInformation($fraudData, $payment) {
+        $fraudprovidername = $fraudData->getFraudProviderName();
+
+        if ($fraudprovidername == 'ReD') {
+            $fraudscreenrecommendation = $fraudData->getFraudScreenRecommendation();
+            $fraudid                   = $fraudData->getFraudId();
+            $fraudcode                 = $fraudData->getFraudCode();
+            $fraudcodedetail           = $fraudData->getFraudCodeDetail();
+        } else if ($fraudprovidername == 'T3M') {
+            $fraudscreenrecommendation = $fraudData->getThirdmanAction();
+            $fraudid                   = $fraudData->getThirdmanId();
+            $fraudcode                 = $fraudData->getThirdmanScore();
+            $fraudcodedetail           = $fraudData->getThirdmanAction();
+            $payment->setAdditionalInformation("fraudrules", serialize($fraudData->getThirdmanRules()));
+        }
+
+        $payment->setAdditionalInformation("fraudscreenrecommendation", $fraudscreenrecommendation);
+        $payment->setAdditionalInformation("fraudid", $fraudid);
+        $payment->setAdditionalInformation("fraudcode", $fraudcode);
+        $payment->setAdditionalInformation("fraudcodedetail", $fraudcodedetail);
+        $payment->setAdditionalInformation("fraudprovidername", $fraudprovidername);
+        $payment->save();
+    }
+
+    /**
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudData
+     * @return bool
+     */
+    private function transactionIsFraud($fraudData) {
+        $isFraud = false;
+
+        $fraudprovidername = $fraudData->getFraudProviderName();
+
+        if ($fraudprovidername == 'ReD') {
+            $isFraud = $fraudData->getFraudScreenRecommendation() == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY;
+        } else if ($fraudprovidername == 'T3M') {
+            $isFraud = $fraudData->getThirdmanAction() == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT;
+        }
+
+        return $isFraud;
+    }
+
+    /**
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudData
+     * @return bool
+     */
+    private function fraudCheckAvailable($fraudData) {
+        $providerChecked = false;
+
+        $fraudprovidername = $fraudData->getFraudProviderName();
+
+        if ($fraudprovidername == 'ReD') {
+            $providerChecked = $fraudData->getFraudScreenRecommendation() != \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_NOTCHECKED;
+        } else if ($fraudprovidername == 'T3M') {
+            $providerChecked = $fraudData->getThirdmanAction() != \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT;
+        }
+
+        return $providerChecked;
+    }
+
     private function _processAutoInvoice(
         \Magento\Sales\Model\Order\Payment\Transaction $transaction,
         \Magento\Sales\Model\Order\Payment $payment,
-        $fraudscreenrecommendation
+        $passedFraudCheck
     ) {
         //auto-invoice authorized order for full amount if ACCEPT or OK
-        if ((bool)$this->_config->getAutoInvoiceFraudPassed() == true &&
+        if ($passedFraudCheck &&
+            (bool)$this->_config->getAutoInvoiceFraudPassed() == true &&
             $transaction->getTxnType() == \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH &&
-            (bool)$transaction->getIsTransactionClosed() == false &&
-            ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_ACCEPT ||
-                $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_OK)
+            (bool)$transaction->getIsTransactionClosed() == false
         ) {
             //create invoice
             $invoice = $payment->getOrder();

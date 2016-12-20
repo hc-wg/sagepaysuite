@@ -40,17 +40,30 @@ class Reporting
      */
     private $objectManager;
 
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface */
+    private $fraudResponse;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterface */
+    private $fraudScreenRule;
+
     /**
+     * Reporting constructor.
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
      * @param ApiExceptionFactory $apiExceptionFactory
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param Logger $suiteLogger
+     * @param \Magento\Framework\ObjectManager\ObjectManager $objectManager
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterfaceFactory $fraudResponse
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterfaceFactory $fraudScreenRule
      */
     public function __construct(
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         Logger $suiteLogger,
-        \Magento\Framework\ObjectManager\ObjectManager $objectManager
+        \Magento\Framework\ObjectManager\ObjectManager $objectManager,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterfaceFactory $fraudResponse,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterfaceFactory $fraudScreenRule
     ) {
 
         $this->_config              = $config;
@@ -58,6 +71,8 @@ class Reporting
         $this->_apiExceptionFactory = $apiExceptionFactory;
         $this->_suiteLogger         = $suiteLogger;
         $this->objectManager        = $objectManager;
+        $this->fraudResponse        = $fraudResponse;
+        $this->fraudScreenRule      = $fraudScreenRule;
     }
 
     /**
@@ -232,14 +247,48 @@ class Reporting
      * triggered by the transaction.
      *
      * @param $vpstxid
-     * @return mixed
-     * @throws
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
     public function getFraudScreenDetail($vpstxid)
     {
         $params = '<vpstxid>' . $vpstxid . '</vpstxid>';
-        $xml = $this->_createXml('getFraudScreenDetail', $params);
-        return $this->_handleApiErrors($this->_executeRequest($xml));
+        $xmlRequest = $this->_createXml('getFraudScreenDetail', $params);
+
+        $result = $this->_handleApiErrors($this->_executeRequest($xmlRequest));
+
+        $fraudResponse = $this->fraudResponse->create();
+
+        $fraudResponse->setErrorCode((string)$result->errorcode);
+        $fraudResponse->setTimestamp((string)$result->timestamp);
+        $fraudResponse->setFraudProviderName((string)$result->fraudprovidername);
+
+        if($fraudResponse->getErrorCode() == '0000') {
+            if ($fraudResponse->getFraudProviderName() == 'ReD') {
+                $fraudResponse->setFraudScreenRecommendation((string)$result->fraudscreenrecommendation);
+                $fraudResponse->setFraudId((string)$result->fraudid);
+                $fraudResponse->setFraudCode((string)$result->fraudcode);
+                $fraudResponse->setFraudCodeDetail((string)$result->fraudcodedetail);
+            } else if ($fraudResponse->getFraudProviderName() == 'T3M') {
+                $fraudResponse->setThirdmanId((string)$result->t3mid);
+                $fraudResponse->setThirdmanScore((string)$result->t3mscore);
+                $fraudResponse->setThirdmanAction((string)$result->t3maction);
+
+                $rules = [];
+                if (isset($result->t3mresults)) {
+                    foreach ($result->t3mresults as $_rule) {
+                        $fraudRule = $this->fraudScreenRule->create();
+                        $fraudRule->setDescription((string)$_rule->description);
+                        $fraudRule->setScore((string)$_rule->score);
+                        $rules []= $fraudRule;
+                    }
+                }
+
+                $fraudResponse->setThirdmanRules($rules);
+            }
+        }
+
+        return $fraudResponse;
     }
 
     /**
