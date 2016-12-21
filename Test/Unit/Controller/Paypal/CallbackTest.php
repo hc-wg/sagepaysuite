@@ -11,6 +11,7 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHe
 class CallbackTest extends \PHPUnit_Framework_TestCase
 {
     private $quoteMock;
+    private $orderFactoryMock;
 
     /**
      * Sage Pay Transaction ID
@@ -113,7 +114,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
         $this->orderMock->expects($this->any())
             ->method('getPayment')
             ->will($this->returnValue($paymentMock));
-        $this->orderMock->method('getId')->willReturn(70);
+
         $this->orderMock->method('place')->willReturnSelf();
 
         $transactionMock = $this
@@ -153,7 +154,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($this->orderMock));
 
         $this->quoteMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)->disableOriginalConstructor()->getMock();
-        $this->quoteMock->method('getId')->willReturn(69);
+
         $quoteFactoryMock = $this->getMockBuilder(\Magento\Quote\Model\QuoteFactory::class)
             ->setMethods(['create', 'load'])
             ->disableOriginalConstructor()
@@ -161,12 +162,9 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
         $quoteFactoryMock->method('create')->willReturnSelf();
         $quoteFactoryMock->method('load')->willReturn($this->quoteMock);
 
-        $orderFactoryMock = $this->getMockBuilder(\Magento\Sales\Model\OrderFactory::class)
-            ->setMethods(['create', 'loadByIncrementId'])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderFactoryMock->method('create')->willReturnSelf();
-        $orderFactoryMock->method('loadByIncrementId')->willReturn($this->orderMock);
+        $this->orderFactoryMock = $this->getMockBuilder(\Magento\Sales\Model\OrderFactory::class)->setMethods(['create', 'loadByIncrementId'])->disableOriginalConstructor()->getMock();
+        $this->orderFactoryMock->method('create')->willReturnSelf();
+        $this->orderFactoryMock->method('loadByIncrementId')->willReturn($this->orderMock);
 
         $objectManagerHelper = new ObjectManagerHelper($this);
         $this->paypalCallbackController = $objectManagerHelper->getObject(
@@ -179,7 +177,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
                 'postApi'            => $postApiMock,
                 'transactionFactory' => $transactionFactoryMock,
                 'quoteFactory'       => $quoteFactoryMock,
-                'orderFactory'       => $orderFactoryMock
+                'orderFactory'       => $this->orderFactoryMock
             ]
         );
     }
@@ -187,6 +185,8 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteSUCCESS()
     {
+        $this->orderMock->method('getId')->willReturn(70);
+        $this->quoteMock->method('getId')->willReturn(69);
         $invoiceCollectionMock = $this
             ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
             ->disableOriginalConstructor()
@@ -230,6 +230,39 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getPost')
             ->willReturn($response);
+
+        $this->_expectRedirect("checkout/cart");
+        $this->paypalCallbackController->execute();
+    }
+
+    public function testExecuteERRORInvalidQuote()
+    {
+        $this->quoteMock->method('getId')->willReturn(null);
+
+        $this->requestMock->expects($this->once())
+            ->method('getPost')
+            ->will($this->returnValue((object)[
+                "Status" => "PAYPALOK",
+                "StatusDetail" => "OK STATUS",
+                "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
+            ]));
+
+        $this->_expectRedirect("checkout/cart");
+        $this->paypalCallbackController->execute();
+    }
+
+    public function testExecuteERRORInvalidOrder()
+    {
+        $this->quoteMock->method('getId')->willReturn(69);
+        $this->orderMock->method('getId')->willReturn(null);
+
+        $this->requestMock->expects($this->once())
+            ->method('getPost')
+            ->will($this->returnValue((object)[
+                "Status" => "PAYPALOK",
+                "StatusDetail" => "OK STATUS",
+                "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
+            ]));
 
         $this->_expectRedirect("checkout/cart");
         $this->paypalCallbackController->execute();
