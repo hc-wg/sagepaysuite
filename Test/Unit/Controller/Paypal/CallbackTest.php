@@ -10,6 +10,7 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHe
 
 class CallbackTest extends \PHPUnit_Framework_TestCase
 {
+    private $quoteMock;
 
     /**
      * Sage Pay Transaction ID
@@ -151,16 +152,14 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ->method('placeOrder')
             ->will($this->returnValue($this->orderMock));
 
-        $quoteMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $quoteMock->method('getId')->willReturn(69);
+        $this->quoteMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)->disableOriginalConstructor()->getMock();
+        $this->quoteMock->method('getId')->willReturn(69);
         $quoteFactoryMock = $this->getMockBuilder(\Magento\Quote\Model\QuoteFactory::class)
             ->setMethods(['create', 'load'])
             ->disableOriginalConstructor()
             ->getMock();
         $quoteFactoryMock->method('create')->willReturnSelf();
-        $quoteFactoryMock->method('load')->willReturn($quoteMock);
+        $quoteFactoryMock->method('load')->willReturn($this->quoteMock);
 
         $orderFactoryMock = $this->getMockBuilder(\Magento\Sales\Model\OrderFactory::class)
             ->setMethods(['create', 'loadByIncrementId'])
@@ -218,6 +217,19 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
                 "Status" => "INVALID",
                 "StatusDetail" => "INVALID STATUS"
             ]));
+
+        $this->_expectRedirect("checkout/cart");
+        $this->paypalCallbackController->execute();
+    }
+
+    public function testExecuteERRORNoResponse()
+    {
+        $response = new \stdClass();
+
+        $this->requestMock
+            ->expects($this->once())
+            ->method('getPost')
+            ->willReturn($response);
 
         $this->_expectRedirect("checkout/cart");
         $this->paypalCallbackController->execute();
