@@ -4,6 +4,26 @@
 
 ## Installation Instructions
 
+##Composer installation (preferred method)
+1. Add this to the `composer.json` file located under the Magento's root dir.
+```
+"repositories": {
+        "ebizmartscorp": {
+            "type": "composer", "url": "https://repo.packagist.com/ebizmartscorp/"
+        }
+   }
+```
+2. Run this command on Magento's root dir. Contact us to get your access token.
+
+`composer config http-basic.repo.packagist.com token $token$`
+
+3. Run this command to get the module.
+
+`composer require ebizmarts/sagepaysuite 1.1.9`
+
+
+##Manual installation
+
 __Requirements__
 
   - The ZIP file named **Ebizmarts_SagePaySuiteM2-1.1.8.zip**
