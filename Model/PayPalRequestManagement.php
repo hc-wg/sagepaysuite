@@ -53,8 +53,7 @@ class PayPalRequestManagement implements \Ebizmarts\SagePaySuite\Api\PayPalManag
         \Magento\Framework\UrlInterface $coreUrl,
         \Magento\Framework\ObjectManager\ObjectManager $objectManager,
         \Ebizmarts\SagePaySuite\Api\Data\ResultInterface $result,
-        \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
-        \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory
+        \Ebizmarts\SagePaySuite\Model\Api\Post $postApi
     ) {
         $this->quoteRepository    = $quoteRepository;
         $this->sagePayConfig      = $config;
@@ -67,7 +66,6 @@ class PayPalRequestManagement implements \Ebizmarts\SagePaySuite\Api\PayPalManag
         $this->coreUrl            = $coreUrl;
         $this->objectManager      = $objectManager;
         $this->checkoutHelper     = $checkoutHelper;
-        $this->quoteIdMaskFactory = $quoteIdMaskFactory;
         $this->result             = $result;
         $this->postApi            = $postApi;
 

@@ -225,6 +225,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
     {
         $this->dataHelper = $this->objectManagerHelper->getObject('Ebizmarts\SagePaySuite\Helper\Data');
 
+        //this method does not test for PI because its not needed on the creditmemo.
         $this->assertEquals($bool, $this->dataHelper->methodCodeIsSagePay($code));
     }
 
@@ -238,7 +239,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
             [false, 'paypal'],
             [true, 'sagepaysuitepaypal'],
             [false, 'sagepaydirectpro'],
-            [true, 'sagepaysuitepi']
+            [false, 'sagepaysuitepi']
         ];
     }
 }

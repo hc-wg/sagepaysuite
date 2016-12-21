@@ -88,6 +88,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $quoteMock->expects($this->any())
             ->method('getBillingAddress')
             ->will($this->returnValue($addressMock));
+        $quoteMock->expects($this->any())
+            ->method('getShippingAddress')
+            ->willReturn($addressMock);
 
 
         $checkoutSessionMock = $this
