@@ -12,6 +12,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
 {
     private $quoteMock;
     private $orderFactoryMock;
+    private $configMock;
 
     /**
      * Sage Pay Transaction ID
@@ -102,7 +103,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ->method('getMessageManager')
             ->will($this->returnValue($messageManagerMock));
 
-        $configMock = $this
+        $this->configMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
             ->disableOriginalConstructor()
             ->getMock();
@@ -166,12 +167,12 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
         $this->orderFactoryMock->method('create')->willReturnSelf();
         $this->orderFactoryMock->method('loadByIncrementId')->willReturn($this->orderMock);
 
-        $objectManagerHelper = new ObjectManagerHelper($this);
+        $objectManagerHelper            = new ObjectManagerHelper($this);
         $this->paypalCallbackController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Paypal\Callback',
             [
                 'context'            => $contextMock,
-                'config'             => $configMock,
+                'config'             => $this->configMock,
                 'checkoutSession'    => $checkoutSessionMock,
                 'checkoutHelper'     => $checkoutHelperMock,
                 'postApi'            => $postApiMock,
@@ -183,8 +184,20 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
     }
     // @codingStandardsIgnoreEnd
 
-    public function testExecuteSUCCESS()
+    public function modeProvider()
     {
+        return [
+            'test normal' => ['live'],
+            'test not found' => ['test']
+        ];
+    }
+
+    /**
+     * @dataProvider modeProvider
+     */
+    public function testExecuteSUCCESS($mode)
+    {
+        $this->configMock->method('getMode')->willReturn($mode);
         $this->orderMock->method('getId')->willReturn(70);
         $this->quoteMock->method('getId')->willReturn(69);
         $invoiceCollectionMock = $this
