@@ -13,6 +13,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
     private $quoteMock;
     private $orderFactoryMock;
     private $configMock;
+    private $paymentMock;
 
     /**
      * Sage Pay Transaction ID
@@ -47,12 +48,8 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock->method('getLastTransId')->willReturn(self::TEST_VPSTXID);
-        $paymentMock->method('getMethodInstance')->willReturnSelf();
+        $this->paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')->disableOriginalConstructor()->getMock();
+        $this->paymentMock->method('getMethodInstance')->willReturnSelf();
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
@@ -63,7 +60,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(100));
         $quoteMock->expects($this->any())
             ->method('getPayment')
-            ->will($this->returnValue($paymentMock));
+            ->will($this->returnValue($this->paymentMock));
 
         $checkoutSessionMock = $this
             ->getMockBuilder('Magento\Checkout\Model\Session')
@@ -114,7 +111,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $this->orderMock->expects($this->any())
             ->method('getPayment')
-            ->will($this->returnValue($paymentMock));
+            ->will($this->returnValue($this->paymentMock));
 
         $this->orderMock->method('place')->willReturnSelf();
 
@@ -187,19 +184,24 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
     public function modeProvider()
     {
         return [
-            'test normal' => ['live'],
-            'test not found' => ['test']
+            'test live payment' => ['live', 'PAYMENT'],
+            'test live deferred' => ['live', 'AUTHENTICATE'],
+            'test deferred' => ['test', 'DEFERRED'],
+            'test capture default' => ['test', null]
         ];
     }
 
     /**
      * @dataProvider modeProvider
      */
-    public function testExecuteSUCCESS($mode)
+    public function testExecuteSUCCESS($mode, $paymentAction)
     {
         $this->configMock->method('getMode')->willReturn($mode);
-        $this->orderMock->method('getId')->willReturn(70);
-        $this->quoteMock->method('getId')->willReturn(69);
+        $this->configMock->method('getSagepayPaymentAction')->willReturn($paymentAction);
+        $this->paymentMock->method('getLastTransId')->willReturn(self::TEST_VPSTXID);
+        $this->orderMock->expects($this->exactly(2))->method('getId')->willReturn(70);
+        $this->quoteMock->expects($this->exactly(3))->method('getId')->willReturn(69);
+
         $invoiceCollectionMock = $this
             ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
             ->disableOriginalConstructor()
@@ -268,6 +270,24 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
     {
         $this->quoteMock->method('getId')->willReturn(69);
         $this->orderMock->method('getId')->willReturn(null);
+
+        $this->requestMock->expects($this->once())
+            ->method('getPost')
+            ->will($this->returnValue((object)[
+                "Status" => "PAYPALOK",
+                "StatusDetail" => "OK STATUS",
+                "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
+            ]));
+
+        $this->_expectRedirect("checkout/cart");
+        $this->paypalCallbackController->execute();
+    }
+
+    public function testExecuteERRORInvalidTrnId()
+    {
+        $this->quoteMock->method('getId')->willReturn(69);
+        $this->orderMock->method('getId')->willReturn(70);
+        $this->paymentMock->method('getLastTransId')->willReturn('notequal');
 
         $this->requestMock->expects($this->once())
             ->method('getPost')
