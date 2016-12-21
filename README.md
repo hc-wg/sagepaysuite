@@ -26,36 +26,33 @@
 
 __Requirements__
 
-  - The ZIP file named **Ebizmarts_SagePaySuiteM2-1.1.8.zip**
+  - The ZIP file named **Ebizmarts_SagePaySuiteM2-1.1.9.zip**
   - Access to the Magento 2 server via SSH
   - The unzip command should be available, check by running `which unzip`
   - [Composer](https://getcomposer.org/) needs to be installed in the server
 
 __Installation__
+ 
+  1. Upload the ZIP file to the Magento 2 server.
 
-  1. Check file integrity by running this command on the terminal
-  `php -r "if (hash_file('SHA384', 'Ebizmarts_SagePaySuiteM2-1.1.8.zip') === 'b3866003bad42d0e7f800ede08873fd667c8593d910a598d3b50554bfaabab29651b7a2e1ee9efce591966ef9ce3afb8') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('Ebizmarts_SagePaySuiteM2-1.1.8.zip'); } echo PHP_EOL;"`
-  
-  2. Upload the ZIP file to the Magento 2 server
+  2. Get access to the Magento 2 server.
 
-  3. Get access to the Magento 2 server
-
-  4. Go to the Magento2 modules folder
+  3. Go to the Magento2 modules folder.
 
     $ cd $MAGENTO_FOLDER$/app/code
 
-  5. Create the directory (if it does not exist) that will hold the module contents
+  4. Create the directory (if it does not exist) that will hold the module contents
     `$ mkdir -p Ebizmarts/SagePaySuite`
    
-  6. Go to the SagePaySuite folder
+  5. Go to the SagePaySuite folder
   
     $ cd $MAGENTO_FOLDER$/app/code/Ebizmarts/SagePaySuite
    
-  7. Uncompress Sage Pay Suite package
+  6. Uncompress Sage Pay Suite package
   
-    $ unzip /PATH/TO/PACKAGE/Ebizmarts_SagePaySuiteM2-1.1.8.zip
+    $ unzip /PATH/TO/PACKAGE/Ebizmarts_SagePaySuiteM2-1.1.9.zip
 
-  8. This will create the following content in $MAGENTO_FOLDER$/app/code
+  7. This will create the following content in $MAGENTO_FOLDER$/app/code
     <pre>
     └── Ebizmarts
         └── SagePaySuite
@@ -71,21 +68,21 @@ __Installation__
             ├── i18n
             └── view
     </pre>
-  9. Go to the magento root folder (where composer.json is located)
+  8. Go to the magento root folder (where composer.json is located)
 
     $ cd $MAGENTO_FOLDER$
 
-  10. Execute Magento setup upgrade
+  9. Execute Magento setup upgrade
 
     $ bin/magento setup:upgrade
 
-  11. Clean cache and generated code
+  10. Clean cache and generated code
 
     $ bin/magento cache:clean
     
     $ rm -rf var/generation/*
 
-  12. Run magento compiler to generate auto-generated classes
+  11. Run magento compiler to generate auto-generated classes
 
     $ bin/magento setup:di:compile
 
