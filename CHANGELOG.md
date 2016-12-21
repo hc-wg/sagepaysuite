@@ -1,3 +1,18 @@
+1.1.9 (21/12/2016)
+=============
+**This release requires Magento 2.1.0 at least.**
+* Improvements
+    * PI void using instructions/void API.
+    * PI refund using own API.
+    * Add index on sagepaysuite_token table.
+* Bug fixes
+    * Validation is failed. PI transactions go through even if Magento JS validation fails.
+    * Uncaught TypeError: Unable to process binding if: hasSsCardType
+    * PI on admin lets you enter cc number with spaces.
+    * Magento minification minifies PI external files and 404s.
+    * Fraud on order view Not enough information. Undefined property: stdClass::$fraudscreenrecommendation.
+    * PI integration customer email not sent.
+
 1.1.8 (28/10/2016)
 =============
 **This release requires Magento 2.1.0 at least.**
