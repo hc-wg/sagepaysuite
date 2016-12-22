@@ -15,12 +15,12 @@ class ApiException extends LocalizedException
      * Error code returned by SagePay
      */
 
-    const INVALID_SIGNATURE = '0010';
-    const VALID_VALUE_REQUIRED = '3002';
-    const API_INVALID_IP = '4020';
+    const INVALID_SIGNATURE               = '0010';
+    const VALID_VALUE_REQUIRED            = '3002';
+    const API_INVALID_IP                  = '4020';
     const INVALID_MERCHANT_AUTHENTICATION = '1002';
-    const INVALID_USER_AUTH = '0008';
-    const INVALID_TRANSACTION_STATE = '5004';
+    const INVALID_USER_AUTH               = '0008';
+    const INVALID_TRANSACTION_STATE       = '5004';
 
     /**
      * @param Phrase $phrase
@@ -45,7 +45,7 @@ class ApiException extends LocalizedException
                 $message = __('Information received from an invalid IP address.');
                 break;
             case self::INVALID_SIGNATURE:
-                $message = __('Invalid Sage Pay API credentials.');
+                $message = __('Cannot validate the <signature> value.');
                 break;
             case self::VALID_VALUE_REQUIRED:
                 if (strpos($this->getMessage(), "vpstxid") !== false) {
