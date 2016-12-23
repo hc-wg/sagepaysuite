@@ -29,12 +29,16 @@ class Provider extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
 
         if ($provider == "ReD") {
             $html = '<img style="height: 20px;" src="';
-            $html .= $this->getViewFileUrl('Ebizmarts_SagePaySuite::images/red_logo.png') . '">';
+            $html .= $this->getFraudProviderLogo('red') . '">';
         } else {
-            $html = '<span><img style="height: 20px;vertical-align: text-top;"
-                    src="' . $this->getViewFileUrl('Ebizmarts_SagePaySuite::images/t3m_logo.png') . '"> T3M</span>';
+            $html = '<span><img style="height: 20px;vertical-align: text-top;" src="' . $this->getFraudProviderLogo('t3m') . '"> T3M</span>';
         }
 
         return $html;
+    }
+
+    private function getFraudProviderLogo($name)
+    {
+        return $this->getViewFileUrl('Ebizmarts_SagePaySuite::images/' . $name . '_logo.png');
     }
 }
