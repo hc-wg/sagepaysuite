@@ -37,17 +37,16 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Framework\HTTP\Adapter\Curl')
             ->disableOriginalConstructor()
             ->getMock();
-        $curlFactoryMock = $this
+        $this->curlFactoryMock = $this
             ->getMockBuilder('Magento\Framework\HTTP\Adapter\CurlFactory')
             ->setMethods(["create"])
             ->disableOriginalConstructor()
             ->getMock();
-        $curlFactoryMock->expects($this->any())
+        $this->curlFactoryMock->expects($this->any())
             ->method('create')
             ->will($this->returnValue($this->curlMock));
 
         $objectManagerHelper   = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->curlFactoryMock = $curlFactoryMock;
         $this->pirestApiModel  = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Api\PIRest',
             [
@@ -168,18 +167,20 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     */
     public function testCaptureERROR()
     {
         $this->curlMock->expects($this->once())
             ->method('read')
             ->willReturn(
                 'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"code": "2001, "description": "Invalid address", "property": "Invalid post code"}'
+                '{"errors":[{"description":"Contains invalid value","property":"paymentMethod.card.merchantSessionKey","code":1009},{"description":"Contains invalid value","property":"paymentMethod.card.cardIdentifier","code":1009}]}'
             );
-
         $this->curlMock->expects($this->once())
             ->method('getInfo')
-            ->willReturn(401);
+            ->willReturn(422);
 
         $this->curlMock->expects($this->once())
             ->method('write')
@@ -192,30 +193,23 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 '{"Amount":"100.00"}'
             );
 
-        $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
-            new \Magento\Framework\Phrase("Invalid address: Invalid post code"),
+        $apiExceptionObj = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
+            new \Magento\Framework\Phrase("Contains invalid value: paymentMethod.card.merchantSessionKey"),
             new \Magento\Framework\Exception\LocalizedException(
-                new \Magento\Framework\Phrase("Invalid address: Invalid post code")
+                new \Magento\Framework\Phrase("Contains invalid value: paymentMethod.card.merchantSessionKey")
             )
         );
 
-        $this->apiExceptionFactoryMock->expects($this->any())
+        $this->apiExceptionFactoryMock
+            ->expects($this->once())
             ->method('create')
-            ->will($this->returnValue($apiException));
+            ->with([
+                'phrase' => __("Contains invalid value: paymentMethod.card.merchantSessionKey"),
+                'code' => 1009
+            ])
+            ->willReturn($apiExceptionObj);
 
-        try {
-            $this->pirestApiModel->capture(
-                [
-                    "Amount" => "100.00"
-                ]
-            );
-            $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->assertEquals(
-                "Invalid address: Invalid post code",
-                $apiException->getUserMessage()
-            );
-        }
+        $this->pirestApiModel->capture(["Amount" => "100.00"]);
     }
 
     public function testSubmit3D()
