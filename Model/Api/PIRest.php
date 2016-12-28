@@ -232,42 +232,7 @@ class PIRest
         //log result
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
 
-        if ($result["status"] == 201) {
-            //success
-            return $result["data"];
-        } elseif ($result["status"] == 202) {
-            //authentication required
-            return $result["data"];
-        } else {
-            $error_code = 0;
-            $error_msg = "Unable to capture Sage Pay transaction";
-
-            $errors = $result["data"];
-            if (isset($errors->errors) && count($errors->errors) > 0) {
-                $errors = $errors->errors[0];
-            }
-
-            if (isset($errors->code)) {
-                $error_code = $errors->code;
-            }
-            if (isset($errors->description)) {
-                $error_msg = $errors->description;
-            }
-            if (isset($errors->property)) {
-                $error_msg .= ': ' . $errors->property;
-            }
-
-            if (isset($errors->statusDetail)) {
-                $error_msg = $errors->statusDetail;
-            }
-
-            $exception = $this->_apiExceptionFactory->create([
-                'phrase' => __($error_msg),
-                'code' => $error_code
-            ]);
-
-            throw $exception;
-        }
+        return $this->processResponse($result);
     }
 
     /**
@@ -333,42 +298,7 @@ class PIRest
         //log result
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
 
-        if ($result["status"] == 201) {
-            //success
-            return $result["data"];
-        } elseif ($result["status"] == 202) {
-            //authentication required
-            return $result["data"];
-        } else {
-            $error_code = 0;
-            $error_msg = "Unable to capture Sage Pay transaction";
-
-            $errors = $result["data"];
-            if (isset($errors->errors) && count($errors->errors) > 0) {
-                $errors = $errors->errors[0];
-            }
-
-            if (isset($errors->code)) {
-                $error_code = $errors->code;
-            }
-            if (isset($errors->description)) {
-                $error_msg = $errors->description;
-            }
-            if (isset($errors->property)) {
-                $error_msg .= ': ' . $errors->property;
-            }
-
-            if (isset($errors->statusDetail)) {
-                $error_msg = $errors->statusDetail;
-            }
-
-            $exception = $this->_apiExceptionFactory->create([
-                'phrase' => __($error_msg),
-                'code' => $error_code
-            ]);
-
-            throw $exception;
-        }
+        return $this->processResponse($result);
     }
 
     /**
@@ -390,42 +320,7 @@ class PIRest
         //log result
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
 
-        if ($result["status"] == 201) {
-            //success
-            return $result["data"];
-        } elseif ($result["status"] == 202) {
-            //authentication required
-            return $result["data"];
-        } else {
-            $error_code = 0;
-            $error_msg = "Unable to capture Sage Pay transaction";
-
-            $errors = $result["data"];
-            if (isset($errors->errors) && count($errors->errors) > 0) {
-                $errors = $errors->errors[0];
-            }
-
-            if (isset($errors->code)) {
-                $error_code = $errors->code;
-            }
-            if (isset($errors->description)) {
-                $error_msg = $errors->description;
-            }
-            if (isset($errors->property)) {
-                $error_msg .= ': ' . $errors->property;
-            }
-
-            if (isset($errors->statusDetail)) {
-                $error_msg = $errors->statusDetail;
-            }
-
-            $exception = $this->_apiExceptionFactory->create([
-                'phrase' => __($error_msg),
-                'code' => $error_code
-            ]);
-
-            throw $exception;
-        }
+        return $this->processResponse($result);
     }
 
     /**
@@ -450,6 +345,47 @@ class PIRest
                 'phrase' => __($error_msg),
                 'code' => $error_code
             ]);
+
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param array $result
+     * @return mixed
+     */
+    private function processResponse($result)
+    {
+        if ($result["status"] == 201) {
+            //success
+            return $result["data"];
+        } elseif ($result["status"] == 202) {
+            //authentication required
+            return $result["data"];
+        } else {
+            $errorCode = 0;
+            $errorMessage  = "Unable to capture Sage Pay transaction";
+
+            $errors = $result["data"];
+            if (isset($errors->errors) && count($errors->errors) > 0) {
+                $errors = $errors->errors[0];
+            }
+
+            if (isset($errors->code)) {
+                $errorCode = $errors->code;
+            }
+            if (isset($errors->description)) {
+                $errorMessage = $errors->description;
+            }
+            if (isset($errors->property)) {
+                $errorMessage .= ': ' . $errors->property;
+            }
+
+            if (isset($errors->statusDetail)) {
+                $errorMessage = $errors->statusDetail;
+            }
+
+            $exception = $this->_apiExceptionFactory->create(['phrase' => __($errorMessage), 'code' => $errorCode]);
 
             throw $exception;
         }
