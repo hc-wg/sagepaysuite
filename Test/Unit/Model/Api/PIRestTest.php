@@ -212,6 +212,51 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         $this->pirestApiModel->capture(["Amount" => "100.00"]);
     }
 
+    /**
+     * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     */
+    public function testCaptureError1()
+    {
+        $this->curlMock->expects($this->once())
+            ->method('read')
+            ->willReturn(
+                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
+                '{"errors":[{"statusDetail": "No card provided.", "description":"Contains invalid value","property":"paymentMethod.card.cardIdentifier","code":1009}]}'
+            );
+        $this->curlMock->expects($this->once())
+            ->method('getInfo')
+            ->willReturn(422);
+
+        $this->curlMock->expects($this->once())
+            ->method('write')
+            ->with(
+                \Zend_Http_Client::POST,
+                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
+                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_TRANSACTIONS,
+                '1.0',
+                ['Content-type: application/json'],
+                '{"Amount":"100.00"}'
+            );
+
+        $apiExceptionObj = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
+            new \Magento\Framework\Phrase("No card provided."),
+            new \Magento\Framework\Exception\LocalizedException(
+                new \Magento\Framework\Phrase("No card provided.")
+            )
+        );
+
+        $this->apiExceptionFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->with([
+                'phrase' => __("No card provided."),
+                'code' => 1009
+            ])
+            ->willReturn($apiExceptionObj);
+
+        $this->pirestApiModel->capture(["Amount" => "100.00"]);
+    }
+
     public function testSubmit3D()
     {
         $this->curlMock->expects($this->once())
