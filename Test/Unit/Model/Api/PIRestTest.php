@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
 class PIRestTest extends \PHPUnit_Framework_TestCase
 {
+    private $curlFactoryMock;
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
@@ -45,11 +46,12 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($this->curlMock));
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->pirestApiModel = $objectManagerHelper->getObject(
+        $objectManagerHelper   = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->curlFactoryMock = $curlFactoryMock;
+        $this->pirestApiModel  = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Api\PIRest',
             [
-                "curlFactory" => $curlFactoryMock,
+                "curlFactory"         => $this->curlFactoryMock,
                 "apiExceptionFactory" => $this->apiExceptionFactoryMock
             ]
         );
@@ -324,6 +326,12 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
 
     public function testTransactionDetailsERROR()
     {
+        $configMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock->expects($this->once())->method('getMode')->willReturn('live');
+
         $this->curlMock->expects($this->once())
             ->method('read')
             ->willReturn(
@@ -339,7 +347,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->method('write')
             ->with(
                 \Zend_Http_Client::GET,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . "transactions/" . 12345,
+                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_LIVE . "transactions/" . 12345,
                 '1.0',
                 ['Content-type: application/json']
             );
@@ -352,6 +360,16 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         $this->apiExceptionFactoryMock->expects($this->any())
             ->method('create')
             ->will($this->returnValue($apiException));
+
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->pirestApiModel = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "curlFactory"         => $this->curlFactoryMock,
+                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
+                "config"              => $configMock
+            ]
+        );
 
         try {
             $this->pirestApiModel->transactionDetails(12345);
