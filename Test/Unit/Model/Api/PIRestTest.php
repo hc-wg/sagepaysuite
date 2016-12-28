@@ -131,7 +131,10 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testCapture()
+    /**
+     * @dataProvider dataproviderCapture
+     */
+    public function testCapture($responseCode)
     {
         $this->curlMock->expects($this->once())
             ->method('read')
@@ -142,7 +145,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
 
         $this->curlMock->expects($this->once())
             ->method('getInfo')
-            ->willReturn(201);
+            ->willReturn($responseCode);
 
         $this->curlMock->expects($this->once())
             ->method('write')
@@ -165,6 +168,13 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 ]
             )
         );
+    }
+
+    public function dataproviderCapture()
+    {
+        return [
+            [201], [202]
+        ];
     }
 
     /**
