@@ -99,6 +99,8 @@ class PIRest
         $data = preg_split('/^\r?$/m', $data, 2);
         $data = json_decode(trim($data[1]));
 
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
+
         $response = [
             "status" => $response_status,
             "data" => $data
@@ -189,29 +191,19 @@ class PIRest
     {
         $jsonBody = json_encode(["vendorName" => $this->_config->getVendorname()]);
 
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $jsonBody);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $jsonBody, [__METHOD__, __LINE__]);
 
         $url = $this->_getServiceUrl(self::ACTION_GENERATE_MERCHANT_KEY);
 
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $url);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $url, [__METHOD__, __LINE__]);
 
         $result = $this->_executePostRequest($url, $jsonBody);
 
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
 
-        if ($result["status"] == 201) {
-            return $result["data"]->merchantSessionKey;
-        } else {
-            $error_code = $result["data"]->code;
-            $error_msg = $result["data"]->description;
+        $resultData = $this->processResponse($result);
 
-            $exception = $this->_apiExceptionFactory->create([
-                'phrase' => __($error_msg),
-                'code' => $error_code
-            ]);
-
-            throw $exception;
-        }
+        return $resultData->merchantSessionKey;
     }
 
     /**
@@ -224,13 +216,13 @@ class PIRest
     public function capture($payment_request)
     {
         //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $payment_request);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $payment_request, [__METHOD__, __LINE__]);
 
         $jsonRequest = json_encode($payment_request);
         $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
 
         //log result
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
 
         return $this->processResponse($result);
     }
@@ -247,27 +239,13 @@ class PIRest
     {
         $jsonBody = json_encode(["paRes" => $paRes]);
 
-        //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $jsonBody);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $jsonBody, [__METHOD__, __LINE__]);
 
         $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
 
-        //log result
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
 
-        if ($result["status"] == 201) {
-            return $result["data"];
-        } else {
-            $error_code = $result["data"]->code;
-            $error_msg = $result["data"]->description;
-
-            $exception = $this->_apiExceptionFactory->create([
-                'phrase' => __($error_msg),
-                'code' => $error_code
-            ]);
-
-            throw $exception;
-        }
+        return $this->processResponse($result);
     }
 
     /**
@@ -290,13 +268,13 @@ class PIRest
         ];
 
         //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $requestData);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $requestData, [__METHOD__, __LINE__]);
 
         $jsonRequest = json_encode($requestData);
         $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
 
         //log result
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
 
         return $this->processResponse($result);
     }
@@ -310,7 +288,7 @@ class PIRest
         $requestData = ['instructionType' => 'void'];
 
         //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $requestData);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $requestData, [__METHOD__, __LINE__]);
 
         $jsonRequest = json_encode($requestData);
         $result = $this->_executePostRequest(
@@ -318,7 +296,7 @@ class PIRest
         );
 
         //log result
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
 
         return $this->processResponse($result);
     }
