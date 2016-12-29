@@ -129,6 +129,8 @@ class Request extends \Magento\Framework\App\Action\Action
             //send POST to Sage Pay
             $post_response = $this->_pirestapi->capture($request);
 
+            $this->_suiteLogger->sageLog('Request', $post_response, [__METHOD__, __LINE__]);
+
             if ($post_response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS ||
                 $post_response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS
             ) {
@@ -187,6 +189,8 @@ class Request extends \Magento\Framework\App\Action\Action
                 //additional details required for callback URL
                 $post_response->orderId = $order->getId();
                 $post_response->quoteId = $this->_quote->getId();
+
+                $this->_suiteLogger->sageLog('Request', (array)$post_response, [__METHOD__, __LINE__]);
 
                 //prepare response
                 $responseContent = [
