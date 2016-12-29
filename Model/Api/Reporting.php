@@ -81,7 +81,7 @@ class Reporting
      */
     private function _executeRequest($xml)
     {
-        $this->_suiteLogger->sageLog('Request', $xml);
+        $this->_suiteLogger->sageLog('Request', $xml, [__METHOD__, __LINE__]);
 
         $curl = $this->_curlFactory->create();
 
@@ -105,7 +105,7 @@ class Reporting
             return false;
         }
 
-        $this->_suiteLogger->sageLog('Request', $data);
+        $this->_suiteLogger->sageLog('Request', $data, [__METHOD__, __LINE__]);
 
         $data = preg_split('/^\r?$/m', $data, 2);
         $data = trim($data[1]);
@@ -203,7 +203,7 @@ class Reporting
         }
 
         if (!$validResponse) {
-            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
         }
 
         $exception = $this->_apiExceptionFactory->create([

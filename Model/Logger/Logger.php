@@ -13,8 +13,8 @@ class Logger extends \Monolog\Logger
     /**
      * SagePaySuite log files
      */
-    const LOG_REQUEST = 'Request';
-    const LOG_CRON = 'Cron';
+    const LOG_REQUEST   = 'Request';
+    const LOG_CRON      = 'Cron';
     const LOG_EXCEPTION = 'Exception';
 
     // @codingStandardsIgnoreStart
@@ -25,9 +25,14 @@ class Logger extends \Monolog\Logger
     ];
     // @codingStandardsIgnoreEnd
 
-    public function sageLog($logType, $message)
+    /**
+     * @param $logType
+     * @param $message
+     * @param array $context
+     * @return bool
+     */
+    public function sageLog($logType, $message, $context = [])
     {
-
         try {
             if ($message === null) {
                 $message = "NULL";
@@ -52,7 +57,7 @@ class Logger extends \Monolog\Logger
 
         $message .= "\r\n";
 
-        return $this->addRecord($logType, $message, []);
+        return $this->addRecord($logType, $message, $context);
     }
 
     public function logException($exception)

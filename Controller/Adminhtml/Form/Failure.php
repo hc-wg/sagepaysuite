@@ -50,7 +50,7 @@ class Failure extends \Magento\Backend\App\AbstractAction
             }
 
             //log response
-            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
 
             $statusDetail = $response["StatusDetail"];
             $statusDetail = explode(" : ", $statusDetail);

@@ -133,7 +133,7 @@ class Success extends \Magento\Framework\App\Action\Action
             }
 
             //log response
-            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
 
             $this->_quote = $this->_quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
 

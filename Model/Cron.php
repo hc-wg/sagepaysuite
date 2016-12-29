@@ -135,20 +135,23 @@ class Cron
                         $this->_suiteLogger->sageLog(
                             Logger::LOG_CRON,
                             ["OrderId" => $orderId,
-                                "Result" => "CANCELLED : No payment received."]
+                                "Result" => "CANCELLED : No payment received."],
+                            [__METHOD__, __LINE__]
                         );
                     } else {
                         $this->_suiteLogger->sageLog(
                             Logger::LOG_CRON,
                             ["OrderId" => $orderId,
-                                "Result" => "ERROR : Transaction found: " . $payment->getLastTransId()]
+                                "Result" => "ERROR : Transaction found: " . $payment->getLastTransId()],
+                            [__METHOD__, __LINE__]
                         );
                     }
                 } else {
                     $this->_suiteLogger->sageLog(
                         Logger::LOG_CRON,
                         ["OrderId" => $orderId,
-                            "Result" => "ERROR : No payment found."]
+                            "Result" => "ERROR : No payment found."],
+                        [__METHOD__, __LINE__]
                     );
                 }
             } catch (ApiException $apiException) {
@@ -158,7 +161,8 @@ class Cron
                         "OrderId" => $orderId,
                         "Result"  => $apiException->getUserMessage(),
                         "Stack"   => $apiException->getTraceAsString()
-                    ]
+                    ],
+                    [__METHOD__, __LINE__]
                 );
             } catch (\Exception $e) {
                 $this->_suiteLogger->sageLog(
@@ -167,7 +171,8 @@ class Cron
                         "OrderId" => $orderId,
                         "Result"  => $e->getMessage(),
                         "Trace"   => $e->getTraceAsString()
-                    ]
+                    ],
+                    [__METHOD__, __LINE__]
                 );
             }
         }
@@ -204,7 +209,7 @@ class Cron
             }
 
             //log
-            $this->_suiteLogger->sageLog(Logger::LOG_CRON, $logData);
+            $this->_suiteLogger->sageLog(Logger::LOG_CRON, $logData, [__METHOD__, __LINE__]);
         }
     }
 

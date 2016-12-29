@@ -153,7 +153,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         $data["AllowGiftAid"] = (int)$this->_config->isGiftAidEnabled();
 
         //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
 
         $preCryptString = '';
         foreach ($data as $field => $value) {

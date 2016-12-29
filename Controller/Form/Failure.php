@@ -84,7 +84,7 @@ class Failure extends \Magento\Framework\App\Action\Action
             $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
 
             //log response
-            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
 
             if (!array_key_exists("Status", $response) || !array_key_exists("StatusDetail", $response)) {
                 throw new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay'));

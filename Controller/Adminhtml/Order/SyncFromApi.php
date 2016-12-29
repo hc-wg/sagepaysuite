@@ -95,10 +95,10 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
 
             $this->messageManager->addSuccess(__('Successfully synced from Sage Pay\'s API'));
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString());
+            $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__($apiException->getUserMessage()));
         } catch (\Exception $e) {
-            $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString());
+            $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__('Something went wrong: ' . $e->getMessage()));
         }
 

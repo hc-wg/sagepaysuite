@@ -108,7 +108,7 @@ class Callback3D extends \Magento\Framework\App\Action\Action
                 $transactionDetailsResult = $this->_pirestapi->transactionDetails($this->_transactionId);
 
                 //log transaction details response
-                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $transactionDetailsResult);
+                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $transactionDetailsResult, [__METHOD__, __LINE__]);
 
                 $this->_confirmPayment($transactionDetailsResult);
 

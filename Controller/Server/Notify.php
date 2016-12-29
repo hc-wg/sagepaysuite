@@ -108,7 +108,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_quote = $this->_quote->load($this->getRequest()->getParam("quoteid"));
 
         //log response
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $this->_postData);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $this->_postData, [__METHOD__, __LINE__]);
 
         try {
             //find quote with GET param
@@ -330,7 +330,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->getResponse()->setBody($strResponse);
 
         //log our response
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse, [__METHOD__, __LINE__]);
     }
 
     private function _returnOk()
@@ -343,7 +343,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->getResponse()->setBody($strResponse);
 
         //log our response
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse, [__METHOD__, __LINE__]);
     }
 
     private function _returnInvalid($message = 'Invalid transaction, please try another payment method')
@@ -356,7 +356,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->getResponse()->setBody($strResponse);
 
         //log our response
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse, [__METHOD__, __LINE__]);
     }
 
     private function _getAbortRedirectUrl()
@@ -407,8 +407,8 @@ class Notify extends \Magento\Framework\App\Action\Action
             //log full values for VPS signature
             $this->_suiteLogger->sageLog(
                 Logger::LOG_REQUEST,
-                "INVALID SIGNATURE: " . $this->_getVPSSignatureString($payment)
-            );
+                "INVALID SIGNATURE: " . $this->_getVPSSignatureString($payment),
+                [__METHOD__, __LINE__]);
             throw new \Magento\Framework\Validator\Exception(__('Invalid VPS Signature'));
         }
     }

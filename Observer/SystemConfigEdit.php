@@ -83,7 +83,7 @@ class SystemConfigEdit implements ObserverInterface
              */
             try {
                 $version = $this->_reportingApi->getVersion();
-                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $version);
+                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $version, [__METHOD__, __LINE__]);
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
                 $this->_messageManager->addError($apiException->getUserMessage());
             } catch (\Exception $e) {

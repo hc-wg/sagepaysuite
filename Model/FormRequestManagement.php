@@ -227,7 +227,7 @@ class FormRequestManagement implements FormManagementInterface
         $data["AllowGiftAid"]  = (int)$this->_config->isGiftAidEnabled();
 
         //log request
-        $this->_suiteLogger->sageLog(Logger\Logger::LOG_REQUEST, $data);
+        $this->_suiteLogger->sageLog(Logger\Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
 
         $preCryptString = '';
         foreach ($data as $field => $value) {
