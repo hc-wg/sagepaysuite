@@ -93,12 +93,12 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->method('read')
             ->willReturn(
                 'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"code": "2012","description": "error description"}'
+                '{"errors": [{"description": "Missing mandatory field","property": "vendorName","code": 1003}]}'
             );
 
         $this->curlMock->expects($this->once())
             ->method('getInfo')
-            ->willReturn(401);
+            ->willReturn(422);
 
         $this->curlMock->expects($this->once())
             ->method('write')
@@ -299,18 +299,21 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testSubmit3DERROR()
+    /**
+     * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     */
+    public function testSubmitThreedError()
     {
         $this->curlMock->expects($this->once())
             ->method('read')
             ->willReturn(
                 'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"code": "2001","description": "Invalid PaRES"}'
+                '{"errors": [{"description": "Contains invalid characters","property": "paRes","code": 1005}]}'
             );
 
         $this->curlMock->expects($this->once())
             ->method('getInfo')
-            ->willReturn(401);
+            ->willReturn(422);
 
         $this->curlMock->expects($this->once())
             ->method('write')
@@ -324,23 +327,19 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             );
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
-            new \Magento\Framework\Phrase("Invalid PaRES"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Invalid PaRES"))
+            new \Magento\Framework\Phrase("Contains invalid characters: paRes"),
+            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Contains invalid characters: paRes"))
         );
 
         $this->apiExceptionFactoryMock->expects($this->any())
             ->method('create')
-            ->will($this->returnValue($apiException));
+            ->with([
+                'phrase' => __("Contains invalid characters: paRes"),
+                'code'   => 1005
+            ])
+            ->willReturn($apiException);
 
-        try {
-            $this->pirestApiModel->submit3D("fsd678dfs786dfs786fds678fds", 12345);
-            $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->assertEquals(
-                "Invalid PaRES",
-                $apiException->getUserMessage()
-            );
-        }
+        $this->pirestApiModel->submit3D("fsd678dfs786dfs786fds678fds", 12345);
     }
 
     public function testTransactionDetails()
