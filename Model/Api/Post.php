@@ -125,7 +125,7 @@ class Post
         $post_data_string = $this->arrayToQueryParams($postData);
 
         //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $postData);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $postData, [__METHOD__, __LINE__]);
 
         $curl->setConfig(
             [
@@ -148,7 +148,7 @@ class Post
         $curl->close();
 
         //log response
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
 
         $responseData = [];
         if ($response_status == 200) {
