@@ -37,12 +37,12 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     private $checkoutSessionMock;
 
     /**
-     * @var  Ebizmarts\SagePaySuite\Helper\Checkout|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Ebizmarts\SagePaySuite\Helper\Checkout|\PHPUnit_Framework_MockObject_MockObject
      */
     private $checkoutHelperMock;
 
     /**
-     * @var  Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject
      */
     private $orderMock;
 
@@ -147,17 +147,22 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('generateVendorTxCode')
             ->will($this->returnValue("10000001-2015-12-12-12-12345"));
 
+        $threedStatusObj = new \stdClass();
+        $threedStatusObj->status = "NotChecked";
+
+        $captureObj = new \stdClass();
+        $captureObj->statusCode = \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS;
+        $captureObj->transactionId = self::TEST_VPSTXID;
+        $captureObj->statusDetail = 'OK Status';
+        $captureObj->{"3DSecure"} = $threedStatusObj;
+
         $pirestapiMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\PIRest')
             ->disableOriginalConstructor()
             ->getMock();
         $pirestapiMock->expects($this->any())
             ->method('capture')
-            ->will($this->returnValue((object)[
-                "statusCode" => \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS,
-                "transactionId" => self::TEST_VPSTXID,
-                "statusDetail" => 'OK Status'
-            ]));
+            ->willReturn($captureObj);
 
         $this->orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
@@ -208,14 +213,18 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('placeOrder')
             ->will($this->returnValue($this->orderMock));
 
+        $threedStatus = new \stdClass();
+        $threedStatus->status = "NotChecked";
+
         $this->_expectResultJson([
             "success" => true,
             'response' => [
-                "statusCode" => 0000,
+                "statusCode"    => 0000,
                 "transactionId" => self::TEST_VPSTXID,
-                "statusDetail" => "OK Status",
-                "orderId" => null,
-                "quoteId" => null
+                "statusDetail"  => "OK Status",
+                "3DSecure"      => $threedStatus,
+                "orderId"       => null,
+                "quoteId"       => null
             ]
         ]);
 
