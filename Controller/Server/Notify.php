@@ -211,14 +211,14 @@ class Notify extends \Magento\Framework\App\Action\Action
                 return $this->_returnInvalid("Payment was not accepted, please try another payment method");
             }
         } catch (ApiException $apiException) {
-            $this->_suiteLogger->logException($apiException);
+            $this->_suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
 
             //cancel pending payment order
             $this->_cancelOrder($order);
 
             return $this->_returnInvalid("Something went wrong: " . $apiException->getUserMessage());
         } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e);
+            $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
             //cancel pending payment order
             $this->_cancelOrder($order);
@@ -269,7 +269,7 @@ class Notify extends \Magento\Framework\App\Action\Action
             //Unset data
             $this->_checkoutSession->unsLastRealOrderId();
         } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e);
+            $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
         }
     }
 

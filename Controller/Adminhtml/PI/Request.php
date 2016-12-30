@@ -174,13 +174,13 @@ class Request extends \Magento\Backend\App\AbstractAction
                 throw new \Magento\Framework\Validator\Exception(__('Invalid Sage Pay response.'));
             }
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->_suiteLogger->logException($apiException);
+            $this->_suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $apiException->getUserMessage()),
             ];
         } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e);
+            $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
             $responseContent = [
                 'success' => false,
                 'error_message' => __('Something went wrong: ' . $e->getMessage()),

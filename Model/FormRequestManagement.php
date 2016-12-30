@@ -148,7 +148,7 @@ class FormRequestManagement implements FormManagementInterface
                 throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
             }
         } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e);
+            $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
             $this->result->setSuccess(false);
             $this->result->setErrorMessage(__('Something went wrong: ' . $e->getMessage()));

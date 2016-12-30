@@ -19,8 +19,8 @@ class Logger extends \Monolog\Logger
 
     // @codingStandardsIgnoreStart
     protected static $levels = [
-        self::LOG_REQUEST => 'Request',
-        self::LOG_CRON => 'Cron',
+        self::LOG_REQUEST   => 'Request',
+        self::LOG_CRON      => 'Cron',
         self::LOG_EXCEPTION => 'Exception'
     ];
     // @codingStandardsIgnoreEnd
@@ -33,40 +33,46 @@ class Logger extends \Monolog\Logger
      */
     public function sageLog($logType, $message, $context = [])
     {
-        try {
-            if ($message === null) {
-                $message = "NULL";
-            }
-
-            if (is_array($message)) {
-                $message = json_encode($message, JSON_PRETTY_PRINT);
-            }
-
-            if (is_object($message)) {
-                $message = json_encode($message, JSON_PRETTY_PRINT);
-            }
-
-            if (!empty(json_last_error())) {
-                $message = (string)json_last_error();
-            }
-
-            $message = (string)$message;
-        } catch (\Exception $e) {
-            $message = "INVALID MESSAGE";
-        }
-
+        $message = $this->messageForLog($message);
         $message .= "\r\n";
 
         return $this->addRecord($logType, $message, $context);
     }
 
-    public function logException($exception)
+    public function logException($exception, $context = [])
     {
         $message = $exception->getMessage();
         $message .= "\n";
         $message .= $exception->getTraceAsString();
         $message .= "\r\n\r\n";
 
-        return $this->addRecord(self::LOG_EXCEPTION, $message, []);
+        return $this->addRecord(self::LOG_EXCEPTION, $message, $context);
+    }
+
+    /**
+     * @param $message
+     * @return string
+     */
+    private function messageForLog($message)
+    {
+        if ($message === null) {
+            $message = "NULL";
+        }
+
+        if (is_array($message)) {
+            $message = json_encode($message, JSON_PRETTY_PRINT);
+        }
+
+        if (is_object($message)) {
+            $message = json_encode($message, JSON_PRETTY_PRINT);
+        }
+
+        if (!empty(json_last_error())) {
+            $message = json_last_error_msg();
+        }
+
+        $message = (string)$message;
+
+        return $message;
     }
 }

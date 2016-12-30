@@ -165,7 +165,7 @@ class Success extends \Magento\Backend\App\AbstractAction
 
             return;
         } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e);
+            $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
             if ($order) {
                 $this->messageManager->addError($e->getMessage());

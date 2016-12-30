@@ -219,7 +219,7 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
 
                 $payment->setIsTransactionClosed(1);
             } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-                $this->_suiteLogger->logException($apiException);
+                $this->_suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
                 throw new LocalizedException(
                     __(
                         'There was an error %1 Sage Pay transaction %2: %3',
@@ -229,7 +229,7 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
                     )
                 );
             } catch (\Exception $e) {
-                $this->_suiteLogger->logException($e);
+                $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
                 throw new LocalizedException(
                     __(
                         'There was an error %1 Sage Pay transaction %2: %3',
@@ -262,7 +262,7 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
             $payment->setIsTransactionClosed(1);
             $payment->setShouldCloseParentTransaction(1);
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->_suiteLogger->logException($apiException);
+            $this->_suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
             throw new LocalizedException(
                 __(
                     'There was an error refunding Sage Pay transaction %1: %2',
@@ -271,7 +271,7 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
                 )
             );
         } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e);
+            $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
             throw new LocalizedException(
                 __('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $e->getMessage())
             );

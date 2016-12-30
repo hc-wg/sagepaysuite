@@ -92,7 +92,7 @@ class Request extends \Magento\Backend\App\AbstractAction
                 'crypt' => $this->_generateFormCrypt()
             ];
         } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e);
+            $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
             $responseContent = [
                 'success' => false,

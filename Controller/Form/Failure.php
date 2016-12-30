@@ -127,7 +127,7 @@ class Failure extends \Magento\Framework\App\Action\Action
             //Unset data
             $this->_checkoutSession->unsLastRealOrderId();
         } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e);
+            $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
         }
     }
 }
