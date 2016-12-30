@@ -75,4 +75,33 @@ class FormTest extends \PHPUnit_Framework_TestCase
             $this->formConfigProviderModel->getConfig()
         );
     }
+
+    public function testMethodNoAvailable()
+    {
+        $formModelMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Form')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $formModelMock->expects($this->once())
+            ->method('isAvailable')
+            ->willReturn(false);
+
+        $paymentHelperMock = $this
+            ->getMockBuilder('Magento\Payment\Helper\Data')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentHelperMock->expects($this->once())
+            ->method('getMethodInstance')
+            ->willReturn($formModelMock);
+
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->formConfigProviderModel = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\ConfigProvider\Form',
+            [
+                "paymentHelper" => $paymentHelperMock
+            ]
+        );
+
+        $this->assertEquals([], $this->formConfigProviderModel->getConfig());
+    }
 }

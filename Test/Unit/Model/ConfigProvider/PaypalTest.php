@@ -75,4 +75,33 @@ class PaypalTest extends \PHPUnit_Framework_TestCase
             $this->paypalConfigProviderModel->getConfig()
         );
     }
+
+    public function testMethodNotAvailable()
+    {
+        $paypalModelMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Paypal')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paypalModelMock->expects($this->any())
+            ->method('isAvailable')
+            ->willReturn(false);
+
+        $paymentHelperMock = $this
+            ->getMockBuilder('Magento\Payment\Helper\Data')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentHelperMock->expects($this->any())
+            ->method('getMethodInstance')
+            ->willReturn($paypalModelMock);
+
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->paypalConfigProviderModel = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\ConfigProvider\Paypal',
+            [
+                "paymentHelper" => $paymentHelperMock,
+            ]
+        );
+
+        $this->assertEquals([], $this->paypalConfigProviderModel->getConfig());
+    }
 }

@@ -73,4 +73,33 @@ class PITest extends \PHPUnit_Framework_TestCase
             $this->piConfigProviderModel->getConfig()
         );
     }
+
+    public function testMethodNotAvailable()
+    {
+        $piModelMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\PI')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $piModelMock->expects($this->once())
+            ->method('isAvailable')
+            ->willReturn(false);
+
+        $paymentHelperMock = $this
+            ->getMockBuilder('Magento\Payment\Helper\Data')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentHelperMock->expects($this->once())
+            ->method('getMethodInstance')
+            ->willReturn($piModelMock);
+
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->piConfigProviderModel = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\ConfigProvider\PI',
+            [
+                "paymentHelper" => $paymentHelperMock
+            ]
+        );
+
+        $this->assertEquals([], $this->piConfigProviderModel->getConfig());
+    }
 }
