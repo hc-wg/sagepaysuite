@@ -55,6 +55,9 @@ class Callback3D extends \Magento\Framework\App\Action\Action
 
     private $_transactionId;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType */
+    private $ccConverter;
+
     /**
      * Callback3D constructor.
      * @param \Magento\Framework\App\Action\Context $context
@@ -76,7 +79,8 @@ class Callback3D extends \Magento\Framework\App\Action\Action
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Psr\Log\LoggerInterface $logger,
-        \Magento\Checkout\Model\Session $checkoutSession
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConvert
     ) {
     
         parent::__construct($context);
@@ -90,6 +94,7 @@ class Callback3D extends \Magento\Framework\App\Action\Action
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
         $this->_logger             = $logger;
         $this->_checkoutSession    = $checkoutSession;
+        $this->ccConverter         = $ccConvert;
     }
 
     public function execute()
@@ -141,11 +146,19 @@ class Callback3D extends \Magento\Framework\App\Action\Action
             $quoteId = $this->getRequest()->getParam("quoteId");
 
             if (!empty($order)) {
-            //set additional payment info
+                //set additional payment info
                 $payment = $order->getPayment();
                 $payment->setAdditionalInformation('statusCode', $response->statusCode);
                 $payment->setAdditionalInformation('statusDetail', $response->statusDetail);
                 $payment->setAdditionalInformation('threeDStatus', $response->{'3DSecure'}->status);
+
+                $this->updateCardDataOnPayment($response, $payment);
+
+                $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
+                $payment->setAdditionalInformation('mode', $this->_config->getMode());
+                $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
+
+
                 $payment->save();
 
                 //invoice
@@ -192,5 +205,22 @@ class Callback3D extends \Magento\Framework\App\Action\Action
             . $this->_url->getUrl($url, ['_secure' => true])
             . '";</script>'
         );
+    }
+
+    /**
+     * @param $response
+     * @param $payment
+     */
+    private function updateCardDataOnPayment($response, $payment)
+    {
+        if (isset($response->paymentMethod)) {
+            if (isset($response->paymentMethod->card)) {
+                $card = $response->paymentMethod->card;
+                $payment->setCcLast4($card->lastFourDigits);
+                $payment->setCcExpMonth(substr($card->expiryDate, 0, 2));
+                $payment->setCcExpYear(substr($card->expiryDate, 2, 2));
+                $payment->setCcType($this->ccConverter->convert($card->cardType));
+            }
+        }
     }
 }
