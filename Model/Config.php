@@ -490,6 +490,11 @@ class Config
         return $this->getValue("cctypes");
     }
 
+    public function dropInEnabled()
+    {
+        return (bool)($this->getValue("use_dropin") == 1);
+    }
+
     public function getAreSpecificCountriesAllowed()
     {
         return $this->getValue("allowspecific");
