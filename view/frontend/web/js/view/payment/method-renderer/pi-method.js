@@ -182,12 +182,12 @@ define(
                             Sagepay.tokeniseCardDetails(token_form, function (status, response) {
 
                                 if (status === 201) {
-                                    self.creditCardType = self.parseCCType(response.cardType);
-                                    self.creditCardExpYear = document.getElementById(self.getCode() + '_expiration_yr').value;
+                                    self.creditCardType     = response.cardType;
+                                    self.creditCardExpYear  = document.getElementById(self.getCode() + '_expiration_yr').value;
                                     self.creditCardExpMonth = document.getElementById(self.getCode() + '_expiration').value;
-                                    self.creditCardLast4 = document.getElementById(self.getCode() + '_cc_number').value.slice(-4);
+                                    self.creditCardLast4    = document.getElementById(self.getCode() + '_cc_number').value.slice(-4);
                                     self.merchantSessionKey = merchant_session_key;
-                                    self.cardIdentifier = response.cardIdentifier;
+                                    self.cardIdentifier     = response.cardIdentifier;
 
                                     try {
                                         self.placeTransaction();
@@ -217,32 +217,6 @@ define(
                     }
                 }
             },
-            parseCCType: function (cctype) {
-                switch (cctype) {
-                    case 'Visa':
-                        return "VI";
-                        break;
-                    case 'MasterCard':
-                        return "MC";
-                        break;
-                    case 'Maestro':
-                        return "MI";
-                        break;
-                    case 'AmericanExpress':
-                        return "AE";
-                        break;
-                    case 'Diners':
-                        return "DN";
-                        break;
-                    case 'JCB':
-                        return "JCB";
-                        break;
-                    default:
-                        return cctype;
-                        break;
-                }
-            },
-
             placeTransaction: function () {
 
                 var self = this;
