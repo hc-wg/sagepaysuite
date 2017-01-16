@@ -103,7 +103,7 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
             ->willReturn(true);
 
         $obj = new \stdClass();
-        $obj->resource = opendir('./');
+        $obj->resource = opendir('./'); // @codingStandardsIgnoreLine
 
         $this->assertTrue($loggerMock->sageLog('Request', $obj));
     }
