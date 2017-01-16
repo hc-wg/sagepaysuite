@@ -233,7 +233,9 @@ define(
                     card_last4: self.creditCardLast4
                 };
 
-                //fullScreenLoader.startLoader();
+                if (self.dropInEnabled()) {
+                    fullScreenLoader.startLoader();
+                }
 
                 storage.post(
                     serviceUrl,
@@ -241,7 +243,9 @@ define(
                 ).done(
                     function (response) {
 
-                        //fullScreenLoader.stopLoader();
+                        if (self.dropInEnabled()) {
+                            fullScreenLoader.stopLoader();
+                        }
 
                         if (response.success) {
                             if (response.response.status == "Ok") {
@@ -272,8 +276,9 @@ define(
                                 form3D.elements[2].setAttribute('value', response.response.transactionId);
                                 form3D.submit();
 
-                                fullScreenLoader.stopLoader();
-
+                                if (!self.dropInEnabled()) {
+                                    fullScreenLoader.stopLoader();
+                                }
                             } else {
                                 console.log(response);
                                 self.showPaymentError("Invalid Sage Pay response, please use another payment method.");
