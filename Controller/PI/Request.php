@@ -151,6 +151,7 @@ class Request extends \Magento\Framework\App\Action\Action
                     $payment->setAdditionalInformation('threeDStatus', $post_response->{'3DSecure'}->status);
                 }
 
+                //DropIn
                 if (isset($post_response->paymentMethod)) {
                     if (isset($post_response->paymentMethod->card)) {
                         $card = $post_response->paymentMethod->card;
@@ -161,6 +162,7 @@ class Request extends \Magento\Framework\App\Action\Action
                     }
                 }
                 else {
+                    //Custom cc form
                     $payment->setCcLast4($this->_postData->card_last4);
                     $payment->setCcExpMonth($this->_postData->card_exp_month);
                     $payment->setCcExpYear($this->_postData->card_exp_year);
