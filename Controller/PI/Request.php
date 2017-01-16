@@ -70,6 +70,9 @@ class Request extends \Magento\Framework\App\Action\Action
      */
     private $_requestHelper;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType */
+    private $ccConverter;
+
     /**
      * @param \Magento\Framework\App\Action\Context $context
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
@@ -92,7 +95,8 @@ class Request extends \Magento\Framework\App\Action\Action
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
+        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
+        \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConvert
     ) {
 
         parent::__construct($context);
@@ -107,6 +111,7 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_checkoutSession = $checkoutSession;
         $this->_requestHelper   = $requestHelper;
         $this->_quote           = $this->_checkoutSession->getQuote();
+        $this->ccConverter      = $ccConvert;
     }
 
     public function execute()
@@ -145,10 +150,25 @@ class Request extends \Magento\Framework\App\Action\Action
                 if (isset($post_response->{'3DSecure'})) {
                     $payment->setAdditionalInformation('threeDStatus', $post_response->{'3DSecure'}->status);
                 }
-                $payment->setCcLast4($this->_postData->card_last4);
-                $payment->setCcExpMonth($this->_postData->card_exp_month);
-                $payment->setCcExpYear($this->_postData->card_exp_year);
-                $payment->setCcType($this->_postData->card_type);
+
+                //DropIn
+                if (isset($post_response->paymentMethod)) {
+                    if (isset($post_response->paymentMethod->card)) {
+                        $card = $post_response->paymentMethod->card;
+                        $payment->setCcLast4($card->lastFourDigits);
+                        $payment->setCcExpMonth(substr($card->expiryDate, 0, 2));
+                        $payment->setCcExpYear(substr($card->expiryDate, 2, 2));
+                        $payment->setCcType($this->ccConverter->convert($card->cardType));
+                    }
+                }
+                else {
+                    //Custom cc form
+                    $payment->setCcLast4($this->_postData->card_last4);
+                    $payment->setCcExpMonth($this->_postData->card_exp_month);
+                    $payment->setCcExpYear($this->_postData->card_exp_year);
+                    $payment->setCcType($this->ccConverter->convert($this->_postData->card_type));
+                }
+
                 $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
                 $payment->setAdditionalInformation('mode', $this->_config->getMode());
                 $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());

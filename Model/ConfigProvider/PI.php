@@ -20,7 +20,7 @@ class PI extends CcGenericConfigProvider
     private $methodCode = Config::METHOD_PI;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Form
+     * @var \Ebizmarts\SagePaySuite\Model\PI
      */
     private $method;
 
@@ -50,6 +50,8 @@ class PI extends CcGenericConfigProvider
 
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
         $this->_suiteHelper = $suiteHelper;
+
+        $config->setMethodCode($this->methodCode);
         $this->_config = $config;
     }
 
@@ -66,8 +68,9 @@ class PI extends CcGenericConfigProvider
             'payment' => [
                 'ebizmarts_sagepaysuitepi' => [
                     'licensed' => $this->_suiteHelper->verify(),
-                    'mode' => $this->_config->getMode()
-                ],
+                    'mode'     => $this->_config->getMode(),
+                    'dropin'   => $this->_config->setMethodCode($this->methodCode)->dropInEnabled()
+                ]
             ]
         ];
     }

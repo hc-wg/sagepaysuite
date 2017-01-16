@@ -499,6 +499,10 @@ class PITest extends \PHPUnit_Framework_TestCase
         $this->piModel->getConfigPaymentAction();
     }
 
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     * @expectedExceptionMessage This credit card type is not allowed for this payment method
+     */
     public function testValidate()
     {
         $addressMock = $this
@@ -528,6 +532,14 @@ class PITest extends \PHPUnit_Framework_TestCase
             ->method('getOrder')
             ->will($this->returnValue($orderMock));
 
+        $this->configMock
+            ->expects($this->once())
+            ->method('setMethodCode')
+            ->willReturnSelf();
+        $this->configMock
+            ->expects($this->once())
+            ->method('dropInEnabled')
+            ->willReturn(false);
         $this->configMock->expects($this->once())
             ->method('getAllowedCcTypes')
             ->willReturn("MC,MI");
@@ -540,15 +552,7 @@ class PITest extends \PHPUnit_Framework_TestCase
 
         $this->piModel->setInfoInstance($paymentMock);
 
-        try {
-            $this->piModel->validate();
-            $this->assertTrue(false);
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
-            $this->assertEquals(
-                __('This credit card type is not allowed for this payment method'),
-                $e->getMessage()
-            );
-        }
+        $this->piModel->validate();
     }
 
     public function testAssignData()
@@ -684,6 +688,14 @@ class PITest extends \PHPUnit_Framework_TestCase
             ->method('getOrder')
             ->will($this->returnValue($orderMock));
 
+        $this->configMock
+            ->expects($this->once())
+            ->method('dropInEnabled')
+            ->willReturn(false);
+        $this->configMock
+            ->expects($this->once())
+            ->method('setMethodCode')
+            ->willReturnSelf();
         $this->configMock->expects($this->once())
             ->method('getAllowedCcTypes')
             ->willReturn("MC,MI");
@@ -728,6 +740,14 @@ class PITest extends \PHPUnit_Framework_TestCase
             ->method('getOrder')
             ->will($this->returnValue($orderMock));
 
+        $this->configMock
+            ->expects($this->once())
+            ->method('dropInEnabled')
+            ->willReturn(false);
+        $this->configMock
+            ->expects($this->once())
+            ->method('setMethodCode')
+            ->willReturnSelf();
         $this->configMock->expects($this->once())
             ->method('getAllowedCcTypes')
             ->willReturn("MC,MI");

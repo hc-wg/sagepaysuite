@@ -338,9 +338,11 @@ class PI extends \Magento\Payment\Model\Method\Cc
         }
 
         //check allowed card types
-        $availableTypes = explode(',', $this->config->getAllowedCcTypes());
-        if (!in_array($info->getCcType(), $availableTypes)) {
-            $errorMsg = __('This credit card type is not allowed for this payment method');
+        if ($this->config->dropInEnabled() === false) {
+            $availableTypes = explode(',', $this->config->setMethodCode(Config::METHOD_PI)->getAllowedCcTypes());
+            if (!in_array($info->getCcType(), $availableTypes)) {
+                $errorMsg = __('This credit card type is not allowed for this payment method');
+            }
         }
 
         if ($errorMsg) {
