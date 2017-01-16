@@ -69,6 +69,7 @@ class Callback3D extends \Magento\Framework\App\Action\Action
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConvert
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
