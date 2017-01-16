@@ -10,6 +10,13 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHe
 
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
+    private $contextMock;
+    private $configMock;
+    private $suiteHelperMock;
+    private $pirestapiMock;
+    private $requestHelperMock;
+    private $paymentMock;
+    private $ccConverterObj;
 
     /**
      * Sage Pay Transaction ID
@@ -59,13 +66,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock->expects($this->any())
+        $this->paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')->disableOriginalConstructor()->getMock();
+        $this->paymentMock->expects($this->any())
             ->method('getMethodInstance')
-            ->will($this->returnValue($piModelMock));
+            ->willReturn($piModelMock);
 
         $addressMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote\Address')
@@ -84,7 +88,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('USD'));
         $quoteMock->expects($this->any())
             ->method('getPayment')
-            ->will($this->returnValue($paymentMock));
+            ->will($this->returnValue($this->paymentMock));
         $quoteMock->expects($this->any())
             ->method('getBillingAddress')
             ->will($this->returnValue($addressMock));
@@ -92,12 +96,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('getShippingAddress')
             ->willReturn($addressMock);
 
-
-        $checkoutSessionMock = $this
+        $this->checkoutSessionMock = $this
             ->getMockBuilder('Magento\Checkout\Model\Session')
             ->disableOriginalConstructor()
             ->getMock();
-        $checkoutSessionMock->expects($this->any())
+        $this->checkoutSessionMock->expects($this->any())
             ->method('getQuote')
             ->will($this->returnValue($quoteMock));
 
@@ -116,53 +119,28 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->willReturn($this->resultJson);
 
-        $contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $contextMock->expects($this->any())
+        $this->contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')->disableOriginalConstructor()->getMock();
+        $this->contextMock->expects($this->any())
             ->method('getRequest')
             ->will($this->returnValue(
                 'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
                 '{"merchant_session_key": "12345", "card_identifier":"12345", ' .
                 '"card_last4":"0006", "card_exp_month":"02", "card_exp_year":"22", ' .
-                '"card_type":"VISA"}'
+                '"card_type":"Visa"}'
             ));
-        $contextMock->expects($this->any())
+        $this->contextMock->expects($this->any())
             ->method('getResponse')
             ->will($this->returnValue($this->responseMock));
-        $contextMock->expects($this->any())
+        $this->contextMock->expects($this->any())
             ->method('getResultFactory')
             ->will($this->returnValue($resultFactoryMock));
 
-        $configMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->configMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')->disableOriginalConstructor()->getMock();
 
-        $suiteHelperMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Data')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $suiteHelperMock->expects($this->any())
+        $this->suiteHelperMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Data')->disableOriginalConstructor()->getMock();
+        $this->suiteHelperMock->expects($this->any())
             ->method('generateVendorTxCode')
             ->will($this->returnValue("10000001-2015-12-12-12-12345"));
-
-        $threedStatusObj = new \stdClass();
-        $threedStatusObj->status = "NotChecked";
-
-        $captureObj = new \stdClass();
-        $captureObj->statusCode = \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS;
-        $captureObj->transactionId = self::TEST_VPSTXID;
-        $captureObj->statusDetail = 'OK Status';
-        $captureObj->{"3DSecure"} = $threedStatusObj;
-
-        $pirestapiMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\PIRest')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $pirestapiMock->expects($this->any())
-            ->method('capture')
-            ->willReturn($captureObj);
 
         $this->orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
@@ -170,7 +148,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $this->orderMock->expects($this->any())
             ->method('getPayment')
-            ->will($this->returnValue($paymentMock));
+            ->will($this->returnValue($this->paymentMock));
         $this->orderMock->expects($this->any())
             ->method('place')
             ->willReturnSelf();
@@ -180,41 +158,66 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $requestHelperMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Request')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $requestHelperMock->expects($this->any())
+        $this->requestHelperMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Request')->disableOriginalConstructor()->getMock();
+        $this->requestHelperMock->expects($this->any())
             ->method('populatePaymentAmount')
             ->will($this->returnValue([]));
-        $requestHelperMock->expects($this->any())
+        $this->requestHelperMock->expects($this->any())
             ->method('getOrderDescription')
             ->will($this->returnValue("description"));
 
         $objectManagerHelper = new ObjectManagerHelper($this);
-        $this->piRequestController = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Controller\PI\Request',
-            [
-                'context' => $contextMock,
-                'config' => $configMock,
-                'suiteHelper' => $suiteHelperMock,
-                'pirestapi' => $pirestapiMock,
-                'checkoutSession' => $checkoutSessionMock,
-                'checkoutHelper' => $this->checkoutHelperMock,
-                'requestHelper' => $requestHelperMock
-            ]
+        /** @var \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConverterObj */
+        $this->ccConverterObj = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\Config\SagePayCardType',
+            []
         );
     }
     // @codingStandardsIgnoreEnd
 
     public function testExecuteSUCCESS()
     {
-        $this->checkoutHelperMock->expects($this->any())
-            ->method('placeOrder')
-            ->will($this->returnValue($this->orderMock));
+        $threedStatusObj = new \stdClass();
+        $threedStatusObj->status = "NotChecked";
+
+        $captureObj = new \stdClass();
+        $captureObj->statusCode = \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS;
+        $captureObj->transactionId = self::TEST_VPSTXID;
+        $captureObj->statusDetail = 'OK Status';
+        $captureObj->{"3DSecure"} = $threedStatusObj;
+
+        $this->pirestapiMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\PIRest')->disableOriginalConstructor()->getMock();
+        $this->pirestapiMock->expects($this->any())
+            ->method('capture')
+            ->willReturn($captureObj);
+
+        $this->checkoutHelperMock->expects($this->once())->method('placeOrder')->willReturn($this->orderMock);
+
+        $this->paymentMock->expects($this->once())->method('setMethod')->with('sagepaysuitepi');
+        $this->paymentMock->expects($this->exactly(2))->method('setTransactionId')->with('F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F');
+        $this->paymentMock->expects($this->once())->method('setLastTransId')->with('F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F');
+        $this->paymentMock->expects($this->once())->method('setCcLast4')->with('0006');
+        $this->paymentMock->expects($this->once())->method('setCcExpMonth')->with('02');
+        $this->paymentMock->expects($this->once())->method('setCcExpYear')->with('22');
+        $this->paymentMock->expects($this->once())->method('setCcType')->with('VI');
 
         $threedStatus = new \stdClass();
         $threedStatus->status = "NotChecked";
+
+        $objectManagerHelper = new ObjectManagerHelper($this);
+        $this->piRequestController = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\PI\Request',
+            [
+                'context'         => $this->contextMock,
+                'config'          => $this->configMock,
+                'suiteHelper'     => $this->suiteHelperMock,
+                'pirestapi'       => $this->pirestapiMock,
+                'checkoutSession' => $this->checkoutSessionMock,
+                'checkoutHelper'  => $this->checkoutHelperMock,
+                'requestHelper'   => $this->requestHelperMock,
+                'ccConverter'     => $this->ccConverterObj
+            ]
+        );
 
         $this->_expectResultJson([
             "success" => true,
@@ -231,8 +234,89 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->piRequestController->execute();
     }
 
+    public function testExecuteSUCCESSDropin()
+    {
+        $threedStatusObj = new \stdClass();
+        $threedStatusObj->status = "NotChecked";
+
+        $cardMethod = new \stdClass();
+        $cardMethod->cardType       = "AmericanExpress";
+        $cardMethod->lastFourDigits = "0004";
+        $cardMethod->expiryDate     = "1219";
+        $paymentMethod = new \stdClass();
+        $paymentMethod->card = $cardMethod;
+        $captureObj = new \stdClass();
+        $captureObj->paymentMethod = $paymentMethod;
+        $captureObj->statusCode = \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS;
+        $captureObj->transactionId = self::TEST_VPSTXID;
+        $captureObj->statusDetail = 'OK Status';
+        $captureObj->{"3DSecure"} = $threedStatusObj;
+
+        $this->pirestapiMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\PIRest')->disableOriginalConstructor()->getMock();
+        $this->pirestapiMock->expects($this->any())
+            ->method('capture')
+            ->willReturn($captureObj);
+
+        $this->checkoutHelperMock->expects($this->once())->method('placeOrder')->willReturn($this->orderMock);
+
+        $this->paymentMock->expects($this->once())->method('setMethod')->with('sagepaysuitepi');
+        $this->paymentMock->expects($this->exactly(2))->method('setTransactionId')->with('F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F');
+        $this->paymentMock->expects($this->once())->method('setLastTransId')->with('F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F');
+        $this->paymentMock->expects($this->once())->method('setCcLast4')->with('0004');
+        $this->paymentMock->expects($this->once())->method('setCcExpMonth')->with('12');
+        $this->paymentMock->expects($this->once())->method('setCcExpYear')->with('19');
+        $this->paymentMock->expects($this->once())->method('setCcType')->with('AE');
+
+        $threedStatus = new \stdClass();
+        $threedStatus->status = "NotChecked";
+
+        $objectManagerHelper = new ObjectManagerHelper($this);
+        $this->piRequestController = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\PI\Request',
+            [
+                'context'         => $this->contextMock,
+                'config'          => $this->configMock,
+                'suiteHelper'     => $this->suiteHelperMock,
+                'pirestapi'       => $this->pirestapiMock,
+                'checkoutSession' => $this->checkoutSessionMock,
+                'checkoutHelper'  => $this->checkoutHelperMock,
+                'requestHelper'   => $this->requestHelperMock,
+                'ccConverter'     => $this->ccConverterObj
+            ]
+        );
+
+        $this->_expectResultJson([
+            "success" => true,
+            'response' => [
+                "statusCode"    => '0000',
+                "transactionId" => self::TEST_VPSTXID,
+                "statusDetail"  => "OK Status",
+                "3DSecure"      => $threedStatus,
+                "orderId"       => null,
+                "quoteId"       => null,
+                "paymentMethod" => $paymentMethod
+            ]
+        ]);
+
+        $this->piRequestController->execute();
+    }
+
     public function testExecuteERROR()
     {
+        $threedStatusObj = new \stdClass();
+        $threedStatusObj->status = "NotChecked";
+
+        $captureObj = new \stdClass();
+        $captureObj->statusCode = \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS;
+        $captureObj->transactionId = self::TEST_VPSTXID;
+        $captureObj->statusDetail = 'OK Status';
+        $captureObj->{"3DSecure"} = $threedStatusObj;
+
+        $this->pirestapiMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\PIRest')->disableOriginalConstructor()->getMock();
+        $this->pirestapiMock->expects($this->any())
+            ->method('capture')
+            ->willReturn($captureObj);
+
         $this->checkoutHelperMock->expects($this->any())
             ->method('placeOrder')
             ->will($this->returnValue(null));
@@ -241,6 +325,21 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             "success" => false,
             'error_message' => "Something went wrong: Unable to save Sage Pay order"
         ]);
+
+        $objectManagerHelper = new ObjectManagerHelper($this);
+        $this->piRequestController = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\PI\Request',
+            [
+                'context'         => $this->contextMock,
+                'config'          => $this->configMock,
+                'suiteHelper'     => $this->suiteHelperMock,
+                'pirestapi'       => $this->pirestapiMock,
+                'checkoutSession' => $this->checkoutSessionMock,
+                'checkoutHelper'  => $this->checkoutHelperMock,
+                'requestHelper'   => $this->requestHelperMock,
+                'ccConverter'     => $this->ccConverterObj
+            ]
+        );
 
         $this->piRequestController->execute();
     }
