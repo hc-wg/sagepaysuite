@@ -168,15 +168,6 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             $this->reportingApiMock->expects($this->once())
                 ->method('getFraudScreenDetail')
                 ->willReturn($fraudResponseMock);
-//                ->will($this->returnValue((object)[
-//                    "errorcode" => "0000",
-//                    "fraudscreenrecommendation" => $data['fraudscreenrecommendation'],
-//                    "fraudid" => "12345",
-//                    "fraudcode" => "765",
-//                    "fraudcodedetail" => "Fraud card",
-//                    "fraudprovidername" => "ReD",
-//                    "rules" => ""
-//                ]));
 
             $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
             $this->fraudHelperModel = $objectManagerHelper->getObject(
@@ -230,7 +221,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'getAutoInvoiceFraudPassed' => false,
                     'expects' => [
                         'VPSTxId'     => null,
-                        'fraudrules' => null,
+                        'fraudrules' => [],
                         'fraudscreenrecommendation' => 'REJECT',
                         'fraudid' => '4985075328',
                         'fraudcode' => null,
@@ -252,7 +243,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                         'fraudid' => '4985075328',
                         'fraudcode' => '37',
                         'fraudcodedetail' => 'HOLD',
-                        'fraudrules' => null
+                        'fraudrules' => []
                     ]
                 ]
             ],

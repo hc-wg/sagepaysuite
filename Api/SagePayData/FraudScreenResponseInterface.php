@@ -62,6 +62,11 @@ interface FraudScreenResponseInterface
     public function getThirdmanRules();
 
     /**
+     * @return array
+     */
+    public function getThirdmanRulesAsArray();
+
+    /**
      * T3M.
      * @return string
      */
