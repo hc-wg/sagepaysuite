@@ -72,6 +72,22 @@ class FraudScreenResponse extends \Magento\Framework\Api\AbstractExtensibleObjec
     /**
      * @inheritDoc
      */
+    public function getThirdmanRulesAsArray()
+    {
+        $return = [];
+
+        $data = $this->__toArray();
+
+        if (array_key_exists(self::THIRDMAN_RULES, $data) === true) {
+            $return = $data[self::THIRDMAN_RULES];
+        }
+
+        return $return;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getThirdmanId()
     {
         return $this->_get(self::THIRDMAN_ID);
