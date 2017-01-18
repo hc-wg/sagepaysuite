@@ -70,6 +70,9 @@ class Request extends \Magento\Backend\App\AbstractAction
      */
     private $_requestHelper;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType */
+    private $ccConverter;
+
     /**
      * @param \Magento\Backend\App\Action\Context $context
      * @param Config $config
@@ -92,7 +95,8 @@ class Request extends \Magento\Backend\App\AbstractAction
         \Magento\Backend\Model\Session\Quote $quoteSession,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Magento\Quote\Model\QuoteManagement $quoteManagement,
-        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
+        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
+        \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConvert
     ) {
     
         parent::__construct($context);
@@ -107,6 +111,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         $this->_quoteManagement = $quoteManagement;
         $this->_requestHelper   = $requestHelper;
         $this->_quote           = $this->_quoteSession->getQuote();
+        $this->ccConverter      = $ccConvert;
     }
 
     public function execute()
@@ -132,10 +137,25 @@ class Request extends \Magento\Backend\App\AbstractAction
                 $payment = $this->_quote->getPayment();
                 $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
                 $payment->setTransactionId($transactionId);
-                $payment->setCcLast4($this->_postData->card_last4);
-                $payment->setCcExpMonth($this->_postData->card_exp_month);
-                $payment->setCcExpYear($this->_postData->card_exp_year);
-                $payment->setCcType($this->_postData->card_type);
+
+                //DropIn
+                if (isset($post_response->paymentMethod)) {
+                    if (isset($post_response->paymentMethod->card)) {
+                        $card = $post_response->paymentMethod->card;
+                        $payment->setCcLast4($card->lastFourDigits);
+                        $payment->setCcExpMonth(substr($card->expiryDate, 0, 2));
+                        $payment->setCcExpYear(substr($card->expiryDate, 2, 2));
+                        $payment->setCcType($this->ccConverter->convert($card->cardType));
+                    }
+                }
+                else {
+                    //Custom cc form
+                    $payment->setCcLast4($this->_postData->card_last4);
+                    $payment->setCcExpMonth($this->_postData->card_exp_month);
+                    $payment->setCcExpYear($this->_postData->card_exp_year);
+                    $payment->setCcType($this->ccConverter->convert($this->_postData->card_type));
+                }
+
                 $payment->setAdditionalInformation('statusCode', $post_response->statusCode);
                 $payment->setAdditionalInformation('statusDetail', $post_response->statusDetail);
                 $payment->setAdditionalInformation('vendorTxCode', $vendorTxCode);
