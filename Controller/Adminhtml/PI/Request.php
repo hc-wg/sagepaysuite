@@ -225,7 +225,8 @@ class Request extends \Magento\Backend\App\AbstractAction
     private function _generateRequest($vendorTxCode)
     {
 
-        $billing_address = $this->_quote->getBillingAddress();
+        $billingAddress  = $this->_quote->getBillingAddress();
+        $shippingAddress = $this->_quote->getIsVirtual() ? $billingAddress : $this->_quote->getShippingAddress();
 
         $data = [
             'transactionType' => $this->_config->getSagepayPaymentAction(),
@@ -237,25 +238,39 @@ class Request extends \Magento\Backend\App\AbstractAction
             ],
             'vendorTxCode' => $vendorTxCode,
             'description'  => $this->_requestHelper->getOrderDescription(true),
-            'customerFirstName' => $billing_address->getFirstname(),
-            'customerLastName' => $billing_address->getLastname(),
+            'customerFirstName' => $billingAddress->getFirstname(),
+            'customerLastName' => $billingAddress->getLastname(),
             'billingAddress' => [
-                'address1'   => $billing_address->getStreetLine(1),
-                'city'       => $billing_address->getCity(),
-                'postalCode' => $billing_address->getPostCode(),
-                'country'    => $billing_address->getCountryId()
+                'address1'   => $billingAddress->getStreetLine(1),
+                'city'       => $billingAddress->getCity(),
+                'postalCode' => $billingAddress->getPostCode(),
+                'country'    => $billingAddress->getCountryId()
             ],
             'apply3DSecure'    => $this->_config->get3Dsecure(true),
             'applyAvsCvcCheck' => $this->_config->getAvsCvc(),
             'referrerId'       => $this->_requestHelper->getReferrerId(),
+            'customerEmail'     => $billingAddress->getEmail(),
+            'customerPhone'     => $billingAddress->getTelephone(),
             'entryMethod'      => "TelephoneOrder"
         ];
+
+        $data['shippingDetails'] = [
+            'recipientFirstName' => $shippingAddress->getFirstname(),
+            'recipientLastName'  => $shippingAddress->getLastname(),
+            'shippingAddress1'   => $shippingAddress->getStreetLine(1),
+            'shippingCity'       => $shippingAddress->getCity(),
+            'shippingPostalCode' => $shippingAddress->getPostCode(),
+            'shippingCountry'    => $shippingAddress->getCountryId()
+        ];
+        if ($data['shippingDetails']['shippingCountry'] == 'US') {
+            $data['shippingDetails']['shippingState'] = substr($shippingAddress->getRegionCode(), 0, 2);
+        }
 
         //populate payment amount information
         $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote, true));
 
-        if ($billing_address->getCountryId() == "US") {
-            $data["billingAddress"]["state"] = substr($billing_address->getRegionCode(), 0, 2);
+        if ($billingAddress->getCountryId() == "US") {
+            $data["billingAddress"]["state"] = substr($billingAddress->getRegionCode(), 0, 2);
         }
 
         return $data;
