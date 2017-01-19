@@ -44,8 +44,6 @@ class PiRequest
      */
     public function getRequestData()
     {
-        //@ToDo: If country IE (Ireland) dont send postcode.
-
         $billingAddress  = $this->getCart()->getBillingAddress();
         $shippingAddress = $this->getCart()->getIsVirtual() ? $billingAddress : $this->getCart()->getShippingAddress();
 
@@ -84,6 +82,11 @@ class PiRequest
         if ($data['billingAddress']['country'] == 'US') {
             $data['billingAddress']['state'] = substr($billingAddress->getRegionCode(), 0, 2);
         }
+        else {
+            if ($data['billingAddress']['country'] == 'IE') {
+                unset($data['billingAddress']['postalCode']);
+            }
+        }
 
         $data['shippingDetails'] = [
             'recipientFirstName' => $shippingAddress->getFirstname(),
@@ -95,6 +98,11 @@ class PiRequest
         ];
         if ($data['shippingDetails']['shippingCountry'] == 'US') {
             $data['shippingDetails']['shippingState'] = substr($shippingAddress->getRegionCode(), 0, 2);
+        }
+        else {
+            if ($data['shippingDetails']['shippingCountry'] == 'IE') {
+                unset($data['shippingDetails']['shippingPostalCode']);
+            }
         }
 
         //populate payment amount information
