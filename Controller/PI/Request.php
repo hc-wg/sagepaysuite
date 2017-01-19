@@ -73,7 +73,11 @@ class Request extends \Magento\Framework\App\Action\Action
     /** @var \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType */
     private $ccConverter;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\PiRequest */
+    private $piRequest;
+
     /**
+     * Request constructor.
      * @param \Magento\Framework\App\Action\Context $context
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
      * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
@@ -84,6 +88,8 @@ class Request extends \Magento\Framework\App\Action\Action
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
      * @param \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
+     * @param \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConvert
+     * @param \Ebizmarts\SagePaySuite\Model\PiRequest $piRequest
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -96,7 +102,8 @@ class Request extends \Magento\Framework\App\Action\Action
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
-        \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConvert
+        \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConvert,
+        \Ebizmarts\SagePaySuite\Model\PiRequest $piRequest
     ) {
 
         parent::__construct($context);
@@ -112,6 +119,7 @@ class Request extends \Magento\Framework\App\Action\Action
         $this->_requestHelper   = $requestHelper;
         $this->_quote           = $this->_checkoutSession->getQuote();
         $this->ccConverter      = $ccConvert;
+        $this->piRequest        = $piRequest;
     }
 
     public function execute()
@@ -129,7 +137,13 @@ class Request extends \Magento\Framework\App\Action\Action
             $vendorTxCode = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
 
             //generate POST request
-            $request = $this->_generateRequest($vendorTxCode);
+            $request = $this->piRequest
+                ->setCart($this->_quote)
+                ->setCardIdentifier($this->_postData->card_identifier)
+                ->setIsMoto(false)
+                ->setMerchantSessionKey($this->_postData->merchant_session_key)
+                ->setVendorTxCode($vendorTxCode)
+                ->getRequestData();
 
             //send POST to Sage Pay
             $post_response = $this->_pirestapi->capture($request);
@@ -239,62 +253,5 @@ class Request extends \Magento\Framework\App\Action\Action
         $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
         $resultJson->setData($responseContent);
         return $resultJson;
-    }
-
-    private function _generateRequest($vendorTxCode)
-    {
-        $billingAddress  = $this->_quote->getBillingAddress();
-        $shippingAddress = $this->_quote->getIsVirtual() ? $billingAddress : $this->_quote->getShippingAddress();
-
-        $data = [
-            'transactionType' => $this->_config->getSagepayPaymentAction(),
-            'paymentMethod'   => [
-                'card'        => [
-                    'merchantSessionKey' => $this->_postData->merchant_session_key,
-                    'cardIdentifier'     => $this->_postData->card_identifier,
-                ]
-            ],
-            'vendorTxCode'      => $vendorTxCode,
-            'description'       => $this->_requestHelper->getOrderDescription(),
-            'customerFirstName' => $billingAddress->getFirstname(),
-            'customerLastName'  => $billingAddress->getLastname(),
-            'entryMethod'       => "Ecommerce",
-            'apply3DSecure'     => $this->_config->get3Dsecure(),
-            'applyAvsCvcCheck'  => $this->_config->getAvsCvc(),
-            'referrerId'        => $this->_requestHelper->getReferrerId(),
-            'customerEmail'     => $billingAddress->getEmail(),
-            'customerPhone'     => $billingAddress->getTelephone()
-        ];
-
-        $data['billingAddress'] = [
-            'address1'      => $billingAddress->getStreetLine(1),
-            'city'          => $billingAddress->getCity(),
-            'postalCode'    => $billingAddress->getPostCode(),
-            'country'       => $billingAddress->getCountryId()
-        ];
-        if ($data['billingAddress']['country'] == 'US') {
-            $data['billingAddress']['state'] = substr($billingAddress->getRegionCode(), 0, 2);
-        }
-
-        $data['shippingDetails'] = [
-            'recipientFirstName' => $shippingAddress->getFirstname(),
-            'recipientLastName'  => $shippingAddress->getLastname(),
-            'shippingAddress1'   => $shippingAddress->getStreetLine(1),
-            'shippingCity'       => $shippingAddress->getCity(),
-            'shippingPostalCode' => $shippingAddress->getPostCode(),
-            'shippingCountry'    => $shippingAddress->getCountryId()
-        ];
-        if ($data['shippingDetails']['shippingCountry'] == 'US') {
-            $data['shippingDetails']['shippingState'] = substr($shippingAddress->getRegionCode(), 0, 2);
-        }
-
-        //populate payment amount information
-        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote, true));
-
-        if ($billingAddress->getCountryId() == "US") {
-            $data["billingAddress"]["state"] = substr($billingAddress->getRegionCode(), 0, 2);
-        }
-
-        return $data;
     }
 }
