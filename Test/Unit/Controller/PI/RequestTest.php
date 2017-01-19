@@ -17,6 +17,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     private $requestHelperMock;
     private $paymentMock;
     private $ccConverterObj;
+    private $piRequestMock;
 
     /**
      * Sage Pay Transaction ID
@@ -166,6 +167,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('getOrderDescription')
             ->will($this->returnValue("description"));
 
+        $this->piRequestMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PiRequest::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getRequestData'])
+            ->getMock();
+
         $objectManagerHelper = new ObjectManagerHelper($this);
         /** @var \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConverterObj */
         $this->ccConverterObj = $objectManagerHelper->getObject(
@@ -215,7 +221,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 'checkoutSession' => $this->checkoutSessionMock,
                 'checkoutHelper'  => $this->checkoutHelperMock,
                 'requestHelper'   => $this->requestHelperMock,
-                'ccConverter'     => $this->ccConverterObj
+                'ccConverter'     => $this->ccConverterObj,
+                'piRequest'       => $this->piRequestMock
             ]
         );
 
@@ -281,7 +288,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 'checkoutSession' => $this->checkoutSessionMock,
                 'checkoutHelper'  => $this->checkoutHelperMock,
                 'requestHelper'   => $this->requestHelperMock,
-                'ccConverter'     => $this->ccConverterObj
+                'ccConverter'     => $this->ccConverterObj,
+                'piRequest'       => $this->piRequestMock
             ]
         );
 
@@ -337,7 +345,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 'checkoutSession' => $this->checkoutSessionMock,
                 'checkoutHelper'  => $this->checkoutHelperMock,
                 'requestHelper'   => $this->requestHelperMock,
-                'ccConverter'     => $this->ccConverterObj
+                'ccConverter'     => $this->ccConverterObj,
+                'piRequest'       => $this->piRequestMock
             ]
         );
 
