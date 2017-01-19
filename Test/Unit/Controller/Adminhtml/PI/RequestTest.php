@@ -205,6 +205,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $contextMock->method('getObjectManager')
             ->willReturn($objManager);
 
+        $piRequestMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PiRequest::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getRequestData'])
+            ->getMock();
+
         $objectManagerHelper       = new ObjectManagerHelper($this);
         $this->piRequestController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\PI\Request',
@@ -215,7 +220,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 'pirestapi'       => $pirestapiMock,
                 'quoteSession'    => $quoteSessionMock,
                 'quoteManagement' => $this->quoteManagementMock,
-                'requestHelper'   => $requestHelperMock
+                'requestHelper'   => $requestHelperMock,
+                'piRequest'       => $piRequestMock
             ]
         );
     }
@@ -227,7 +233,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $this->quoteManagementMock->expects($this->any())
             ->method('submit')
-            ->will($this->returnValue($this->orderMock));
+            ->willreturn($this->orderMock);
 
         $this->_expectResultJson([
             "success" => true,
