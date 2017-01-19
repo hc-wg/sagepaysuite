@@ -44,8 +44,10 @@ class PiRequest
      */
     public function getRequestData()
     {
-        $billingAddress  = $this->cart->getBillingAddress();
-        $shippingAddress = $this->cart->getIsVirtual() ? $billingAddress : $this->cart->getShippingAddress();
+        //@ToDo: If country IE (Ireland) dont send postcode.
+
+        $billingAddress  = $this->getCart()->getBillingAddress();
+        $shippingAddress = $this->getCart()->getIsVirtual() ? $billingAddress : $this->getCart()->getShippingAddress();
 
         $data = [
             'transactionType' => $this->sagepayConfig->getSagepayPaymentAction(),
@@ -96,7 +98,7 @@ class PiRequest
         }
 
         //populate payment amount information
-        $data = array_merge($data, $this->requestHelper->populatePaymentAmount($this->cart, true));
+        $data = array_merge($data, $this->requestHelper->populatePaymentAmount($this->getCart(), true));
 
         return $data;
     }
@@ -104,7 +106,7 @@ class PiRequest
     /**
      * @return string
      */
-    private function getMerchantSessionKey()
+    public function getMerchantSessionKey()
     {
         return $this->merchantSessionKey;
     }
@@ -122,7 +124,7 @@ class PiRequest
     /**
      * @return string
      */
-    private function getCardIdentifier()
+    public function getCardIdentifier()
     {
         return $this->cardIdentifier;
     }
@@ -150,7 +152,7 @@ class PiRequest
     /**
      * @return string
      */
-    private function getVendorTxCode()
+    public function getVendorTxCode()
     {
         return $this->vendorTxCode;
     }
@@ -158,7 +160,7 @@ class PiRequest
     /**
      * @return bool
      */
-    private function getIsMoto()
+    public function getIsMoto()
     {
         return $this->isMoto;
     }
@@ -171,6 +173,14 @@ class PiRequest
     {
         $this->isMoto = $isMoto;
         return $this;
+    }
+
+    /**
+     * @return \Magento\Quote\Api\Data\CartInterface
+     */
+    public function getCart()
+    {
+        return $this->cart;
     }
 
     /**
