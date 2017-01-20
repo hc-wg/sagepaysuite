@@ -202,6 +202,9 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
             }
 
             $itemQty = $item->getQty();
+            if (!is_numeric($itemQty) || $itemQty <= 0) {
+                continue;
+            }
 
             $itemDiscount = $item->getDiscountAmount() / $itemQty;
             $taxAmount = $item->getTaxAmount() / $itemQty;
