@@ -95,7 +95,7 @@
                         <config_path>payment/sagepaysuiteform/active</config_path>
                     </field>
                     <field id="active_moto" translate="label" type="select" sortOrder="11" showInDefault="1" showInWebsite="0" showInStore="0">
-                        <label>Enabled MOTO</label>
+                        <label>DEPRECATED -- Enabled MOTO</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/sagepaysuiteform/active_moto</config_path>
                     </field>
