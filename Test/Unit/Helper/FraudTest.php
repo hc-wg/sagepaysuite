@@ -130,6 +130,11 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->method('getAdditionalInformation')
             ->willReturn($data['payment_mode']);
 
+        $fraudScreenRuleMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRule::class)
+            ->setMethods(['getScore', 'getDescription', '__toArray'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudResponseMock */
         $fraudResponseMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse::class)
@@ -163,6 +168,16 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             }
             if (array_key_exists('fraudcodedetail', $data['expects'])) {
                 $fraudResponseMock->setFraudCodeDetail($data['expects']['fraudcodedetail']);
+            }
+            if (array_key_exists('fraudrules', $data['expects']) && !empty($data['expects']['fraudrules'])) {
+                $fraudScreenRuleMock->method('getScore')->willReturn(34);
+                $fraudScreenRuleMock->method('getDescription')->willReturn('no phone ok');
+                $fraudScreenRuleMock->method('__toArray')->willReturn([
+                    'score'       => 34,
+                    'description' => 'no phone ok'
+                ]);
+                $rules = [$fraudScreenRuleMock];
+                $fraudResponseMock->setThirdmanRules($rules);
             }
 
             $this->reportingApiMock->expects($this->once())
@@ -205,6 +220,27 @@ class FraudTest extends \PHPUnit_Framework_TestCase
     public function processFraudInformationDataProvider()
     {
         return [
+            'test live thirdman' => [
+                [
+                    'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
+                    'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT,
+                    'getAutoInvoiceFraudPassed' => false,
+                    'expects' => [
+                        'VPSTxId'     => null,
+                        'fraudprovidername' => 'T3M',
+                        'fraudscreenrecommendation' => 'HOLD',
+                        'fraudid' => '4985075328',
+                        'fraudcode' => '37',
+                        'fraudcodedetail' => 'HOLD',
+                        'fraudrules' => [
+                            [
+                                'score'       => 34,
+                                'description' => 'no phone ok'
+                            ]
+                        ]
+                    ]
+                ]
+            ],
             'test test' => [
                 [
                     'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_TEST,
@@ -228,22 +264,6 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                         'fraudcodedetail' => 'REJECT',
                         'fraudprovidername' => 'T3M',
                         'Action' => 'Marked as FRAUD.'
-                    ]
-                ]
-            ],
-            'test live thirdman' => [
-                [
-                    'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
-                    'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT,
-                    'getAutoInvoiceFraudPassed' => false,
-                    'expects' => [
-                        'VPSTxId'     => null,
-                        'fraudprovidername' => 'T3M',
-                        'fraudscreenrecommendation' => 'HOLD',
-                        'fraudid' => '4985075328',
-                        'fraudcode' => '37',
-                        'fraudcodedetail' => 'HOLD',
-                        'fraudrules' => []
                     ]
                 ]
             ],
