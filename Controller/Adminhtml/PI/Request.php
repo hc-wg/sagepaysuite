@@ -143,19 +143,19 @@ class Request extends \Magento\Backend\App\AbstractAction
                 ->getRequestData();
 
             //send POST to Sage Pay
-            $post_response = $this->_pirestapi->capture($request);
+            $postResponse = $this->_pirestapi->capture($request);
 
-            if ($post_response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
+            if ($postResponse->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
                 //set payment info for save order
-                $transactionId = $post_response->transactionId;
+                $transactionId = $postResponse->transactionId;
                 $payment = $this->_quote->getPayment();
                 $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
                 $payment->setTransactionId($transactionId);
 
                 //DropIn
-                if (isset($post_response->paymentMethod)) {
-                    if (isset($post_response->paymentMethod->card)) {
-                        $card = $post_response->paymentMethod->card;
+                if (isset($postResponse->paymentMethod)) {
+                    if (isset($postResponse->paymentMethod->card)) {
+                        $card = $postResponse->paymentMethod->card;
                         $payment->setCcLast4($card->lastFourDigits);
                         $payment->setCcExpMonth(substr($card->expiryDate, 0, 2));
                         $payment->setCcExpYear(substr($card->expiryDate, 2, 2));
@@ -170,11 +170,11 @@ class Request extends \Magento\Backend\App\AbstractAction
                     $payment->setCcType($this->ccConverter->convert($this->_postData->card_type));
                 }
 
-                $payment->setAdditionalInformation('statusCode', $post_response->statusCode);
-                $payment->setAdditionalInformation('statusDetail', $post_response->statusDetail);
+                $payment->setAdditionalInformation('statusCode', $postResponse->statusCode);
+                $payment->setAdditionalInformation('statusDetail', $postResponse->statusDetail);
                 $payment->setAdditionalInformation('vendorTxCode', $vendorTxCode);
-                if (isset($post_response->{'3DSecure'})) {
-                    $payment->setAdditionalInformation('threeDStatus', $post_response->{'3DSecure'}->status);
+                if (isset($postResponse->{'3DSecure'})) {
+                    $payment->setAdditionalInformation('threeDStatus', $postResponse->{'3DSecure'}->status);
                 }
                 $payment->setAdditionalInformation('moto', true);
                 $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
@@ -194,12 +194,12 @@ class Request extends \Magento\Backend\App\AbstractAction
                     $route = 'sales/order/view';
                     $param['order_id'] = $order->getId();
                     $url = $this->_backendUrl->getUrl($route, $param);
-                    $post_response->redirect = $url;
+                    $postResponse->redirect = $url;
 
                     //prepare response
                     $responseContent = [
                         'success' => true,
-                        'response' => $post_response
+                        'response' => $postResponse
                     ];
                 } else {
                     throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order.'));
