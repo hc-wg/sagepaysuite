@@ -206,7 +206,7 @@ class Notify extends \Magento\Framework\App\Action\Action
             } else { //Transaction failed with NOTAUTHED, REJECTED or ERROR
 
                 //cancel pending payment order
-                $order->cancel()->save();
+                $this->_cancelOrder($order);
 
                 return $this->_returnInvalid("Payment was not accepted, please try another payment method");
             }
