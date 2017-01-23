@@ -355,12 +355,17 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider postProvider
      */
-    public function testExecuteERROR($data)
+    public function testExecuteERROR($postData, $captureData)
     {
+        $this->pirestapiMock
+            ->expects($this->once())
+            ->method('capture')
+            ->willReturn($captureData);
+
         $this->requestMock
             ->expects($this->exactly(2))
             ->method('getPost')
-            ->willReturn($data);
+            ->willReturn($postData);
 
         $this->quoteManagementMock->expects($this->any())
             ->method('submit')
