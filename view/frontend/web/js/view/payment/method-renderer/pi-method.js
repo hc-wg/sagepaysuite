@@ -102,15 +102,14 @@ define(
                         JSON.stringify(payload)
                     ).done(
                         function () {
-
-                            serviceUrl = url.build('sagepaysuite/pi/generateMerchantKey');
+                            serviceUrl = urlBuilder.createUrl('/sagepay/pi-msk', {});
 
                             //generate merchant session key
                             storage.get(serviceUrl).done(
                                 function (response) {
 
                                     if (response.success) {
-                                        self.sagepayTokeniseCard(response.merchant_session_key);
+                                        self.sagepayTokeniseCard(response.response);
                                     } else {
                                         self.showPaymentError(response.error_message);
                                     }

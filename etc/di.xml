@@ -42,4 +42,6 @@
 
     <preference for="\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface" type="\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse" />
     <preference for="\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterface" type="\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRule" />
+
+    <preference for="\Ebizmarts\SagePaySuite\Api\PiMerchantInterface" type="\Ebizmarts\SagePaySuite\Model\PiMsk" />
 </config>
