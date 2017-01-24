@@ -220,16 +220,25 @@ define(
 
                 var self = this;
 
-                var serviceUrl  = url.build('sagepaysuite/pi/request');
+                var serviceUrl = null;
+                if (customer.isLoggedIn()) {
+                    serviceUrl = urlBuilder.createUrl('/sagepay/pi', {});
+                } else {
+                    serviceUrl = urlBuilder.createUrl('/sagepay-guest/pi', {});
+                }
+
                 var callbackUrl = url.build('sagepaysuite/pi/callback3D');
 
                 var payload = {
-                    merchant_session_key: self.merchantSessionKey,
-                    card_identifier: self.cardIdentifier,
-                    card_type: self.creditCardType,
-                    card_exp_month: self.creditCardExpMonth,
-                    card_exp_year: self.creditCardExpYear,
-                    card_last4: self.creditCardLast4
+                    "cartId": quote.getQuoteId(),
+                    "requestData": {
+                        "merchant_session_key": self.merchantSessionKey,
+                        "card_identifier": self.cardIdentifier,
+                        "cc_type": self.creditCardType,
+                        "cc_exp_month": self.creditCardExpMonth,
+                        "cc_exp_year": self.creditCardExpYear,
+                        "cc_last_four": self.creditCardLast4
+                    }
                 };
 
                 if (self.dropInEnabled()) {
