@@ -31,6 +31,7 @@
     <preference for="Ebizmarts\SagePaySuite\Api\ServerManagementInterface" type="Ebizmarts\SagePaySuite\Model\ServerRequestManagement" />
     <preference for="Ebizmarts\SagePaySuite\Api\GuestServerManagementInterface" type="Ebizmarts\SagePaySuite\Model\GuestServerRequestManagement" />
 
+    <preference for="Ebizmarts\SagePaySuite\Api\Data\PiRequestInterface" type="Ebizmarts\SagePaySuite\Api\Data\PiRequest" />
     <preference for="Ebizmarts\SagePaySuite\Api\Data\ResultInterface" type="Ebizmarts\SagePaySuite\Api\Data\Result" />
     <preference for="Ebizmarts\SagePaySuite\Api\Data\FormResultInterface" type="Ebizmarts\SagePaySuite\Api\Data\FormResult" />
 
@@ -44,4 +45,5 @@
     <preference for="\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterface" type="\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRule" />
 
     <preference for="\Ebizmarts\SagePaySuite\Api\PiMerchantInterface" type="\Ebizmarts\SagePaySuite\Model\PiMsk" />
+    <preference for="\Ebizmarts\SagePaySuite\Api\PiManagementInterface" type="\Ebizmarts\SagePaySuite\Model\PiRequestManagement" />
 </config>
