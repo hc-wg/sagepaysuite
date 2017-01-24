@@ -52,16 +52,16 @@
     </route>
 
     <route url="/V1/sagepay/pi" method="POST">
-        <service class="Ebizmarts\SagePaySuite\Api\ServerManagementInterface" method="savePaymentInformationAndPlaceOrder"/>
+        <service class="Ebizmarts\SagePaySuite\Api\PiManagementInterface" method="savePaymentInformationAndPlaceOrder"/>
         <resources>
             <resource ref="self" />
         </resources>
     </route>
 
-    <route url="/V1/sagepay-guest/pi" method="POST">
-        <service class="Ebizmarts\SagePaySuite\Api\GuestServerManagementInterface" method="savePaymentInformationAndPlaceOrder"/>
-        <resources>
-            <resource ref="anonymous" />
-        </resources>
-    </route>
+    <!--<route url="/V1/sagepay-guest/pi" method="POST">-->
+        <!--<service class="Ebizmarts\SagePaySuite\Api\GuestServerManagementInterface" method="savePaymentInformationAndPlaceOrder"/>-->
+        <!--<resources>-->
+            <!--<resource ref="anonymous" />-->
+        <!--</resources>-->
+    <!--</route>-->
 </routes>
