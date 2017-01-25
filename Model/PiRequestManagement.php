@@ -45,7 +45,7 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
     /** @var \Ebizmarts\SagePaySuite\Model\PiRequest */
     private $piRequest;
 
-    /** @var \Ebizmarts\SagePaySuite\Api\Data\ResultInterface $result */
+    /** @var \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface $result */
     private $result;
 
     /** @var \Magento\Quote\Api\CartRepositoryInterface */
@@ -64,7 +64,7 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
      * @param SagePaySuite\Helper\Request $requestHelper
      * @param Config\SagePayCardType $ccConvert
      * @param PiRequest $piRequest
-     * @param SagePaySuite\Api\Data\ResultInterface $result
+     * @param SagePaySuite\Api\Data\PiResultInterface $result
      * @param \Magento\Quote\Api\CartRepositoryInterface $quoteRepository
      */
     public function __construct(
@@ -79,7 +79,7 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
         \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConvert,
         \Ebizmarts\SagePaySuite\Model\PiRequest $piRequest,
-        \Ebizmarts\SagePaySuite\Api\Data\ResultInterface $result,
+        \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface $result,
         \Magento\Quote\Api\CartRepositoryInterface $quoteRepository
     ) {
         $this->_config          = $config;
@@ -121,46 +121,21 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
                 ->getRequestData();
 
             //send POST to Sage Pay
+            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $postResponse */
             $postResponse = $this->_pirestapi->capture($request);
 
             $this->_suiteLogger->sageLog('Request', $postResponse, [__METHOD__, __LINE__]);
 
-            if ($postResponse->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS ||
-                $postResponse->statusCode == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS
+            if ($postResponse->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS ||
+                $postResponse->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS
             ) {
                 //set payment info for save order
-                $transactionId = $postResponse->transactionId;
-                $payment = $quote->getPayment();
-                $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
-                $payment->setTransactionId($transactionId);
-                $payment->setAdditionalInformation('statusCode', $postResponse->statusCode);
-                $payment->setAdditionalInformation('statusDetail', $postResponse->statusDetail);
-                $payment->setAdditionalInformation('vendorTxCode', $vendorTxCode);
-                if (isset($postResponse->{'3DSecure'})) {
-                    $payment->setAdditionalInformation('threeDStatus', $postResponse->{'3DSecure'}->status);
-                }
+                $transactionId = $postResponse->getTransactionId();
+                $payment       = $quote->getPayment();
 
-                //DropIn
-                if (isset($postResponse->paymentMethod)) {
-                    if (isset($postResponse->paymentMethod->card)) {
-                        $card = $postResponse->paymentMethod->card;
-                        $payment->setCcLast4($card->lastFourDigits);
-                        $payment->setCcExpMonth(substr($card->expiryDate, 0, 2));
-                        $payment->setCcExpYear(substr($card->expiryDate, 2, 2));
-                        $payment->setCcType($this->ccConverter->convert($card->cardType));
-                    }
-                }
-                else {
-                    //Custom cc form
-                    $payment->setCcLast4($requestData->getCcLastFour());
-                    $payment->setCcExpMonth($requestData->getCcExpMonth());
-                    $payment->setCcExpYear($requestData->getCcExpYear());
-                    $payment->setCcType($this->ccConverter->convert($requestData->getCcType()));
-                }
+                $this->saveAdditionalPaymentInformation($payment, $postResponse, $vendorTxCode);
 
-                $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
-                $payment->setAdditionalInformation('mode', $this->_config->getMode());
-                $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
+                $this->saveCreditCardInformationInPayment($requestData, $postResponse, $payment);
 
                 //save order with pending payment
                 $order = $this->_checkoutHelper->placeOrder();
@@ -175,7 +150,7 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
                     $payment->save();
 
                     //invoice
-                    if ($postResponse->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
+                    if ($postResponse->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
                         $payment->getMethodInstance()->markAsInitialized();
                         $order->place()->save();
 
@@ -195,14 +170,21 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
                     throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
                 }
 
-                //additional details required for callback URL
-                $postResponse->orderId = $order->getId();
-                $postResponse->quoteId = $quote->getId();
-
                 $this->_suiteLogger->sageLog('Request', (array)$postResponse, [__METHOD__, __LINE__]);
 
                 $this->result->setSuccess(true);
-                $this->result->setResponse($postResponse);
+                $this->result->setTransactionId($transactionId);
+                $this->result->setStatus($postResponse->getStatus());
+
+                //additional details required for callback URL
+                $this->result->setOrderId($order->getId());
+                $this->result->setQuoteId($quote->getId());
+
+                if ($postResponse->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS) {
+                    $this->result->setParEq($postResponse->getParEq());
+                    $this->result->setAcsUrl($postResponse->getAcsUrl());
+                }
+
             } else {
                 throw new \Magento\Framework\Validator\Exception(
                     __('Invalid Sage Pay response, please use another payment method.')
@@ -237,5 +219,50 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
     public function getQuoteIdMaskFactory()
     {
         return $this->quoteIdMaskFactory;
+    }
+
+    /**
+     * @param SagePaySuite\Api\Data\PiRequestInterface $requestData
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult $postResponse
+     * @param $payment
+     */
+    private function saveCreditCardInformationInPayment(\Ebizmarts\SagePaySuite\Api\Data\PiRequestInterface $requestData, \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult $postResponse, $payment)
+    {
+        //DropIn
+        if ($postResponse->getPaymentMethod() !== null) {
+            $card = $postResponse->getPaymentMethod()->getCard();
+            if ($card !== null) {
+                $payment->setCcLast4($card->getLastFourDigits());
+                $payment->setCcExpMonth($card->getExpiryMonth());
+                $payment->setCcExpYear($card->getExpiryYear());
+                $payment->setCcType($this->ccConverter->convert($card->getCardType()));
+            }
+        } else {
+            //Custom cc form
+            $payment->setCcLast4($requestData->getCcLastFour());
+            $payment->setCcExpMonth($requestData->getCcExpMonth());
+            $payment->setCcExpYear($requestData->getCcExpYear());
+            $payment->setCcType($this->ccConverter->convert($requestData->getCcType()));
+        }
+    }
+
+    /**
+     * @param $payment
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $postResponse
+     * @param $vendorTxCode
+     */
+    private function saveAdditionalPaymentInformation($payment, \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $postResponse, $vendorTxCode)
+    {
+        $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
+        $payment->setTransactionId($postResponse->getTransactionId());
+        $payment->setAdditionalInformation('statusCode', $postResponse->getStatusCode());
+        $payment->setAdditionalInformation('statusDetail', $postResponse->getStatusDetail());
+        $payment->setAdditionalInformation('vendorTxCode', $vendorTxCode);
+        if ($postResponse->getThreeDSecure() !== null) {
+            $payment->setAdditionalInformation('threeDStatus', $postResponse->getThreeDSecure()->getStatus());
+        }
+        $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
+        $payment->setAdditionalInformation('mode', $this->_config->getMode());
+        $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
     }
 }
