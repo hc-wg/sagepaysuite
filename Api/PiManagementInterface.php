@@ -14,7 +14,7 @@ interface PiManagementInterface
      * @param mixed $cartId
      * @param \Ebizmarts\SagePaySuite\Api\Data\PiRequestInterface $requestData
      * @throws \Magento\Framework\Exception\CouldNotSaveException
-     * @return \Ebizmarts\SagePaySuite\Api\Data\ResultInterface
+     * @return \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface
      */
     public function savePaymentInformationAndPlaceOrder($cartId, \Ebizmarts\SagePaySuite\Api\Data\PiRequestInterface $requestData);
 
