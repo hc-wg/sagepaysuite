@@ -256,32 +256,32 @@ define(
                         }
 
                         if (response.success) {
-                            if (response.response.status == "Ok") {
+                            if (response.status == "Ok") {
 
                                 /**
                                  * transaction authenticated, redirect to success
                                  */
 
                                 window.location.replace(url.build('checkout/onepage/success/'));
-                            } else if (response.response.status == "3DAuth") {
+                            } else if (response.status == "3DAuth") {
 
                                 /**
                                  * 3D secure authentication required
                                  */
 
                                     //add transactionId param to callback
-                                callbackUrl += "?transactionId=" + response.response.transactionId +
-                                    "&orderId=" + response.response.orderId +
-                                    "&quoteId=" + response.response.quoteId;
+                                callbackUrl += "?transactionId=" + response.transaction_id +
+                                    "&orderId=" + response.order_id +
+                                    "&quoteId=" + response.quote_id;
 
                                 self.open3DModal();
 
                                 var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
                                 form3D.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
-                                form3D.setAttribute('action', response.response.acsUrl);
-                                form3D.elements[0].setAttribute('value', response.response.paReq);
+                                form3D.setAttribute('action', response.acs_url);
+                                form3D.elements[0].setAttribute('value', response.par_eq);
                                 form3D.elements[1].setAttribute('value', callbackUrl);
-                                form3D.elements[2].setAttribute('value', response.response.transactionId);
+                                form3D.elements[2].setAttribute('value', response.transaction_id);
                                 form3D.submit();
 
                                 if (!self.dropInEnabled()) {
