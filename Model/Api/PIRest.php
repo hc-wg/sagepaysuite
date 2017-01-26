@@ -64,6 +64,12 @@ class PIRest
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory */
     private $mskRequest;
 
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory */
+    private $threedRequest;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory */
+    private $refundRequest;
+
     /**
      * PIRest constructor.
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
@@ -77,6 +83,7 @@ class PIRest
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory $amountResultFactory
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory $mskResponse
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory $mskRequest
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory $threeDRequest
      */
     public function __construct(
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
@@ -89,7 +96,9 @@ class PIRest
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory $threedResultFactory,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory $amountResultFactory,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory $mskResponse,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory $mskRequest
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory $mskRequest,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory $threeDRequest,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory $refundRequest
     ) {
 
         $this->_config = $config;
@@ -104,6 +113,8 @@ class PIRest
         $this->amountResultFactory        = $amountResultFactory;
         $this->mskResponse                = $mskResponse;
         $this->mskRequest                 = $mskRequest;
+        $this->threedRequest              = $threeDRequest;
+        $this->refundRequest              = $refundRequest;
     }
 
     /**
@@ -291,7 +302,11 @@ class PIRest
      */
     public function submit3D($paRes, $vpsTxId)
     {
-        $jsonBody = json_encode(["paRes" => $paRes]);
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequest $request */
+        $request = $this->threedRequest->create();
+        $request->setParEs($paRes);
+
+        $jsonBody = json_encode($request->__toArray());
 
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $jsonBody, [__METHOD__, __LINE__]);
 
@@ -299,7 +314,13 @@ class PIRest
 
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
 
-        return $this->processResponse($result);
+        $resultData = $this->processResponse($result);
+
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $response */
+        $response = $this->threedStatusResultFactory->create();
+        $response->setStatus($resultData->status);
+
+        return $response;
     }
 
     /**
@@ -308,29 +329,28 @@ class PIRest
      * @param $amount
      * @param $currency
      * @param $description
-     * @return mixed
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
      */
     public function refund($vendorTxCode, $refTransactionId, $amount, $currency, $description)
     {
-        $requestData = [
-            'transactionType'        => 'Refund',
-            'vendorTxCode'           => $vendorTxCode,
-            'referenceTransactionId' => $refTransactionId,
-            'amount'                 => $amount,
-            'currency'               => $currency,
-            'description'            => $description
-        ];
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequest $refundRequest */
+        $refundRequest = $this->refundRequest->create();
+        $refundRequest->setTransactionType();
+        $refundRequest->setVendorTxCode($vendorTxCode);
+        $refundRequest->setReferenceTransactionId($refTransactionId);
+        $refundRequest->setAmount($amount);
+        $refundRequest->setDescription($description);
 
         //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $requestData, [__METHOD__, __LINE__]);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $refundRequest->__toArray(), [__METHOD__, __LINE__]);
 
-        $jsonRequest = json_encode($requestData);
-        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
+        $jsonRequest = json_encode($refundRequest->__toArray());
+        $result      = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
 
         //log result
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
 
-        return $this->processResponse($result);
+        return $this->getTransactionDetailsObject($this->processResponse($result));
     }
 
     /**
@@ -440,18 +460,31 @@ class PIRest
             $transaction->setParEq($captureResult->paReq);
         } else {
             $transaction->setTransactionType($captureResult->transactionType);
-            $transaction->setBankResponseCode($captureResult->bankResponseCode);
             $transaction->setRetrievalReference($captureResult->retrievalReference);
             $transaction->setBankAuthCode($captureResult->bankAuthorisationCode);
-            $transaction->setCurrency($captureResult->currency);
+
+            if (isset($captureResult->currency)) {
+                $transaction->setCurrency($captureResult->currency);
+            }
+
+            if (isset($captureResult->bankResponseCode)) {
+                $transaction->setBankResponseCode($captureResult->bankResponseCode);
+            }
 
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard $card */
             $card = $this->cardResultFactory->create();
-            $card->setCardIdentifier($captureResult->paymentMethod->card->cardIdentifier);
+
+            if (isset($captureResult->paymentMethod->card->cardIdentifier)) {
+                $card->setCardIdentifier($captureResult->paymentMethod->card->cardIdentifier);
+            }
+
+            if (isset($captureResult->paymentMethod->card->reusable)) {
+                $card->setIsReusable($captureResult->paymentMethod->card->reusable);
+            }
+
             $card->setCardType($captureResult->paymentMethod->card->cardType);
             $card->setLastFourDigits($captureResult->paymentMethod->card->lastFourDigits);
             $card->setExpiryDate($captureResult->paymentMethod->card->expiryDate);
-            $card->setIsReusable($captureResult->paymentMethod->card->reusable);
 
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod $paymentMethod */
             $paymentMethod = $this->paymentMethodResultFactory->create();
