@@ -107,9 +107,11 @@ class Callback3D extends \Magento\Framework\App\Action\Action
             //submit 3D secure
             $paRes = $postData->PaRes;
             $this->_transactionId = $this->getRequest()->getParam("transactionId");
-            $submit3D_result = $this->_pirestapi->submit3D($paRes, $this->_transactionId);
 
-            if (isset($submit3D_result->status)) {
+            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $submit3DResult */
+            $submit3DResult = $this->_pirestapi->submit3D($paRes, $this->_transactionId);
+
+            if ($submit3DResult->getStatus() !== null) {
                 //request transaction details to confirm payment
                 /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult $transactionDetailsResult */
                 $transactionDetailsResult = $this->_pirestapi->transactionDetails($this->_transactionId);
