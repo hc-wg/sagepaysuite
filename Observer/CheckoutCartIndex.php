@@ -39,9 +39,9 @@ class CheckoutCartIndex implements ObserverInterface
     ) {
     
         $this->_checkoutSession = $checkoutSession;
-        $this->_suiteLogger = $suiteLogger;
-        $this->_orderFactory = $orderFactory;
-        $this->_quoteFactory = $quoteFactory;
+        $this->_suiteLogger     = $suiteLogger;
+        $this->_orderFactory    = $orderFactory;
+        $this->_quoteFactory    = $quoteFactory;
     }
 
     /**
