@@ -111,10 +111,11 @@ class Callback3D extends \Magento\Framework\App\Action\Action
 
             if (isset($submit3D_result->status)) {
                 //request transaction details to confirm payment
+                /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult $transactionDetailsResult */
                 $transactionDetailsResult = $this->_pirestapi->transactionDetails($this->_transactionId);
 
                 //log transaction details response
-                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $transactionDetailsResult, [__METHOD__, __LINE__]);
+                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $transactionDetailsResult->__toArray(), [__METHOD__, __LINE__]);
 
                 $this->_confirmPayment($transactionDetailsResult);
 
@@ -138,20 +139,22 @@ class Callback3D extends \Magento\Framework\App\Action\Action
         }
     }
 
-    private function _confirmPayment($response)
+    private function _confirmPayment(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $response)
     {
 
-        if ($response->statusCode == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
+        if ($response->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
             $orderId = $this->getRequest()->getParam("orderId");
-            $order = $this->_orderFactory->create()->load($orderId);
+            $order   = $this->_orderFactory->create()->load($orderId);
             $quoteId = $this->getRequest()->getParam("quoteId");
 
             if (!empty($order)) {
                 //set additional payment info
                 $payment = $order->getPayment();
-                $payment->setAdditionalInformation('statusCode', $response->statusCode);
-                $payment->setAdditionalInformation('statusDetail', $response->statusDetail);
-                $payment->setAdditionalInformation('threeDStatus', $response->{'3DSecure'}->status);
+                $payment->setAdditionalInformation('statusCode', $response->getStatusCode());
+                $payment->setAdditionalInformation('statusDetail', $response->getStatusDetail());
+                if ($response->getThreeDSecure() !== null) {
+                    $payment->setAdditionalInformation('threeDStatus', $response->getThreeDSecure()->getStatus());
+                }
 
                 $this->updateCardDataOnPayment($response, $payment);
 
@@ -212,15 +215,17 @@ class Callback3D extends \Magento\Framework\App\Action\Action
      * @param $response
      * @param $payment
      */
-    private function updateCardDataOnPayment($response, $payment)
-    {
-        if (isset($response->paymentMethod)) {
-            if (isset($response->paymentMethod->card)) {
-                $card = $response->paymentMethod->card;
-                $payment->setCcLast4($card->lastFourDigits);
-                $payment->setCcExpMonth(substr($card->expiryDate, 0, 2));
-                $payment->setCcExpYear(substr($card->expiryDate, 2, 2));
-                $payment->setCcType($this->ccConverter->convert($card->cardType));
+    private function updateCardDataOnPayment(
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $response,
+        $payment
+    ) {
+        if ($response->getPaymentMethod() !== null) {
+            $card = $response->getPaymentMethod()->getCard();
+            if ($card !== null) {
+                $payment->setCcLast4($card->getLastFourDigits());
+                $payment->setCcExpMonth($card->getExpiryMonth());
+                $payment->setCcExpYear($card->getExpiryYear());
+                $payment->setCcType($this->ccConverter->convert($card->getCardType()));
             }
         }
     }
