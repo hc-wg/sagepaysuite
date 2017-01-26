@@ -35,7 +35,7 @@ class PiMsk implements \Ebizmarts\SagePaySuite\Api\PiMerchantInterface
     {
         try {
             $this->result->setSuccess(true);
-            $this->result->setResponse($this->piRestApi->generateMerchantKey());
+            $this->result->setResponse($this->piRestApi->generateMerchantKey()->getMerchantSessionKey());
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->result->setSuccess(false);
             $this->result->setErrorMessage(__($apiException->getUserMessage()));
