@@ -58,6 +58,12 @@ class PIRest
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory */
     private $amountResultFactory;
 
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory */
+    private $mskResponse;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory */
+    private $mskRequest;
+
     /**
      * PIRest constructor.
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
@@ -68,6 +74,9 @@ class PIRest
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory $paymentMethodResultFactory
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory $cardResultFactory
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory $threedResultFactory
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory $amountResultFactory
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory $mskResponse
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory $mskRequest
      */
     public function __construct(
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
@@ -78,7 +87,9 @@ class PIRest
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory $paymentMethodResultFactory,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory $cardResultFactory,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory $threedResultFactory,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory $amountResultFactory
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory $amountResultFactory,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory $mskResponse,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory $mskRequest
     ) {
 
         $this->_config = $config;
@@ -91,6 +102,8 @@ class PIRest
         $this->cardResultFactory          = $cardResultFactory;
         $this->threedStatusResultFactory  = $threedResultFactory;
         $this->amountResultFactory        = $amountResultFactory;
+        $this->mskResponse                = $mskResponse;
+        $this->mskRequest                 = $mskRequest;
     }
 
     /**
@@ -214,12 +227,16 @@ class PIRest
     /**
      * Make POST request to ask for merchant key
      *
-     * @return mixed
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseInterface
      * @throws
      */
     public function generateMerchantKey()
     {
-        $jsonBody = json_encode(["vendorName" => $this->_config->getVendorname()]);
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequest $request */
+        $request = $this->mskRequest->create();
+        $request->setVendorName($this->_config->getVendorname());
+
+        $jsonBody = json_encode($request->__toArray());
 
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $jsonBody, [__METHOD__, __LINE__]);
 
@@ -233,7 +250,12 @@ class PIRest
 
         $resultData = $this->processResponse($result);
 
-        return $resultData->merchantSessionKey;
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponse $response */
+        $response = $this->mskResponse->create();
+        $response->setExpiry($resultData->expiry);
+        $response->setMerchantSessionKey($resultData->merchantSessionKey);
+
+        return $response;
     }
 
     /**
@@ -254,7 +276,7 @@ class PIRest
         //log result
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
 
-        $captureResult    = $this->processResponse($result);
+        $captureResult = $this->processResponse($result);
 
         return $this->getTransactionDetailsObject($captureResult);
     }
@@ -337,7 +359,7 @@ class PIRest
      * GET transaction details
      *
      * @param $vpsTxId
-     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmount
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
      * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
     public function transactionDetails($vpsTxId)
