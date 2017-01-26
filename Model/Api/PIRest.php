@@ -55,6 +55,9 @@ class PIRest
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDInterface */
     private $threedStatusResultFactory;
 
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory */
+    private $amountResultFactory;
+
     /**
      * PIRest constructor.
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
@@ -74,7 +77,8 @@ class PIRest
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $piCaptureResultFactory,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory $paymentMethodResultFactory,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory $cardResultFactory,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory $threedResultFactory
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory $threedResultFactory,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory $amountResultFactory
     ) {
 
         $this->_config = $config;
@@ -86,6 +90,7 @@ class PIRest
         $this->paymentMethodResultFactory = $paymentMethodResultFactory;
         $this->cardResultFactory          = $cardResultFactory;
         $this->threedStatusResultFactory  = $threedResultFactory;
+        $this->amountResultFactory        = $amountResultFactory;
     }
 
     /**
@@ -249,48 +254,9 @@ class PIRest
         //log result
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
 
-        $captureResult = $this->processResponse($result);
+        $captureResult    = $this->processResponse($result);
 
-        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $captureResultObj */
-        $captureResultObj = $this->piCaptureResultFactory->create();
-        $captureResultObj->setStatusCode($captureResult->statusCode);
-        $captureResultObj->setStatusDetail($captureResult->statusDetail);
-        $captureResultObj->setTransactionId($captureResult->transactionId);
-        $captureResultObj->setStatus($captureResult->status);
-
-        if ($captureResult->status == '3DAuth') {
-            $captureResultObj->setAcsUrl($captureResult->acsUrl);
-            $captureResultObj->setParEq($captureResult->paReq);
-        }
-        else {
-            $captureResultObj->setTransactionType($captureResult->transactionType);
-            $captureResultObj->setBankResponseCode($captureResult->bankResponseCode);
-            $captureResultObj->setRetrievalReference($captureResult->retrievalReference);
-            $captureResultObj->setBankAuthCode($captureResult->bankAuthorisationCode);
-
-            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard $card */
-            $card = $this->cardResultFactory->create();
-            $card->setCardIdentifier($captureResult->paymentMethod->card->cardIdentifier);
-            $card->setCardType($captureResult->paymentMethod->card->cardType);
-            $card->setLastFourDigits($captureResult->paymentMethod->card->lastFourDigits);
-            $card->setExpiryDate($captureResult->paymentMethod->card->expiryDate);
-            $card->setIsReusable($captureResult->paymentMethod->card->reusable);
-
-            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod $paymentMethod */
-            $paymentMethod = $this->paymentMethodResultFactory->create();
-            $paymentMethod->setCard($card);
-
-            $captureResultObj->setPaymentMethod($paymentMethod);
-
-            if (isset($captureResult->{'3DSecure'})) {
-                /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $threedstatus */
-                $threedstatus = $this->threedStatusResultFactory->create();
-                $threedstatus->setStatus($captureResult->{'3DSecure'}->status);
-                $captureResultObj->setThreeDSecure($threedstatus);
-            }
-        }
-
-        return $captureResultObj;
+        return $this->getTransactionDetailsObject($captureResult);
     }
 
     /**
@@ -371,16 +337,15 @@ class PIRest
      * GET transaction details
      *
      * @param $vpsTxId
-     * @return mixed
-     * @throws
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmount
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
     public function transactionDetails($vpsTxId)
     {
-
         $result = $this->_executeRequest($this->_getServiceUrl(self::ACTION_TRANSACTION_DETAILS, $vpsTxId));
 
         if ($result["status"] == 200) {
-            return $result["data"];
+            return $this->getTransactionDetailsObject($result["data"]);
         } else {
             $error_code = $result["data"]->code;
             $error_msg = $result["data"]->description;
@@ -433,5 +398,62 @@ class PIRest
 
             throw $exception;
         }
+    }
+
+    /**
+     * @param \stdClass $captureResult
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
+     */
+    private function getTransactionDetailsObject(\stdClass $captureResult)
+    {
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $transaction */
+        $transaction = $this->piCaptureResultFactory->create();
+        $transaction->setStatusCode($captureResult->statusCode);
+        $transaction->setStatusDetail($captureResult->statusDetail);
+        $transaction->setTransactionId($captureResult->transactionId);
+        $transaction->setStatus($captureResult->status);
+
+        if ($captureResult->status == '3DAuth') {
+            $transaction->setAcsUrl($captureResult->acsUrl);
+            $transaction->setParEq($captureResult->paReq);
+        } else {
+            $transaction->setTransactionType($captureResult->transactionType);
+            $transaction->setBankResponseCode($captureResult->bankResponseCode);
+            $transaction->setRetrievalReference($captureResult->retrievalReference);
+            $transaction->setBankAuthCode($captureResult->bankAuthorisationCode);
+            $transaction->setCurrency($captureResult->currency);
+
+            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard $card */
+            $card = $this->cardResultFactory->create();
+            $card->setCardIdentifier($captureResult->paymentMethod->card->cardIdentifier);
+            $card->setCardType($captureResult->paymentMethod->card->cardType);
+            $card->setLastFourDigits($captureResult->paymentMethod->card->lastFourDigits);
+            $card->setExpiryDate($captureResult->paymentMethod->card->expiryDate);
+            $card->setIsReusable($captureResult->paymentMethod->card->reusable);
+
+            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod $paymentMethod */
+            $paymentMethod = $this->paymentMethodResultFactory->create();
+            $paymentMethod->setCard($card);
+
+            $transaction->setPaymentMethod($paymentMethod);
+
+            if (isset($captureResult->{'3DSecure'})) {
+                /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $threedstatus */
+                $threedstatus = $this->threedStatusResultFactory->create();
+                $threedstatus->setStatus($captureResult->{'3DSecure'}->status);
+                $transaction->setThreeDSecure($threedstatus);
+            }
+
+            if (isset($captureResult->amount)) {
+                /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountInterface $amount */
+                $amount = $this->amountResultFactory->create();
+                $amount->setSaleAmount($captureResult->amount->saleAmount);
+                $amount->setTotalAmount($captureResult->amount->totalAmount);
+                $amount->setSurchargeAmount($captureResult->amount->surchargeAmount);
+                $transaction->setAmount($amount);
+            }
+        }
+
+        return $transaction;
     }
 }
