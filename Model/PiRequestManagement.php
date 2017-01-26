@@ -121,7 +121,7 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
                 ->getRequestData();
 
             //send POST to Sage Pay
-            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $postResponse */
+            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult $postResponse */
             $postResponse = $this->_pirestapi->capture($request);
 
             $this->_suiteLogger->sageLog('Request', $postResponse, [__METHOD__, __LINE__]);
@@ -170,7 +170,7 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
                     throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
                 }
 
-                $this->_suiteLogger->sageLog('Request', (array)$postResponse, [__METHOD__, __LINE__]);
+                $this->_suiteLogger->sageLog('Request', $postResponse->__toArray(), [__METHOD__, __LINE__]);
 
                 $this->result->setSuccess(true);
                 $this->result->setTransactionId($transactionId);
@@ -226,8 +226,11 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult $postResponse
      * @param $payment
      */
-    private function saveCreditCardInformationInPayment(\Ebizmarts\SagePaySuite\Api\Data\PiRequestInterface $requestData, \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult $postResponse, $payment)
-    {
+    private function saveCreditCardInformationInPayment(
+        \Ebizmarts\SagePaySuite\Api\Data\PiRequestInterface $requestData,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult $postResponse,
+        $payment
+    ) {
         //DropIn
         if ($postResponse->getPaymentMethod() !== null) {
             $card = $postResponse->getPaymentMethod()->getCard();
@@ -251,8 +254,11 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $postResponse
      * @param $vendorTxCode
      */
-    private function saveAdditionalPaymentInformation($payment, \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $postResponse, $vendorTxCode)
-    {
+    private function saveAdditionalPaymentInformation(
+        $payment,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $postResponse,
+        $vendorTxCode
+    ) {
         $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
         $payment->setTransactionId($postResponse->getTransactionId());
         $payment->setAdditionalInformation('statusCode', $postResponse->getStatusCode());
