@@ -123,7 +123,7 @@ interface PiTransactionResultInterface
     public function getBankAuthCode();
 
     /**
-     * @param $amount
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountInterface $amount
      * @return void
      */
     public function setAmount($amount);
@@ -131,7 +131,7 @@ interface PiTransactionResultInterface
     /**
      * Provides information regarding the transaction amount.
      * This is only returned in GET requests
-     * @return string
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountInterface
      */
     public function getAmount();
 
