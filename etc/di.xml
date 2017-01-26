@@ -51,6 +51,8 @@
     <preference for="\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountInterface" type="\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmount" />
     <preference for="\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestInterface" type="\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequest" />
     <preference for="\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseInterface" type="\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponse" />
+    <preference for="\Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestInterface" type="\Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequest" />
+    <preference for="\Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestInterface" type="\Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequest" />
 
     <preference for="\Ebizmarts\SagePaySuite\Api\PiMerchantInterface" type="\Ebizmarts\SagePaySuite\Model\PiMsk" />
     <preference for="\Ebizmarts\SagePaySuite\Api\PiManagementInterface" type="\Ebizmarts\SagePaySuite\Model\PiRequestManagement" />
