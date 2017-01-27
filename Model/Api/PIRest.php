@@ -74,7 +74,7 @@ class PIRest
     private $instructionRequest;
 
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory */
-    private $instructionResposne;
+    private $instructionResponse;
 
     /**
      * PIRest constructor.
@@ -127,7 +127,7 @@ class PIRest
         $this->threedRequest              = $threeDRequest;
         $this->refundRequest              = $refundRequest;
         $this->instructionRequest         = $instructionRequest;
-        $this->instructionResposne        = $instructionResponse;
+        $this->instructionResponse        = $instructionResponse;
     }
 
     /**
@@ -390,7 +390,7 @@ class PIRest
         $apiResponse = $this->processResponse($result);
 
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponse $response */
-        $response = $this->instructionResposne->create();
+        $response = $this->instructionResponse->create();
         $response->setInstructionType($apiResponse->instructionType);
         $response->setDate($apiResponse->date);
 
