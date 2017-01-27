@@ -103,7 +103,7 @@ define([
                         showLoader: true
                     }).done(function (response) {
                         if (response.success) {
-                            self.sagepayTokeniseCard(response.merchant_session_key);
+                            self.sagepayTokeniseCard(response.response);
                         } else {
                             self.showPaymentError(response.error_message ? response.error_message : response.message);
                         }
