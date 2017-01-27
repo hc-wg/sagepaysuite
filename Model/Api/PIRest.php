@@ -70,6 +70,12 @@ class PIRest
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory */
     private $refundRequest;
 
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory */
+    private $instructionRequest;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory */
+    private $instructionResposne;
+
     /**
      * PIRest constructor.
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
@@ -84,6 +90,9 @@ class PIRest
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory $mskResponse
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory $mskRequest
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory $threeDRequest
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory $refundRequest
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory $instructionRequest
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory $instructionResponse
      */
     public function __construct(
         \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
@@ -98,7 +107,9 @@ class PIRest
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory $mskResponse,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory $mskRequest,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory $threeDRequest,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory $refundRequest
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory $refundRequest,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory $instructionRequest,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory $instructionResponse
     ) {
 
         $this->_config = $config;
@@ -115,6 +126,8 @@ class PIRest
         $this->mskRequest                 = $mskRequest;
         $this->threedRequest              = $threeDRequest;
         $this->refundRequest              = $refundRequest;
+        $this->instructionRequest         = $instructionRequest;
+        $this->instructionResposne        = $instructionResponse;
     }
 
     /**
@@ -355,16 +368,18 @@ class PIRest
 
     /**
      * @param $transactionId
-     * @return mixed
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseInterface
      */
     public function void($transactionId)
     {
-        $requestData = ['instructionType' => 'void'];
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequest $request */
+        $request = $this->instructionRequest->create();
+        $request->setInstructionType('void');
 
         //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $requestData, [__METHOD__, __LINE__]);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $request->__toArray(), [__METHOD__, __LINE__]);
 
-        $jsonRequest = json_encode($requestData);
+        $jsonRequest = json_encode($request->__toArray());
         $result = $this->_executePostRequest(
             $this->_getServiceUrl(self::ACTION_TRANSACTION_INSTRUCTIONS, $transactionId), $jsonRequest
         );
@@ -372,7 +387,14 @@ class PIRest
         //log result
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
 
-        return $this->processResponse($result);
+        $apiResponse = $this->processResponse($result);
+
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponse $response */
+        $response = $this->instructionResposne->create();
+        $response->setInstructionType($apiResponse->instructionType);
+        $response->setDate($apiResponse->date);
+
+        return $response;
     }
 
     /**
