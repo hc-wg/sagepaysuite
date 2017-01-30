@@ -13,7 +13,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
 {
 
     /**
-     * @inheritDoc
+     * @return string
      */
     public function getCardIdentifier()
     {
@@ -21,7 +21,8 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     }
 
     /**
-     * @inheritDoc
+     * @param string $cardId Card identifier.
+     * @return void
      */
     public function setCardIdentifier($cardId)
     {
@@ -29,7 +30,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     }
 
     /**
-     * @inheritDoc
+     * @return string
      */
     public function getMerchantSessionKey()
     {
@@ -37,7 +38,8 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     }
 
     /**
-     * @inheritDoc
+     * @param string $msk
+     * @return void
      */
     public function setMerchantSessionKey($msk)
     {
@@ -45,7 +47,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     }
 
     /**
-     * @inheritDoc
+     * @return int
      */
     public function getCcLastFour()
     {
@@ -53,7 +55,8 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     }
 
     /**
-     * @inheritDoc
+     * @param int $lastFour
+     * @return void
      */
     public function setCcLastFour($lastFour)
     {
@@ -61,7 +64,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     }
 
     /**
-     * @inheritDoc
+     * @return int
      */
     public function getCcExpMonth()
     {
@@ -69,7 +72,8 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     }
 
     /**
-     * @inheritDoc
+     * @param int $expiryMonth
+     * @return void
      */
     public function setCcExpMonth($expiryMonth)
     {
@@ -77,7 +81,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     }
 
     /**
-     * @inheritDoc
+     * @return int
      */
     public function getCcExpYear()
     {
@@ -85,7 +89,8 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     }
 
     /**
-     * @inheritDoc
+     * @param int $expiryYear
+     * @return void
      */
     public function setCcExpYear($expiryYear)
     {
@@ -93,7 +98,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     }
 
     /**
-     * @inheritDoc
+     * @return string
      */
     public function getCcType()
     {
@@ -101,7 +106,8 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     }
 
     /**
-     * @inheritDoc
+     * @param string $cardType
+     * @return void
      */
     public function setCcType($cardType)
     {
