@@ -139,6 +139,7 @@ class PIRest
      */
     private function _executePostRequest($url, $body)
     {
+        //@TODO: move this to separete class.
 
         $curl = $this->_curlFactory->create();
 
@@ -150,6 +151,8 @@ class PIRest
                 'userpwd' => $this->_config->getPIKey() . ":" . $this->_config->getPIPassword()
             ]
         );
+
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $body, [__METHOD__, __LINE__]);
 
         $curl->write(
             \Zend_Http_Client::POST,
@@ -184,6 +187,7 @@ class PIRest
      */
     private function _executeRequest($url)
     {
+        //@TODO: move this to separete class.
 
         $curl = $this->_curlFactory->create();
 
@@ -209,6 +213,8 @@ class PIRest
 
         $data = preg_split('/^\r?$/m', $data, 2);
         $data = json_decode(trim($data[1]));
+
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
 
         $response = [
             "status" => $response_status,
@@ -261,16 +267,8 @@ class PIRest
         $request->setVendorName($this->_config->getVendorname());
 
         $jsonBody = json_encode($request->__toArray());
-
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $jsonBody, [__METHOD__, __LINE__]);
-
-        $url = $this->_getServiceUrl(self::ACTION_GENERATE_MERCHANT_KEY);
-
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $url, [__METHOD__, __LINE__]);
-
-        $result = $this->_executePostRequest($url, $jsonBody);
-
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
+        $url      = $this->_getServiceUrl(self::ACTION_GENERATE_MERCHANT_KEY);
+        $result   = $this->_executePostRequest($url, $jsonBody);
 
         $resultData = $this->processResponse($result);
 
@@ -291,15 +289,8 @@ class PIRest
      */
     public function capture($paymentRequest)
     {
-        //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $paymentRequest, [__METHOD__, __LINE__]);
-
-        $jsonRequest = json_encode($paymentRequest);
-        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
-
-        //log result
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
-
+        $jsonRequest   = json_encode($paymentRequest);
+        $result        = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
         $captureResult = $this->processResponse($result);
 
         return $this->getTransactionDetailsObject($captureResult);
@@ -319,14 +310,8 @@ class PIRest
         $request = $this->threedRequest->create();
         $request->setParEs($paRes);
 
-        $jsonBody = json_encode($request->__toArray());
-
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $jsonBody, [__METHOD__, __LINE__]);
-
-        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
-
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
-
+        $jsonBody   = json_encode($request->__toArray());
+        $result     = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
         $resultData = $this->processResponse($result);
 
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $response */
@@ -354,14 +339,8 @@ class PIRest
         $refundRequest->setAmount($amount);
         $refundRequest->setDescription($description);
 
-        //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $refundRequest->__toArray(), [__METHOD__, __LINE__]);
-
         $jsonRequest = json_encode($refundRequest->__toArray());
         $result      = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
-
-        //log result
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
 
         return $this->getTransactionDetailsObject($this->processResponse($result));
     }
@@ -376,16 +355,10 @@ class PIRest
         $request = $this->instructionRequest->create();
         $request->setInstructionType('void');
 
-        //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $request->__toArray(), [__METHOD__, __LINE__]);
-
         $jsonRequest = json_encode($request->__toArray());
         $result = $this->_executePostRequest(
             $this->_getServiceUrl(self::ACTION_TRANSACTION_INSTRUCTIONS, $transactionId), $jsonRequest
         );
-
-        //log result
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result, [__METHOD__, __LINE__]);
 
         $apiResponse = $this->processResponse($result);
 
