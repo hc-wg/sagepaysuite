@@ -148,43 +148,6 @@ class PIRest
         $rest->setUrl($url);
         $response = $rest->executePost($body);
         return $response;
-
-//        $curl = $this->_curlFactory->create();
-//
-//        $curl->setConfig(
-//            [
-//                'timeout' => 120,
-//                'verifypeer' => false,
-//                'verifyhost' => 2,
-//                'userpwd' => $this->_config->getPIKey() . ":" . $this->_config->getPIPassword()
-//            ]
-//        );
-//
-//        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $body, [__METHOD__, __LINE__]);
-//
-//        $curl->write(
-//            \Zend_Http_Client::POST,
-//            $url,
-//            '1.0',
-//            ['Content-type: application/json'],
-//            $body
-//        );
-//        $data = $curl->read();
-//
-//        $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
-//        $curl->close();
-//
-//        $data = preg_split('/^\r?$/m', $data, 2);
-//        $data = json_decode(trim($data[1]));
-//
-//        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
-//
-//        $response = [
-//            "status" => $response_status,
-//            "data"   => $data
-//        ];
-//
-//        return $response;
     }
 
     /**
@@ -201,40 +164,6 @@ class PIRest
         $rest->setUrl($url);
         $response = $rest->executeGet();
         return $response;
-
-//        $curl = $this->_curlFactory->create();
-//
-//        $curl->setConfig(
-//            [
-//                'timeout' => 120,
-//                'verifypeer' => false,
-//                'verifyhost' => 2,
-//                'userpwd' => $this->_config->getPIKey() . ":" . $this->_config->getPIPassword()
-//            ]
-//        );
-//
-//        $curl->write(
-//            \Zend_Http_Client::GET,
-//            $url,
-//            '1.0',
-//            ['Content-type: application/json']
-//        );
-//        $data = $curl->read();
-//
-//        $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
-//        $curl->close();
-//
-//        $data = preg_split('/^\r?$/m', $data, 2);
-//        $data = json_decode(trim($data[1]));
-//
-//        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
-//
-//        $response = [
-//            "status" => $response_status,
-//            "data" => $data
-//        ];
-//
-//        return $response;
     }
 
     /**
