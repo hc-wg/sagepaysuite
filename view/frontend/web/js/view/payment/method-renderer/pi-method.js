@@ -143,9 +143,9 @@ define(
                                     if (tokenisationResult.success) {
                                         self.cardIdentifier     = tokenisationResult.cardIdentifier;
                                         self.creditCardType     = "";
-                                        self.creditCardExpYear  = "";
-                                        self.creditCardExpMonth = "";
-                                        self.creditCardLast4    = "";
+                                        self.creditCardExpYear  = 0;
+                                        self.creditCardExpMonth = 0;
+                                        self.creditCardLast4    = 0;
                                         try {
                                             self.placeTransaction();
                                         } catch (err) {
