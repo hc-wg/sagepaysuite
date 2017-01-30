@@ -76,6 +76,9 @@ class PIRest
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory */
     private $instructionResponse;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory */
+    private $httpRestFactory;
+
     /**
      * PIRest constructor.
      * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
@@ -95,7 +98,7 @@ class PIRest
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory $instructionResponse
      */
     public function __construct(
-        \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
+        \Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory $httpRestFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         Logger $suiteLogger,
@@ -114,7 +117,6 @@ class PIRest
 
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
-        $this->_curlFactory               = $curlFactory;
         $this->_apiExceptionFactory       = $apiExceptionFactory;
         $this->_suiteLogger               = $suiteLogger;
         $this->piCaptureResultFactory     = $piCaptureResultFactory;
@@ -128,6 +130,7 @@ class PIRest
         $this->refundRequest              = $refundRequest;
         $this->instructionRequest         = $instructionRequest;
         $this->instructionResponse        = $instructionResponse;
+        $this->httpRestFactory            = $httpRestFactory;
     }
 
     /**
@@ -135,93 +138,103 @@ class PIRest
      *
      * @param $url
      * @param $body
-     * @return array
+     * @return \Ebizmarts\SagePaySuite\Api\Data\HttpResponseInterface
      */
     private function _executePostRequest($url, $body)
     {
-        //@TODO: move this to separete class.
-
-        $curl = $this->_curlFactory->create();
-
-        $curl->setConfig(
-            [
-                'timeout' => 120,
-                'verifypeer' => false,
-                'verifyhost' => 2,
-                'userpwd' => $this->_config->getPIKey() . ":" . $this->_config->getPIPassword()
-            ]
-        );
-
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $body, [__METHOD__, __LINE__]);
-
-        $curl->write(
-            \Zend_Http_Client::POST,
-            $url,
-            '1.0',
-            ['Content-type: application/json'],
-            $body
-        );
-        $data = $curl->read();
-
-        $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
-        $curl->close();
-
-        $data = preg_split('/^\r?$/m', $data, 2);
-        $data = json_decode(trim($data[1]));
-
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
-
-        $response = [
-            "status" => $response_status,
-            "data" => $data
-        ];
-
+        /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpRest $rest */
+        $rest = $this->httpRestFactory->create();
+        $rest->setBasicAuth($this->_config->getPIKey(), $this->_config->getPIPassword());
+        $rest->setUrl($url);
+        $response = $rest->executePost($body);
         return $response;
+
+//        $curl = $this->_curlFactory->create();
+//
+//        $curl->setConfig(
+//            [
+//                'timeout' => 120,
+//                'verifypeer' => false,
+//                'verifyhost' => 2,
+//                'userpwd' => $this->_config->getPIKey() . ":" . $this->_config->getPIPassword()
+//            ]
+//        );
+//
+//        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $body, [__METHOD__, __LINE__]);
+//
+//        $curl->write(
+//            \Zend_Http_Client::POST,
+//            $url,
+//            '1.0',
+//            ['Content-type: application/json'],
+//            $body
+//        );
+//        $data = $curl->read();
+//
+//        $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
+//        $curl->close();
+//
+//        $data = preg_split('/^\r?$/m', $data, 2);
+//        $data = json_decode(trim($data[1]));
+//
+//        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
+//
+//        $response = [
+//            "status" => $response_status,
+//            "data"   => $data
+//        ];
+//
+//        return $response;
     }
 
     /**
      * Makes the Curl GET
      *
      * @param $url
-     * @return array
+     * @return \Ebizmarts\SagePaySuite\Api\Data\HttpResponseInterface
      */
     private function _executeRequest($url)
     {
-        //@TODO: move this to separete class.
-
-        $curl = $this->_curlFactory->create();
-
-        $curl->setConfig(
-            [
-                'timeout' => 120,
-                'verifypeer' => false,
-                'verifyhost' => 2,
-                'userpwd' => $this->_config->getPIKey() . ":" . $this->_config->getPIPassword()
-            ]
-        );
-
-        $curl->write(
-            \Zend_Http_Client::GET,
-            $url,
-            '1.0',
-            ['Content-type: application/json']
-        );
-        $data = $curl->read();
-
-        $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
-        $curl->close();
-
-        $data = preg_split('/^\r?$/m', $data, 2);
-        $data = json_decode(trim($data[1]));
-
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
-
-        $response = [
-            "status" => $response_status,
-            "data" => $data
-        ];
-
+        /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpRest $rest */
+        $rest = $this->httpRestFactory->create();
+        $rest->setBasicAuth($this->_config->getPIKey(), $this->_config->getPIPassword());
+        $rest->setUrl($url);
+        $response = $rest->executeGet();
         return $response;
+
+//        $curl = $this->_curlFactory->create();
+//
+//        $curl->setConfig(
+//            [
+//                'timeout' => 120,
+//                'verifypeer' => false,
+//                'verifyhost' => 2,
+//                'userpwd' => $this->_config->getPIKey() . ":" . $this->_config->getPIPassword()
+//            ]
+//        );
+//
+//        $curl->write(
+//            \Zend_Http_Client::GET,
+//            $url,
+//            '1.0',
+//            ['Content-type: application/json']
+//        );
+//        $data = $curl->read();
+//
+//        $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
+//        $curl->close();
+//
+//        $data = preg_split('/^\r?$/m', $data, 2);
+//        $data = json_decode(trim($data[1]));
+//
+//        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
+//
+//        $response = [
+//            "status" => $response_status,
+//            "data" => $data
+//        ];
+//
+//        return $response;
     }
 
     /**
@@ -381,11 +394,11 @@ class PIRest
     {
         $result = $this->_executeRequest($this->_getServiceUrl(self::ACTION_TRANSACTION_DETAILS, $vpsTxId));
 
-        if ($result["status"] == 200) {
-            return $this->getTransactionDetailsObject($result["data"]);
+        if ($result->getStatus() == 200) {
+            return $this->getTransactionDetailsObject($result->getResponseData());
         } else {
-            $error_code = $result["data"]->code;
-            $error_msg = $result["data"]->description;
+            $error_code = $result->getResponseData()->code;
+            $error_msg  = $result->getResponseData()->description;
 
             $exception = $this->_apiExceptionFactory->create([
                 'phrase' => __($error_msg),
@@ -397,22 +410,23 @@ class PIRest
     }
 
     /**
-     * @param array $result
-     * @return mixed
+     * @param \Ebizmarts\SagePaySuite\Api\Data\HttpResponseInterface $result
+     * @return string
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
     private function processResponse($result)
     {
-        if ($result["status"] == 201) {
+        if ($result->getStatus() == 201) {
             //success
-            return $result["data"];
-        } elseif ($result["status"] == 202) {
+            return $result->getResponseData();
+        } elseif ($result->getStatus() == 202) {
             //authentication required (3D secure)
-            return $result["data"];
+            return $result->getResponseData();
         } else {
             $errorCode = 0;
             $errorMessage  = "Unable to capture Sage Pay transaction";
 
-            $errors = $result["data"];
+            $errors = $result->getResponseData();
             if (isset($errors->errors) && count($errors->errors) > 0) {
                 $errors = $errors->errors[0];
             }
