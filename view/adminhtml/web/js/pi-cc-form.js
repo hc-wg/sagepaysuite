@@ -69,22 +69,20 @@ define([
         },
         submitAdminOrder: function () {
             var self = this;
+
+            $('#edit_form').validate().form();
+            $('#edit_form').trigger('afterValidate.beforeSubmit');
+            $('body').trigger('processStop');
+
+            // validate parent form
+            if (!this.validate() || $('#edit_form').validate().errorList.length) {
+                return false;
+            }
+
             if (self.dropInEnabled() && !$('#dropin_start_lbl').is(":visible")) {
                 self.dropInInstance.tokenise();
-                $('body').trigger('processStop');
             }
             else {
-
-                $('#edit_form').validate().form();
-                $('#edit_form').trigger('afterValidate.beforeSubmit');
-                $('body').trigger('processStop');
-
-                // validate parent form
-                if (!this.validate() || $('#edit_form').validate().errorList.length) {
-                    return false;
-                }
-
-                var self = this;
                 self.resetPaymentErrors();
 
                 var serviceUrl = this.options.url.generateMerchantKey;
@@ -277,11 +275,10 @@ define([
 
                 if (response.success == true) {
                     //redirect to success
-                    window.location.href = response.response.redirect;
+                    window.location.href = response.response;
                 } else {
                     self.showPaymentError(response.error_message ? response.error_message : "Invalid Sage Pay response, please use another payment method.");
                 }
-                console.log(response);
             });
         },
         getCode: function () {
