@@ -30,6 +30,9 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
     /** @var string */
     private $vendorTxCode;
 
+    /** @var \Magento\Quote\Api\Data\CartInterface */
+    private $quote;
+
     public function __construct(
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Model\Api\PIRest $piRestApi,
@@ -56,6 +59,19 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
      */
     abstract public function getIsMotoTransaction();
 
+    public function getPiRestApi()
+    {
+        return $this->piRestApi;
+    }
+
+    /**
+     * @return \Magento\Quote\Api\Data\PaymentInterface
+     */
+    public function getPayment()
+    {
+        return $this->getQuote()->getPayment();
+    }
+
     public function getRequest()
     {
         $this->getQuote()->collectTotals();
@@ -70,9 +86,17 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
             ->getRequestData();
     }
 
+    /**
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
+     */
     public function getPayResult()
     {
         return $this->payResult;
+    }
+
+    public function setPayResult(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $payResult)
+    {
+        $this->payResult = $payResult;
     }
 
     /**
@@ -81,7 +105,7 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
     public function pay()
     {
         //@TODO: Improve here to support Deferred, Authenticate.
-        $this->payResult = $this->piRestApi->capture($this->getRequest());
+        $this->payResult = $this->getPiRestApi()->capture($this->getRequest());
 
         return $this->payResult;
     }
@@ -95,7 +119,7 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
             $this->getPayResult()->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS
         ) {
             //set payment info for save order
-            $payment = $this->getQuote()->getPayment();
+            $payment = $this->getPayment();
 
             $this->saveAdditionalPaymentInformation($payment);
 
@@ -110,18 +134,21 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
 
     private function saveAdditionalPaymentInformation()
     {
-        $this->getQuote()->getPayment()->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
-        $this->getQuote()->getPayment()->setTransactionId($this->getPayResult()->getTransactionId());
-        $this->getQuote()->getPayment()->setAdditionalInformation('statusCode', $this->getPayResult()->getStatusCode());
-        $this->getQuote()->getPayment()->setAdditionalInformation('statusDetail', $this->getPayResult()->getStatusDetail());
-        $this->getQuote()->getPayment()->setAdditionalInformation('vendorTxCode', $this->getVendorTxCode());
+        $this->getPayment()->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
+        $this->getPayment()->setTransactionId($this->getPayResult()->getTransactionId());
+        $this->getPayment()->setAdditionalInformation('statusCode', $this->getPayResult()->getStatusCode());
+        $this->getPayment()->setAdditionalInformation('statusDetail', $this->getPayResult()->getStatusDetail());
         if ($this->getPayResult()->getThreeDSecure() !== null) {
-            $this->getQuote()->getPayment()->setAdditionalInformation('threeDStatus', $this->getPayResult()->getThreeDSecure()->getStatus());
+            $this->getPayment()->setAdditionalInformation('threeDStatus', $this->getPayResult()->getThreeDSecure()->getStatus());
         }
-        $this->getQuote()->getPayment()->setAdditionalInformation('moto', $this->getIsMotoTransaction());
-        $this->getQuote()->getPayment()->setAdditionalInformation('vendorname', $this->getRequestData()->getVendorName());
-        $this->getQuote()->getPayment()->setAdditionalInformation('mode', $this->getRequestData()->getMode());
-        $this->getQuote()->getPayment()->setAdditionalInformation('paymentAction', $this->getRequestData()->getPaymentAction());
+        $this->getPayment()->setAdditionalInformation('moto', $this->getIsMotoTransaction());
+        $this->getPayment()->setAdditionalInformation('vendorname', $this->getRequestData()->getVendorName());
+        $this->getPayment()->setAdditionalInformation('mode', $this->getRequestData()->getMode());
+        $this->getPayment()->setAdditionalInformation('paymentAction', $this->getRequestData()->getPaymentAction());
+
+        if ($this->getQuote() !== null) {
+            $this->getPayment()->setAdditionalInformation('vendorTxCode', $this->getVendorTxCode());
+        }
     }
 
     private function saveCreditCardInformationInPayment()
@@ -130,17 +157,17 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
         if ($this->getPayResult()->getPaymentMethod() !== null) {
             $card = $this->getPayResult()->getPaymentMethod()->getCard();
             if ($card !== null) {
-                $this->getQuote()->getPayment()->setCcLast4($card->getLastFourDigits());
-                $this->getQuote()->getPayment()->setCcExpMonth($card->getExpiryMonth());
-                $this->getQuote()->getPayment()->setCcExpYear($card->getExpiryYear());
-                $this->getQuote()->getPayment()->setCcType($this->ccConverter->convert($card->getCardType()));
+                $this->getPayment()->setCcLast4($card->getLastFourDigits());
+                $this->getPayment()->setCcExpMonth($card->getExpiryMonth());
+                $this->getPayment()->setCcExpYear($card->getExpiryYear());
+                $this->getPayment()->setCcType($this->ccConverter->convert($card->getCardType()));
             }
         } else {
             //Custom cc form
-            $this->getQuote()->getPayment()->setCcLast4($this->getRequestData()->getCcLastFour());
-            $this->getQuote()->getPayment()->setCcExpMonth($this->getRequestData()->getCcExpMonth());
-            $this->getQuote()->getPayment()->setCcExpYear($this->getRequestData()->getCcExpYear());
-            $this->getQuote()->getPayment()->setCcType($this->ccConverter->convert($this->getRequestData()->getCcType()));
+            $this->getPayment()->setCcLast4($this->getRequestData()->getCcLastFour());
+            $this->getPayment()->setCcExpMonth($this->getRequestData()->getCcExpMonth());
+            $this->getPayment()->setCcExpYear($this->getRequestData()->getCcExpYear());
+            $this->getPayment()->setCcType($this->ccConverter->convert($this->getRequestData()->getCcType()));
         }
     }
 
