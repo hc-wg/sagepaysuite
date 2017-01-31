@@ -22,12 +22,6 @@ class PIRest
     const ACTION_TRANSACTION_DETAILS      = 'transaction_details';
 
     /**
-     * @var \Magento\Framework\HTTP\Adapter\CurlFactory
-     *
-     */
-    private $_curlFactory;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
     private $_config;
@@ -81,7 +75,7 @@ class PIRest
 
     /**
      * PIRest constructor.
-     * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
+     * @param HttpRestFactory $httpRestFactory
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
      * @param ApiExceptionFactory $apiExceptionFactory
      * @param Logger $suiteLogger
