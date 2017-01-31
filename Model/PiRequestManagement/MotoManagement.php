@@ -26,7 +26,6 @@ class MotoManagement extends RequestManagement
         \Ebizmarts\SagePaySuite\Model\PiRequest $piRequest,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface $result,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Framework\App\RequestInterface $httpRequest,
@@ -40,8 +39,6 @@ class MotoManagement extends RequestManagement
             $suiteHelper,
             $result
         );
-        $this->checkoutSession = $checkoutSession;
-
         $this->objectManager = $objectManager;
         $this->httpRequest   = $httpRequest;
         $this->backendUrl    = $backendUrl;
