@@ -8,6 +8,30 @@ interface PiRequestManagerInterface extends PiRequestInterface
     const VENDOR_NAME    = 'vendor_name';
     const VENDOR_TX_CODE = 'vendor_tx_code';
     const PAYMENT_ACTION = 'payment_action';
+    const PAR_ES         = 'par_es';
+    const TRANSACTION_ID = 'transaction_id';
+
+    /**
+     * @return string
+     */
+    public function getParEs();
+
+    /**
+     * @param string $parEs
+     * @return void
+     */
+    public function setParEs($parEs);
+
+    /**
+     * @param string $transactionId
+     * @return void
+     */
+    public function setTransactionId($transactionId);
+
+    /**
+     * @return string
+     */
+    public function getTransactionId();
 
     /**
      * Transaction mode: test or live.
