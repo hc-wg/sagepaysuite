@@ -78,7 +78,6 @@ abstract class Http
 
     protected function setContentType($contentType)
     {
-        //application/x-www-form-urlencoded o application/json
         $this->contentType = $contentType;
     }
 
