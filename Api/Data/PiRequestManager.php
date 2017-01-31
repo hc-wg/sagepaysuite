@@ -90,4 +90,38 @@ class PiRequestManager extends \Ebizmarts\SagePaySuite\Api\Data\PiRequest implem
     {
         $this->setData(self::PAYMENT_ACTION, $paymentAction);
     }
+
+    /**
+     * @return string
+     */
+    public function getParEs()
+    {
+        return $this->_get(self::PAR_ES);
+    }
+
+    /**
+     * @param string $parEs
+     * @return void
+     */
+    public function setParEs($parEs)
+    {
+        $this->setData(self::PAR_ES, $parEs);
+    }
+
+    /**
+     * @param string $transactionId
+     * @return void
+     */
+    public function setTransactionId($transactionId)
+    {
+        $this->setData(self::TRANSACTION_ID, $transactionId);
+    }
+
+    /**
+     * @return string
+     */
+    public function getTransactionId()
+    {
+        return $this->_get(self::TRANSACTION_ID);
+    }
 }
