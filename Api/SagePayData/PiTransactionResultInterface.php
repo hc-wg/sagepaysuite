@@ -149,7 +149,7 @@ interface PiTransactionResultInterface
     public function getCurrency();
 
     /**
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionPaymentMethodInterface $paymentMethod
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodInterface $paymentMethod
      * @return void
      */
     public function setPaymentMethod($paymentMethod);
