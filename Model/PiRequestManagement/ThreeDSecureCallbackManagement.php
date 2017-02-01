@@ -144,14 +144,14 @@ class ThreeDSecureCallbackManagement extends RequestManagement
                 //send email
                 $this->getCheckoutHelper()->sendOrderEmail($this->order);
 
-                $transaction = $this->transactionFactory->create();
+                /*$transaction = $this->transactionFactory->create();
                 $transaction->setOrderPaymentObject($payment);
                 $transaction->setTxnId($this->getPayResult()->getTransactionId());
                 $transaction->setOrderId($this->order->getEntityId());
                 $transaction->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE);
                 $transaction->setPaymentId($payment->getId());
                 $transaction->setIsClosed(true);
-                $transaction->save();
+                $transaction->save();*/
 
                 //update invoice transaction id
                 $this->order->getInvoiceCollection()
