@@ -13,13 +13,6 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
  */
 class Reporting
 {
-
-    /**
-     * @var \Magento\Framework\HTTP\Adapter\CurlFactory
-     *
-     */
-    private $_curlFactory;
-
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
      */
@@ -46,9 +39,11 @@ class Reporting
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterface */
     private $fraudScreenRule;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpText  */
+    private $httpTextFactory;
+
     /**
      * Reporting constructor.
-     * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
      * @param ApiExceptionFactory $apiExceptionFactory
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
      * @param Logger $suiteLogger
@@ -57,7 +52,7 @@ class Reporting
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterfaceFactory $fraudScreenRule
      */
     public function __construct(
-        \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
+        \Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory $httpTextFactory,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         Logger $suiteLogger,
@@ -67,57 +62,12 @@ class Reporting
     ) {
 
         $this->_config              = $config;
-        $this->_curlFactory         = $curlFactory;
+        $this->httpTextFactory      = $httpTextFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
         $this->_suiteLogger         = $suiteLogger;
         $this->objectManager        = $objectManager;
         $this->fraudResponse        = $fraudResponse;
         $this->fraudScreenRule      = $fraudScreenRule;
-    }
-
-    /**
-     * @param $xml
-     * @return bool|\SimpleXMLElement
-     */
-    private function _executeRequest($xml)
-    {
-        $this->_suiteLogger->sageLog('Request', $xml, [__METHOD__, __LINE__]);
-
-        $curl = $this->_curlFactory->create();
-
-        $curl->setConfig(
-            [
-                'timeout' => 120,
-                'verifypeer' => false,
-                'verifyhost' => 2
-            ]
-        );
-
-        $curl->write(
-            \Zend_Http_Client::POST,
-            $this->_getServiceUrl(),
-            '1.0',
-            [],
-            'XML=' . $xml
-        );
-        $data = $curl->read();
-        if ($data === false) {
-            return false;
-        }
-
-        $this->_suiteLogger->sageLog('Request', $data, [__METHOD__, __LINE__]);
-
-        $data = preg_split('/^\r?$/m', $data, 2);
-        $data = trim($data[1]);
-        $curl->close();
-
-        try {
-            $xml = $this->objectManager->create('\SimpleXMLElement', ['data' => $data]);
-        } catch (\Exception $e) {
-            return false;
-        }
-
-        return $xml;
     }
 
     /**
@@ -301,5 +251,32 @@ class Reporting
     {
         $xml = $this->_createXml('version');
         return $this->_handleApiErrors($this->_executeRequest($xml));
+    }
+
+    /**
+     * @param $xml
+     * @return bool|\SimpleXMLElement
+     */
+    private function _executeRequest($xml)
+    {
+        /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpText $rest */
+        $rest = $this->httpTextFactory->create();
+        $rest->setUrl($this->_getServiceUrl());
+        $response = $rest->executePost('XML=' . $xml);
+
+        if ($response->getResponseData() === false) {
+            return false;
+        }
+
+        $data = preg_split('/^\r?$/m', $response->getResponseData(), 2);
+        $data = trim($data[1]);
+
+        try {
+            $xml = $this->objectManager->create('\SimpleXMLElement', ['data' => $data]);
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        return $xml;
     }
 }

@@ -43,4 +43,25 @@
             <resource ref="anonymous" />
         </resources>
     </route>
+
+    <route url="/V1/sagepay/pi-msk" method="GET">
+        <service class="Ebizmarts\SagePaySuite\Api\PiMerchantInterface" method="getSessionKey"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
+
+    <route url="/V1/sagepay/pi" method="POST">
+        <service class="Ebizmarts\SagePaySuite\Api\PiManagementInterface" method="savePaymentInformationAndPlaceOrder"/>
+        <resources>
+            <resource ref="self" />
+        </resources>
+    </route>
+
+    <route url="/V1/sagepay-guest/pi" method="POST">
+        <service class="Ebizmarts\SagePaySuite\Api\GuestPiManagementInterface" method="savePaymentInformationAndPlaceOrder"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
 </routes>

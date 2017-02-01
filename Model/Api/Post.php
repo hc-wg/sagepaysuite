@@ -13,13 +13,6 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
  */
 class Post
 {
-
-    /**
-     * @var \Magento\Framework\HTTP\Adapter\CurlFactory
-     *
-     */
-    private $_curlFactory;
-
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
      */
@@ -41,24 +34,29 @@ class Post
      */
     private $suiteHelper;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpText  */
+    private $httpTextFactory;
+
     /**
-     * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
+     * Post constructor.
+     * @param HttpTextFactory $httpTextFactory
      * @param ApiExceptionFactory $apiExceptionFactory
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param Logger $suiteLogger
+     * @param \Ebizmarts\SagePaySuite\Helper\Request $suiteHelper
      */
     public function __construct(
-        \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
+        \Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory $httpTextFactory,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Helper\Request $suiteHelper
     ) {
-
         $this->_config              = $config;
-        $this->_curlFactory         = $curlFactory;
         $this->_apiExceptionFactory = $apiExceptionFactory;
         $this->_suiteLogger         = $suiteLogger;
         $this->suiteHelper          = $suiteHelper;
+        $this->httpTextFactory      = $httpTextFactory;
     }
 
     private function _handleApiErrors($response, $expectedStatus, $defaultErrorMessage)
@@ -119,60 +117,24 @@ class Post
      */
     public function sendPost($postData, $url, $expectedStatus = [], $errorMessage = "Invalid response from Sage Pay")
     {
+        /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpText $rest */
+        $rest = $this->httpTextFactory->create();
 
-        $curl = $this->_curlFactory->create();
+        $body = $rest->arrayToQueryParams($postData);
 
-        $post_data_string = $this->arrayToQueryParams($postData);
-
-        //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $postData, [__METHOD__, __LINE__]);
-
-        $curl->setConfig(
-            [
-                'timeout' => 120,
-                'verifypeer' => false,
-                'verifyhost' => 2
-            ]
-        );
-
-        $curl->write(
-            \Zend_Http_Client::POST,
-            $url,
-            '1.0',
-            [],
-            $post_data_string
-        );
-        $data = $curl->read();
-
-        $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
-        $curl->close();
-
-        //log response
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
+        $rest->setUrl($url);
+        $response = $rest->executePost($body);
 
         $responseData = [];
-        if ($response_status == 200) {
-            $responseData = $this->suiteHelper->rawResponseToArray($data);
+        if ($response->getStatus() == 200) {
+            $responseData = $rest->rawResponseToArray();
         }
 
         $response = [
-            "status" => $response_status,
-            "data" => $responseData
+            "status" => $response->getStatus(),
+            "data"   => $responseData
         ];
 
         return $this->_handleApiErrors($response, $expectedStatus, $errorMessage);
-    }
-
-    /**
-     * @param $postData
-     * @return string
-     */
-    private function arrayToQueryParams($postData)
-    {
-        $post_data_string = '';
-        foreach ($postData as $_key => $_val) {
-            $post_data_string .= $_key . '=' . urlencode(mb_convert_encoding($_val, 'ISO-8859-1', 'UTF-8')) . '&';
-        }
-        return $post_data_string;
     }
 }

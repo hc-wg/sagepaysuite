@@ -102,15 +102,14 @@ define(
                         JSON.stringify(payload)
                     ).done(
                         function () {
-
-                            serviceUrl = url.build('sagepaysuite/pi/generateMerchantKey');
+                            serviceUrl = urlBuilder.createUrl('/sagepay/pi-msk', {});
 
                             //generate merchant session key
                             storage.get(serviceUrl).done(
                                 function (response) {
 
                                     if (response.success) {
-                                        self.sagepayTokeniseCard(response.merchant_session_key);
+                                        self.sagepayTokeniseCard(response.response);
                                     } else {
                                         self.showPaymentError(response.error_message);
                                     }
@@ -144,9 +143,9 @@ define(
                                     if (tokenisationResult.success) {
                                         self.cardIdentifier     = tokenisationResult.cardIdentifier;
                                         self.creditCardType     = "";
-                                        self.creditCardExpYear  = "";
-                                        self.creditCardExpMonth = "";
-                                        self.creditCardLast4    = "";
+                                        self.creditCardExpYear  = 0;
+                                        self.creditCardExpMonth = 0;
+                                        self.creditCardLast4    = 0;
                                         try {
                                             self.placeTransaction();
                                         } catch (err) {
@@ -221,16 +220,25 @@ define(
 
                 var self = this;
 
-                var serviceUrl  = url.build('sagepaysuite/pi/request');
+                var serviceUrl = null;
+                if (customer.isLoggedIn()) {
+                    serviceUrl = urlBuilder.createUrl('/sagepay/pi', {});
+                } else {
+                    serviceUrl = urlBuilder.createUrl('/sagepay-guest/pi', {});
+                }
+
                 var callbackUrl = url.build('sagepaysuite/pi/callback3D');
 
                 var payload = {
-                    merchant_session_key: self.merchantSessionKey,
-                    card_identifier: self.cardIdentifier,
-                    card_type: self.creditCardType,
-                    card_exp_month: self.creditCardExpMonth,
-                    card_exp_year: self.creditCardExpYear,
-                    card_last4: self.creditCardLast4
+                    "cartId": quote.getQuoteId(),
+                    "requestData": {
+                        "merchant_session_key": self.merchantSessionKey,
+                        "card_identifier": self.cardIdentifier,
+                        "cc_type": self.creditCardType,
+                        "cc_exp_month": self.creditCardExpMonth,
+                        "cc_exp_year": self.creditCardExpYear,
+                        "cc_last_four": self.creditCardLast4
+                    }
                 };
 
                 if (self.dropInEnabled()) {
@@ -248,32 +256,32 @@ define(
                         }
 
                         if (response.success) {
-                            if (response.response.status == "Ok") {
+                            if (response.status == "Ok") {
 
                                 /**
                                  * transaction authenticated, redirect to success
                                  */
 
                                 window.location.replace(url.build('checkout/onepage/success/'));
-                            } else if (response.response.status == "3DAuth") {
+                            } else if (response.status == "3DAuth") {
 
                                 /**
                                  * 3D secure authentication required
                                  */
 
                                     //add transactionId param to callback
-                                callbackUrl += "?transactionId=" + response.response.transactionId +
-                                    "&orderId=" + response.response.orderId +
-                                    "&quoteId=" + response.response.quoteId;
+                                callbackUrl += "?transactionId=" + response.transaction_id +
+                                    "&orderId=" + response.order_id +
+                                    "&quoteId=" + response.quote_id;
 
                                 self.open3DModal();
 
                                 var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
                                 form3D.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
-                                form3D.setAttribute('action', response.response.acsUrl);
-                                form3D.elements[0].setAttribute('value', response.response.paReq);
+                                form3D.setAttribute('action', response.acs_url);
+                                form3D.elements[0].setAttribute('value', response.par_eq);
                                 form3D.elements[1].setAttribute('value', callbackUrl);
-                                form3D.elements[2].setAttribute('value', response.response.transactionId);
+                                form3D.elements[2].setAttribute('value', response.transaction_id);
                                 form3D.submit();
 
                                 if (!self.dropInEnabled()) {

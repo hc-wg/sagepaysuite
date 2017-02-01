@@ -207,6 +207,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $vendorTxCode = $this->_suiteHelper->generateVendorTxCode($order->getIncrementId(), Config::ACTION_REFUND);
             $description  = 'Magento backend refund.';
 
+            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $refundResult */
             $refundResult = $this->_pirestapi->refund(
                 $vendorTxCode,
                 $vpsTxId,
@@ -214,7 +215,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
                 $order->getOrderCurrencyCode(), $description
             );
 
-            $payment->setTransactionId($refundResult->transactionId);
+            $payment->setTransactionId($refundResult->getTransactionId());
             $payment->setIsTransactionClosed(1);
             $payment->setShouldCloseParentTransaction(1);
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
