@@ -18,17 +18,22 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
     /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\EcommerceManagement */
     private $requester;
 
+    /** @var \Magento\Quote\Model\QuoteIdMaskFactory */
+    private $quoteIdMaskFactory;
+
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
         \Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory $piReqManagerFactory,
-        \Ebizmarts\SagePaySuite\Model\PiRequestManagement\EcommerceManagement $requester
+        \Ebizmarts\SagePaySuite\Model\PiRequestManagement\EcommerceManagement $requester,
+        \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory
     ) {
         $this->_config                     = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
 
         $this->requester                   = $requester;
         $this->quoteRepository             = $quoteRepository;
+        $this->quoteIdMaskFactory          = $quoteIdMaskFactory;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
     }
 

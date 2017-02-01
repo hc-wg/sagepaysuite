@@ -57,4 +57,5 @@
 
     <preference for="\Ebizmarts\SagePaySuite\Api\PiMerchantInterface" type="\Ebizmarts\SagePaySuite\Model\PiMsk" />
     <preference for="\Ebizmarts\SagePaySuite\Api\PiManagementInterface" type="\Ebizmarts\SagePaySuite\Model\PiRequestManagement" />
+    <preference for="\Ebizmarts\SagePaySuite\Api\GuestPiManagementInterface" type="\Ebizmarts\SagePaySuite\Model\GuestPiRequestManagement" />
 </config>
