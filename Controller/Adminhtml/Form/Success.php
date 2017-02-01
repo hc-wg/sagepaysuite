@@ -51,7 +51,11 @@ class Success extends \Magento\Backend\App\AbstractAction
      */
     private $_quoteManagement;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory */
+    private $actionFactory;
+
     /**
+     * Success constructor.
      * @param \Magento\Backend\App\Action\Context $context
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
      * @param Logger $suiteLogger
@@ -60,6 +64,7 @@ class Success extends \Magento\Backend\App\AbstractAction
      * @param \Ebizmarts\SagePaySuite\Model\Form $formModel
      * @param \Magento\Backend\Model\Session\Quote $quoteSession
      * @param \Magento\Quote\Model\QuoteManagement $quoteManagement
+     * @param \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory $actionFactory
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
@@ -69,18 +74,20 @@ class Success extends \Magento\Backend\App\AbstractAction
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Model\Form $formModel,
         \Magento\Backend\Model\Session\Quote $quoteSession,
-        \Magento\Quote\Model\QuoteManagement $quoteManagement
+        \Magento\Quote\Model\QuoteManagement $quoteManagement,
+        \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory $actionFactory
     ) {
-    
+
         parent::__construct($context);
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
+        $this->_formModel          = $formModel;
+        $this->_suiteLogger        = $suiteLogger;
+        $this->_quoteSession       = $quoteSession;
+        $this->actionFactory       = $actionFactory;
+        $this->_checkoutHelper     = $checkoutHelper;
+        $this->_quoteManagement    = $quoteManagement;
         $this->_transactionFactory = $transactionFactory;
-        $this->_checkoutHelper = $checkoutHelper;
-        $this->_suiteLogger = $suiteLogger;
-        $this->_formModel = $formModel;
-        $this->_quoteSession = $quoteSession;
-        $this->_quoteManagement = $quoteManagement;
     }
 
     /**
@@ -140,7 +147,9 @@ class Success extends \Magento\Backend\App\AbstractAction
             $payment->getMethodInstance()->markAsInitialized();
             $order->place()->save();
 
-            list($action, $closed) = $this->getActionClosedForPaymentAction();
+            /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
+            $actionClosed = $this->actionFactory->create(['paymentAction' => $this->_config->getSagepayPaymentAction()]);
+            list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
 
             //create transaction record
             $transaction = $this->_transactionFactory->create();
@@ -181,31 +190,5 @@ class Success extends \Magento\Backend\App\AbstractAction
 
             $this->_redirect($url);
         }
-    }
-
-    /**
-     * @return array
-     */
-    private function getActionClosedForPaymentAction()
-    {
-        switch ($this->_config->getSagepayPaymentAction()) {
-            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT:
-                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
-                $closed = true;
-                break;
-            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER:
-                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
-                $closed = false;
-                break;
-            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE:
-                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
-                $closed = false;
-                break;
-            default:
-                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
-                $closed = true;
-                break;
-        }
-        return [$action, $closed];
     }
 }
