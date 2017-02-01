@@ -64,6 +64,9 @@ class Notify extends \Magento\Framework\App\Action\Action
      */
     private $_tokenModel;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory */
+    private $actionFactory;
+
     /**
      * Notify constructor.
      * @param \Magento\Framework\App\Action\Context $context
@@ -85,7 +88,8 @@ class Notify extends \Magento\Framework\App\Action\Action
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
-        \Magento\Quote\Model\Quote $quote
+        \Magento\Quote\Model\Quote $quote,
+        \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory $actionFactory
     ) {
     
         parent::__construct($context);
@@ -98,6 +102,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_checkoutSession    = $checkoutSession;
         $this->_tokenModel         = $tokenModel;
         $this->_quote              = $quote;
+        $this->actionFactory       = $actionFactory;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
     }
 
@@ -286,24 +291,9 @@ class Notify extends \Magento\Framework\App\Action\Action
         }
 
         //create transaction record
-        switch ($this->_config->getSagepayPaymentAction()) {
-            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT:
-                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
-                $closed = true;
-                break;
-            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER:
-                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
-                $closed = false;
-                break;
-            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE:
-                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
-                $closed = false;
-                break;
-            default:
-                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
-                $closed = true;
-                break;
-        }
+        /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
+        $actionClosed = $this->actionFactory->create(['paymentAction' => $this->_config->getSagepayPaymentAction()]);
+        list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
 
         $transaction = $this->_transactionFactory->create();
         $transaction->setOrderPaymentObject($payment);
