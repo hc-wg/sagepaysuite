@@ -309,37 +309,55 @@ class SharedTest extends \PHPUnit_Framework_TestCase
 
     public function testReleaseTransaction()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                'Status=OK'. PHP_EOL .
-                'StatusDetail=OK STATUS'. PHP_EOL
-            );
+        $stringResponse = 'HTTP/1.1 200 OK';
+        $stringResponse .= "\n\n";
+        $stringResponse .= "VPSProtocol=3.00\n";
+        $stringResponse .= "Status=OK\n";
+        $stringResponse .= "StatusDetail=Success.\n";
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $responseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\HttpResponse::class)
+            ->setMethods(['getStatus'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $responseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
             ->willReturn(200);
+
+        $this->httpTextMock
+            ->method('getResponseData')
+            ->willReturn($stringResponse);
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('arrayToQueryParams')
+            ->with(
+                [
+                    'VPSProtocol'   => '3.00',
+                    'TxType'        => 'RELEASE',
+                    'Vendor'        => "testvendorname",
+                    'VendorTxCode'  => "1000000001-2016-12-12-12345678",
+                    'VPSTxId'       => "12345",
+                    "SecurityKey"   => "fds87",
+                    "TxAuthNo"      => "879243978234",
+                    'ReleaseAmount' => "100.00",
+                ]
+            );
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->willReturn($responseMock);
 
         $stringWrite = "VPSProtocol=3.00&TxType=RELEASE&Vendor=&VendorTxCode=1000000001-2016-12-12-12345678";
         $stringWrite .= "&VPSTxId=12345&SecurityKey=fds87&TxAuthNo=879243978234&ReleaseAmount=100.00&";
-
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_RELEASE_TEST,
-                '1.0',
-                [],
-                $stringWrite
-            );
 
         $this->assertEquals(
             [
                 "status" => 200,
                 "data" => [
-                    'Status' => 'OK',
-                    'StatusDetail' => 'OK STATUS'
+                    'Status'       => 'OK',
+                    'StatusDetail' => 'Success.',
+                    'VPSProtocol'  => '3.00'
                 ]
             ],
             $this->sharedApiModel->releaseTransaction("12345", 100)
