@@ -183,6 +183,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteSUCCESS()
     {
+        $this->markTestSkipped('The PI request controller does not exist. Move this test.');
+
         $threedStatusObj = new \stdClass();
         $threedStatusObj->status = "NotChecked";
 
@@ -243,6 +245,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteSUCCESSDropin()
     {
+        $this->markTestSkipped('The PI request controller does not exist. Move this test.');
+
         $threedStatusObj = new \stdClass();
         $threedStatusObj->status = "NotChecked";
 
@@ -311,6 +315,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteERROR()
     {
+        $this->markTestSkipped('The PI request controller does not exist. Move this test.');
+        
         $threedStatusObj = new \stdClass();
         $threedStatusObj->status = "NotChecked";
 
