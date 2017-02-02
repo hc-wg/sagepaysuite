@@ -26,6 +26,9 @@ class SharedTest extends \PHPUnit_Framework_TestCase
      */
     private $apiExceptionFactoryMock;
 
+    /** @var  \Ebizmarts\SagePaySuite\Model\Api\HttpText|PHPUnit_Framework_MockObject_MockObject */
+    private $httpTextMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -35,20 +38,20 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $transactionDetails = new \stdClass();
+        $transactionDetails->vpstxid      = "12345";
+        $transactionDetails->securitykey  = "fds87";
+        $transactionDetails->vpsauthcode  = "879243978234";
+        $transactionDetails->currency     = "USD";
+        $transactionDetails->vendortxcode = "1000000001-2016-12-12-12345678";
+
         $reportingApiMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Reporting')
             ->disableOriginalConstructor()
             ->getMock();
         $reportingApiMock->expects($this->any())
             ->method('getTransactionDetails')
-            ->will($this->returnValue((object)[
-                "vpstxid" => 12345,
-                "securitykey" => "fds87",
-                "vpsauthcode" => "879243978234",
-                "currency" => 'USD',
-                "vendortxcode" => '1000000001-2016-12-12-12345678',
-
-            ]));
+            ->willReturn($transactionDetails);
         $suiteHelperMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Data')
             ->disableOriginalConstructor()
@@ -107,12 +110,43 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $configMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
-            ->setMethods(['getMode'])
+            ->setMethods(['getMode','getVendorname'])
             ->setConstructorArgs(
                 ['scopeConfig' => $scopeConfigMock, 'storeManager' => $storeManagerMock, 'logger' => $loggerMock]
             )
             ->getMock();
         $configMock->method('getMode')->willReturn('test');
+        $configMock->method('getVendorname')->willReturn('testvendorname');
+
+        $this->curlMock = $this
+            ->getMockBuilder('Magento\Framework\HTTP\Adapter\Curl')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $curlFactoryMock = $this
+            ->getMockBuilder('Magento\Framework\HTTP\Adapter\CurlFactory')
+            ->setMethods(["create"])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $curlFactoryMock->expects($this->any())
+            ->method('create')
+            ->will($this->returnValue($this->curlMock));
+
+        $this->httpTextMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Api\HttpText::class)
+            ->setMethods(['executePost', 'getResponseData', 'arrayToQueryParams'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $httpTextFactoryMock = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $httpTextFactoryMock
+            ->expects($this->any())
+            ->method('create')
+            ->willReturn($this->httpTextMock);
+
 
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $this->sharedApiModel = $objectManagerHelper->getObject(
@@ -120,10 +154,10 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             [
                 "reportingApi"        => $reportingApiMock,
                 "suiteHelper"         => $suiteHelperMock,
-                "curlFactory"         => $curlFactoryMock,
                 "apiExceptionFactory" => $this->apiExceptionFactoryMock,
                 "config"              => $configMock,
-                'suiteRequestHelper'  => $suiteRequestHelperMock
+                'suiteRequestHelper'  => $suiteRequestHelperMock,
+                "httpTextFactory"     => $httpTextFactoryMock
             ]
         );
     }
@@ -131,37 +165,51 @@ class SharedTest extends \PHPUnit_Framework_TestCase
 
     public function testVoidTransaction()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                'Status=OK'. PHP_EOL .
-                'StatusDetail=OK STATUS'. PHP_EOL
-            );
+        $stringResponse = 'HTTP/1.1 200 OK';
+        $stringResponse .= "\n\n";
+        $stringResponse .= "VPSProtocol=3.00\n";
+        $stringResponse .= "Status=OK\n";
+        $stringResponse .= "StatusDetail=Success.\n";
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $responseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\HttpResponse::class)
+            ->setMethods(['getStatus'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $responseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
             ->willReturn(200);
 
-        $stringWrite = "VPSProtocol=3.00&TxType=VOID&Vendor=&VendorTxCode=1000000001-2016-12-12-12345&VPSTxId=12345";
-        $stringWrite .= "&SecurityKey=fds87&TxAuthNo=879243978234&";
-
-        $this->curlMock->expects($this->once())
-            ->method('write')
+        $this->httpTextMock
+            ->method('getResponseData')
+            ->willReturn($stringResponse);
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('arrayToQueryParams')
             ->with(
-                \Zend_Http_Client::POST,
-                Config::URL_SHARED_VOID_TEST,
-                '1.0',
-                [],
-                $stringWrite
+                [
+                    'VPSProtocol'  => '3.00',
+                    'TxType'       => 'VOID',
+                    'Vendor'       => "testvendorname",
+                    'VendorTxCode' => "1000000001-2016-12-12-12345",
+                    'SecurityKey'  => "fds87",
+                    'TxAuthNo'     => "879243978234",
+                    "VPSTxId"      => "12345"
+                ]
             );
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->willReturn($responseMock);
 
         $this->assertEquals(
             [
                 "status" => 200,
                 "data" => [
-                    'Status' => 'OK',
-                    'StatusDetail' => 'OK STATUS'
+                    'VPSProtocol'  => '3.00',
+                    'Status'       => 'OK',
+                    'StatusDetail' => 'Success.'
                 ]
             ],
             $this->sharedApiModel->voidTransaction("12345")
