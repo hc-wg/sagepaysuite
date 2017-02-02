@@ -17,11 +17,6 @@ class SharedTest extends \PHPUnit_Framework_TestCase
     private $sharedApiModel;
 
     /**
-     * @var \Magento\Framework\HTTP\Adapter\Curl|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $curlMock;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory|\PHPUnit_Framework_MockObject_MockObject
      */
     private $apiExceptionFactoryMock;
@@ -66,19 +61,6 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['populateAddressInformation'])
             ->getMock();
 
-        $this->curlMock = $this
-            ->getMockBuilder('Magento\Framework\HTTP\Adapter\Curl')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $curlFactoryMock = $this
-            ->getMockBuilder('Magento\Framework\HTTP\Adapter\CurlFactory')
-            ->setMethods(["create"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $curlFactoryMock->expects($this->any())
-            ->method('create')
-            ->will($this->returnValue($this->curlMock));
-
         $storerMock = $this
             ->getMockBuilder('Magento\Store\Model\Store')
             ->disableOriginalConstructor()
@@ -117,19 +99,6 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $configMock->method('getMode')->willReturn('test');
         $configMock->method('getVendorname')->willReturn('testvendorname');
-
-        $this->curlMock = $this
-            ->getMockBuilder('Magento\Framework\HTTP\Adapter\Curl')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $curlFactoryMock = $this
-            ->getMockBuilder('Magento\Framework\HTTP\Adapter\CurlFactory')
-            ->setMethods(["create"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $curlFactoryMock->expects($this->any())
-            ->method('create')
-            ->will($this->returnValue($this->curlMock));
 
         $this->httpTextMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Api\HttpText::class)
@@ -218,92 +187,124 @@ class SharedTest extends \PHPUnit_Framework_TestCase
 
     public function testRefundTransaction()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                'Status=OK'. PHP_EOL .
-                'StatusDetail=OK STATUS'. PHP_EOL
-            );
+        $stringResponse = 'HTTP/1.1 200 OK';
+        $stringResponse .= "\n\n";
+        $stringResponse .= "VPSProtocol=3.00\n";
+        $stringResponse .= "Status=OK\n";
+        $stringResponse .= "StatusDetail=Success.\n";
+        $stringResponse .= "VPSTxId=123456\n";
+        $stringResponse .= "TxAuthNo=8792439782345\n";
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $responseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\HttpResponse::class)
+            ->setMethods(['getStatus'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $responseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
             ->willReturn(200);
 
-        $stringWrite = "VPSProtocol=3.00&TxType=REFUND&Vendor=&VendorTxCode=1000000001-2016-12-12-12345&Amount=100.00";
-        $stringWrite .= "&Currency=USD&Description=Refund+issued+from+magento.&RelatedVPSTxId=12345";
-        $stringWrite .= "&RelatedVendorTxCode=1000000001-2016-12-12-12345678&RelatedSecurityKey=fds87";
-        $stringWrite .= "&RelatedTxAuthNo=879243978234&";
-
-        $this->curlMock->expects($this->once())
-            ->method('write')
+        $this->httpTextMock
+            ->method('getResponseData')
+            ->willReturn($stringResponse);
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('arrayToQueryParams')
             ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REFUND_TEST,
-                '1.0',
-                [],
-                $stringWrite
+                [
+                    'VPSProtocol'         => '3.00',
+                    'TxType'              => 'REFUND',
+                    'Vendor'              => "testvendorname",
+                    'VendorTxCode'        => "1000000001-2016-12-12-12345",
+                    'Amount'              => "100.00",
+                    'Currency'            => "USD",
+                    'Description'         => "Refund issued from magento.",
+                    'RelatedVPSTxId'      => "12345",
+                    'RelatedVendorTxCode' => "1000000001-2016-12-12-12345678",
+                    "RelatedSecurityKey"  => "fds87",
+                    "RelatedTxAuthNo"     => "879243978234"
+                ]
             );
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->willReturn($responseMock);
 
         $this->assertEquals(
             [
                 "status" => 200,
                 "data" => [
-                    'Status' => 'OK',
-                    'StatusDetail' => 'OK STATUS'
+                    'VPSProtocol'  => '3.00',
+                    'VPSTxId'      => '123456',
+                    'TxAuthNo'     => '8792439782345',
+                    'Status'       => 'OK',
+                    'StatusDetail' => 'Success.'
                 ]
             ],
             $this->sharedApiModel->refundTransaction("12345", 100, 1)
         );
     }
 
+    /**
+     * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage The Transaction has already been Refunded.
+     */
     public function testRefundTransactionERROR()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                'Status=INVALID'. PHP_EOL .
-                'StatusDetail=2013 : INVALID STATUS'. PHP_EOL
-            );
+        $stringResponse = 'HTTP/1.1 200 OK';
+        $stringResponse .= "\n\n";
+        $stringResponse .= "VPSProtocol=3.00\n";
+        $stringResponse .= "Status=INVALID\n";
+        $stringResponse .= "StatusDetail=INVALID : The Transaction has already been Refunded.\n";
+        $stringResponse .= "VPSTxId=123456\n";
+        $stringResponse .= "TxAuthNo=8792439782345\n";
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $responseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\HttpResponse::class)
+            ->setMethods(['getStatus'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $responseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
             ->willReturn(200);
 
-        $stringWrite = "VPSProtocol=3.00&TxType=REFUND&Vendor=&VendorTxCode=1000000001-2016-12-12-12345&Amount=100.00";
-        $stringWrite .= "&Currency=USD&Description=Refund+issued+from+magento.&RelatedVPSTxId=12345&";
-        $stringWrite .= "RelatedVendorTxCode=1000000001-2016-12-12-12345678&RelatedSecurityKey=fds87";
-        $stringWrite .= "&RelatedTxAuthNo=879243978234&";
-
-        $this->curlMock->expects($this->once())
-            ->method('write')
+        $this->httpTextMock
+            ->method('getResponseData')
+            ->willReturn($stringResponse);
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('arrayToQueryParams')
             ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_REFUND_TEST,
-                '1.0',
-                [],
-                $stringWrite
+                [
+                    'VPSProtocol'         => '3.00',
+                    'TxType'              => 'REFUND',
+                    'Vendor'              => "testvendorname",
+                    'VendorTxCode'        => "1000000001-2016-12-12-12345",
+                    'Amount'              => "100.00",
+                    'Currency'            => "USD",
+                    'Description'         => "Refund issued from magento.",
+                    'RelatedVPSTxId'      => "12345",
+                    'RelatedVendorTxCode' => "1000000001-2016-12-12-12345678",
+                    "RelatedSecurityKey"  => "fds87",
+                    "RelatedTxAuthNo"     => "879243978234"
+                ]
             );
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->willReturn($responseMock);
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
-            new \Magento\Framework\Phrase("INVALID STATUS"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("INVALID STATUS"))
+            new \Magento\Framework\Phrase("The Transaction has already been Refunded."),
+            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("INVALID"))
         );
-
         $this->apiExceptionFactoryMock->expects($this->any())
             ->method('create')
             ->will($this->returnValue($apiException));
 
-        try {
-            $this->sharedApiModel->refundTransaction("12345", 100, 1);
-            $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->assertEquals(
-                "INVALID STATUS",
-                $apiException->getUserMessage()
-            );
-        }
+        $this->sharedApiModel->refundTransaction("12345", 100, 1);
     }
 
     public function testReleaseTransaction()
