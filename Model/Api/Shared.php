@@ -40,7 +40,7 @@ class Shared
      */
     private $_reportingApi;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpText  */
+    /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory  */
     private $httpTextFactory;
 
     /**
@@ -80,9 +80,6 @@ class Shared
         $data['SecurityKey']  = (string)$transaction->securitykey;
         $data['TxAuthNo']     = (string)$transaction->vpsauthcode;
 
-        //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
-
         return $this->_executeRequest(Config::ACTION_VOID, $data);
     }
 
@@ -102,9 +99,6 @@ class Shared
         $data['RelatedSecurityKey']  = (string)$transaction->securitykey;
         $data['RelatedTxAuthNo']     = (string)$transaction->vpsauthcode;
 
-        //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
-
         return $this->_executeRequest(Config::ACTION_REFUND, $data);
     }
 
@@ -123,9 +117,6 @@ class Shared
         $data['TxAuthNo']      = (string)$transaction->vpsauthcode;
         $data['ReleaseAmount'] = number_format($amount, 2, '.', '');
 
-        //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
-
         return $this->_executeRequest(Config::ACTION_RELEASE, $data);
     }
 
@@ -138,14 +129,11 @@ class Shared
         $data['Vendor']              = $this->_config->getVendorname();
         $data['VendorTxCode']        = $this->_suiteHelper->generateVendorTxCode($order_id, Config::ACTION_AUTHORISE);
         $data['Amount']              = number_format($amount, 2, '.', '');
-        $data['Description']         = "Authorize transaction from Magento";
+        $data['Description']         = "Authorise transaction from Magento";
         $data['RelatedVPSTxId']      = (string)$transaction->vpstxid;
         $data['RelatedVendorTxCode'] = (string)$transaction->vendortxcode;
         $data['RelatedSecurityKey']  = (string)$transaction->securitykey;
         $data['RelatedTxAuthNo']     = (string)$transaction->vpsauthcode;
-
-        //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
 
         return $this->_executeRequest(Config::ACTION_AUTHORISE, $data);
     }
