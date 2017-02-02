@@ -119,29 +119,43 @@ class PostTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @expectedExceptionMessage INVALID ERROR
+     * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     */
     public function testSendPostERROR()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                'Status=INVALID'. PHP_EOL .
-                'StatusDetail=INVALID ERROR'. PHP_EOL
-            );
+        $stringResponse = 'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
+            'Status=INVALID'. PHP_EOL .
+            'StatusDetail=INVALID ERROR'. PHP_EOL;
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $responseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\HttpResponse::class)
+            ->setMethods(['getStatus'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $responseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
             ->willReturn(200);
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
+        $this->httpTextMock
+            ->method('getResponseData')
+            ->willReturn($stringResponse);
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('arrayToQueryParams')
             ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_LIVE,
-                '1.0',
-                [],
-                'Amount=100.00&Vendorname=testebizmarts&URL=http%3A%2F%2Fexample.com%3Ftest%3D1%26test2%3D2&'
+                [
+                    'URL'        => "http://example.com?test=1&test2=2",
+                    'Amount'     => '100.00',
+                    'Vendorname' => 'testebizmarts',
+                ]
             );
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->willReturn($responseMock);
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new \Magento\Framework\Phrase("INVALID ERROR"),
@@ -152,22 +166,14 @@ class PostTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($apiException));
 
-        try {
-            $this->postApiModel->sendPost(
-                [
-                    "Amount" => "100.00",
-                    "Vendorname" => "testebizmarts",
-                    "URL" => "http://example.com?test=1&test2=2"
-                ],
-                \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_LIVE,
-                ["OK"]
-            );
-            $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->assertEquals(
-                "INVALID ERROR",
-                $apiException->getUserMessage()
-            );
-        }
+        $this->postApiModel->sendPost(
+            [
+                "URL"        => "http://example.com?test=1&test2=2",
+                "Amount"     => "100.00",
+                "Vendorname" => "testebizmarts"
+            ],
+            \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_LIVE,
+            ["OK"]
+        );
     }
 }
