@@ -14,14 +14,12 @@ class PostTest extends \PHPUnit_Framework_TestCase
     private $postApiModel;
 
     /**
-     * @var \Magento\Framework\HTTP\Adapter\Curl|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $curlMock;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory|\PHPUnit_Framework_MockObject_MockObject
      */
     private $apiExceptionFactoryMock;
+
+    /** @var  \Ebizmarts\SagePaySuite\Model\Api\HttpText|PHPUnit_Framework_MockObject_MockObject */
+    private $httpTextMock;
 
     // @codingStandardsIgnoreStart
     protected function setUp()
@@ -32,32 +30,34 @@ class PostTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->curlMock = $this
-            ->getMockBuilder('Magento\Framework\HTTP\Adapter\Curl')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $curlFactoryMock = $this
-            ->getMockBuilder('Magento\Framework\HTTP\Adapter\CurlFactory')
-            ->setMethods(["create"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $curlFactoryMock->expects($this->any())
-            ->method('create')
-            ->will($this->returnValue($this->curlMock));
-
         $suiteHelperMock = $this
         ->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Request::class)
             ->setMethods(['populateAddressInformation'])
         ->disableOriginalConstructor()
         ->getMock();
 
+        $this->httpTextMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Api\HttpText::class)
+            ->setMethods(['executePost', 'getResponseData', 'arrayToQueryParams'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $httpTextFactoryMock = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $httpTextFactoryMock
+            ->expects($this->any())
+            ->method('create')
+            ->willReturn($this->httpTextMock);
+
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $this->postApiModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Api\Post',
             [
-                "curlFactory" => $curlFactoryMock,
                 "apiExceptionFactory" => $this->apiExceptionFactoryMock,
-                'suiteHelper' => $suiteHelperMock
+                'suiteHelper'         => $suiteHelperMock,
+                "httpTextFactory"     => $httpTextFactoryMock
             ]
         );
     }
@@ -65,43 +65,53 @@ class PostTest extends \PHPUnit_Framework_TestCase
 
     public function testSendPost()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                'Status=OK'. PHP_EOL .
-                'StatusDetail=OK STATUS'. PHP_EOL .
-                'URL2=http://example2.com?test=1&test2=2'. PHP_EOL
-            );
+        $stringResponse = 'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
+            'Status=OK'. PHP_EOL .
+            'StatusDetail=OK STATUS'. PHP_EOL .
+            'URL2=http://example2.com?test=1&test2=2'. PHP_EOL;
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $responseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\HttpResponse::class)
+            ->setMethods(['getStatus'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $responseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
             ->willReturn(200);
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
+        $this->httpTextMock
+            ->method('getResponseData')
+            ->willReturn($stringResponse);
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('arrayToQueryParams')
             ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_LIVE,
-                '1.0',
-                [],
-                'Amount=100.00&Vendorname=testebizmarts&URL=http%3A%2F%2Fexample.com%3Ftest%3D1%26test2%3D2&'
+                [
+                    'URL'        => "http://example.com?test=1&test2=2",
+                    'Amount'     => '100.00',
+                    'Vendorname' => 'testebizmarts',
+                ]
             );
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->willReturn($responseMock);
 
         $this->assertEquals(
             [
                 "status" => 200,
                 "data" => [
-                    "Status" => "OK",
+                    "URL2"         => "http://example2.com?test=1&test2=2",
+                    "Status"       => "OK",
                     "StatusDetail" => "OK STATUS",
-                    "URL2" => "http://example2.com?test=1&test2=2"
                 ]
             ],
             $this->postApiModel->sendPost(
                 [
-                    "Amount" => "100.00",
-                    "Vendorname" => "testebizmarts",
-                    "URL" => "http://example.com?test=1&test2=2"
+                    "Amount"     => "100.00",
+                    "URL"        => "http://example.com?test=1&test2=2",
+                    "Vendorname" => "testebizmarts"
                 ],
                 \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_LIVE,
                 ["OK"]
