@@ -149,11 +149,11 @@ class Shared
         //populate quote data
         $data = array_merge($data, $quote_data);
 
-        $data['Description'] = "Repeat transaction from Magento";
-        $data['RelatedVPSTxId'] = (string)$transaction->vpstxid;
+        $data['Description']         = "Repeat transaction from Magento";
+        $data['RelatedVPSTxId']      = (string)$transaction->vpstxid;
         $data['RelatedVendorTxCode'] = (string)$transaction->vendortxcode;
-        $data['RelatedSecurityKey'] = (string)$transaction->securitykey;
-        $data['RelatedTxAuthNo'] = (string)$transaction->vpsauthcode;
+        $data['RelatedSecurityKey']  = (string)$transaction->securitykey;
+        $data['RelatedTxAuthNo']     = (string)$transaction->vpsauthcode;
 
         return $this->_executeRequest($paymentAction, $data);
     }
