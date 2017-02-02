@@ -348,39 +348,64 @@ class SharedTest extends \PHPUnit_Framework_TestCase
 
     public function testAuthorizeTransaction()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                'Status=OK'. PHP_EOL .
-                'StatusDetail=OK STATUS'. PHP_EOL
-            );
+        $stringResponse = 'HTTP/1.1 200 OK';
+        $stringResponse .= "\n\n";
+        $stringResponse .= "VPSProtocol=3.00\n";
+        $stringResponse .= "Status=OK\n";
+        $stringResponse .= "StatusDetail=Success.\n";
+        $stringResponse .= "VPSTxId=123456\n";
+        $stringResponse .= "TxAuthNo=2439782345\n";
+        $stringResponse .= "SecurityKey=8759623519\n";
+        $stringResponse .= "BankAuthCode=T99777\n";
+        $stringResponse .= "DeclineCode=00\n";
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $responseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\HttpResponse::class)
+            ->setMethods(['getStatus'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $responseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
             ->willReturn(200);
 
-        $stringWrite = "VPSProtocol=3.00&TxType=AUTHORISE&Vendor=&VendorTxCode=1000000001-2016-12-12-12345";
-        $stringWrite .= "&Amount=100.00&Description=Authorize+transaction+from+Magento&RelatedVPSTxId=12345&";
-        $stringWrite .= "RelatedVendorTxCode=1000000001-2016-12-12-12345678&RelatedSecurityKey=fds87&";
-        $stringWrite .= "RelatedTxAuthNo=879243978234&";
-
-        $this->curlMock->expects($this->once())
-            ->method('write')
+        $this->httpTextMock
+            ->method('getResponseData')
+            ->willReturn($stringResponse);
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('arrayToQueryParams')
             ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_SHARED_AUTHORISE_TEST,
-                '1.0',
-                [],
-                $stringWrite
+                [
+                    'VPSProtocol'         => '3.00',
+                    'TxType'              => 'AUTHORISE',
+                    'Vendor'              => "testvendorname",
+                    'VendorTxCode'        => "1000000001-2016-12-12-12345",
+                    'Amount'              => "100.00",
+                    'Description'         => "Authorise transaction from Magento",
+                    'RelatedVPSTxId'      => "12345",
+                    'RelatedVendorTxCode' => "1000000001-2016-12-12-12345678",
+                    "RelatedSecurityKey"  => "fds87",
+                    "RelatedTxAuthNo"     => "879243978234"
+                ]
             );
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->willReturn($responseMock);
 
         $this->assertEquals(
             [
                 "status" => 200,
                 "data" => [
-                    'Status' => 'OK',
-                    'StatusDetail' => 'OK STATUS'
+                    'Status'       => 'OK',
+                    'StatusDetail' => 'Success.',
+                    'VPSTxId'      => '123456',
+                    'VPSProtocol'  => '3.00',
+                    'TxAuthNo'     => '2439782345',
+                    'SecurityKey'  => '8759623519',
+                    'BankAuthCode' => 'T99777',
+                    'DeclineCode'  => '00'
                 ]
             ],
             $this->sharedApiModel->authorizeTransaction("12345", 100, 1)
