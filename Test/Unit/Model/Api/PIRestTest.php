@@ -8,81 +8,161 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
 class PIRestTest extends \PHPUnit_Framework_TestCase
 {
-    private $curlFactoryMock;
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
     private $pirestApiModel;
 
     /**
-     * @var \Magento\Framework\HTTP\Adapter\Curl|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $curlMock;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory|\PHPUnit_Framework_MockObject_MockObject
      */
     private $apiExceptionFactoryMock;
 
+    private $objectManager;
+
+    /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpRest|\PHPUnit_Framework_MockObject_MockObject */
+    private $httpRestMock;
+
+    private $httpRestFactoryMock;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\Data\HttpResponse|\PHPUnit_Framework_MockObject_MockObject */
+    private $httpResponseMock;
+
+    /** @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject */
+    private $configMock;
+
+    const PI_KEY      = "hJYxsw7HLbj40cB8udES8CDRFLhuJ8G54O6rDpUXvE6hYDrria";
+    const PI_PASSWORD = "o2iHSrFybYMZpmWOQMuhsXP52V4fBtpuSDshrKDSWsBY1OiN6hwd9Kb12z4j5Us5u";
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
+        $this->objectManager = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+
         $this->apiExceptionFactoryMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory')
             ->setMethods(["create"])
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->curlMock = $this
-            ->getMockBuilder('Magento\Framework\HTTP\Adapter\Curl')
+        $this->configMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->curlFactoryMock = $this
-            ->getMockBuilder('Magento\Framework\HTTP\Adapter\CurlFactory')
-            ->setMethods(["create"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->curlFactoryMock->expects($this->any())
-            ->method('create')
-            ->will($this->returnValue($this->curlMock));
 
-        $objectManagerHelper   = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->pirestApiModel  = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
-            [
-                "curlFactory"         => $this->curlFactoryMock,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock
-            ]
-        );
+        $this->httpRestMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Api\HttpRest::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->httpRestFactoryMock = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $this->httpRestFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($this->httpRestMock);
+
+        $this->httpResponseMock = $this->
+            getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\HttpResponse::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
     }
     // @codingStandardsIgnoreEnd
 
     public function testGenerateMerchantKey()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"merchantSessionKey": "fds678f6d7s86f78ds68f7dsfd"}'
-            );
+        $this->configMock
+            ->expects($this->once())
+            ->method('getPIKey')
+            ->willReturn(self::PI_KEY);
+        $this->configMock
+            ->expects($this->once())
+            ->method('getPIPassword')
+            ->willReturn(self::PI_PASSWORD);
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $mskRequestMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequest::class)
+            ->setMethods(['__toArray'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $mskRequestMock
+            ->expects($this->once())
+            ->method('__toArray')
+            ->willReturn(['vendorName' => 'testvendorname']);
+        $mskRequestMockFactory = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $mskRequestMockFactory
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($mskRequestMock);
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('setBasicAuth')
+            ->with(self::PI_KEY, self::PI_PASSWORD);
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('setUrl')
+            ->with("https://test.sagepay.com/api/v1/merchant-session-keys");
+
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getStatus')
             ->willReturn(201);
-
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_GENERATE_MERCHANT_KEY,
-                '1.0',
-                ['Content-type: application/json'],
-                '{"vendorName":null}'
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(
+                json_decode(
+                    '{"merchantSessionKey":"M1E996F5-A9BC-41FE-B088-E5B73DB94277","expiry":"2025-08-11T11:45:16.285+01:00"}'
+                )
             );
 
-        $this->assertEquals(
-            'fds678f6d7s86f78ds68f7dsfd',
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"vendorName":"testvendorname"}')
+            ->willReturn($this->httpResponseMock);
+
+        $mskResponseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponse::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $mskResponseFactory = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $mskResponseFactory
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($mskResponseMock);
+        $mskResponseMock
+            ->expects($this->once())
+            ->method('setExpiry')
+            ->with("2025-08-11T11:45:16.285+01:00");
+        $mskResponseMock
+            ->expects($this->once())
+            ->method('setMerchantSessionKey')
+            ->with("M1E996F5-A9BC-41FE-B088-E5B73DB94277");
+
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "mskRequest"      => $mskRequestMockFactory,
+                "httpRestFactory" => $this->httpRestFactoryMock,
+                "mskResponse"     => $mskResponseFactory,
+                "config"          => $this->configMock
+            ]
+        );
+
+        $this->assertInstanceOf(
+            '\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponse',
             $this->pirestApiModel->generateMerchantKey()
         );
     }
