@@ -6,8 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-
 /**
  * Sage Pay PI REST API
  *
@@ -21,21 +19,11 @@ class PIRest
     const ACTION_SUBMIT_3D                = '3d-secure';
     const ACTION_TRANSACTION_DETAILS      = 'transaction_details';
 
-    /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
-     */
+    /** @var \Ebizmarts\SagePaySuite\Model\Config */
     private $_config;
 
-    /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
-     */
+    /** @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory */
     private $_apiExceptionFactory;
-
-    /**
-     * Logging instance
-     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
-     */
-    private $_suiteLogger;
 
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface */
     private $piCaptureResultFactory;
@@ -78,7 +66,6 @@ class PIRest
      * @param HttpRestFactory $httpRestFactory
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
      * @param ApiExceptionFactory $apiExceptionFactory
-     * @param Logger $suiteLogger
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $piCaptureResultFactory
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory $paymentMethodResultFactory
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory $cardResultFactory
@@ -95,7 +82,6 @@ class PIRest
         \Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory $httpRestFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
-        Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $piCaptureResultFactory,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory $paymentMethodResultFactory,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory $cardResultFactory,
@@ -112,7 +98,6 @@ class PIRest
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
         $this->_apiExceptionFactory       = $apiExceptionFactory;
-        $this->_suiteLogger               = $suiteLogger;
         $this->piCaptureResultFactory     = $piCaptureResultFactory;
         $this->paymentMethodResultFactory = $paymentMethodResultFactory;
         $this->cardResultFactory          = $cardResultFactory;
