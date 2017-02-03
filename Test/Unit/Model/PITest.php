@@ -108,8 +108,14 @@ class PITest extends \PHPUnit_Framework_TestCase
             ->method('generateVendorTxCode')
             ->willReturn('R1000001');
 
-        $return = new \stdClass();
-        $return->transactionId = 'a';
+        $returnMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getTransactionId'])
+            ->getMock();
+        $returnMock->expects($this->once())
+            ->method('getTransactionId')
+            ->willReturn('a');
+
         $piRestApiMock
             ->expects($this->once())
             ->method('refund')
@@ -120,7 +126,7 @@ class PITest extends \PHPUnit_Framework_TestCase
                 'GBP',
                 'Magento backend refund.'
             )
-        ->willReturn($return);
+        ->willReturn($returnMock);
 
         $piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
