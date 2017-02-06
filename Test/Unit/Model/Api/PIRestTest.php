@@ -167,48 +167,124 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage Missing mandatory field: vendorName
+     */
     public function testGenerateMerchantKeyERROR()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"errors": [{"description": "Missing mandatory field","property": "vendorName","code": 1003}]}'
-            );
+        $this->configMock
+            ->expects($this->once())
+            ->method('getPIKey')
+            ->willReturn(self::PI_KEY);
+        $this->configMock
+            ->expects($this->once())
+            ->method('getPIPassword')
+            ->willReturn(self::PI_PASSWORD);
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $mskRequestMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequest::class)
+            ->setMethods(['__toArray'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $mskRequestMock
+            ->expects($this->once())
+            ->method('__toArray')
+            ->willReturn(['vendorName' => '']);
+        $mskRequestMockFactory = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $mskRequestMockFactory
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($mskRequestMock);
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('setBasicAuth')
+            ->with(self::PI_KEY, self::PI_PASSWORD);
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('setUrl')
+            ->with("https://test.sagepay.com/api/v1/merchant-session-keys");
+
+        $this->httpResponseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
             ->willReturn(422);
-
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_GENERATE_MERCHANT_KEY,
-                '1.0',
-                ['Content-type: application/json'],
-                '{"vendorName":null}'
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(
+                json_decode(
+                    '{"errors": [{"description": "Missing mandatory field","property": "vendorName","code": 1003}]}'
+                )
             );
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"vendorName":""}')
+            ->willReturn($this->httpResponseMock);
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
-            new \Magento\Framework\Phrase("error description"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("error description"))
+            new \Magento\Framework\Phrase("Missing mandatory field: vendorName"),
+            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Missing mandatory field: vendorName"))
         );
 
-        $this->apiExceptionFactoryMock->expects($this->any())
-            ->method('create')
-            ->will($this->returnValue($apiException));
+        $phrase = new \Magento\Framework\Phrase("Missing mandatory field: vendorName");
 
-        try {
-            $this->pirestApiModel->generateMerchantKey();
-            $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->assertEquals(
-                "error description",
-                $apiException->getUserMessage()
-            );
-        }
+        $this->apiExceptionFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->with(["phrase" => $phrase, "code" => "1003"])
+            ->willReturn($apiException);
+
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "mskRequest"          => $mskRequestMockFactory,
+                "httpRestFactory"     => $this->httpRestFactoryMock,
+                "config"              => $this->configMock,
+                "apiExceptionFactory" => $this->apiExceptionFactoryMock
+            ]
+        );
+
+        $this->pirestApiModel->generateMerchantKey();
+
+//        $this->curlMock->expects($this->once())
+//            ->method('read')
+//            ->willReturn(
+//                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
+//                '{"errors": [{"description": "Missing mandatory field","property": "vendorName","code": 1003}]}'
+//            );
+//
+//        $this->curlMock->expects($this->once())
+//            ->method('getInfo')
+//            ->willReturn(422);
+//
+//        $this->curlMock->expects($this->once())
+//            ->method('write')
+//            ->with(
+//                \Zend_Http_Client::POST,
+//                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
+//                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_GENERATE_MERCHANT_KEY,
+//                '1.0',
+//                ['Content-type: application/json'],
+//                '{"vendorName":null}'
+//            );
+//
+//        $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
+//            new \Magento\Framework\Phrase("error description"),
+//            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("error description"))
+//        );
+//
+//        $this->apiExceptionFactoryMock->expects($this->any())
+//            ->method('create')
+//            ->will($this->returnValue($apiException));
+//
+//        $this->pirestApiModel->generateMerchantKey();
     }
 
     /**
