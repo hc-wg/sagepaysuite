@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2015 ebizmarts. All rights reserved.
+ * Copyright © 2017 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
@@ -202,6 +202,9 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
             }
 
             $itemQty = $item->getQty();
+            if (!is_numeric($itemQty) || $itemQty <= 0) {
+                continue;
+            }
 
             $itemDiscount = $item->getDiscountAmount() / $itemQty;
             $taxAmount = $item->getTaxAmount() / $itemQty;
@@ -715,36 +718,5 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
                 $node->addChild('recipientState', $this->stringToSafeXMLChar($regionCode));
             }
         }
-    }
-
-    /**
-     * @param $data
-     * @return mixed
-     */
-    public function rawResponseToArray($data)
-    {
-        $output = [];
-
-        $responseString = preg_split('/^\r?$/m', $data, 2);
-
-        //Split response into name=value pairs
-        $responseArray = explode("\n", $responseString[1]);
-
-        // Tokenise the response
-        $dataCnt = count($responseArray);
-        for ($i = 0; $i < $dataCnt; $i++) {
-            // Find position of first "=" character
-            $splitAt = strpos($responseArray[$i], "=");
-
-            // Create an associative (hash) array with key/value pairs ('trim' strips excess whitespace)
-            if ($splitAt !== false) {
-                $arVal = (string)trim(substr($responseArray[$i], ($splitAt + 1)));
-                if (!empty($arVal)) {
-                    $output[trim(substr($responseArray[$i], 0, $splitAt))] = $arVal;
-                }
-            }
-        }
-
-        return $output;
     }
 }

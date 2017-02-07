@@ -20,6 +20,8 @@
 3. Run this command to get the module.
 
 `composer require ebizmarts/sagepaysuite 1.1.9`
+4. Install the module.
+`bin/magento setup:upgrade`
 
 
 ##Manual installation

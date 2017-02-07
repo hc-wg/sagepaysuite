@@ -53,6 +53,20 @@ class ApiExceptionTest extends \PHPUnit_Framework_TestCase
                     'expected' => "Transaction NOT found / Invalid transaction Id."
                 ]
             ],
+            'test VALID_VALUE_REQUIRED_USERNANE' => [
+                [
+                    'message' => "username=pedro",
+                    'code' => \Ebizmarts\SagePaySuite\Model\Api\ApiException::VALID_VALUE_REQUIRED,
+                    'expected' => "Invalid Sage Pay API credentials."
+                ]
+            ],
+            'test VALID_VALUE_REQUIRED_DEFAULT' => [
+                [
+                    'message' => "x=y",
+                    'code' => \Ebizmarts\SagePaySuite\Model\Api\ApiException::VALID_VALUE_REQUIRED,
+                    'expected' => "x=y"
+                ]
+            ],
             'test INVALID_MERCHANT_AUTHENTICATION' => [
                 [
                     'message' => "INVALID",
@@ -65,6 +79,13 @@ class ApiExceptionTest extends \PHPUnit_Framework_TestCase
                     'message' => "INVALID",
                     'code' => \Ebizmarts\SagePaySuite\Model\Api\ApiException::INVALID_USER_AUTH,
                     'expected' => "Your Sage Pay API user/password is invalid or the user might be locked out."
+                ]
+            ],
+            'test INVALID_SIGNATURE' => [
+                [
+                    'message'  => "INVALID",
+                    'code'     => \Ebizmarts\SagePaySuite\Model\Api\ApiException::INVALID_SIGNATURE,
+                    'expected' => 'Cannot validate the <signature> value.'
                 ]
             ],
             'test default' => [

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2015 ebizmarts. All rights reserved.
+ * Copyright © 2017 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
@@ -39,9 +39,9 @@ class CheckoutCartIndex implements ObserverInterface
     ) {
     
         $this->_checkoutSession = $checkoutSession;
-        $this->_suiteLogger = $suiteLogger;
-        $this->_orderFactory = $orderFactory;
-        $this->_quoteFactory = $quoteFactory;
+        $this->_suiteLogger     = $suiteLogger;
+        $this->_orderFactory    = $orderFactory;
+        $this->_quoteFactory    = $quoteFactory;
     }
 
     /**

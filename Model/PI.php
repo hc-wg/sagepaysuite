@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2015 ebizmarts. All rights reserved.
+ * Copyright © 2017 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
@@ -207,6 +207,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $vendorTxCode = $this->_suiteHelper->generateVendorTxCode($order->getIncrementId(), Config::ACTION_REFUND);
             $description  = 'Magento backend refund.';
 
+            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $refundResult */
             $refundResult = $this->_pirestapi->refund(
                 $vendorTxCode,
                 $vpsTxId,
@@ -214,7 +215,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
                 $order->getOrderCurrencyCode(), $description
             );
 
-            $payment->setTransactionId($refundResult->transactionId);
+            $payment->setTransactionId($refundResult->getTransactionId());
             $payment->setIsTransactionClosed(1);
             $payment->setShouldCloseParentTransaction(1);
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
@@ -338,9 +339,11 @@ class PI extends \Magento\Payment\Model\Method\Cc
         }
 
         //check allowed card types
-        $availableTypes = explode(',', $this->config->getAllowedCcTypes());
-        if (!in_array($info->getCcType(), $availableTypes)) {
-            $errorMsg = __('This credit card type is not allowed for this payment method');
+        if ($this->config->dropInEnabled() === false) {
+            $availableTypes = explode(',', $this->config->setMethodCode(Config::METHOD_PI)->getAllowedCcTypes());
+            if (!in_array($info->getCcType(), $availableTypes)) {
+                $errorMsg = __('This credit card type is not allowed for this payment method');
+            }
         }
 
         if ($errorMsg) {

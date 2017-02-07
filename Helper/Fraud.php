@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2015 ebizmarts. All rights reserved.
+ * Copyright © 2017 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
@@ -213,7 +213,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
             $fraudid                   = $fraudData->getThirdmanId();
             $fraudcode                 = $fraudData->getThirdmanScore();
             $fraudcodedetail           = $fraudData->getThirdmanAction();
-            $logData["fraudrules"]     = $fraudData->getThirdmanRules();
+            $logData["fraudrules"]     = $fraudData->getThirdmanRulesAsArray();
         }
 
         $logData["fraudscreenrecommendation"] = $fraudscreenrecommendation;
@@ -242,7 +242,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
             $fraudid                   = $fraudData->getThirdmanId();
             $fraudcode                 = $fraudData->getThirdmanScore();
             $fraudcodedetail           = $fraudData->getThirdmanAction();
-            $payment->setAdditionalInformation("fraudrules", serialize($fraudData->getThirdmanRules()));
+            $payment->setAdditionalInformation("fraudrules", $fraudData->getThirdmanRulesAsArray());
         }
 
         $payment->setAdditionalInformation("fraudscreenrecommendation", $fraudscreenrecommendation);

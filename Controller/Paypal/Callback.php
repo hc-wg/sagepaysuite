@@ -66,6 +66,9 @@ class Callback extends \Magento\Framework\App\Action\Action
      */
     private $_quoteFactory;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory */
+    private $actionFactory;
+
     /**
      * Callback constructor.
      * @param \Magento\Framework\App\Action\Context $context
@@ -93,7 +96,8 @@ class Callback extends \Magento\Framework\App\Action\Action
         \Magento\Quote\Model\Quote $quote,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory
+        \Magento\Quote\Model\QuoteFactory $quoteFactory,
+        \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory $actionFactory
     ) {
     
         parent::__construct($context);
@@ -108,6 +112,7 @@ class Callback extends \Magento\Framework\App\Action\Action
         $this->_orderFactory       = $orderFactory;
         $this->orderSender         = $orderSender;
         $this->_quoteFactory       = $quoteFactory;
+        $this->actionFactory       = $actionFactory;
 
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
     }
@@ -124,7 +129,7 @@ class Callback extends \Magento\Framework\App\Action\Action
             $this->_postData = $this->getRequest()->getPost();
 
             //log response
-            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $this->_postData);
+            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $this->_postData, [__METHOD__, __LINE__]);
 
             if (empty($this->_postData) || !isset($this->_postData->Status) || $this->_postData->Status != "PAYPALOK") {
                 if (!empty($this->_postData) && isset($this->_postData->StatusDetail)) {
@@ -234,32 +239,6 @@ class Callback extends \Magento\Framework\App\Action\Action
         }
     }
 
-    /**
-     * @return array
-     */
-    private function getActionClosedForPaymentAction()
-    {
-        switch ($this->_config->getSagepayPaymentAction()) {
-            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT:
-                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
-                $closed = true;
-                break;
-            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER:
-                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
-                $closed = false;
-                break;
-            case \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE:
-                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH;
-                $closed = false;
-                break;
-            default:
-                $action = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
-                $closed = true;
-                break;
-        }
-        return [$action, $closed];
-    }
-
     private function _confirmPayment($transactionId)
     {
         //invoice
@@ -269,7 +248,10 @@ class Callback extends \Magento\Framework\App\Action\Action
 
         $this->orderSender->send($this->_order);
 
-        list($action, $closed) = $this->getActionClosedForPaymentAction();
+        /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
+        $actionClosed = $this->actionFactory->create(['paymentAction' => $this->_config->getSagepayPaymentAction()]);
+        list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
+
         $transaction = $this->_transactionFactory->create();
         $transaction->setOrderPaymentObject($payment);
         $transaction->setTxnId($transactionId);

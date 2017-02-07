@@ -18,8 +18,7 @@ class PITest extends \PHPUnit_Framework_TestCase
      */
     private $configMock;
 
-    // @codingStandardsIgnoreStart
-    protected function setUp()
+    public function testGetConfig()
     {
         $piModelMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\PI')
@@ -37,40 +36,91 @@ class PITest extends \PHPUnit_Framework_TestCase
             ->method('getMethodInstance')
             ->willReturn($piModelMock);
 
+        $suiteHelperMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Data')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $suiteHelperMock
+            ->expects($this->once())
+            ->method('verify')
+            ->willReturn(true);
+
         $this->configMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $suiteHelperMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Data')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->configMock
+            ->expects($this->once())
+            ->method('getMode')
+            ->willReturn('test');
+
+        $this->configMock
+            ->expects($this->once())
+            ->method('dropInEnabled')
+            ->willReturn(true);
+
+        $this->configMock
+            ->expects($this->exactly(2))
+            ->method('setMethodCode')
+            ->with('sagepaysuitepi')
+            ->willReturnSelf();
 
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $this->piConfigProviderModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\ConfigProvider\PI',
             [
-                "config" => $this->configMock,
+                "config"        => $this->configMock,
                 "paymentHelper" => $paymentHelperMock,
-                'suiteHelper' => $suiteHelperMock
+                'suiteHelper'   => $suiteHelperMock
             ]
         );
-    }
-    // @codingStandardsIgnoreEnd
 
-    public function testGetConfig()
-    {
         $this->assertEquals(
             [
                 'payment' => [
                     'ebizmarts_sagepaysuitepi' => [
-                        'licensed' => null,
-                        'mode' => null
+                        'licensed' => true,
+                        'mode'     => 'test',
+                        'dropin'   => true
                     ],
                 ]
             ],
             $this->piConfigProviderModel->getConfig()
         );
+    }
+
+    public function testMethodNotAvailable()
+    {
+        $this->configMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $piModelMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\PI')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $piModelMock->expects($this->once())
+            ->method('isAvailable')
+            ->willReturn(false);
+
+        $paymentHelperMock = $this
+            ->getMockBuilder('Magento\Payment\Helper\Data')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentHelperMock->expects($this->once())
+            ->method('getMethodInstance')
+            ->willReturn($piModelMock);
+
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->piConfigProviderModel = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\ConfigProvider\PI',
+            [
+                "paymentHelper" => $paymentHelperMock
+            ]
+        );
+
+        $this->assertEquals([], $this->piConfigProviderModel->getConfig());
     }
 }

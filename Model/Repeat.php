@@ -1,15 +1,11 @@
 <?php
 /**
- * Copyright © 2015 ebizmarts. All rights reserved.
+ * Copyright © 2017 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Magento\Sales\Model\Order\Payment;
-use Magento\Sales\Model\Order\Payment\Transaction;
-use Magento\Quote\Model\Quote;
-use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Exception\LocalizedException;
 
 /**
@@ -136,7 +132,12 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
      */
     private $_suiteLogger;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Payment */
+    private $paymentOps;
+
     /**
+     * Repeat constructor.
+     * @param Payment $paymentOps
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory
@@ -147,11 +148,13 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
      * @param Api\Shared $sharedApi
      * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
      * @param Config $config
+     * @param Logger $suiteLogger
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
      * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
      * @param array $data
      */
     public function __construct(
+        \Ebizmarts\SagePaySuite\Model\Payment $paymentOps,
         \Magento\Framework\Model\Context $context,
         \Magento\Framework\Registry $registry,
         \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory,
@@ -181,10 +184,11 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
             $data
         );
 
-        $this->_suiteHelper = $suiteHelper;
-        $this->_sharedApi   = $sharedApi;
         $this->_config      = $config;
+        $this->_sharedApi   = $sharedApi;
+        $this->paymentOps   = $paymentOps;
         $this->_suiteLogger = $suiteLogger;
+        $this->_suiteHelper = $suiteHelper;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_REPEAT);
     }
 
@@ -198,48 +202,7 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-        $action = "with";
-        $transactionId = "";
-
-        if ($payment->getLastTransId()) {
-            try {
-                $transactionId = $payment->getLastTransId();
-
-                $paymentAction = $this->_config->getSagepayPaymentAction();
-                if ($payment->getAdditionalInformation('paymentAction')) {
-                    $paymentAction = $payment->getAdditionalInformation('paymentAction');
-                }
-
-                if ($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED) {
-                    $action = 'releasing';
-                    $this->_sharedApi->releaseTransaction($transactionId, $amount);
-                }
-
-                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, "CAPTURE");
-
-                $payment->setIsTransactionClosed(1);
-            } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-                $this->_suiteLogger->logException($apiException);
-                throw new LocalizedException(
-                    __(
-                        'There was an error %1 Sage Pay transaction %2: %3',
-                        $action,
-                        $transactionId,
-                        $apiException->getUserMessage()
-                    )
-                );
-            } catch (\Exception $e) {
-                $this->_suiteLogger->logException($e);
-                throw new LocalizedException(
-                    __(
-                        'There was an error %1 Sage Pay transaction %2: %3',
-                        $action,
-                        $transactionId,
-                        $e->getMessage()
-                    )
-                );
-            }
-        }
+        $this->paymentOps->capture($payment, $amount);
         return $this;
     }
 
@@ -253,30 +216,7 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function refund(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-        try {
-            $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
-            $order = $payment->getOrder();
-
-            $this->_sharedApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
-
-            $payment->setIsTransactionClosed(1);
-            $payment->setShouldCloseParentTransaction(1);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->_suiteLogger->logException($apiException);
-            throw new LocalizedException(
-                __(
-                    'There was an error refunding Sage Pay transaction %1: %2',
-                    $transactionId,
-                    $apiException->getUserMessage()
-                )
-            );
-        } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e);
-            throw new LocalizedException(
-                __('There was an error refunding Sage Pay transaction ' . $transactionId . ": " . $e->getMessage())
-            );
-        }
-
+        $this->paymentOps->refund($payment, $amount);
         return $this;
     }
 
@@ -299,7 +239,6 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function initialize($paymentAction, $stateObject)
     {
-        $payAction = $paymentAction;
         $payment   = $this->getInfoInstance();
         $order     = $payment->getOrder();
 

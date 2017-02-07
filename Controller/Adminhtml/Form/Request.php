@@ -92,7 +92,7 @@ class Request extends \Magento\Backend\App\AbstractAction
                 'crypt' => $this->_generateFormCrypt()
             ];
         } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e);
+            $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
             $responseContent = [
                 'success' => false,
@@ -153,7 +153,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         $data["AllowGiftAid"] = (int)$this->_config->isGiftAidEnabled();
 
         //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
 
         $preCryptString = '';
         foreach ($data as $field => $value) {

@@ -131,14 +131,14 @@ class PayPalRequestManagement implements \Ebizmarts\SagePaySuite\Api\PayPalManag
             $this->result->setSuccess(true);
             $this->result->setResponse($postResponse);
         } catch (Api\ApiException $apiException) {
-            $this->suiteLogger->logException($apiException);
+            $this->suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
 
             $this->result->setSuccess(false);
             $this->result->setErrorMessage(
                 __('Something went wrong while generating the Sage Pay request: '. $apiException->getUserMessage())
             );
         } catch (\Exception $e) {
-            $this->suiteLogger->logException($e);
+            $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
             $this->result->setSuccess(false);
             $this->result->setErrorMessage(

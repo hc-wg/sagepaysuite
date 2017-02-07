@@ -31,18 +31,36 @@ class RulesTest extends \PHPUnit_Framework_TestCase
     }
     // @codingStandardsIgnoreEnd
 
-    public function testRender()
+    public function testRenderEmpty()
     {
         $rowMock = $this
             ->getMockBuilder('Magento\Framework\DataObject')
             ->disableOriginalConstructor()
             ->getMock();
         $rowMock->expects($this->once())
-        ->method('getData')
-        ->will($this->returnValue([]));
+            ->method('getData')
+            ->with('additional_information')
+            ->willReturn([]);
 
         $this->assertEquals(
             '',
+            $this->rulesRendererBlock->render($rowMock)
+        );
+    }
+
+    public function testRenderNotEmpty()
+    {
+        $rowMock = $this
+            ->getMockBuilder('Magento\Framework\DataObject')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $rowMock->expects($this->once())
+            ->method('getData')
+            ->with('additional_information')
+            ->willReturn('a:1:{s:10:"fraudrules";a:0:{}}');
+
+        $this->assertEquals(
+            [],
             $this->rulesRendererBlock->render($rowMock)
         );
     }

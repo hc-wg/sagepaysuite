@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2015 ebizmarts. All rights reserved.
+ * Copyright © 2017 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
@@ -167,11 +167,29 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->method('getPayment')
             ->will($this->returnValue($paymentMock));
 
+        $closedActionMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config\ClosedForAction::class)
+            ->setMethods(['getActionClosedForPaymentAction'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $closedActionMock
+            ->expects($this->any())
+            ->method('getActionClosedForPaymentAction')
+            ->willReturn(['capture', true]);
+        $actionFactoryMock = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory')
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $actionFactoryMock
+            ->expects($this->any())
+            ->method('create')
+            ->willReturn($closedActionMock);
+
         $transactionMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
             ->disableOriginalConstructor()
             ->getMock();
-
         $transactionFactoryMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
             ->setMethods(['create'])
@@ -211,13 +229,14 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
         $this->formSuccessController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\Form\Success',
             [
-                'context' => $contextMock,
-                'config' => $configMock,
-                'quoteSession' => $quoteSessionMock,
-                'checkoutHelper' => $this->checkoutHelperMock,
+                'context'            => $contextMock,
+                'config'             => $configMock,
+                'quoteSession'       => $quoteSessionMock,
+                'checkoutHelper'     => $this->checkoutHelperMock,
                 'transactionFactory' => $transactionFactoryMock,
-                'formModel' => $formModelMock,
-                'quoteManagement' => $this->_quoteManagementMock
+                'formModel'          => $formModelMock,
+                'quoteManagement'    => $this->_quoteManagementMock,
+                'actionFactory'      => $actionFactoryMock
             ]
         );
     }

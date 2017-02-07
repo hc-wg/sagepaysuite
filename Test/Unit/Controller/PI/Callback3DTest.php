@@ -74,6 +74,10 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
         $paymentMock->expects($this->any())
             ->method('getMethodInstance')
             ->will($this->returnValue($piModelMock));
+        $paymentMock->expects($this->once())->method('setCcLast4')->with('0006');
+        $paymentMock->expects($this->once())->method('setCcExpMonth')->with('01');
+        $paymentMock->expects($this->once())->method('setCcExpYear')->with('18');
+        $paymentMock->expects($this->once())->method('setCcType')->with('VI');
 
         $checkoutSessionMock = $this
             ->getMockBuilder('Magento\Checkout\Model\Session')
@@ -174,31 +178,64 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue((object)[
                 "status" => "Authenticated"
             ]));
+
+        $transactionDetailsResultObj = json_decode('
+                {
+                    "statusCode": "0000",
+                    "statusDetail": "The Authorisation was Successful.",
+                    "transactionId": "263ECAA5-8B11-0D8B-8831-A8CA87F1A8B6",
+                    "transactionType": "Payment",
+                    "retrievalReference": 13696679,
+                    "bankResponseCode": "00",
+                    "bankAuthorisationCode": "999777",
+                    "paymentMethod": {
+                        "card": {
+                            "cardType": "Visa",
+                            "lastFourDigits": "0006",
+                            "expiryDate": "0118",
+                            "cardIdentifier": "99CB875C-2A6A-4CEE-8123-15EFA760C3F6",
+                            "reusable": false
+                        }
+                    },
+                    "amount": {
+                        "totalAmount": 16200,
+                        "saleAmount": 16200,
+                        "surchargeAmount": 0
+                    },
+                    "currency": "GBP",
+                    "status": "Ok",
+                    "3DSecure": {
+                        "status": "Authenticated"
+                    }
+                }
+        ');
+
         $pirestapiMock->expects($this->any())
             ->method('transactionDetails')
-            ->will($this->returnValue((object)[
-                "statusCode" => \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS,
-                "statusDetail" => "OK Status",
-                "3DSecure" => (object)[
-                    "status" => "OK"
-                ],
-            ]));
+            ->willReturn($transactionDetailsResultObj);
 
         $checkoutHelperMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Checkout')
             ->disableOriginalConstructor()
             ->getMock();
 
+        /** @var \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConverterObj */
+        $ccConverterObj = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\Config\SagePayCardType',
+            []
+        );
+
         $this->piCallback3DController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\PI\Callback3D',
             [
-                'context' => $contextMock,
-                'config' => $configMock,
-                'checkoutSession' => $checkoutSessionMock,
-                'orderFactory' => $orderFactoryMock,
-                'checkoutHelper' => $checkoutHelperMock,
-                'pirestapi' => $pirestapiMock,
-                'transactionFactory' => $transactionFactoryMock
+                'context'            => $contextMock,
+                'config'             => $configMock,
+                'checkoutSession'    => $checkoutSessionMock,
+                'orderFactory'       => $orderFactoryMock,
+                'checkoutHelper'     => $checkoutHelperMock,
+                'pirestapi'          => $pirestapiMock,
+                'transactionFactory' => $transactionFactoryMock,
+                'ccConverter'        => $ccConverterObj
             ]
         );
 

@@ -1,12 +1,10 @@
 <?php
 /**
- * Copyright © 2015 ebizmarts. All rights reserved.
+ * Copyright © 2017 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
-
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 /**
  * Sage Pay PI REST API
@@ -21,46 +19,97 @@ class PIRest
     const ACTION_SUBMIT_3D                = '3d-secure';
     const ACTION_TRANSACTION_DETAILS      = 'transaction_details';
 
-    /**
-     * @var \Magento\Framework\HTTP\Adapter\CurlFactory
-     *
-     */
-    private $_curlFactory;
-
-    /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
-     */
+    /** @var \Ebizmarts\SagePaySuite\Model\Config */
     private $_config;
 
-    /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
-     */
+    /** @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory */
     private $_apiExceptionFactory;
 
-    /**
-     * Logging instance
-     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
-     */
-    private $_suiteLogger;
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface */
+    private $piCaptureResultFactory;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodInterface */
+    private $paymentMethodResultFactory;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardInterface */
+    private $cardResultFactory;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDInterface */
+    private $threedStatusResultFactory;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory */
+    private $amountResultFactory;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory */
+    private $mskResponse;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory */
+    private $mskRequest;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory */
+    private $threedRequest;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory */
+    private $refundRequest;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory */
+    private $instructionRequest;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory */
+    private $instructionResponse;
+
+    /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory */
+    private $httpRestFactory;
 
     /**
-     * @param \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory
+     * PIRest constructor.
+     * @param HttpRestFactory $httpRestFactory
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
      * @param ApiExceptionFactory $apiExceptionFactory
-     * @param Logger $suiteLogger
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $piCaptureResultFactory
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory $paymentMethodResultFactory
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory $cardResultFactory
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory $threedResultFactory
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory $amountResultFactory
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory $mskResponse
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory $mskRequest
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory $threeDRequest
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory $refundRequest
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory $instructionRequest
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory $instructionResponse
      */
     public function __construct(
-        \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
+        \Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory $httpRestFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
-        Logger $suiteLogger
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $piCaptureResultFactory,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory $paymentMethodResultFactory,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory $cardResultFactory,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory $threedResultFactory,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory $amountResultFactory,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory $mskResponse,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory $mskRequest,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory $threeDRequest,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory $refundRequest,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory $instructionRequest,
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory $instructionResponse
     ) {
 
-        $this->_config              = $config;
+        $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
-        $this->_curlFactory         = $curlFactory;
-        $this->_apiExceptionFactory = $apiExceptionFactory;
-        $this->_suiteLogger         = $suiteLogger;
+        $this->_apiExceptionFactory       = $apiExceptionFactory;
+        $this->piCaptureResultFactory     = $piCaptureResultFactory;
+        $this->paymentMethodResultFactory = $paymentMethodResultFactory;
+        $this->cardResultFactory          = $cardResultFactory;
+        $this->threedStatusResultFactory  = $threedResultFactory;
+        $this->amountResultFactory        = $amountResultFactory;
+        $this->mskResponse                = $mskResponse;
+        $this->mskRequest                 = $mskRequest;
+        $this->threedRequest              = $threeDRequest;
+        $this->refundRequest              = $refundRequest;
+        $this->instructionRequest         = $instructionRequest;
+        $this->instructionResponse        = $instructionResponse;
+        $this->httpRestFactory            = $httpRestFactory;
     }
 
     /**
@@ -68,42 +117,15 @@ class PIRest
      *
      * @param $url
      * @param $body
-     * @return array
+     * @return \Ebizmarts\SagePaySuite\Api\Data\HttpResponseInterface
      */
     private function _executePostRequest($url, $body)
     {
-
-        $curl = $this->_curlFactory->create();
-
-        $curl->setConfig(
-            [
-                'timeout' => 120,
-                'verifypeer' => false,
-                'verifyhost' => 2,
-                'userpwd' => $this->_config->getPIKey() . ":" . $this->_config->getPIPassword()
-            ]
-        );
-
-        $curl->write(
-            \Zend_Http_Client::POST,
-            $url,
-            '1.0',
-            ['Content-type: application/json'],
-            $body
-        );
-        $data = $curl->read();
-
-        $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
-        $curl->close();
-
-        $data = preg_split('/^\r?$/m', $data, 2);
-        $data = json_decode(trim($data[1]));
-
-        $response = [
-            "status" => $response_status,
-            "data" => $data
-        ];
-
+        /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpRest $rest */
+        $rest = $this->httpRestFactory->create();
+        $rest->setBasicAuth($this->_config->getPIKey(), $this->_config->getPIPassword());
+        $rest->setUrl($url);
+        $response = $rest->executePost($body);
         return $response;
     }
 
@@ -111,41 +133,15 @@ class PIRest
      * Makes the Curl GET
      *
      * @param $url
-     * @return array
+     * @return \Ebizmarts\SagePaySuite\Api\Data\HttpResponseInterface
      */
     private function _executeRequest($url)
     {
-
-        $curl = $this->_curlFactory->create();
-
-        $curl->setConfig(
-            [
-                'timeout' => 120,
-                'verifypeer' => false,
-                'verifyhost' => 2,
-                'userpwd' => $this->_config->getPIKey() . ":" . $this->_config->getPIPassword()
-            ]
-        );
-
-        $curl->write(
-            \Zend_Http_Client::GET,
-            $url,
-            '1.0',
-            ['Content-type: application/json']
-        );
-        $data = $curl->read();
-
-        $response_status = $curl->getInfo(CURLINFO_HTTP_CODE);
-        $curl->close();
-
-        $data = preg_split('/^\r?$/m', $data, 2);
-        $data = json_decode(trim($data[1]));
-
-        $response = [
-            "status" => $response_status,
-            "data" => $data
-        ];
-
+        /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpRest $rest */
+        $rest = $this->httpRestFactory->create();
+        $rest->setBasicAuth($this->_config->getPIKey(), $this->_config->getPIPassword());
+        $rest->setUrl($url);
+        $response = $rest->executeGet();
         return $response;
     }
 
@@ -182,92 +178,43 @@ class PIRest
     /**
      * Make POST request to ask for merchant key
      *
-     * @return mixed
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseInterface
      * @throws
      */
     public function generateMerchantKey()
     {
-        $jsonBody = json_encode(["vendorName" => $this->_config->getVendorname()]);
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequest $request */
+        $request = $this->mskRequest->create();
+        $request->setVendorName($this->_config->getVendorname());
 
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $jsonBody);
+        $jsonBody = json_encode($request->__toArray());
+        $url      = $this->_getServiceUrl(self::ACTION_GENERATE_MERCHANT_KEY);
+        $result   = $this->_executePostRequest($url, $jsonBody);
 
-        $url = $this->_getServiceUrl(self::ACTION_GENERATE_MERCHANT_KEY);
+        $resultData = $this->processResponse($result);
 
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $url);
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponse $response */
+        $response = $this->mskResponse->create();
+        $response->setExpiry($resultData->expiry);
+        $response->setMerchantSessionKey($resultData->merchantSessionKey);
 
-        $result = $this->_executePostRequest($url, $jsonBody);
-
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
-
-        if ($result["status"] == 201) {
-            return $result["data"]->merchantSessionKey;
-        } else {
-            $error_code = $result["data"]->code;
-            $error_msg = $result["data"]->description;
-
-            $exception = $this->_apiExceptionFactory->create([
-                'phrase' => __($error_msg),
-                'code' => $error_code
-            ]);
-
-            throw $exception;
-        }
+        return $response;
     }
 
     /**
      * Make capture payment request
      *
-     * @param $payment_request
-     * @return mixed
-     * @throws
+     * @param $paymentRequest
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
-    public function capture($payment_request)
+    public function capture($paymentRequest)
     {
-        //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $payment_request);
+        $jsonRequest   = json_encode($paymentRequest);
+        $result        = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
+        $captureResult = $this->processResponse($result);
 
-        $jsonRequest = json_encode($payment_request);
-        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
-
-        //log result
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
-
-        if ($result["status"] == 201) {
-            //success
-            return $result["data"];
-        } elseif ($result["status"] == 202) {
-            //authentication required
-            return $result["data"];
-        } else {
-            $error_code = 0;
-            $error_msg = "Unable to capture Sage Pay transaction";
-
-            $errors = $result["data"];
-            if (isset($errors->errors) && count($errors->errors) > 0) {
-                $errors = $errors->errors[0];
-            }
-
-            if (isset($errors->code)) {
-                $error_code = $errors->code;
-            }
-            if (isset($errors->description)) {
-                $error_msg = $errors->description;
-            }
-            if (isset($errors->property)) {
-                $error_msg .= ': ' . $errors->property;
-            }
-
-            if (isset($errors->statusDetail)) {
-                $error_msg = $errors->statusDetail;
-            }
-
-            $exception = $this->_apiExceptionFactory->create([
-                'phrase' => __($error_msg),
-                'code' => $error_code
-            ]);
-
-            throw $exception;
-        }
+        return $this->getTransactionDetailsObject($captureResult);
     }
 
     /**
@@ -280,29 +227,19 @@ class PIRest
      */
     public function submit3D($paRes, $vpsTxId)
     {
-        $jsonBody = json_encode(["paRes" => $paRes]);
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequest $request */
+        $request = $this->threedRequest->create();
+        $request->setParEs($paRes);
 
-        //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $jsonBody);
+        $jsonBody   = json_encode($request->__toArray());
+        $result     = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
+        $resultData = $this->processResponse($result);
 
-        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $response */
+        $response = $this->threedStatusResultFactory->create();
+        $response->setStatus($resultData->status);
 
-        //log result
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
-
-        if ($result["status"] == 201) {
-            return $result["data"];
-        } else {
-            $error_code = $result["data"]->code;
-            $error_msg = $result["data"]->description;
-
-            $exception = $this->_apiExceptionFactory->create([
-                'phrase' => __($error_msg),
-                'code' => $error_code
-            ]);
-
-            throw $exception;
-        }
+        return $response;
     }
 
     /**
@@ -311,140 +248,65 @@ class PIRest
      * @param $amount
      * @param $currency
      * @param $description
-     * @return mixed
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
      */
     public function refund($vendorTxCode, $refTransactionId, $amount, $currency, $description)
     {
-        $requestData = [
-            'transactionType'        => 'Refund',
-            'vendorTxCode'           => $vendorTxCode,
-            'referenceTransactionId' => $refTransactionId,
-            'amount'                 => $amount,
-            'currency'               => $currency,
-            'description'            => $description
-        ];
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequest $refundRequest */
+        $refundRequest = $this->refundRequest->create();
+        $refundRequest->setTransactionType();
+        $refundRequest->setVendorTxCode($vendorTxCode);
+        $refundRequest->setReferenceTransactionId($refTransactionId);
+        $refundRequest->setAmount($amount);
+        $refundRequest->setDescription($description);
 
-        //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $requestData);
+        $jsonRequest = json_encode($refundRequest->__toArray());
+        $result      = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
 
-        $jsonRequest = json_encode($requestData);
-        $result = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
-
-        //log result
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
-
-        if ($result["status"] == 201) {
-            //success
-            return $result["data"];
-        } elseif ($result["status"] == 202) {
-            //authentication required
-            return $result["data"];
-        } else {
-            $error_code = 0;
-            $error_msg = "Unable to capture Sage Pay transaction";
-
-            $errors = $result["data"];
-            if (isset($errors->errors) && count($errors->errors) > 0) {
-                $errors = $errors->errors[0];
-            }
-
-            if (isset($errors->code)) {
-                $error_code = $errors->code;
-            }
-            if (isset($errors->description)) {
-                $error_msg = $errors->description;
-            }
-            if (isset($errors->property)) {
-                $error_msg .= ': ' . $errors->property;
-            }
-
-            if (isset($errors->statusDetail)) {
-                $error_msg = $errors->statusDetail;
-            }
-
-            $exception = $this->_apiExceptionFactory->create([
-                'phrase' => __($error_msg),
-                'code' => $error_code
-            ]);
-
-            throw $exception;
-        }
+        return $this->getTransactionDetailsObject($this->processResponse($result));
     }
 
     /**
      * @param $transactionId
-     * @return mixed
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseInterface
      */
     public function void($transactionId)
     {
-        $requestData = ['instructionType' => 'void'];
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequest $request */
+        $request = $this->instructionRequest->create();
+        $request->setInstructionType('void');
 
-        //log request
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $requestData);
-
-        $jsonRequest = json_encode($requestData);
+        $jsonRequest = json_encode($request->__toArray());
         $result = $this->_executePostRequest(
             $this->_getServiceUrl(self::ACTION_TRANSACTION_INSTRUCTIONS, $transactionId), $jsonRequest
         );
 
-        //log result
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $result);
+        $apiResponse = $this->processResponse($result);
 
-        if ($result["status"] == 201) {
-            //success
-            return $result["data"];
-        } elseif ($result["status"] == 202) {
-            //authentication required
-            return $result["data"];
-        } else {
-            $error_code = 0;
-            $error_msg = "Unable to capture Sage Pay transaction";
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponse $response */
+        $response = $this->instructionResponse->create();
+        $response->setInstructionType($apiResponse->instructionType);
+        $response->setDate($apiResponse->date);
 
-            $errors = $result["data"];
-            if (isset($errors->errors) && count($errors->errors) > 0) {
-                $errors = $errors->errors[0];
-            }
-
-            if (isset($errors->code)) {
-                $error_code = $errors->code;
-            }
-            if (isset($errors->description)) {
-                $error_msg = $errors->description;
-            }
-            if (isset($errors->property)) {
-                $error_msg .= ': ' . $errors->property;
-            }
-
-            if (isset($errors->statusDetail)) {
-                $error_msg = $errors->statusDetail;
-            }
-
-            $exception = $this->_apiExceptionFactory->create([
-                'phrase' => __($error_msg),
-                'code' => $error_code
-            ]);
-
-            throw $exception;
-        }
+        return $response;
     }
 
     /**
      * GET transaction details
      *
      * @param $vpsTxId
-     * @return mixed
-     * @throws
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
     public function transactionDetails($vpsTxId)
     {
-
         $result = $this->_executeRequest($this->_getServiceUrl(self::ACTION_TRANSACTION_DETAILS, $vpsTxId));
 
-        if ($result["status"] == 200) {
-            return $result["data"];
+        if ($result->getStatus() == 200) {
+            return $this->getTransactionDetailsObject($result->getResponseData());
         } else {
-            $error_code = $result["data"]->code;
-            $error_msg = $result["data"]->description;
+            $error_code = $result->getResponseData()->code;
+            $error_msg  = $result->getResponseData()->description;
 
             $exception = $this->_apiExceptionFactory->create([
                 'phrase' => __($error_msg),
@@ -453,5 +315,117 @@ class PIRest
 
             throw $exception;
         }
+    }
+
+    /**
+     * @param \Ebizmarts\SagePaySuite\Api\Data\HttpResponseInterface $result
+     * @return string
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     */
+    private function processResponse($result)
+    {
+        if ($result->getStatus() == 201) {
+            //success
+            return $result->getResponseData();
+        } elseif ($result->getStatus() == 202) {
+            //authentication required (3D secure)
+            return $result->getResponseData();
+        } else {
+            $errorCode = 0;
+            $errorMessage  = "Unable to capture Sage Pay transaction";
+
+            $errors = $result->getResponseData();
+            if (isset($errors->errors) && count($errors->errors) > 0) {
+                $errors = $errors->errors[0];
+            }
+
+            if (isset($errors->code)) {
+                $errorCode = $errors->code;
+            }
+            if (isset($errors->description)) {
+                $errorMessage = $errors->description;
+            }
+            if (isset($errors->property)) {
+                $errorMessage .= ': ' . $errors->property;
+            }
+
+            if (isset($errors->statusDetail)) {
+                $errorMessage = $errors->statusDetail;
+            }
+
+            $exception = $this->_apiExceptionFactory->create(['phrase' => __($errorMessage), 'code' => $errorCode]);
+
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param \stdClass $captureResult
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
+     */
+    private function getTransactionDetailsObject(\stdClass $captureResult)
+    {
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $transaction */
+        $transaction = $this->piCaptureResultFactory->create();
+        $transaction->setStatusCode($captureResult->statusCode);
+        $transaction->setStatusDetail($captureResult->statusDetail);
+        $transaction->setTransactionId($captureResult->transactionId);
+        $transaction->setStatus($captureResult->status);
+
+        if ($captureResult->status == '3DAuth') {
+            $transaction->setAcsUrl($captureResult->acsUrl);
+            $transaction->setParEq($captureResult->paReq);
+        } else {
+            $transaction->setTransactionType($captureResult->transactionType);
+            $transaction->setRetrievalReference($captureResult->retrievalReference);
+            $transaction->setBankAuthCode($captureResult->bankAuthorisationCode);
+
+            if (isset($captureResult->currency)) {
+                $transaction->setCurrency($captureResult->currency);
+            }
+
+            if (isset($captureResult->bankResponseCode)) {
+                $transaction->setBankResponseCode($captureResult->bankResponseCode);
+            }
+
+            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard $card */
+            $card = $this->cardResultFactory->create();
+
+            if (isset($captureResult->paymentMethod->card->cardIdentifier)) {
+                $card->setCardIdentifier($captureResult->paymentMethod->card->cardIdentifier);
+            }
+
+            if (isset($captureResult->paymentMethod->card->reusable)) {
+                $card->setIsReusable($captureResult->paymentMethod->card->reusable);
+            }
+
+            $card->setCardType($captureResult->paymentMethod->card->cardType);
+            $card->setLastFourDigits($captureResult->paymentMethod->card->lastFourDigits);
+            $card->setExpiryDate($captureResult->paymentMethod->card->expiryDate);
+
+            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod $paymentMethod */
+            $paymentMethod = $this->paymentMethodResultFactory->create();
+            $paymentMethod->setCard($card);
+
+            $transaction->setPaymentMethod($paymentMethod);
+
+            if (isset($captureResult->{'3DSecure'})) {
+                /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $threedstatus */
+                $threedstatus = $this->threedStatusResultFactory->create();
+                $threedstatus->setStatus($captureResult->{'3DSecure'}->status);
+                $transaction->setThreeDSecure($threedstatus);
+            }
+
+            if (isset($captureResult->amount)) {
+                /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountInterface $amount */
+                $amount = $this->amountResultFactory->create();
+                $amount->setSaleAmount($captureResult->amount->saleAmount);
+                $amount->setTotalAmount($captureResult->amount->totalAmount);
+                $amount->setSurchargeAmount($captureResult->amount->surchargeAmount);
+                $transaction->setAmount($amount);
+            }
+        }
+
+        return $transaction;
     }
 }

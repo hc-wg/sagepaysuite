@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2015 ebizmarts. All rights reserved.
+ * Copyright © 2017 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
@@ -28,15 +28,11 @@ class Server implements ConfigProviderInterface
      */
     private $_suiteHelper;
 
-    /**
-     * @var \Magento\Customer\Model\Session
-    private
-    protected $_customerSession;
+    /** @var \Magento\Customer\Model\Session */
+    private $_customerSession;
 
-    /**
-     * @var \Ebizmarts\SagePaySuite\Model\Token
-    private
-    protected $_tokenModel;
+    /** @var \Ebizmarts\SagePaySuite\Model\Token */
+    private $_tokenModel;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
@@ -44,7 +40,12 @@ class Server implements ConfigProviderInterface
     private $_config;
 
     /**
+     * Server constructor.
      * @param PaymentHelper $paymentHelper
+     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+     * @param \Ebizmarts\SagePaySuite\Model\Token $tokenModel
+     * @param \Magento\Customer\Model\Session $customerSession
+     * @param Config $config
      */
     public function __construct(
         PaymentHelper $paymentHelper,
@@ -54,10 +55,10 @@ class Server implements ConfigProviderInterface
         \Ebizmarts\SagePaySuite\Model\Config $config
     ) {
         $this->_customerSession = $customerSession;
-        $this->_tokenModel = $tokenModel;
-        $this->method = $paymentHelper->getMethodInstance($this->methodCode);
-        $this->_suiteHelper = $suiteHelper;
-        $this->_config = $config;
+        $this->_tokenModel      = $tokenModel;
+        $this->method           = $paymentHelper->getMethodInstance($this->methodCode);
+        $this->_suiteHelper     = $suiteHelper;
+        $this->_config          = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
     }
 

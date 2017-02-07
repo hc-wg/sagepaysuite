@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2015 ebizmarts. All rights reserved.
+ * Copyright © 2017 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
@@ -178,7 +178,10 @@ class Config
     private $_scopeConfig;
 
     /**
+     * Config constructor.
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param Logger $suiteLogger
      */
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
@@ -488,6 +491,11 @@ class Config
     public function getAllowedCcTypes()
     {
         return $this->getValue("cctypes");
+    }
+
+    public function dropInEnabled()
+    {
+        return (bool)($this->getValue("use_dropin") == 1);
     }
 
     public function getAreSpecificCountriesAllowed()
