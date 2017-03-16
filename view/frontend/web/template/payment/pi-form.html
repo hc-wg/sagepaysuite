@@ -24,6 +24,7 @@
             <!--/ko-->
         </div>
 
+        <!--terms and conditions -->
         <div class="checkout-agreements-block">
             <!-- ko foreach: $parent.getRegion('before-place-order') -->
             <!-- ko template: getTemplate() --><!-- /ko -->
@@ -33,13 +34,6 @@
         <!-- ko ifnot: (dropInEnabled())-->
             <!-- ko template: 'Ebizmarts_SagePaySuite/payment/cc-form' --><!-- /ko -->
         <!-- /ko -->
-
-        <!--terms and conditions -->
-        <div class="checkout-agreements-block">
-            <!-- ko foreach: $parent.getRegion('before-place-order') -->
-            <!-- ko template: getTemplate() --><!-- /ko -->
-            <!--/ko-->
-        </div>
 
         <!-- ko if: (dropInEnabled())-->
             <div id="sp-container"></div>
