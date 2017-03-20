@@ -585,7 +585,6 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             [
                 "httpRestFactory"            => $this->httpRestFactoryMock,
                 "config"                     => $this->configMock,
-                "apiExceptionFactory"        => $this->apiExceptionFactoryMock,
                 "threedRequest"              => $pi3dRequestFactoryMock,
                 "threedStatusResultFactory"  => $piTransactionResult3DFactoryMock
             ]
@@ -599,30 +598,46 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage Contains invalid characters: paRes
      */
     public function testSubmitThreedError()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"errors": [{"description": "Contains invalid characters","property": "paRes","code": 1005}]}'
-            );
+        $pi3dRequestMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequest::class)
+            ->setMethods(['__toArray', 'setParEs'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $pi3dRequestMock->expects($this->once())->method('setParEs')->with("fsd678dfs786dfs786fds678fds");
+        $pi3dRequestMock->expects($this->once())->method('__toArray')->willReturn(["paRes" => "fsd678dfs786dfs786fds678fds"]);
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $pi3dRequestFactoryMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory::class)
+            ->setMethods(["create"])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $pi3dRequestFactoryMock->expects($this->once())->method('create')->willReturn($pi3dRequestMock);
+
+        $piTransactionResult3DFactoryMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory::class)
+            ->setMethods(["create"])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $piTransactionResult3DFactoryMock->expects($this->never())->method('create');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"paRes":"fsd678dfs786dfs786fds678fds"}')
+            ->willReturn($this->httpResponseMock);
+
+        $this->httpResponseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
             ->willReturn(422);
-
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . "transactions/" . 12345 . "/" .
-                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_SUBMIT_3D,
-                '1.0',
-                ['Content-type: application/json'],
-                '{"paRes":"fsd678dfs786dfs786fds678fds"}'
-            );
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(json_decode('{"errors": [{"description": "Contains invalid characters","property": "paRes","code": 1005}]}'));
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new \Magento\Framework\Phrase("Contains invalid characters: paRes"),
@@ -637,6 +652,16 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ])
             ->willReturn($apiException);
 
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "apiExceptionFactory"        => $this->apiExceptionFactoryMock,
+                "threedRequest"              => $pi3dRequestFactoryMock,
+                "threedStatusResultFactory"  => $piTransactionResult3DFactoryMock
+            ]
+        );
         $this->pirestApiModel->submit3D("fsd678dfs786dfs786fds678fds", 12345);
     }
 
