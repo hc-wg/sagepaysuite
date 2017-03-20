@@ -477,28 +477,34 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage No card provided.
      */
     public function testCaptureError1()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"errors":[{"statusDetail": "No card provided.", "description":"Contains invalid value","property":"paymentMethod.card.cardIdentifier","code":1009}]}'
-            );
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
-            ->willReturn(422);
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"Amount":"100.00"}')
+            ->willReturn($this->httpResponseMock);
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_TRANSACTIONS,
-                '1.0',
-                ['Content-type: application/json'],
-                '{"Amount":"100.00"}'
+        $this->httpResponseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
+            ->willReturn(422);
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(
+                json_decode(
+                    '
+                    {
+                    "errors":
+                    [
+                      {"statusDetail": "No card provided.", "description":"Contains invalid value","property":"paymentMethod.card.cardIdentifier","code":1009}
+                    ]
+                    }
+                    '
+                )
             );
 
         $apiExceptionObj = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
@@ -516,6 +522,15 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 'code' => 1009
             ])
             ->willReturn($apiExceptionObj);
+
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "apiExceptionFactory"        => $this->apiExceptionFactoryMock
+            ]
+        );
 
         $this->pirestApiModel->capture(["Amount" => "100.00"]);
     }
