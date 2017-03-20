@@ -416,28 +416,35 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage Contains invalid value: paymentMethod.card.merchantSessionKey
      */
     public function testCaptureERROR()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"errors":[{"description":"Contains invalid value","property":"paymentMethod.card.merchantSessionKey","code":1009},{"description":"Contains invalid value","property":"paymentMethod.card.cardIdentifier","code":1009}]}'
-            );
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
-            ->willReturn(422);
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"Amount":"100.00"}')
+            ->willReturn($this->httpResponseMock);
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_TRANSACTIONS,
-                '1.0',
-                ['Content-type: application/json'],
-                '{"Amount":"100.00"}'
+        $this->httpResponseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
+            ->willReturn(422);
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(
+                json_decode(
+                    '
+                        {
+                        "errors":
+                            [
+                                {"description":"Contains invalid value","property":"paymentMethod.card.merchantSessionKey","code":1009},
+                                {"description":"Contains invalid value","property":"paymentMethod.card.cardIdentifier","code":1009}
+                            ]
+                        }
+                    '
+                )
             );
 
         $apiExceptionObj = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
@@ -455,6 +462,15 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 'code' => 1009
             ])
             ->willReturn($apiExceptionObj);
+
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "apiExceptionFactory"        => $this->apiExceptionFactoryMock
+            ]
+        );
 
         $this->pirestApiModel->capture(["Amount" => "100.00"]);
     }
@@ -698,6 +714,90 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
 
     public function testRefundSucess()
     {
+        $refundRequestMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequest::class)
+            ->setMethods(['__toArray'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $refundRequestMock
+            ->expects($this->once())
+            ->method('__toArray')
+            ->willReturn(['vendorName' => 'testvendorname']);
+        $refundRequestFactoryMock = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $refundRequestFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($refundRequestMock);
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('setUrl')
+            ->with("https://test.sagepay.com/api/v1/transactions");
+
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getStatus')
+            ->willReturn(201);
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(
+                json_decode(
+                    '{"merchantSessionKey":"M1E996F5-A9BC-41FE-B088-E5B73DB94277","expiry":"2025-08-11T11:45:16.285+01:00"}'
+                )
+            );
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"vendorName":"testvendorname"}')
+            ->willReturn($this->httpResponseMock);
+
+        $mskResponseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponse::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $mskResponseFactory = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $mskResponseFactory
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($mskResponseMock);
+        $mskResponseMock
+            ->expects($this->once())
+            ->method('setExpiry')
+            ->with("2025-08-11T11:45:16.285+01:00");
+        $mskResponseMock
+            ->expects($this->once())
+            ->method('setMerchantSessionKey')
+            ->with("M1E996F5-A9BC-41FE-B088-E5B73DB94277");
+
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "config"          => $this->configMock,
+                "mskResponse"     => $mskResponseFactory,
+                "refundRequest"   => $refundRequestFactoryMock,
+                "httpRestFactory" => $this->httpRestFactoryMock
+            ]
+        );
+
+        $this->assertInstanceOf(
+            '\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponse',
+            $this->pirestApiModel->generateMerchantKey()
+        );
+
+
+
+
+
+
         $this->curlMock->expects($this->once())
             ->method('read')
             ->willReturn(
