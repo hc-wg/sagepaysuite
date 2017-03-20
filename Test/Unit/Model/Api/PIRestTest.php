@@ -829,31 +829,61 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
 
     public function testVoidSucess()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"instructionType": "void","date": "2015-08-11T11:45:16.285+01:00"}'
-            );
+        $piInstructionRequest = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequest::class)
+        ->disableOriginalConstructor()
+            ->setMethods(['setInstructionType', '__toArray'])
+            ->getMock();
+        $piInstructionRequest->expects($this->once())->method('setInstructionType')->with("void");
+        $piInstructionRequest->expects($this->once())->method('__toArray')->willReturn(["instructionType" => "void"]);
+        $piInstructionRequestFactory = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $piInstructionRequestFactory->expects($this->once())->method('create')->willReturn($piInstructionRequest);
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $instructionResponse = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponse::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['__toArray'])
+            ->getMock();
+
+        $instructionResponseFactory = $this
+        ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $instructionResponseFactory->expects($this->once())->method('create')->willReturn($instructionResponse);
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"instructionType":"void"}')
+            ->willReturn($this->httpResponseMock);
+
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getStatus')
             ->willReturn(201);
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(json_decode('{"instructionType": "void","date": "2015-08-11T11:45:16.285+01:00"}'));
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                "transactions/2B97808F-9A36-6E71-F87F-6714667E8AF4/instructions",
-                '1.0',
-                ['Content-type: application/json'],
-                '{"instructionType":"void"}'
-            );
-
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "apiExceptionFactory"        => $this->apiExceptionFactoryMock,
+                "instructionRequest"         => $piInstructionRequestFactory,
+                "instructionResponse"        => $instructionResponseFactory,
+            ]
+        );
         $result = $this->pirestApiModel->void("2B97808F-9A36-6E71-F87F-6714667E8AF4");
-        $this->assertEquals($result->instructionType, "void");
-        $this->assertEquals($result->date, "2015-08-11T11:45:16.285+01:00");
+        $this->assertEquals($result->getInstructionType(), "void");
+        $this->assertEquals($result->getDate(), "2015-08-11T11:45:16.285+01:00");
     }
 
     public function testRefundSucess()
