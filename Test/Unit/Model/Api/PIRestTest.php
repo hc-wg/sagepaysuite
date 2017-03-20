@@ -537,32 +537,62 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
 
     public function testSubmit3D()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"status": "OK"}'
-            );
+        $pi3dRequestMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequest::class)
+            ->setMethods(['__toArray', 'setParEs'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $pi3dRequestMock->expects($this->once())->method('setParEs')->with("fsd678dfs786dfs786fds678fds");
+        $pi3dRequestMock->expects($this->once())->method('__toArray')->willReturn(["paRes" => "fsd678dfs786dfs786fds678fds"]);
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $pi3dRequestFactoryMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory::class)
+            ->setMethods(["create"])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $pi3dRequestFactoryMock->expects($this->once())->method('create')->willReturn($pi3dRequestMock);
+
+        $piTransactionResult3DMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $piTransactionResult3DMock->expects($this->once())->method('setStatus')->with("OK");
+
+        $piTransactionResult3DFactoryMock = $this
+        ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory::class)
+        ->setMethods(["create"])
+        ->disableOriginalConstructor()
+        ->getMock();
+        $piTransactionResult3DFactoryMock->expects($this->once())->method('create')->willReturn($piTransactionResult3DMock);
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"paRes":"fsd678dfs786dfs786fds678fds"}')
+            ->willReturn($this->httpResponseMock);
+
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getStatus')
             ->willReturn(201);
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(json_decode('{"status": "OK"}'));
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                "transactions/" . 12345 . "/" . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_SUBMIT_3D,
-                '1.0',
-                ['Content-type: application/json'],
-                '{"paRes":"fsd678dfs786dfs786fds678fds"}'
-            );
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "apiExceptionFactory"        => $this->apiExceptionFactoryMock,
+                "threedRequest"              => $pi3dRequestFactoryMock,
+                "threedStatusResultFactory"  => $piTransactionResult3DFactoryMock
+            ]
+        );
 
-        $this->assertEquals(
-            (object)[
-                "status" => "OK"
-            ],
+        $this->assertInstanceOf(
+            '\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD',
             $this->pirestApiModel->submit3D("fsd678dfs786dfs786fds678fds", 12345)
         );
     }
