@@ -8,7 +8,6 @@
 
 namespace Ebizmarts\SagePaySuite\Api\Data;
 
-
 class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implements PiRequestInterface
 {
 
