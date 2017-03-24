@@ -310,42 +310,84 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecuteSUCCESS($postData, $captureData, $expectedResponse)
     {
-        $this->paymentMock->expects($this->once())->method('setCcLast4');
-        $this->paymentMock->expects($this->once())->method('setCcExpMonth');
-        $this->paymentMock->expects($this->once())->method('setCcExpYear');
-        $this->paymentMock->expects($this->once())->method('setCcType');
-        $this->paymentMock->expects($this->exactly(8))->method('setAdditionalInformation');
+        $this->configMock->expects($this->once())->method('getMode')->willReturn("test");
+        $this->configMock->expects($this->once())->method('getVendorname')->willReturn("testvendorname");
+        $this->configMock->expects($this->once())->method('getSagepayPaymentAction')->willReturn("Payment");
 
-        $this->pirestapiMock
-            ->expects($this->once())
-            ->method('capture')
-            ->willReturn($captureData);
+        //$this->requestMock->
 
-        $this->requestMock
-            ->expects($this->exactly(2))
-            ->method('getPost')
-            ->willReturn($postData);
+        $piRequestManagerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\PiRequestManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $piRequestManagerMock->expects($this->once())->method('setMode')->with("test");
+        $piRequestManagerMock->expects($this->once())->method('setVendorName')->with("testvendorname");
+        $piRequestManagerMock->expects($this->once())->method('setPaymentAction')->with("Payment");
+        $piRequestManagerMock->expects($this->once())->method('setMerchantSessionKey');
+        $piRequestManagerMock->expects($this->once())->method('setCardIdentifier');
+        $piRequestManagerMock->expects($this->once())->method('setCcExpMonth');
+        $piRequestManagerMock->expects($this->once())->method('setCcExpYear');
+        $piRequestManagerMock->expects($this->once())->method('setCcLastFour');
+        $piRequestManagerMock->expects($this->once())->method('setCcType');
 
-        $this->adminOrder->method('createOrder')->willReturn($this->orderMock);
+        $piRequestManagerFactoryMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory::class)
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $piRequestManagerFactoryMock->expects($this->once())->method('create')->willReturn($piRequestManagerMock);
 
-        $this->quoteManagementMock->expects($this->any())
-            ->method('submit')
-            ->willreturn($this->orderMock);
+        $piResultInterfaceMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\PiResult::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $piResultInterfaceMock->expects($this->once())->method('__toArray')->willReturn(
+            [
+                "success"  => true,
+                "response" => "https://example.com/admin/sales/order/view/order_id/888"
+            ]
+        );
 
-        $this->_expectResultJson($expectedResponse);
+        $requesterMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PiRequestManagement\MotoManagement::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $requesterMock->expects($this->once())->method('setRequestdata');
+        $requesterMock->expects($this->once())->method('setQuote');
+        $requesterMock->expects($this->once())->method('placeOrder')->willReturn($piResultInterfaceMock);
+
+//        $this->paymentMock->expects($this->once())->method('setCcLast4');
+//        $this->paymentMock->expects($this->once())->method('setCcExpMonth');
+//        $this->paymentMock->expects($this->once())->method('setCcExpYear');
+//        $this->paymentMock->expects($this->once())->method('setCcType');
+//        $this->paymentMock->expects($this->exactly(8))->method('setAdditionalInformation');
+//
+//        $this->pirestapiMock
+//            ->expects($this->once())
+//            ->method('capture')
+//            ->willReturn($captureData);
+//
+//        $this->requestMock
+//            ->expects($this->exactly(2))
+//            ->method('getPost')
+//            ->willReturn($postData);
+//
+//        $this->adminOrder->method('createOrder')->willReturn($this->orderMock);
+//
+//        $this->quoteManagementMock->expects($this->any())
+//            ->method('submit')
+//            ->willreturn($this->orderMock);
+//
+//        $this->_expectResultJson($expectedResponse);
 
         $objectManagerHelper       = new ObjectManagerHelper($this);
         $this->piRequestController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\PI\Request',
             [
-                'context'         => $this->contextMock,
-                'config'          => $this->configMock,
-                'suiteHelper'     => $this->suiteHelperMock,
-                'pirestapi'       => $this->pirestapiMock,
-                'quoteSession'    => $this->quoteSessionMock,
-                'quoteManagement' => $this->quoteManagementMock,
-                'requestHelper'   => $this->requestHelperMock,
-                'piRequest'       => $this->piRequestMock
+                "context"                     => $this->contextMock,
+                "config"                      => $this->configMock,
+                "requester"                   => $requesterMock,
+                "quoteSession"                => $this->quoteSessionMock,
+                "piRequestManagerDataFactory" => $piRequestManagerFactoryMock
             ]
         );
 
@@ -399,7 +441,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      */
     private function _expectResultJson($result)
     {
-        $this->resultJson->expects($this->once())
+        $this->resultJson
+            ->expects($this->once())
             ->method('setData')
             ->with($result);
     }
