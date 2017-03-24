@@ -94,7 +94,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
     public function testRefund()
     {
-       $paymentMock = $this
+        $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();

@@ -6,7 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-
 class PiMsk implements \Ebizmarts\SagePaySuite\Api\PiMerchantInterface
 {
     /** @var \Ebizmarts\SagePaySuite\Model\Api\PIRest */

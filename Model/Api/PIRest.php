@@ -278,7 +278,8 @@ class PIRest
 
         $jsonRequest = json_encode($request->__toArray());
         $result = $this->_executePostRequest(
-            $this->_getServiceUrl(self::ACTION_TRANSACTION_INSTRUCTIONS, $transactionId), $jsonRequest
+            $this->_getServiceUrl(self::ACTION_TRANSACTION_INSTRUCTIONS, $transactionId),
+            $jsonRequest
         );
 
         $apiResponse = $this->processResponse($result);

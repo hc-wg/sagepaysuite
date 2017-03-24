@@ -1014,13 +1014,12 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ]
         );
 
-       $this->pirestApiModel->refund(
+        $this->pirestApiModel->refund(
             "R000000122-2016-12-22-1423481482416628",
             "2B97808F-9A36-6E71-F87F-6714667E8AF4",
             10800,
             "GBP",
             "Magento backend refund."
         );
-
     }
 }

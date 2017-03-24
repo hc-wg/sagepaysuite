@@ -299,10 +299,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                                 "cardIdentifier" => "FE646772-6C9F-478B-BF11-9087105FD372",
                                 "reusable" => false
                             ]
+                        ]
                     ]
-                ]
-            ],
-        ]];
+                ],
+            ]];
     }
 
     /**
