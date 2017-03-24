@@ -908,8 +908,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->willReturn($refundRequestMock);
         $this->httpRestMock
             ->expects($this->once())
-            ->method('setUrl')
-            ->with("https://test.sagepay.com/api/v1/transactions");
+            ->method('setUrl');
 
         $this->httpResponseMock
             ->expects($this->once())
@@ -920,63 +919,8 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->method('getResponseData')
             ->willReturn(
                 json_decode(
-                    '{"merchantSessionKey":"M1E996F5-A9BC-41FE-B088-E5B73DB94277","expiry":"2025-08-11T11:45:16.285+01:00"}'
-                )
-            );
-
-        $this->httpRestMock
-            ->expects($this->once())
-            ->method('executePost')
-            ->with('{"vendorName":"testvendorname"}')
-            ->willReturn($this->httpResponseMock);
-
-        $mskResponseMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponse::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $mskResponseFactory = $this
-            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory')
-            ->disableOriginalConstructor()
-            ->setMethods(['create'])
-            ->getMock();
-        $mskResponseFactory
-            ->expects($this->once())
-            ->method('create')
-            ->willReturn($mskResponseMock);
-        $mskResponseMock
-            ->expects($this->once())
-            ->method('setExpiry')
-            ->with("2025-08-11T11:45:16.285+01:00");
-        $mskResponseMock
-            ->expects($this->once())
-            ->method('setMerchantSessionKey')
-            ->with("M1E996F5-A9BC-41FE-B088-E5B73DB94277");
-
-        $this->pirestApiModel  = $this->objectManager->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
-            [
-                "config"          => $this->configMock,
-                "mskResponse"     => $mskResponseFactory,
-                "refundRequest"   => $refundRequestFactoryMock,
-                "httpRestFactory" => $this->httpRestFactoryMock
-            ]
-        );
-
-        $this->assertInstanceOf(
-            '\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponse',
-            $this->pirestApiModel->generateMerchantKey()
-        );
-
-
-
-
-
-
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{
+                    '
+                    {
                     "statusCode": "0000",
                     "statusDetail": "The Authorisation was Successful.",
                     "transactionId": "043D6711-E722-ACC6-2C2E-B03E00BF7603",
@@ -991,34 +935,86 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                         }
                     },
                     "status": "Ok"
-                }'
+                    }
+                    '
+                )
             );
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
-            ->willReturn(201);
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"vendorName":"testvendorname"}')
+            ->willReturn($this->httpResponseMock);
 
-        $write = preg_replace('/\s\s+/', '', str_replace(array("\r","\n"), '', '{
-                    "transactionType":"Refund",
-                    "vendorTxCode":"R000000122-2016-12-22-1423481482416628",
-                    "referenceTransactionId":"2B97808F-9A36-6E71-F87F-6714667E8AF4",
-                    "amount":10800,
-                    "currency":"GBP",
-                    "description":"Magento backend refund."
-                 }'));
+        $piTransactionResult = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $piTransactionResult->expects($this->once())->method('setStatusCode')->with("0000");
+        $piTransactionResult->expects($this->once())->method('setStatusDetail')->with("The Authorisation was Successful.");
+        $piTransactionResult->expects($this->once())->method('setTransactionId')->with("043D6711-E722-ACC6-2C2E-B03E00BF7603");
+        $piTransactionResult->expects($this->once())->method('setStatus')->with("Ok");
+        $piTransactionResult->expects($this->once())->method('setTransactionType')->with("Refund");
+        $piTransactionResult->expects($this->once())->method('setRetrievalReference')->with("13551640");
+        $piTransactionResult->expects($this->once())->method('setBankAuthCode')->with("999778");
+        $piTransactionResult->expects($this->never())->method('setBankResponseCode');
+        //$piTransactionResult->expects($this->once())->method('setPaymentMethod')->with($payResult);
+        //$piTransactionResult->expects($this->once())->method('setThreeDSecure')->with($threedResultMock);
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_TRANSACTIONS,
-                '1.0',
-                ['Content-type: application/json'],
-                $write
-            );
+        $cardResult = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $cardResult->expects($this->never())->method('setCardIdentifier');
+        $cardResult->expects($this->never())->method('setIsReusable');
+        $cardResult->expects($this->once())->method('setCardType')->with("MasterCard");
+        $cardResult->expects($this->once())->method('setLastFourDigits')->with("0001");
+        $cardResult->expects($this->once())->method('setExpiryDate')->with("0520");
 
-        $result = $this->pirestApiModel->refund(
+        $cardResultFactory = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $cardResultFactory->expects($this->once())->method('create')->willReturn($cardResult);
+
+        $piResultFactory = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $piResultFactory
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($piTransactionResult);
+
+        $payResult = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMethodResultFactory = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $paymentMethodResultFactory
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($payResult);
+
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "config"                     => $this->configMock,
+                "refundRequest"              => $refundRequestFactoryMock,
+                "piCaptureResultFactory"     => $piResultFactory,
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "cardResultFactory"          => $cardResultFactory,
+                "paymentMethodResultFactory" => $paymentMethodResultFactory
+            ]
+        );
+
+       $this->pirestApiModel->refund(
             "R000000122-2016-12-22-1423481482416628",
             "2B97808F-9A36-6E71-F87F-6714667E8AF4",
             10800,
@@ -1026,13 +1022,5 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             "Magento backend refund."
         );
 
-        $this->assertEquals($result->transactionType, "Refund");
-        $this->assertEquals($result->transactionId, "043D6711-E722-ACC6-2C2E-B03E00BF7603");
-        $this->assertEquals($result->statusCode, "0000");
-        $this->assertEquals($result->statusDetail, "The Authorisation was Successful.");
-        $this->assertEquals($result->retrievalReference, "13551640");
-        $this->assertEquals($result->bankAuthorisationCode, "999778");
-        $this->assertEquals($result->status, "Ok");
-        $this->assertObjectHasAttribute("paymentMethod", $result);
     }
 }
