@@ -305,16 +305,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ]];
     }
 
-    /**
-     * @dataProvider postProvider
-     */
-    public function testExecuteSUCCESS($postData, $captureData, $expectedResponse)
+    public function testExecuteSUCCESS()
     {
         $this->configMock->expects($this->once())->method('getMode')->willReturn("test");
         $this->configMock->expects($this->once())->method('getVendorname')->willReturn("testvendorname");
         $this->configMock->expects($this->once())->method('getSagepayPaymentAction')->willReturn("Payment");
-
-        //$this->requestMock->
 
         $piRequestManagerMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\PiRequestManager::class)
@@ -395,41 +390,44 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider postProvider
+     * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage Invalid transaction.
      */
-    public function testExecuteERROR($postData, $captureData)
+    public function testExecuteERROR()
     {
-        $this->pirestapiMock
-            ->expects($this->once())
-            ->method('capture')
-            ->willReturn($captureData);
+        $piRequestManagerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\PiRequestManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $this->requestMock
-            ->expects($this->exactly(2))
-            ->method('getPost')
-            ->willReturn($postData);
+        $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
+            new \Magento\Framework\Phrase("Invalid transaction."),
+            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("INVALID"))
+        );
 
-        $this->quoteManagementMock->expects($this->any())
-            ->method('submit')
-            ->willReturn(null);
+        $requesterMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PiRequestManagement\MotoManagement::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $requesterMock->expects($this->once())->method('setRequestdata');
+        $requesterMock->expects($this->once())->method('setQuote');
+        $requesterMock->expects($this->once())->method('placeOrder')->willThrowException($apiException);
 
-        $this->_expectResultJson([
-            "success" => false,
-            'error_message' => __("Something went wrong: Unable to save Sage Pay order.")
-        ]);
+        $piRequestManagerFactoryMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory::class)
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $piRequestManagerFactoryMock->expects($this->once())->method('create')->willReturn($piRequestManagerMock);
 
         $objectManagerHelper       = new ObjectManagerHelper($this);
         $this->piRequestController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\PI\Request',
             [
-                'context'         => $this->contextMock,
-                'config'          => $this->configMock,
-                'suiteHelper'     => $this->suiteHelperMock,
-                'pirestapi'       => $this->pirestapiMock,
-                'quoteSession'    => $this->quoteSessionMock,
-                'quoteManagement' => $this->quoteManagementMock,
-                'requestHelper'   => $this->requestHelperMock,
-                'piRequest'       => $this->piRequestMock
+                "context"                     => $this->contextMock,
+                "config"                      => $this->configMock,
+                "requester"                   => $requesterMock,
+                "quoteSession"                => $this->quoteSessionMock,
+                "piRequestManagerDataFactory" => $piRequestManagerFactoryMock
             ]
         );
 
