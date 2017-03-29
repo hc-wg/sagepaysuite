@@ -378,8 +378,14 @@ class PIRest
             $transaction->setParEq($captureResult->paReq);
         } else {
             $transaction->setTransactionType($captureResult->transactionType);
-            $transaction->setRetrievalReference($captureResult->retrievalReference);
-            $transaction->setBankAuthCode($captureResult->bankAuthorisationCode);
+
+            if (isset($captureResult->retrievalReference)) {
+                $transaction->setRetrievalReference($captureResult->retrievalReference);
+            }
+
+            if (isset($captureResult->bankAuthorisationCode)) {
+                $transaction->setBankAuthCode($captureResult->bankAuthorisationCode);
+            }
 
             if (isset($captureResult->currency)) {
                 $transaction->setCurrency($captureResult->currency);
