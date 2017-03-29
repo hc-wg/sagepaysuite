@@ -81,7 +81,7 @@ class PiRequest
             $data['billingAddress']['state'] = substr($billingAddress->getRegionCode(), 0, 2);
         } else {
             if ($data['billingAddress']['country'] == 'IE') {
-                unset($data['billingAddress']['postalCode']);
+                $data['billingAddress']['postalCode'] = "000";
             }
         }
 
@@ -97,7 +97,7 @@ class PiRequest
             $data['shippingDetails']['shippingState'] = substr($shippingAddress->getRegionCode(), 0, 2);
         } else {
             if ($data['shippingDetails']['shippingCountry'] == 'IE') {
-                unset($data['shippingDetails']['shippingPostalCode']);
+                $data['shippingDetails']['shippingPostalCode'] = "000";
             }
         }
 
