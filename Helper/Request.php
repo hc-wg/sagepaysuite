@@ -143,12 +143,19 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
     public function populatePaymentAmount($quote, $isRestRequest = false)
     {
         $currencyCode = $this->_config->getCurrencyCode();
+
         $amount = $quote->getBaseGrandTotal();
 
         switch ($this->_config->getCurrencyConfig()) {
             case Config::CURRENCY_SWITCHER:
                 $amount = $quote->getGrandTotal();
                 break;
+        }
+
+        $quoteCurrencyCode = $quote->getQuoteCurrencyCode();
+        if ($quote->getQuoteCurrencyCode() != $currencyCode) {
+            $currencyCode = $quoteCurrencyCode;
+            $amount       = $quote->getGrandTotal();
         }
 
         $data = [];
