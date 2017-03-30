@@ -230,7 +230,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                     'currency' => 'USD',
                     'quoteCurrencyCode' => 'GBP',
                     'result' => [
-                        'amount' => 10000,
+                        'amount' => 20000,
                         'currency' => 'GBP'
                     ]
                 ]
