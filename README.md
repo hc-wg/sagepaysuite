@@ -4,7 +4,7 @@
 
 ## Installation Instructions
 
-##Composer installation (preferred method)
+## Composer installation (preferred method)
 1. Add this to the `composer.json` file located under the Magento's root dir.
 ```
 "repositories": [
@@ -21,11 +21,12 @@
 3. Run this command to get the module.
 
 `composer require ebizmarts/sagepaysuite`
+
 4. Install the module.
 `bin/magento setup:upgrade`
 
 
-##Manual installation
+## Manual installation
 
 __Requirements__
 
