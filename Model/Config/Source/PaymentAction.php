@@ -30,7 +30,7 @@ class PaymentAction implements ArrayInterface
             ],
             [
                 'value' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE,
-                'label' => __('Authorize - Authorize Only'),
+                'label' => __('Authenticate - Authenticate Only'),
             ]
         ];
     }
