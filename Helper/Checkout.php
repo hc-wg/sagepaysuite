@@ -120,7 +120,6 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
                 $this->_prepareNewCustomerQuote();
                 break;
             default:
-                $this->_prepareCustomerQuote();
                 break;
         }
 
@@ -216,49 +215,6 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
 
         // Add billing address to quote since customer Data Object does not hold address information
         $quote->addCustomerAddress($customerBillingData);
-    }
-
-    /**
-     * Prepare quote for customer order submit
-     *
-     * @return void
-     */
-    private function _prepareCustomerQuote()
-    {
-        $quote = $this->_quote;
-        $billing = $quote->getBillingAddress();
-        $shipping = $quote->isVirtual() ? null : $quote->getShippingAddress();
-
-        $customer = $this->_customerRepository->getById($this->_customerSession->getCustomerId());
-        $hasDefaultBilling = (bool)$customer->getDefaultBilling();
-        $hasDefaultShipping = (bool)$customer->getDefaultShipping();
-
-        if ($shipping && !$shipping->getSameAsBilling() &&
-            (!$shipping->getCustomerId() || $shipping->getSaveInAddressBook())
-        ) {
-            $shippingAddress = $shipping->exportCustomerAddress();
-            if (!$hasDefaultShipping) {
-                //Make provided address as default shipping address
-                $shippingAddress->setIsDefaultShipping(true);
-                $hasDefaultShipping = true;
-            }
-            $quote->addCustomerAddress($shippingAddress);
-            $shipping->setCustomerAddressData($shippingAddress);
-        }
-
-        if (!$billing->getCustomerId() || $billing->getSaveInAddressBook()) {
-            $billingAddress = $billing->exportCustomerAddress();
-            if (!$hasDefaultBilling) {
-                //Make provided address as default shipping address
-                if (!$hasDefaultShipping) {
-                    //Make provided address as default shipping address
-                    $billingAddress->setIsDefaultShipping(true);
-                }
-                $billingAddress->setIsDefaultBilling(true);
-            }
-            $quote->addCustomerAddress($billingAddress);
-            $billing->setCustomerAddressData($billingAddress);
-        }
     }
 
     /**
