@@ -62,13 +62,12 @@ class FormRequestManagement implements FormManagementInterface
      */
     private $url;
 
-    /** @var \Magento\Framework\ObjectManager\ObjectManager */
-    private $objectManager;
-
     /** @var \Ebizmarts\SagePaySuite\Helper\Checkout */
     private $checkoutHelper;
 
     private $transactionVendorTxCode;
+
+    private $formCrypt;
 
     public function __construct(
         Config $config,
@@ -82,7 +81,7 @@ class FormRequestManagement implements FormManagementInterface
         \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
         \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory,
         \Magento\Framework\UrlInterface $coreUrl,
-        \Magento\Framework\ObjectManager\ObjectManager $objectManager
+        \Ebizmarts\SagePaySuite\Model\FormCrypt $formCrypt
     ) {
     
         $this->result             = $result;
@@ -95,7 +94,7 @@ class FormRequestManagement implements FormManagementInterface
         $this->_requestHelper     = $requestHelper;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
         $this->url                = $coreUrl;
-        $this->objectManager      = $objectManager;
+        $this->formCrypt          = $formCrypt;
         $this->checkoutHelper     = $checkoutHelper;
 
         $this->_config->setMethodCode(Config::METHOD_FORM);
@@ -246,15 +245,11 @@ class FormRequestManagement implements FormManagementInterface
      */
     private function encryptRequest($encryptedPassword, $preCryptString)
     {
-        $encryptor = $this->objectManager
-            ->create('\phpseclib\Crypt\AES', ['mode' => \phpseclib\Crypt\Base::MODE_CBC]);
-        $encryptor->setBlockLength(128);
-        $encryptor->setKey($encryptedPassword);
-        $encryptor->setIV($encryptedPassword);
+        $this->formCrypt->initInitializationVectorAndKey($encryptedPassword);
 
-        $crypt = $encryptor->encrypt($preCryptString);
+        $crypt = $this->formCrypt->encrypt($preCryptString);
 
-        return "@" . strtoupper(bin2hex($crypt));
+        return $crypt;
     }
 
     /**
