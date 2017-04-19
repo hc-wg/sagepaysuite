@@ -2,7 +2,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-
 class FormCrypt implements \Ebizmarts\SagePaySuite\Api\RequestCryptInterface
 {
     private $phpseclibCryptAes;
@@ -34,7 +33,7 @@ class FormCrypt implements \Ebizmarts\SagePaySuite\Api\RequestCryptInterface
 
         // Throw exception if string is malformed
         if (!preg_match('/^[0-9a-fA-F]+$/', $hex)) {
-            throw new LocalizedException(__('Invalid encryption string'));
+            throw new \Magento\Framework\Exception\LocalizedException(__('Invalid encryption string'));
         }
 
         //** HEX decoding
