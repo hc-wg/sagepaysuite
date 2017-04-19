@@ -335,11 +335,13 @@ class Config
 
     public function getLicense()
     {
-        return $this->_scopeConfig->getValue(
+        $licenseKey = $this->_scopeConfig->getValue(
             $this->_getGlobalConfigPath("license"),
             ScopeInterface::SCOPE_STORE,
             $this->_storeId
         );
+
+        return $licenseKey;
     }
 
     public function getStoreDomain()
