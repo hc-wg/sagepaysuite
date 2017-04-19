@@ -75,7 +75,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             $data['expected'],
-            $this->dataHelper->getVersion()
+            $this->dataHelper->getSagePaySuiteModuleVersionNumber()
         );
     }
 
@@ -108,6 +108,14 @@ class DataTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testObtainMajorAndMinorVersionFromVersionNumber()
+    {
+        $this->assertEquals("1.1", $this->dataHelper->obtainMajorAndMinorVersionFromVersionNumber("1.1.0"));
+        $this->assertEquals("1.3", $this->dataHelper->obtainMajorAndMinorVersionFromVersionNumber("1.3.1"));
+        $this->assertEquals("2.1", $this->dataHelper->obtainMajorAndMinorVersionFromVersionNumber("2.1.41"));
+        $this->assertEquals("100.1", $this->dataHelper->obtainMajorAndMinorVersionFromVersionNumber("100.1.0"));
+    }
+
     /**
      * @dataProvider verifyDataProvider
      */
@@ -136,7 +144,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
             'test normal' => [
                 [
                     'Ebizmarts_SagePaySuite' => [
-                        'setup_version' => '2.0'
+                        'setup_version' => '2.0.1'
                     ],
                     'expected' => false
                 ]
@@ -144,7 +152,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
             'test invalid' => [
                 [
                     'Ebizmarts_SagePaySuite' => [
-                        'setup_version' => '1.0'
+                        'setup_version' => '1.0.3'
                     ],
                     'expected' => true
                 ]
