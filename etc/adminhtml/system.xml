@@ -129,11 +129,6 @@
                         <comment><![CDATA[A message to the customer which is inserted into the successful transaction emails only. If provided this message is included toward the top of the customer confirmation emails.]]></comment>
                         <config_path>payment/sagepaysuiteform/email_message</config_path>
                     </field>
-                    <field id="order_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>New Order Status</label>
-                        <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
-                        <config_path>payment/sagepaysuiteform/order_status</config_path>
-                    </field>
                     <field id="sort_order" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Sort Order</label>
                         <frontend_class>validate-number</frontend_class>
@@ -196,11 +191,6 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/sagepaysuitepi/use_dropin</config_path>
                     </field>
-                    <field id="order_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>New Order Status</label>
-                        <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
-                        <config_path>payment/sagepaysuitepi/order_status</config_path>
-                    </field>
                     <field id="sort_order" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Sort Order</label>
                         <frontend_class>validate-number</frontend_class>
@@ -255,11 +245,6 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/sagepaysuiteserver/profile</config_path>
                     </field>
-                    <field id="order_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>New Order Status</label>
-                        <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
-                        <config_path>payment/sagepaysuiteserver/order_status</config_path>
-                    </field>
                     <field id="sort_order" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Sort Order</label>
                         <frontend_class>validate-number</frontend_class>
@@ -302,11 +287,6 @@
                     <field id="title" translate="label" type="text" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Title</label>
                         <config_path>payment/sagepaysuitepaypal/title</config_path>
-                    </field>
-                    <field id="order_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>New Order Status</label>
-                        <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
-                        <config_path>payment/sagepaysuitepaypal/order_status</config_path>
                     </field>
                     <field id="billing_agreement" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Billing Agreement</label>
@@ -356,11 +336,6 @@
                         <comment><![CDATA[Details of all possible payment actions can be found <a target="_blank" href="http://www.sagepay.co.uk/support/12/36/transaction-types">here</a>.]]></comment>
                         <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\PaymentActionRepeat</source_model>
                         <config_path>payment/sagepaysuiterepeat/payment_action</config_path>
-                    </field>
-                    <field id="order_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>New Order Status</label>
-                        <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
-                        <config_path>payment/sagepaysuitepaypal/order_status</config_path>
                     </field>
                     <field id="sort_order" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Sort Order</label>
