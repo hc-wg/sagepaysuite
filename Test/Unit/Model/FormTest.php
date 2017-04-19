@@ -29,19 +29,6 @@ class FormTest extends \PHPUnit_Framework_TestCase
 
     public function testDecodeSagePayResponse()
     {
-        $this->markTestSkipped();
-
-        $encryptor = $this->objectManagerHelper->getObject(
-            '\phpseclib\Crypt\AES',
-            ['mode' => 2]
-        );
-
-        $objectManagerMock = $this->getMockBuilder(\Magento\Framework\App\ObjectManager::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $objectManagerMock->expects($this->once())->method('create')->willReturn($encryptor);
-        \Magento\Framework\App\ObjectManager::setInstance($objectManagerMock);
-
         $crypt = "@77a9f5fb9cbfc11c6f3d5d6b424c7e840ad2573a3dcab681978e33a10202f0483177475ac5a76752c8b10a736d13fe83bb";
         $crypt .= "f34446f55a4276008bdf1cf59d7c3fb2325524cb427779a1143320584e971664954712c5b2ed8f25d638156d2110457862a";
         $crypt .= "24d7ca7e6f0580b6462462548a83ba3636ffebb14dea013a5983894fb0dd21b9cad9f6fdfe57b5b49a4a70c7d5d7a371b16";
@@ -61,13 +48,16 @@ class FormTest extends \PHPUnit_Framework_TestCase
             ->method('getFormEncryptedPassword')
             ->willReturn('4BMxx5kDvDshzS6Q');
 
+        $formCryptObject = new \Ebizmarts\SagePaySuite\Model\FormCrypt();
+
         /** @var \Ebizmarts\SagePaySuite\Model\Form $formModelMock */
         $formModelMock = $this
             ->objectManagerHelper
             ->getObject(
                 '\Ebizmarts\SagePaySuite\Model\Form',
                 [
-                    'config' => $configMock,
+                    "config"    => $configMock,
+                    "formCrypt" => $formCryptObject
                 ]
             );
 
@@ -99,7 +89,6 @@ class FormTest extends \PHPUnit_Framework_TestCase
      */
     public function testDecodeSagePayInvalidResponse()
     {
-        $this->markTestSkipped();
         $crypt = "77a9f5fb9cbrtyfc11c6f3d5d6b424c7e840ad2573a3dcab681978e33a10202f0483177475ac5a76752c8b10a736d13fe83";
 
         $configMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
@@ -110,13 +99,16 @@ class FormTest extends \PHPUnit_Framework_TestCase
             ->method('getFormEncryptedPassword')
             ->willReturn('4BMxx5kDvDshzS6Q');
 
+        $formCryptObject = new \Ebizmarts\SagePaySuite\Model\FormCrypt();
+
         /** @var \Ebizmarts\SagePaySuite\Model\Form $formModelMock */
         $formModelMock = $this
             ->objectManagerHelper
             ->getObject(
                 '\Ebizmarts\SagePaySuite\Model\Form',
                 [
-                    'config' => $configMock,
+                    "config" => $configMock,
+                    "formCrypt" => $formCryptObject
                 ]
             );
 
