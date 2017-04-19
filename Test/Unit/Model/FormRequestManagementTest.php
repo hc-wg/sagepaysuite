@@ -6,6 +6,7 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
 {
     public function testResponseIsOk()
     {
+        $this->markTestSkipped();
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
 
         $configMock = $this
