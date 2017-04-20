@@ -114,23 +114,23 @@ class Config
     /**
      * SagePay Status Codes
      */
-    const SUCCESS_STATUS = '0000';
+    const SUCCESS_STATUS         = '0000';
     const AUTH3D_REQUIRED_STATUS = '2007';
 
     /**
      * SagePay Third Man Score Statuses
      */
     const T3STATUS_NORESULT = 'NORESULT';
-    const T3STATUS_OK = 'OK';
-    const T3STATUS_HOLD = 'HOLD';
-    const T3STATUS_REJECT = 'REJECT';
+    const T3STATUS_OK       = 'OK';
+    const T3STATUS_HOLD     = 'HOLD';
+    const T3STATUS_REJECT   = 'REJECT';
 
     /**
      * SagePay ReD Score Statuses
      */
-    const REDSTATUS_ACCEPT = 'ACCEPT';
-    const REDSTATUS_DENY = 'DENY';
-    const REDSTATUS_CHALLENGE = 'CHALLENGE';
+    const REDSTATUS_ACCEPT     = 'ACCEPT';
+    const REDSTATUS_DENY       = 'DENY';
+    const REDSTATUS_CHALLENGE  = 'CHALLENGE';
     const REDSTATUS_NOTCHECKED = 'NOTCHECKED';
 
     /**
@@ -157,7 +157,10 @@ class Config
      *
      * @var int
      */
-    private $_storeId;
+    private $configurationScopeId;
+
+    /** @var string */
+    private $configurationScope;
 
     /**
      * Store manager
@@ -192,6 +195,9 @@ class Config
         $this->_scopeConfig  = $scopeConfig;
         $this->_storeManager = $storeManager;
         $this->_suiteLogger  = $suiteLogger;
+
+        $this->configurationScopeId = null;
+        $this->configurationScope   = ScopeInterface::SCOPE_STORE;
     }
 
     /**
@@ -223,27 +229,34 @@ class Config
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function getValue($key, $storeId = null)
+    public function getValue($key, $configurationScopeId = null)
     {
-        if ($storeId === null) {
-            $storeId = $this->_storeId;
+        if ($configurationScopeId === null) {
+            $configurationScopeId = $this->configurationScopeId;
         }
 
         $path = $this->_getSpecificConfigPath($key);
 
-        return $this->_scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->_scopeConfig->getValue($path, $this->configurationScope, $configurationScopeId);
     }
 
     /**
      * Store ID setter
      *
-     * @param int $storeId
-     * @return $this
+     * @param int $configurationScopeId
+     * @return void
      */
-    public function setStoreId($storeId)
+    public function setConfigurationScopeId($configurationScopeId)
     {
-        $this->_storeId = (int)$storeId;
-        return $this;
+        $this->configurationScopeId = (int)$configurationScopeId;
+    }
+
+    /**
+     * @param string $configurationScope
+     */
+    public function setConfigurationScope($configurationScope)
+    {
+        $this->configurationScope = $configurationScope;
     }
 
     /**
@@ -328,8 +341,8 @@ class Config
     {
         return $this->_scopeConfig->getValue(
             $this->_getGlobalConfigPath("vendorname"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
     }
 
@@ -337,8 +350,8 @@ class Config
     {
         $licenseKey = $this->_scopeConfig->getValue(
             $this->_getGlobalConfigPath("license"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
 
         return $licenseKey;
@@ -348,8 +361,8 @@ class Config
     {
         return $this->_scopeConfig->getValue(
             Store::XML_PATH_UNSECURE_BASE_URL,
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
     }
 
@@ -380,8 +393,8 @@ class Config
     {
         return $this->_scopeConfig->getValue(
             $this->_getGlobalConfigPath("mode"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
     }
 
@@ -389,8 +402,8 @@ class Config
     {
         return $this->_scopeConfig->getValue(
             $this->_getGlobalConfigPath("token"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
     }
 
@@ -398,8 +411,8 @@ class Config
     {
         return $this->_scopeConfig->getValue(
             $this->_getGlobalConfigPath("reporting_user"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
     }
 
@@ -407,8 +420,8 @@ class Config
     {
         return $this->_scopeConfig->getValue(
             $this->_getGlobalConfigPath("reporting_password"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
     }
 
@@ -431,8 +444,8 @@ class Config
     {
         $config_value = $this->_scopeConfig->getValue(
             $this->_getAdvancedConfigPath("threedsecure"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
 
         if ($forceDisable) {
@@ -454,8 +467,8 @@ class Config
     {
         $configValue = $this->_scopeConfig->getValue(
             $this->_getAdvancedConfigPath("avscvc"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
 
         if ($this->_methodCode != self::METHOD_PI) {
@@ -469,8 +482,8 @@ class Config
     {
         $config_value = $this->_scopeConfig->getValue(
             $this->_getAdvancedConfigPath("fraud_autoinvoice"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
         return $config_value;
     }
@@ -479,8 +492,8 @@ class Config
     {
         $config_value = $this->_scopeConfig->getValue(
             $this->_getAdvancedConfigPath("fraud_notify"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
         return $config_value;
     }
@@ -514,8 +527,8 @@ class Config
     {
         $currency_settings = $this->_scopeConfig->getValue(
             $this->_getGlobalConfigPath("currency"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
 
         //store base currency as default
@@ -540,8 +553,8 @@ class Config
     {
         return $this->_scopeConfig->getValue(
             $this->_getGlobalConfigPath("currency"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
     }
 
@@ -549,8 +562,8 @@ class Config
     {
         $config_value = $this->_scopeConfig->getValue(
             $this->_getAdvancedConfigPath("basket_format"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
         return $config_value;
     }
@@ -564,8 +577,8 @@ class Config
     {
         $config_value = $this->_scopeConfig->getValue(
             $this->_getAdvancedConfigPath("giftaid"),
-            ScopeInterface::SCOPE_STORE,
-            $this->_storeId
+            $this->configurationScope,
+            $this->configurationScopeId
         );
         return $config_value;
     }

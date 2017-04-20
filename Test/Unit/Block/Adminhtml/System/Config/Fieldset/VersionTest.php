@@ -24,7 +24,7 @@ class VersionTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $suiteHelperMock->expects($this->any())
-            ->method('getVersion')
+            ->method('getSagePaySuiteModuleVersionNumber')
             ->will($this->returnValue('1.0.0'));
 
         /** @var \Ebizmarts\SagePaySuite\Block\Adminhtml\System\Config\Fieldset\Version $versionBlock */

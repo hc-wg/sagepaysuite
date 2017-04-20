@@ -74,25 +74,30 @@ class SystemConfigEdit implements ObserverInterface
             /**
              * VALIDATE LICENSE
              */
-            if (!$this->_suiteHelper->verify()) {
+            if (!$this->isLicenseKeyValid()) {
                 $this->_messageManager->addError(__('Your Sage Pay Suite license is invalid.'));
             }
 
-            /**
-             * VALIDATE REPORTING API CREDENTIALS
-             */
-            try {
-                $version = $this->_reportingApi->getVersion();
-                $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $version, [__METHOD__, __LINE__]);
-            } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-                $this->_messageManager->addError($apiException->getUserMessage());
-            } catch (\Exception $e) {
-                $this->_messageManager->addError(__('Can not establish connection with Sage Pay API.'));
-            }
-
-            /**
-             * VALIDATE PI CREDENTIALS
-             */
+            $this->verifyReportingApiCredentialsByCallingVersion();
         }
+    }
+
+    private function verifyReportingApiCredentialsByCallingVersion()
+    {
+        try {
+            $this->_reportingApi->getVersion();
+        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+            $this->_messageManager->addError($apiException->getUserMessage());
+        } catch (\Exception $e) {
+            $this->_messageManager->addError(__('Can not establish connection with Sage Pay API.'));
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    private function isLicenseKeyValid()
+    {
+        return $this->_suiteHelper->verify();
     }
 }
