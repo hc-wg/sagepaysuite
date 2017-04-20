@@ -278,7 +278,8 @@ class PIRest
 
         $jsonRequest = json_encode($request->__toArray());
         $result = $this->_executePostRequest(
-            $this->_getServiceUrl(self::ACTION_TRANSACTION_INSTRUCTIONS, $transactionId), $jsonRequest
+            $this->_getServiceUrl(self::ACTION_TRANSACTION_INSTRUCTIONS, $transactionId),
+            $jsonRequest
         );
 
         $apiResponse = $this->processResponse($result);
@@ -377,8 +378,14 @@ class PIRest
             $transaction->setParEq($captureResult->paReq);
         } else {
             $transaction->setTransactionType($captureResult->transactionType);
-            $transaction->setRetrievalReference($captureResult->retrievalReference);
-            $transaction->setBankAuthCode($captureResult->bankAuthorisationCode);
+
+            if (isset($captureResult->retrievalReference)) {
+                $transaction->setRetrievalReference($captureResult->retrievalReference);
+            }
+
+            if (isset($captureResult->bankAuthorisationCode)) {
+                $transaction->setBankAuthCode($captureResult->bankAuthorisationCode);
+            }
 
             if (isset($captureResult->currency)) {
                 $transaction->setCurrency($captureResult->currency);

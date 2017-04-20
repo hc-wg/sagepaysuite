@@ -156,14 +156,12 @@ define(
                                         //console.error('Tokenisation failed', tokenisationResult.error.errorMessage);
                                     }
                                 }
-                            }
-                        ).form();
+                            }).form();
                         fullScreenLoader.stopLoader();
 
                         document.getElementById('submit_dropin_payment').style.display = "block";
                     }
-                }
-                else {
+                } else {
                     if (merchant_session_key) {
                         //create token form
                         var token_form = document.getElementById(self.getCode() + '-token-form');

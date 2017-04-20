@@ -212,7 +212,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
                 $vendorTxCode,
                 $vpsTxId,
                 $amount * 100,
-                $order->getOrderCurrencyCode(), $description
+                $order->getOrderCurrencyCode(),
+                $description
             );
 
             $payment->setTransactionId($refundResult->getTransactionId());

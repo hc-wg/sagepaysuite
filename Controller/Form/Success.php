@@ -90,8 +90,9 @@ class Success extends \Magento\Framework\App\Action\Action
      * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
      * @param \Ebizmarts\SagePaySuite\Model\Form $formModel
      * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
-     * @param \Magento\Sales\Model\OrderFactory $orderFactory,
-    \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory $actionFactory
+     * @param \Magento\Sales\Model\OrderFactory $orderFactory
+     * @param \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender
+     * @param \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory $actionFactory
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,

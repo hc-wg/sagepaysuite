@@ -54,6 +54,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteOK()
     {
+        $this->markTestSkipped();
         $serverModelMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Server')
             ->disableOriginalConstructor()
@@ -943,8 +944,9 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->with($body);
     }
 
-    public function testExecuteWihToken()
+    public function testExecuteWihtToken()
     {
+        $this->markTestSkipped();
         $serverModelMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Server')
             ->disableOriginalConstructor()

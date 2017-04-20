@@ -398,7 +398,8 @@ class Notify extends \Magento\Framework\App\Action\Action
             $this->_suiteLogger->sageLog(
                 Logger::LOG_REQUEST,
                 "INVALID SIGNATURE: " . $this->_getVPSSignatureString($payment),
-                [__METHOD__, __LINE__]);
+                [__METHOD__, __LINE__]
+            );
             throw new \Magento\Framework\Validator\Exception(__('Invalid VPS Signature'));
         }
     }

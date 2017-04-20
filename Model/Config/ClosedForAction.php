@@ -41,5 +41,4 @@ class ClosedForAction
         }
         return [$action, $closed];
     }
-
 }

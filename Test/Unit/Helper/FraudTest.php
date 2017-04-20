@@ -144,7 +144,6 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $fraudResponseMock->setErrorCode('0000');
 
         if ($data['payment_mode'] == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
-
             if (array_key_exists('fraudid', $data['expects'])) {
                 $fraudResponseMock->setThirdmanId($data['expects']['fraudid']);
             }

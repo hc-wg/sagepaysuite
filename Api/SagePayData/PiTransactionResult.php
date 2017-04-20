@@ -8,7 +8,6 @@
 
 namespace Ebizmarts\SagePaySuite\Api\SagePayData;
 
-
 class PiTransactionResult extends \Magento\Framework\Api\AbstractExtensibleObject implements \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
 {
     /**
@@ -33,7 +32,6 @@ class PiTransactionResult extends \Magento\Framework\Api\AbstractExtensibleObjec
     public function getTransactionType()
     {
         return $this->_get(self::TRANSACTION_TYPE);
-
     }
 
     /**
@@ -50,7 +48,6 @@ class PiTransactionResult extends \Magento\Framework\Api\AbstractExtensibleObjec
     public function getStatus()
     {
         return $this->_get(self::STATUS);
-
     }
 
     /**
@@ -67,7 +64,6 @@ class PiTransactionResult extends \Magento\Framework\Api\AbstractExtensibleObjec
     public function getStatusCode()
     {
         return $this->_get(self::STATUS_CODE);
-
     }
 
     /**

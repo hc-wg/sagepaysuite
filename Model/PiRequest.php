@@ -6,7 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-
 class PiRequest
 {
     /** @var \Magento\Quote\Model\Quote */
@@ -33,8 +32,8 @@ class PiRequest
     public function __construct(
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
         \Ebizmarts\SagePaySuite\Model\Config $sagepayConfig
-    )
-    {
+    ) {
+    
         $this->requestHelper = $requestHelper;
         $this->sagepayConfig = $sagepayConfig;
     }
@@ -68,8 +67,7 @@ class PiRequest
 
         if ($this->getIsMoto()) {
             $data['entryMethod'] = 'TelephoneOrder';
-        }
-        else {
+        } else {
             $data['entryMethod'] = 'Ecommerce';
         }
 
@@ -81,10 +79,9 @@ class PiRequest
         ];
         if ($data['billingAddress']['country'] == 'US') {
             $data['billingAddress']['state'] = substr($billingAddress->getRegionCode(), 0, 2);
-        }
-        else {
+        } else {
             if ($data['billingAddress']['country'] == 'IE') {
-                unset($data['billingAddress']['postalCode']);
+                $data['billingAddress']['postalCode'] = "000";
             }
         }
 
@@ -98,10 +95,9 @@ class PiRequest
         ];
         if ($data['shippingDetails']['shippingCountry'] == 'US') {
             $data['shippingDetails']['shippingState'] = substr($shippingAddress->getRegionCode(), 0, 2);
-        }
-        else {
+        } else {
             if ($data['shippingDetails']['shippingCountry'] == 'IE') {
-                unset($data['shippingDetails']['shippingPostalCode']);
+                $data['shippingDetails']['shippingPostalCode'] = "000";
             }
         }
 

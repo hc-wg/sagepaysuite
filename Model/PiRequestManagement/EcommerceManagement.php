@@ -8,7 +8,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 
-
 class EcommerceManagement extends RequestManagement
 {
     /** @var \Magento\Checkout\Model\Session */
@@ -95,7 +94,6 @@ class EcommerceManagement extends RequestManagement
                 $this->getResult()->setParEq($this->getPayResult()->getParEq());
                 $this->getResult()->setAcsUrl($this->getPayResult()->getAcsUrl());
             }
-
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             #$this->_logger->critical($apiException);
             $this->getResult()->setSuccess(false);
