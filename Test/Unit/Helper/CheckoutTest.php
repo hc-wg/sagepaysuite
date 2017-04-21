@@ -135,10 +135,6 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             ->method('isLoggedIn')
             ->will($this->returnValue(true));
 
-        $this->quoteMock->expects($this->once())
-            ->method('isVirtual')
-            ->will($this->returnValue(true));
-
         $addressInterfaceMock = $this
             ->getMockBuilder('Magento\Customer\Api\Data\AddressInterface')
             ->disableOriginalConstructor()
@@ -253,10 +249,10 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
         $customerSessionMock->expects($this->once())->method('isLoggedIn')->willReturn(true);
 
         $billingAddressMock = $this->getMockBuilder(\Magento\Quote\Model\Quote\Address::class)
-            ->setMethods(['getCustomerId', 'getSaveInAddressBook'])
+            ->setMethods(['getSaveInAddressBook'])
             ->disableOriginalConstructor()
             ->getMock();
-        $billingAddressMock->expects($this->once())->method('getCustomerId')->willReturn(true);
+
         $billingAddressMock->expects($this->once())->method('getSaveInAddressBook')->willReturn(false);
 
         $quoteMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)
@@ -373,10 +369,6 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
         $this->customerSessionMock->expects($this->once())
             ->method('isLoggedIn')
             ->will($this->returnValue(false));
-
-        $this->quoteMock->expects($this->once())
-            ->method('isVirtual')
-            ->will($this->returnValue(true));
 
         $addressInterfaceMock = $this
             ->getMockBuilder('Magento\Customer\Api\Data\AddressInterface')
