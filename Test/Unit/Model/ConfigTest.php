@@ -61,10 +61,10 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     }
     // @codingStandardsIgnoreEnd
 
-    public function testSetStoreId()
+    public function testSetConfigurationStoreId()
     {
-        $this->configModel->setStoreId(59);
-        \PHPUnit_Framework_Assert::assertAttributeEquals(59, '_storeId', $this->configModel);
+        $this->configModel->setConfigurationScopeId(59);
+        \PHPUnit_Framework_Assert::assertAttributeEquals(59, "configurationScopeId", $this->configModel);
     }
 
     public function testIsMethodActiveMoto()

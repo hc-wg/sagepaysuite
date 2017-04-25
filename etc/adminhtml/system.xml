@@ -94,7 +94,7 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/sagepaysuiteform/active</config_path>
                     </field>
-                    <field id="active_moto" translate="label" type="select" sortOrder="11" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <field id="active_moto" translate="label" type="select" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>DEPRECATED -- Enabled MOTO</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/sagepaysuiteform/active_moto</config_path>
@@ -162,7 +162,7 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/sagepaysuitepi/active</config_path>
                     </field>
-                    <field id="active_moto" translate="label" type="select" sortOrder="11" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <field id="active_moto" translate="label" type="select" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled MOTO</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/sagepaysuitepi/active_moto</config_path>
@@ -186,7 +186,7 @@
                         <config_path>payment/sagepaysuitepi/password</config_path>
                         <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     </field>
-                    <field id="use_dropin" translate="label" type="select" sortOrder="18" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <field id="use_dropin" translate="label" type="select" sortOrder="18" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Drop-in interface</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/sagepaysuitepi/use_dropin</config_path>

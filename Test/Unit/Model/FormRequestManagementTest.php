@@ -6,7 +6,6 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
 {
     public function testResponseIsOk()
     {
-        $this->markTestSkipped();
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
 
         $configMock = $this
@@ -123,15 +122,6 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
         $quoteMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
 
-        $objectManagerMock = $this->getMockBuilder(\Magento\Framework\ObjectManager\ObjectManager::class)
-            ->setMethods(['create'])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $phpseclib = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
-        $objectManagerMock
-            ->method('create')
-            ->willReturn($phpseclib);
-
         $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -142,6 +132,8 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $checkoutHelperMock->expects($this->once())->method('placeOrder')->willReturn($orderMock);
+
+        $cryptObject = new \Ebizmarts\SagePaySuite\Model\FormCrypt();
 
         $requestMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\FormRequestManagement::class)
@@ -159,7 +151,7 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
                     "quoteRepository"    => $quoteRepoMock,
                     "quoteIdMaskFactory" => $quoteIdMaskRepoMock,
                     "coreUrl"            => $url,
-                    "objectManager"      => $objectManagerMock
+                    "formCrypt"          => $cryptObject
                 ]
             )
             ->getMock();

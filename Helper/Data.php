@@ -10,16 +10,15 @@ use \Ebizmarts\SagePaySuite\Model\Config;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
-
     /**
      * @var \Magento\Framework\Module\ModuleList\Loader
      */
-    private $_loader;
+    private $moduleLoader;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    private $_config;
+    private $sagePaySuiteConfig;
 
     /**
      * @var \Magento\Framework\Stdlib\DateTime\DateTime
@@ -27,7 +26,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     private $dateTime;
 
     /**
+     * Data constructor.
+     * @param \Magento\Framework\Module\ModuleList\Loader $loader
      * @param \Magento\Framework\App\Helper\Context $context
+     * @param Config $config
+     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
      */
     public function __construct(
         \Magento\Framework\Module\ModuleList\Loader $loader,
@@ -36,9 +39,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
     ) {
         parent::__construct($context);
-        $this->_loader  = $loader;
-        $this->_config  = $config;
-        $this->dateTime = $dateTime;
+        $this->moduleLoader       = $loader;
+        $this->sagePaySuiteConfig = $config;
+        $this->dateTime           = $dateTime;
     }
 
     /**
@@ -47,7 +50,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getSagePayConfig()
     {
-        return $this->_config;
+        return $this->sagePaySuiteConfig;
     }
 
     /**
@@ -85,31 +88,112 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     // @codingStandardsIgnoreStart
     public function verify()
     {
-        $storeId = (int)$this->_getRequest()->getParam('store', \Magento\Store\Model\Store::DEFAULT_STORE_ID);
-        $this->_config->setStoreId($storeId);
-        $domain = preg_replace("/^http:\/\//", "", $this->_config->getStoreDomain());
-        $domain = preg_replace("/^https:\/\//", "", $domain);
-        $domain = preg_replace("/^www\./", "", $domain);
-        $domain = preg_replace("/\/$/", "", $domain);
-        $version = explode('.', $this->getVersion());
-        $module = 'Ebizmarts_SagePaySuite2';
-        $md5 = md5($module . $version[0].'.'.$version[1] . $domain);
-        $key = hash('sha1', $md5 . 'EbizmartsV2');
-        return ($key == $this->_config->getLicense());
+        $this->sagePaySuiteConfig->setConfigurationScopeId($this->obtainConfigurationScopeIdFromRequest());
+        $this->sagePaySuiteConfig->setConfigurationScope($this->obtainConfigurationScopeCodeFromRequest());
+
+        $versionNumberToCheck = $this->obtainMajorAndMinorVersionFromVersionNumber(
+            $this->getSagePaySuiteModuleVersionNumber()
+        );
+        $localSignature = $this->localSignature(
+            $this->extractHostFromCurrentConfigScopeStoreCheckoutUrl(), $versionNumberToCheck
+        );
+
+        return ($localSignature == $this->sagePaySuiteConfig->getLicense());
     }
     // @codingStandardsIgnoreEnd
+
+    /**
+     * @param string $checkoutHostName
+     * @param string X.Y $moduleMajorAndMinorVersionNumber
+     * @return string
+     */
+    private function localSignature($checkoutHostName, $moduleMajorAndMinorVersionNumber)
+    {
+        $md5    = md5("Ebizmarts_SagePaySuite2" . $moduleMajorAndMinorVersionNumber . $checkoutHostName);
+        $key    = hash('sha1', $md5 . 'EbizmartsV2');
+
+        return $key;
+    }
+
+    /**
+     * @param string semver$versionNumber
+     * @return string
+     */
+    public function obtainMajorAndMinorVersionFromVersionNumber($versionNumber)
+    {
+        $versionArray = explode('.', $versionNumber);
+
+        return $versionArray[0] . "." . $versionArray[1];
+    }
+
+    /**
+     * @return int
+     */
+    public function obtainConfigurationScopeIdFromRequest()
+    {
+        $configurationScopeId = \Magento\Store\Model\Store::DEFAULT_STORE_ID;
+
+        /** @var $requestObject \Magento\Framework\App\RequestInterface */
+        $requestObject = $this->_getRequest();
+
+        $configurationScope = $this->obtainConfigurationScopeCodeFromRequest();
+        if ($this->isConfigurationScopeStore($configurationScope)) {
+            $configurationScopeId = $requestObject->getParam('store');
+        } elseif ($this->isConfigurationScopeWebsite($configurationScope)) {
+            $configurationScopeId = $requestObject->getParam('website');
+        }
+
+        return $configurationScopeId;
+    }
+
+    /**
+     * @return string
+     */
+    public function obtainConfigurationScopeCodeFromRequest()
+    {
+        $configurationScope = $this->defaultScopeCode();
+
+        /** @var $requestObject \Magento\Framework\App\RequestInterface */
+        $requestObject = $this->_getRequest();
+
+        $storeParameter = $requestObject->getParam('store');
+        if ($storeParameter !== null) {
+            $configurationScope = $this->storeScopeCode();
+        } else {
+            $websiteParameter = $requestObject->getParam('website');
+            if ($websiteParameter !== null) {
+                $configurationScope = $this->websiteScopeCode();
+            }
+        }
+
+        return $configurationScope;
+    }
+
+    /**
+     * @return string
+     */
+    private function extractHostFromCurrentConfigScopeStoreCheckoutUrl()
+    {
+        $domain = preg_replace(
+            ["/^http:\/\//", "/^https:\/\//", "/^www\./", "/\/$/"],
+            "",
+            $this->sagePaySuiteConfig->getStoreDomain()
+        );
+
+        return $domain;
+    }
 
     /**
      * Get module version
      * @return string
      */
-    public function getVersion()
+    public function getSagePaySuiteModuleVersionNumber()
     {
-        $modules = $this->_loader->load();
+        $modules = $this->moduleLoader->load();
         $v = "UNKNOWN";
 
         if (isset($modules['Ebizmarts_SagePaySuite']) && isset($modules['Ebizmarts_SagePaySuite']['setup_version'])) {
-            $v =$modules['Ebizmarts_SagePaySuite']['setup_version'];
+            $v = $modules['Ebizmarts_SagePaySuite']['setup_version'];
         }
         return $v;
     }
@@ -145,4 +229,47 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             or $methodCode == \Ebizmarts\SagePaySuite\Model\Config::METHOD_REPEAT
             or $methodCode == \Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER;
     }
+
+    /**
+     * @return string
+     */
+    private function defaultScopeCode()
+    {
+        return \Magento\Framework\App\Config\ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
+    }
+
+    /**
+     * @return string
+     */
+    private function storeScopeCode()
+    {
+        return \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+    }
+
+    /**
+     * @return string
+     */
+    private function websiteScopeCode()
+    {
+        return \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE;
+    }
+
+    /**
+     * @param $configurationScope
+     * @return bool
+     */
+    private function isConfigurationScopeStore($configurationScope)
+    {
+        return $configurationScope == $this->storeScopeCode();
+    }
+
+    /**
+     * @param $configurationScope
+     * @return bool
+     */
+    private function isConfigurationScopeWebsite($configurationScope)
+    {
+        return $configurationScope == $this->websiteScopeCode();
+    }
+
 }
