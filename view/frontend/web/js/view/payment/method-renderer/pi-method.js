@@ -286,13 +286,12 @@ define(
                                     fullScreenLoader.stopLoader();
                                 }
                             } else {
-                                console.log(response);
                                 self.showPaymentError("Invalid Sage Pay response, please use another payment method.");
                             }
                         } else {
                             self.showPaymentError(response.error_message);
                         }
-                        }
+                    }
                 ).fail(
                     function (response) {
                         self.showPaymentError("Unable to capture Sage Pay transaction, please use another payment method.");

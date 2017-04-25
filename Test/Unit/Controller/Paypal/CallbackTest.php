@@ -164,6 +164,15 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
         $this->orderFactoryMock->method('create')->willReturnSelf();
         $this->orderFactoryMock->method('loadByIncrementId')->willReturn($this->orderMock);
 
+        $closedForActionFactoryMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory::class)
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $closedForActionMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config\ClosedForAction::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $closedForActionFactoryMock->method('create')->willReturn($closedForActionMock);
+
         $objectManagerHelper            = new ObjectManagerHelper($this);
         $this->paypalCallbackController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Paypal\Callback',
@@ -175,7 +184,8 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
                 'postApi'            => $postApiMock,
                 'transactionFactory' => $transactionFactoryMock,
                 'quoteFactory'       => $quoteFactoryMock,
-                'orderFactory'       => $this->orderFactoryMock
+                'orderFactory'       => $this->orderFactoryMock,
+                "actionFactory"      => $closedForActionFactoryMock
             ]
         );
     }
@@ -196,8 +206,6 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecuteSUCCESS($mode, $paymentAction)
     {
-        $this->markTestSkipped();
-
         $this->configMock->method('getMode')->willReturn($mode);
         $this->configMock->method('getSagepayPaymentAction')->willReturn($paymentAction);
         $this->paymentMock->method('getLastTransId')->willReturn(self::TEST_VPSTXID);
