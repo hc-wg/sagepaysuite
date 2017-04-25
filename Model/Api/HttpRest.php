@@ -2,7 +2,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
-
 class HttpRest extends Http
 {
     public function __construct(

@@ -57,8 +57,7 @@ class Callback3D extends \Magento\Framework\App\Action\Action
 
             if ($response->getErrorMessage() === null) {
                 $this->_javascriptRedirect('checkout/onepage/success');
-            }
-            else {
+            } else {
                 $this->messageManager->addError($response->getErrorMessage());
                 $this->_javascriptRedirect('checkout/cart');
             }
@@ -79,9 +78,9 @@ class Callback3D extends \Magento\Framework\App\Action\Action
         $this
             ->getResponse()
             ->setBody(
-            '<script>window.top.location.href = "'
-            . $this->_url->getUrl($url, ['_secure' => true])
-            . '";</script>'
-        );
+                '<script>window.top.location.href = "'
+                . $this->_url->getUrl($url, ['_secure' => true])
+                . '";</script>'
+            );
     }
 }

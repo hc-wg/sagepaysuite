@@ -85,9 +85,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
             $response = $this->_reportingApi->getFraudScreenDetail($sagepayVpsTxId);
 
             if ($response->getErrorCode() == "0000") {
-
                 if ($this->fraudCheckAvailable($response)) {
-
                     //mark payment as fraud
                     if ($this->transactionIsFraud($response)) {
                         $payment->setIsFraudDetected(true);
@@ -136,7 +134,6 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
                     $this->saveFraudInformation($response, $payment);
 
                     $logData = array_merge($logData, $this->getFraudInformationToLog($response, $payment));
-
                 } else {
                     $recommendation = $this->getFraudScreenRecommendation($response);
 
@@ -162,7 +159,8 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudData
      * @return string
      */
-    private function getFraudScreenRecommendation($fraudData) {
+    private function getFraudScreenRecommendation($fraudData)
+    {
         $recommendation = '';
 
         $fraudprovidername = $fraudData->getFraudProviderName();
@@ -180,7 +178,8 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudData
      * @return bool
      */
-    private function isPassedFraudCheck($fraudData) {
+    private function isPassedFraudCheck($fraudData)
+    {
         $passed = false;
 
         $fraudprovidername = $fraudData->getFraudProviderName();
@@ -198,7 +197,8 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudData
      * @return array
      */
-    private function getFraudInformationToLog($fraudData) {
+    private function getFraudInformationToLog($fraudData)
+    {
         $logData = [];
 
         $fraudprovidername = $fraudData->getFraudProviderName();
@@ -229,7 +229,8 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudData
      * @param $payment
      */
-    private function saveFraudInformation($fraudData, $payment) {
+    private function saveFraudInformation($fraudData, $payment)
+    {
         $fraudprovidername = $fraudData->getFraudProviderName();
 
         if ($fraudprovidername == 'ReD') {
@@ -257,7 +258,8 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudData
      * @return bool
      */
-    private function transactionIsFraud($fraudData) {
+    private function transactionIsFraud($fraudData)
+    {
         $isFraud = false;
 
         $fraudprovidername = $fraudData->getFraudProviderName();
@@ -275,7 +277,8 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudData
      * @return bool
      */
-    private function fraudCheckAvailable($fraudData) {
+    private function fraudCheckAvailable($fraudData)
+    {
         $providerChecked = false;
 
         $fraudprovidername = $fraudData->getFraudProviderName();

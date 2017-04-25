@@ -13,7 +13,9 @@ class SagePayCardType
     /** @var array */
     private $ccTypesMap = [
         'Visa'            => 'VI',
+        'VisaDebit'       => 'VI',
         'MasterCard'      => 'MC',
+        'DebitMasterCard' => 'MC',
         'Maestro'         => 'MI',
         'AmericanExpress' => 'AE',
         'Diners'          => 'DN',
@@ -30,5 +32,4 @@ class SagePayCardType
 
         return $magentoCardType;
     }
-
 }

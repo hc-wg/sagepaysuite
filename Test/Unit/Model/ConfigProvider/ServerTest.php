@@ -99,7 +99,6 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->assertEquals([], $this->serverConfigProviderModel->getConfig());
-
     }
 
     public function testGetConfig()

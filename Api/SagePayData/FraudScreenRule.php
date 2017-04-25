@@ -1,7 +1,6 @@
 <?php
 namespace Ebizmarts\SagePaySuite\Api\SagePayData;
 
-
 class FraudScreenRule extends \Magento\Framework\Api\AbstractExtensibleObject implements FraudScreenRuleInterface
 {
 

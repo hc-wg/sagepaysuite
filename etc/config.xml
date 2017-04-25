@@ -38,7 +38,6 @@
                 <model>Ebizmarts\SagePaySuite\Model\Form</model>
                 <payment_action>PAYMENT</payment_action>
                 <send_email>1</send_email>
-                <order_status>pending</order_status>
                 <title>Sage Pay FORM</title>
                 <encrypted_password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <allowspecific>0</allowspecific>
@@ -48,7 +47,6 @@
                 <active_moto>0</active_moto>
                 <model>Ebizmarts\SagePaySuite\Model\PI</model>
                 <payment_action>PAYMENT</payment_action>
-                <order_status>pending</order_status>
                 <title>Sage Pay Direct</title>
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>
                 <allowspecific>0</allowspecific>
@@ -59,7 +57,6 @@
                 <active>0</active>
                 <model>Ebizmarts\SagePaySuite\Model\Server</model>
                 <payment_action>PAYMENT</payment_action>
-                <order_status>pending</order_status>
                 <title>Sage Pay SERVER</title>
                 <profile>0</profile>
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>
@@ -70,7 +67,6 @@
                 <model>Ebizmarts\SagePaySuite\Model\Paypal</model>
                 <payment_action>PAYMENT</payment_action>
                 <billing_agreement>0</billing_agreement>
-                <order_status>pending</order_status>
                 <title>PayPal</title>
                 <force_xml>1</force_xml>
                 <allowspecific>0</allowspecific>
@@ -79,7 +75,6 @@
                 <active>0</active>
                 <model>Ebizmarts\SagePaySuite\Model\Repeat</model>
                 <payment_action>REPEAT</payment_action>
-                <order_status>pending</order_status>
                 <title>Sage Pay REPEAT</title>
                 <allowspecific>0</allowspecific>
             </sagepaysuiterepeat>
