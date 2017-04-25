@@ -124,7 +124,6 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
             $this->saveAdditionalPaymentInformation($payment);
 
             $this->saveCreditCardInformationInPayment($payment);
-
         } else {
             throw new \Magento\Framework\Validator\Exception(
                 __('Invalid Sage Pay response, please use another payment method.')

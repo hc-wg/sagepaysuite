@@ -8,7 +8,6 @@
 
 namespace Ebizmarts\SagePaySuite\Api\Data;
 
-
 class PiResult extends Result implements PiResultInterface
 {
     /**

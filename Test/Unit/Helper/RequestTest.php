@@ -177,7 +177,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
-            ->setMethods(["getBaseGrandTotal", "getGrandTotal"])
+            ->setMethods(["getBaseGrandTotal", "getGrandTotal", "getQuoteCurrencyCode"])
             ->disableOriginalConstructor()
             ->getMock();
         $quoteMock->expects($this->once())
@@ -186,6 +186,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $quoteMock->expects($this->any())
             ->method('getGrandTotal')
             ->will($this->returnValue(200));
+        $quoteMock
+            ->expects($this->any())
+            ->method('getQuoteCurrencyCode')
+            ->willReturn($data['quoteCurrencyCode']);
 
         $result = $data["result"];
 
@@ -212,9 +216,22 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                     'currency_setting' => Config::CURRENCY_BASE,
                     'isRestRequest' => true,
                     'currency' => 'USD',
+                    'quoteCurrencyCode' => 'USD',
                     'result' => [
                         'amount' => 10000,
                         'currency' => 'USD'
+                    ]
+                ]
+            ],
+            'test PI admin diff order' => [
+                [
+                    'currency_setting' => Config::CURRENCY_BASE,
+                    'isRestRequest' => true,
+                    'currency' => 'USD',
+                    'quoteCurrencyCode' => 'GBP',
+                    'result' => [
+                        'amount' => 20000,
+                        'currency' => 'GBP'
                     ]
                 ]
             ],
@@ -223,6 +240,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                     'currency_setting' => Config::CURRENCY_SWITCHER,
                     'isRestRequest' => true,
                     'currency' => 'EUR',
+                    'quoteCurrencyCode' => 'EUR',
                     'result' => [
                         'amount' => 20000,
                         'currency' => 'EUR'
@@ -234,6 +252,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                     'currency_setting' => Config::CURRENCY_BASE,
                     'isRestRequest' => false,
                     'currency' => 'USD',
+                    'quoteCurrencyCode' => 'USD',
                     'result' => [
                         'Amount' => 100.00,
                         'Currency' => 'USD'

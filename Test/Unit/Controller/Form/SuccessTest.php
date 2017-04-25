@@ -223,6 +223,16 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->method('placeOrder')
             ->will($this->returnValue($this->orderMock));
 
+        $closedForActionMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config\ClosedForAction::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $actionFactoryMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+         $actionFactoryMock->expects($this->once())->method('create')->willReturn($closedForActionMock);
+
         $this->_expectRedirect("checkout/onepage/success");
 
         $objectManagerHelper = new ObjectManagerHelper($this);
@@ -237,7 +247,8 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
                 'formModel'          => $formModelMock,
                 'quoteFactory'       => $this->quoteFactoryMock,
                 'orderFactory'       => $this->orderFactoryMock,
-                'orderSender'        => $orderSenderMock
+                'orderSender'        => $orderSenderMock,
+                "actionFactory"      => $actionFactoryMock
             ]
         );
 

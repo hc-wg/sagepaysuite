@@ -8,7 +8,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 
-
 class MotoManagement extends RequestManagement
 {
     /** @var \Magento\Framework\ObjectManagerInterface */
@@ -80,7 +79,6 @@ class MotoManagement extends RequestManagement
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order.'));
             }
-
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             #$this->_logger->critical($apiException);
             $this->getResult()->setSuccess(false);
@@ -92,7 +90,6 @@ class MotoManagement extends RequestManagement
         }
 
         return $this->getResult();
-
     }
 
     /**

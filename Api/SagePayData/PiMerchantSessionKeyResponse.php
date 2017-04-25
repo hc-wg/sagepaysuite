@@ -2,7 +2,6 @@
 
 namespace Ebizmarts\SagePaySuite\Api\SagePayData;
 
-
 class PiMerchantSessionKeyResponse extends \Magento\Framework\Api\AbstractExtensibleObject implements PiMerchantSessionKeyResponseInterface
 {
     /**

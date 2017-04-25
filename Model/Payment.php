@@ -2,7 +2,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-
 class Payment
 {
     /** @var Api\Shared */
@@ -48,8 +47,7 @@ class Payment
                     $paymentAction = $payment->getAdditionalInformation('paymentAction');
                 }
 
-                if (
-                    $paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER
+                if ($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER
                     || $paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED
                 ) {
                     $action = 'releasing';
@@ -98,5 +96,4 @@ class Payment
 
         return $this;
     }
-
 }

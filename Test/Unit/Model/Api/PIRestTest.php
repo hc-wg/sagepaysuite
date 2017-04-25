@@ -247,6 +247,35 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
      */
     public function testCapture($responseCode)
     {
+        $threedResultMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $threedResultMock->expects($this->once())->method('setStatus')->with("NotChecked");
+
+        $threedResultFactoryMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $threedResultFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($threedResultMock);
+
+        $payResult = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMethodResultFactory = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $paymentMethodResultFactory
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($payResult);
+
         $cardResult = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard::class)
             ->disableOriginalConstructor()
@@ -264,6 +293,8 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $cardResultFactory->expects($this->once())->method('create')->willReturn($cardResult);
 
+        $payResult->expects($this->once())->method('setCard')->with($cardResult);
+
         $piTransactionResult = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult::class)
             ->disableOriginalConstructor()
@@ -275,8 +306,9 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         $piTransactionResult->expects($this->once())->method('setTransactionType')->with("Payment");
         $piTransactionResult->expects($this->once())->method('setRetrievalReference')->with("8636128");
         $piTransactionResult->expects($this->once())->method('setBankAuthCode')->with("999777");
-        $piTransactionResult->expects($this->once())->method('setCurrency')->with("GBP");
         $piTransactionResult->expects($this->once())->method('setBankResponseCode')->with("00");
+        $piTransactionResult->expects($this->once())->method('setPaymentMethod')->with($payResult);
+        $piTransactionResult->expects($this->once())->method('setThreeDSecure')->with($threedResultMock);
 
         $piResultFactory = $this
             ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory')
@@ -294,7 +326,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->with("https://test.sagepay.com/api/v1/transactions");
 
         $this->httpResponseMock
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('getStatus')
             ->willReturn(201);
         $this->httpResponseMock
@@ -360,50 +392,19 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         $this->pirestApiModel  = $this->objectManager->getObject(
             'Ebizmarts\SagePaySuite\Model\Api\PIRest',
             [
-                "httpRestFactory"        => $this->httpRestFactoryMock,
-                "config"                 => $this->configMock,
-                "apiExceptionFactory"    => $this->apiExceptionFactoryMock,
-                "piCaptureResultFactory" => $piResultFactory,
-                "cardResultFactory"      => $cardResultFactory
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "apiExceptionFactory"        => $this->apiExceptionFactoryMock,
+                "piCaptureResultFactory"     => $piResultFactory,
+                "cardResultFactory"          => $cardResultFactory,
+                "paymentMethodResultFactory" => $paymentMethodResultFactory,
+                "threedResultFactory"        => $threedResultFactoryMock
             ]
         );
 
-        $this->pirestApiModel->capture($requestArray);
+        $resultObject = $this->pirestApiModel->capture($requestArray);
 
-//        $this->pirestApiModel->generateMerchantKey();
-//
-//        $this->curlMock->expects($this->once())
-//            ->method('read')
-//            ->willReturn(
-//                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-//                '{"status": "OK"}'
-//            );
-//
-//        $this->curlMock->expects($this->once())
-//            ->method('getInfo')
-//            ->willReturn($responseCode);
-//
-//        $this->curlMock->expects($this->once())
-//            ->method('write')
-//            ->with(
-//                \Zend_Http_Client::POST,
-//                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-//                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_TRANSACTIONS,
-//                '1.0',
-//                ['Content-type: application/json'],
-//                '{"Amount":"100.00"}'
-//            );
-//
-//        $this->assertEquals(
-//            (object)[
-//                "status" => "OK"
-//            ],
-//            $this->pirestApiModel->capture(
-//                [
-//                    "Amount" => "100.00"
-//                ]
-//            )
-//        );
+        $this->assertInstanceOf('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult', $resultObject);
     }
 
     public function dataproviderCapture()
@@ -415,28 +416,35 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage Contains invalid value: paymentMethod.card.merchantSessionKey
      */
     public function testCaptureERROR()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"errors":[{"description":"Contains invalid value","property":"paymentMethod.card.merchantSessionKey","code":1009},{"description":"Contains invalid value","property":"paymentMethod.card.cardIdentifier","code":1009}]}'
-            );
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
-            ->willReturn(422);
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"Amount":"100.00"}')
+            ->willReturn($this->httpResponseMock);
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_TRANSACTIONS,
-                '1.0',
-                ['Content-type: application/json'],
-                '{"Amount":"100.00"}'
+        $this->httpResponseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
+            ->willReturn(422);
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(
+                json_decode(
+                    '
+                        {
+                        "errors":
+                            [
+                                {"description":"Contains invalid value","property":"paymentMethod.card.merchantSessionKey","code":1009},
+                                {"description":"Contains invalid value","property":"paymentMethod.card.cardIdentifier","code":1009}
+                            ]
+                        }
+                    '
+                )
             );
 
         $apiExceptionObj = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
@@ -455,33 +463,48 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ])
             ->willReturn($apiExceptionObj);
 
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "apiExceptionFactory"        => $this->apiExceptionFactoryMock
+            ]
+        );
+
         $this->pirestApiModel->capture(["Amount" => "100.00"]);
     }
 
     /**
      * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage No card provided.
      */
     public function testCaptureError1()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"errors":[{"statusDetail": "No card provided.", "description":"Contains invalid value","property":"paymentMethod.card.cardIdentifier","code":1009}]}'
-            );
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
-            ->willReturn(422);
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"Amount":"100.00"}')
+            ->willReturn($this->httpResponseMock);
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_TRANSACTIONS,
-                '1.0',
-                ['Content-type: application/json'],
-                '{"Amount":"100.00"}'
+        $this->httpResponseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
+            ->willReturn(422);
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(
+                json_decode(
+                    '
+                    {
+                    "errors":
+                    [
+                      {"statusDetail": "No card provided.", "description":"Contains invalid value","property":"paymentMethod.card.cardIdentifier","code":1009}
+                    ]
+                    }
+                    '
+                )
             );
 
         $apiExceptionObj = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
@@ -500,67 +523,121 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ])
             ->willReturn($apiExceptionObj);
 
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "apiExceptionFactory"        => $this->apiExceptionFactoryMock
+            ]
+        );
+
         $this->pirestApiModel->capture(["Amount" => "100.00"]);
     }
 
     public function testSubmit3D()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"status": "OK"}'
-            );
+        $pi3dRequestMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequest::class)
+            ->setMethods(['__toArray', 'setParEs'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $pi3dRequestMock->expects($this->once())->method('setParEs')->with("fsd678dfs786dfs786fds678fds");
+        $pi3dRequestMock->expects($this->once())->method('__toArray')->willReturn(["paRes" => "fsd678dfs786dfs786fds678fds"]);
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $pi3dRequestFactoryMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory::class)
+            ->setMethods(["create"])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $pi3dRequestFactoryMock->expects($this->once())->method('create')->willReturn($pi3dRequestMock);
+
+        $piTransactionResult3DMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $piTransactionResult3DMock->expects($this->once())->method('setStatus')->with("OK");
+
+        $piTransactionResult3DFactoryMock = $this
+        ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory::class)
+        ->setMethods(["create"])
+        ->disableOriginalConstructor()
+        ->getMock();
+        $piTransactionResult3DFactoryMock->expects($this->once())->method('create')->willReturn($piTransactionResult3DMock);
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"paRes":"fsd678dfs786dfs786fds678fds"}')
+            ->willReturn($this->httpResponseMock);
+
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getStatus')
             ->willReturn(201);
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(json_decode('{"status": "OK"}'));
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                "transactions/" . 12345 . "/" . \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_SUBMIT_3D,
-                '1.0',
-                ['Content-type: application/json'],
-                '{"paRes":"fsd678dfs786dfs786fds678fds"}'
-            );
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "threedRequest"              => $pi3dRequestFactoryMock,
+                "threedStatusResultFactory"  => $piTransactionResult3DFactoryMock
+            ]
+        );
 
-        $this->assertEquals(
-            (object)[
-                "status" => "OK"
-            ],
+        $this->assertInstanceOf(
+            '\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD',
             $this->pirestApiModel->submit3D("fsd678dfs786dfs786fds678fds", 12345)
         );
     }
 
     /**
      * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage Contains invalid characters: paRes
      */
     public function testSubmitThreedError()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"errors": [{"description": "Contains invalid characters","property": "paRes","code": 1005}]}'
-            );
+        $pi3dRequestMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequest::class)
+            ->setMethods(['__toArray', 'setParEs'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $pi3dRequestMock->expects($this->once())->method('setParEs')->with("fsd678dfs786dfs786fds678fds");
+        $pi3dRequestMock->expects($this->once())->method('__toArray')->willReturn(["paRes" => "fsd678dfs786dfs786fds678fds"]);
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $pi3dRequestFactoryMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory::class)
+            ->setMethods(["create"])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $pi3dRequestFactoryMock->expects($this->once())->method('create')->willReturn($pi3dRequestMock);
+
+        $piTransactionResult3DFactoryMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory::class)
+            ->setMethods(["create"])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $piTransactionResult3DFactoryMock->expects($this->never())->method('create');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"paRes":"fsd678dfs786dfs786fds678fds"}')
+            ->willReturn($this->httpResponseMock);
+
+        $this->httpResponseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
             ->willReturn(422);
-
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . "transactions/" . 12345 . "/" .
-                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_SUBMIT_3D,
-                '1.0',
-                ['Content-type: application/json'],
-                '{"paRes":"fsd678dfs786dfs786fds678fds"}'
-            );
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(json_decode('{"errors": [{"description": "Contains invalid characters","property": "paRes","code": 1005}]}'));
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new \Magento\Framework\Phrase("Contains invalid characters: paRes"),
@@ -575,133 +652,275 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ])
             ->willReturn($apiException);
 
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "apiExceptionFactory"        => $this->apiExceptionFactoryMock,
+                "threedRequest"              => $pi3dRequestFactoryMock,
+                "threedStatusResultFactory"  => $piTransactionResult3DFactoryMock
+            ]
+        );
         $this->pirestApiModel->submit3D("fsd678dfs786dfs786fds678fds", 12345);
     }
 
-    public function testTransactionDetails()
-    {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"VPSTxId": "12345"}'
-            );
+//    public function testTransactionDetails()
+//    {
+//        $threedResultMock = $this
+//            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD::class)
+//            ->disableOriginalConstructor()
+//            ->getMock();
+//        $threedResultMock->expects($this->once())->method('setStatus')->with("NotChecked");
+//
+//        $threedResultFactoryMock = $this
+//            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory::class)
+//            ->disableOriginalConstructor()
+//            ->setMethods(['create'])
+//            ->getMock();
+//        $threedResultFactoryMock->expects($this->once())
+//            ->method('create')
+//            ->willReturn($threedResultMock);
+//        $cardResult = $this
+//            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard::class)
+//            ->disableOriginalConstructor()
+//            ->getMock();
+//        $cardResult->expects($this->never())->method('setCardIdentifier');
+//        $cardResult->expects($this->never())->method('setIsReusable');
+//        $cardResult->expects($this->once())->method('setCardType')->with("Visa");
+//        $cardResult->expects($this->once())->method('setLastFourDigits')->with("0006");
+//        $cardResult->expects($this->once())->method('setExpiryDate')->with("0317");
+//
+//        $cardResultFactory = $this
+//            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory')
+//            ->disableOriginalConstructor()
+//            ->setMethods(['create'])
+//            ->getMock();
+//        $cardResultFactory->expects($this->once())->method('create')->willReturn($cardResult);
+//        $payResult = $this
+//            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod::class)
+//            ->disableOriginalConstructor()
+//            ->getMock();
+//        $paymentMethodResultFactory = $this
+//            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory')
+//            ->disableOriginalConstructor()
+//            ->setMethods(['create'])
+//            ->getMock();
+//        $paymentMethodResultFactory
+//            ->expects($this->once())
+//            ->method('create')
+//            ->willReturn($payResult);
+//        $piTransactionResult = $this
+//            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult::class)
+//            ->disableOriginalConstructor()
+//            ->getMock();
+//        $piTransactionResult->expects($this->once())->method('setStatusCode')->with("0000");
+//        $piTransactionResult->expects($this->once())->method('setStatusDetail')->with("The Authorisation was Successful.");
+//        $piTransactionResult->expects($this->once())->method('setTransactionId')->with("T6569400-1516-0A3F-E3FA-7F222CC79221");
+//        $piTransactionResult->expects($this->once())->method('setStatus')->with("Ok");
+//        $piTransactionResult->expects($this->once())->method('setTransactionType')->with("Payment");
+//        $piTransactionResult->expects($this->once())->method('setRetrievalReference')->with("8636128");
+//        $piTransactionResult->expects($this->once())->method('setBankAuthCode')->with("999777");
+//        $piTransactionResult->expects($this->once())->method('setBankResponseCode')->with("00");
+//        $piTransactionResult->expects($this->once())->method('setPaymentMethod')->with($payResult);
+//        $piTransactionResult->expects($this->once())->method('setThreeDSecure')->with($threedResultMock);
+//
+//        $piTransactionResultFactory = $this
+//            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory::class)
+//            ->setMethods(['create'])
+//            ->disableOriginalConstructor()
+//            ->getMock();
+//        $piTransactionResultFactory->expects($this->once())->method('create')->willReturn($piTransactionResult);
+//
+//        $this->httpRestMock
+//            ->expects($this->once())
+//            ->method('executeGet')
+//            ->willReturn($this->httpResponseMock);
+//
+//        $this->httpResponseMock
+//            ->expects($this->once())
+//            ->method('getStatus')
+//            ->willReturn(200);
+//        $this->httpResponseMock
+//            ->expects($this->once())
+//            ->method('getResponseData')
+//            ->willReturn(json_decode(
+//                    '
+//                        {
+//                            "transactionId": "T6569400-1516-0A3F-E3FA-7F222CC79221",
+//                            "transactionType": "Payment",
+//                            "status": "Ok",
+//                            "statusCode": "0000",
+//                            "statusDetail": "The Authorisation was Successful.",
+//                            "retrievalReference": 8636128,
+//                            "bankResponseCode": "00",
+//                            "bankAuthorisationCode": "999777",
+//                            "paymentMethod": {
+//                                "card": {
+//                                    "cardType": "Visa",
+//                                    "lastFourDigits": "0006",
+//                                    "expiryDate": "0317"
+//                                }
+//                            },
+//                            "3DSecure": {
+//                                "status": "NotChecked"
+//                            }
+//                        }
+//                    '
+//            ));
+//
+//        $this->pirestApiModel  = $this->objectManager->getObject(
+//            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+//            [
+//                "httpRestFactory"            => $this->httpRestFactoryMock,
+//                "config"                     => $this->configMock,
+//                "apiExceptionFactory"        => $this->apiExceptionFactoryMock,
+//                "piCaptureResultFactory"     => $piTransactionResultFactory
+//            ]
+//        );
+//
+//        $this->assertEquals(
+//            (object)[
+//                "VPSTxId" => "12345"
+//            ],
+//            $this->pirestApiModel->transactionDetails(12345)
+//        );
+//    }
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
-            ->willReturn(200);
-
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::GET,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . "transactions/" . 12345,
-                '1.0',
-                ['Content-type: application/json']
-            );
-
-        $this->assertEquals(
-            (object)[
-                "VPSTxId" => "12345"
-            ],
-            $this->pirestApiModel->transactionDetails(12345)
-        );
-    }
-
+    /**
+     * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage Invalid Transaction Id
+     */
     public function testTransactionDetailsERROR()
     {
-        $configMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $configMock->expects($this->once())->method('getMode')->willReturn('live');
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executeGet')
+            ->willReturn($this->httpResponseMock);
 
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"code": "2001","description": "Invalid Transaction Id"}'
-            );
-
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getStatus')
             ->willReturn(400);
-
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::GET,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_LIVE . "transactions/" . 12345,
-                '1.0',
-                ['Content-type: application/json']
-            );
+        $this->httpResponseMock
+            ->expects($this->exactly(2))
+            ->method('getResponseData')
+            ->willReturn(json_decode('{"description": "Contains invalid characters","property": "paRes","code": 1005}'));
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new \Magento\Framework\Phrase("Invalid Transaction Id"),
             new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Invalid Transaction Id"))
         );
-
         $this->apiExceptionFactoryMock->expects($this->any())
             ->method('create')
-            ->will($this->returnValue($apiException));
+            ->willReturn($apiException);
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->pirestApiModel = $objectManagerHelper->getObject(
+        $this->pirestApiModel  = $this->objectManager->getObject(
             'Ebizmarts\SagePaySuite\Model\Api\PIRest',
             [
-                "curlFactory"         => $this->curlFactoryMock,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
-                "config"              => $configMock
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "apiExceptionFactory"        => $this->apiExceptionFactoryMock,
             ]
         );
 
-        try {
-            $this->pirestApiModel->transactionDetails(12345);
-            $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->assertEquals(
-                "Invalid Transaction Id",
-                $apiException->getUserMessage()
-            );
-        }
+        $this->pirestApiModel->transactionDetails(12345);
     }
 
     public function testVoidSucess()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{"instructionType": "void","date": "2015-08-11T11:45:16.285+01:00"}'
-            );
+        $piInstructionRequest = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequest::class)
+        ->disableOriginalConstructor()
+            ->setMethods(['setInstructionType', '__toArray'])
+            ->getMock();
+        $piInstructionRequest->expects($this->once())->method('setInstructionType')->with("void");
+        $piInstructionRequest->expects($this->once())->method('__toArray')->willReturn(["instructionType" => "void"]);
+        $piInstructionRequestFactory = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $piInstructionRequestFactory->expects($this->once())->method('create')->willReturn($piInstructionRequest);
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
+        $instructionResponse = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponse::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['__toArray'])
+            ->getMock();
+
+        $instructionResponseFactory = $this
+        ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $instructionResponseFactory->expects($this->once())->method('create')->willReturn($instructionResponse);
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"instructionType":"void"}')
+            ->willReturn($this->httpResponseMock);
+
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getStatus')
             ->willReturn(201);
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(json_decode('{"instructionType": "void","date": "2015-08-11T11:45:16.285+01:00"}'));
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                "transactions/2B97808F-9A36-6E71-F87F-6714667E8AF4/instructions",
-                '1.0',
-                ['Content-type: application/json'],
-                '{"instructionType":"void"}'
-            );
-
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "apiExceptionFactory"        => $this->apiExceptionFactoryMock,
+                "instructionRequest"         => $piInstructionRequestFactory,
+                "instructionResponse"        => $instructionResponseFactory,
+            ]
+        );
         $result = $this->pirestApiModel->void("2B97808F-9A36-6E71-F87F-6714667E8AF4");
-        $this->assertEquals($result->instructionType, "void");
-        $this->assertEquals($result->date, "2015-08-11T11:45:16.285+01:00");
+        $this->assertEquals($result->getInstructionType(), "void");
+        $this->assertEquals($result->getDate(), "2015-08-11T11:45:16.285+01:00");
     }
 
     public function testRefundSucess()
     {
-        $this->curlMock->expects($this->once())
-            ->method('read')
+        $refundRequestMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequest::class)
+            ->setMethods(['__toArray'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $refundRequestMock
+            ->expects($this->once())
+            ->method('__toArray')
+            ->willReturn(['vendorName' => 'testvendorname']);
+        $refundRequestFactoryMock = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $refundRequestFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($refundRequestMock);
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('setUrl');
+
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getStatus')
+            ->willReturn(201);
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
             ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '{
+                json_decode(
+                    '
+                    {
                     "statusCode": "0000",
                     "statusDetail": "The Authorisation was Successful.",
                     "transactionId": "043D6711-E722-ACC6-2C2E-B03E00BF7603",
@@ -716,48 +935,91 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                         }
                     },
                     "status": "Ok"
-                }'
+                    }
+                    '
+                )
             );
 
-        $this->curlMock->expects($this->once())
-            ->method('getInfo')
-            ->willReturn(201);
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"vendorName":"testvendorname"}')
+            ->willReturn($this->httpResponseMock);
 
-        $write = preg_replace('/\s\s+/', '', str_replace(array("\r","\n"), '', '{
-                    "transactionType":"Refund",
-                    "vendorTxCode":"R000000122-2016-12-22-1423481482416628",
-                    "referenceTransactionId":"2B97808F-9A36-6E71-F87F-6714667E8AF4",
-                    "amount":10800,
-                    "currency":"GBP",
-                    "description":"Magento backend refund."
-                 }'));
+        $piTransactionResult = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $piTransactionResult->expects($this->once())->method('setStatusCode')->with("0000");
+        $piTransactionResult->expects($this->once())->method('setStatusDetail')->with("The Authorisation was Successful.");
+        $piTransactionResult->expects($this->once())->method('setTransactionId')->with("043D6711-E722-ACC6-2C2E-B03E00BF7603");
+        $piTransactionResult->expects($this->once())->method('setStatus')->with("Ok");
+        $piTransactionResult->expects($this->once())->method('setTransactionType')->with("Refund");
+        $piTransactionResult->expects($this->once())->method('setRetrievalReference')->with("13551640");
+        $piTransactionResult->expects($this->once())->method('setBankAuthCode')->with("999778");
+        $piTransactionResult->expects($this->never())->method('setBankResponseCode');
+        //$piTransactionResult->expects($this->once())->method('setPaymentMethod')->with($payResult);
+        //$piTransactionResult->expects($this->once())->method('setThreeDSecure')->with($threedResultMock);
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST .
-                \Ebizmarts\SagePaySuite\Model\Api\PIRest::ACTION_TRANSACTIONS,
-                '1.0',
-                ['Content-type: application/json'],
-                $write
-            );
+        $cardResult = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $cardResult->expects($this->never())->method('setCardIdentifier');
+        $cardResult->expects($this->never())->method('setIsReusable');
+        $cardResult->expects($this->once())->method('setCardType')->with("MasterCard");
+        $cardResult->expects($this->once())->method('setLastFourDigits')->with("0001");
+        $cardResult->expects($this->once())->method('setExpiryDate')->with("0520");
 
-        $result = $this->pirestApiModel->refund(
+        $cardResultFactory = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $cardResultFactory->expects($this->once())->method('create')->willReturn($cardResult);
+
+        $piResultFactory = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $piResultFactory
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($piTransactionResult);
+
+        $payResult = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMethodResultFactory = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $paymentMethodResultFactory
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($payResult);
+
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            [
+                "config"                     => $this->configMock,
+                "refundRequest"              => $refundRequestFactoryMock,
+                "piCaptureResultFactory"     => $piResultFactory,
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "cardResultFactory"          => $cardResultFactory,
+                "paymentMethodResultFactory" => $paymentMethodResultFactory
+            ]
+        );
+
+        $this->pirestApiModel->refund(
             "R000000122-2016-12-22-1423481482416628",
             "2B97808F-9A36-6E71-F87F-6714667E8AF4",
             10800,
             "GBP",
             "Magento backend refund."
         );
-
-        $this->assertEquals($result->transactionType, "Refund");
-        $this->assertEquals($result->transactionId, "043D6711-E722-ACC6-2C2E-B03E00BF7603");
-        $this->assertEquals($result->statusCode, "0000");
-        $this->assertEquals($result->statusDetail, "The Authorisation was Successful.");
-        $this->assertEquals($result->retrievalReference, "13551640");
-        $this->assertEquals($result->bankAuthorisationCode, "999778");
-        $this->assertEquals($result->status, "Ok");
-        $this->assertObjectHasAttribute("paymentMethod", $result);
     }
 }
