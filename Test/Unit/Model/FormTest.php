@@ -272,14 +272,6 @@ class FormTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['setState', 'setStatus', 'setIsNotified'])
             ->disableOriginalConstructor()->getMock();
 
-        if ($paymentAction == 'PAYMENT') {
-            $stateObjectMock->expects($this->once())->method('setState')->with('pending_payment');
-            $stateObjectMock->expects($this->once())->method('setStatus')->with('pending_payment');
-        } elseif ($paymentAction == 'AUTHENTICATE' || $paymentAction == 'DEFERRED') {
-            $stateObjectMock->expects($this->once())->method('setState')->with('new');
-            $stateObjectMock->expects($this->once())->method('setStatus')->with('pending');
-        }
-
         $stateObjectMock->expects($this->once())->method('setIsNotified')->with(false);
 
         $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
@@ -291,6 +283,7 @@ class FormTest extends \PHPUnit_Framework_TestCase
             ->setMethods(
                 [
                     'getOrder',
+                    'getLastTransId',
                     'encrypt',
                     'decrypt',
                     'setAdditionalInformation',
@@ -302,6 +295,16 @@ class FormTest extends \PHPUnit_Framework_TestCase
             )
             ->disableOriginalConstructor()->getMock();
         $infoInstanceMock->expects($this->once())->method('getOrder')->willReturn($orderMock);
+
+        if ($paymentAction == 'PAYMENT') {
+            $stateObjectMock->expects($this->once())->method('setState')->with('pending_payment');
+            $stateObjectMock->expects($this->once())->method('setStatus')->with('pending_payment');
+            $infoInstanceMock->expects($this->never())->method('getLastTransId');
+        } elseif ($paymentAction == 'AUTHENTICATE' || $paymentAction == 'DEFERRED') {
+            $infoInstanceMock->expects($this->once())->method('getLastTransId')->willReturn("VPS-TX-ID");
+            $stateObjectMock->expects($this->once())->method('setState')->with('new');
+            $stateObjectMock->expects($this->once())->method('setStatus')->with('pending');
+        }
 
         $this->formModelObject->setInfoInstance($infoInstanceMock);
 
