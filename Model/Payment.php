@@ -21,7 +21,6 @@ class Payment
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $logger,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Config $config
-
     ) {
         $this->logger      = $logger;
         $this->sharedApi   = $sharedApi;
