@@ -226,7 +226,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         $order   = $payment->getOrder();
         $order->setCanSendNewEmailFlag(false);
 
-        $this->setOrderStateAndStatus($paymentAction, $stateObject);
+        $this->setOrderStateAndStatus($payment, $paymentAction, $stateObject);
 
         $stateObject->setIsNotified(false);
     }
@@ -396,14 +396,26 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      * @param $paymentAction
      * @param $stateObject
      */
-    private function setOrderStateAndStatus($paymentAction, $stateObject)
+    private function setOrderStateAndStatus($payment, $paymentAction, $stateObject)
     {
-        if ($paymentAction == 'authorize_capture') {
-            $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
-            $stateObject->setStatus('pending_payment');
-        } elseif ($paymentAction == 'authorize') {
-            $stateObject->setState(\Magento\Sales\Model\Order::STATE_NEW);
-            $stateObject->setStatus('pending');
+        if ($paymentAction == 'PAYMENT') {
+            $this->setPendingPaymentState($stateObject);
+        } elseif ($paymentAction == 'DEFERRED' || $paymentAction == 'AUTHENTICATE') {
+            if ($payment->getLastTransId() !== null) {
+                $stateObject->setState(\Magento\Sales\Model\Order::STATE_NEW);
+                $stateObject->setStatus('pending');
+            } else {
+                $this->setPendingPaymentState($stateObject);
+            }
         }
+    }
+
+    /**
+     * @param $stateObject
+     */
+    private function setPendingPaymentState($stateObject)
+    {
+        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
+        $stateObject->setStatus('pending_payment');
     }
 }
