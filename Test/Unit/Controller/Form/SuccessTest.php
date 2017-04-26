@@ -69,7 +69,13 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->exactly(2))->method('getLastTransId')->willReturn("100000001-2016-12-12-12346789");
+        $paymentMock
+            ->method('getAdditionalInformation')
+            ->willReturnOnConsecutiveCalls("100000001-2016-12-12-12346789", false);
+        $paymentMock
+            ->expects($this->once())
+            ->method('getLastTransId')
+            ->willReturn("100000001-2016-12-12-12346789");
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
@@ -269,7 +275,9 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())->method('getLastTransId')->willReturn("100000001-2016-12-12-12346789");
+        $paymentMock
+            ->method('getAdditionalInformation')
+            ->willReturnOnConsecutiveCalls("100000001-2016-12-12-12346789", true);
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
@@ -717,7 +725,8 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $paymentMock
             ->expects($this->once())
-            ->method('getLastTransId')
+            ->method('getAdditionalInformation')
+            ->with("vendorTxCode")
             ->willReturn("100000001-2016-12-12-12346789");
 
         $quoteMock = $this
