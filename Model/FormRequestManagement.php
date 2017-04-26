@@ -129,8 +129,6 @@ class FormRequestManagement implements FormManagementInterface
 
                 //set payment data
                 $payment = $order->getPayment();
-                $payment->setTransactionId($this->transactionVendorTxCode);
-                $payment->setLastTransId($this->transactionVendorTxCode);
                 $payment->setAdditionalInformation('vendorTxCode', $this->transactionVendorTxCode);
                 $payment->setAdditionalInformation('vendorname', $vendorname);
                 $payment->setAdditionalInformation('mode', $this->_config->getMode());
