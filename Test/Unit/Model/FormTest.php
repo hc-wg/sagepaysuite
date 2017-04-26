@@ -272,10 +272,10 @@ class FormTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['setState', 'setStatus', 'setIsNotified'])
             ->disableOriginalConstructor()->getMock();
 
-        if ($paymentAction == 'authorize_capture') {
+        if ($paymentAction == 'PAYMENT') {
             $stateObjectMock->expects($this->once())->method('setState')->with('pending_payment');
             $stateObjectMock->expects($this->once())->method('setStatus')->with('pending_payment');
-        } elseif ($paymentAction == 'authorize') {
+        } elseif ($paymentAction == 'AUTHENTICATE' || $paymentAction == 'DEFERRED') {
             $stateObjectMock->expects($this->once())->method('setState')->with('new');
             $stateObjectMock->expects($this->once())->method('setStatus')->with('pending');
         }
@@ -310,7 +310,7 @@ class FormTest extends \PHPUnit_Framework_TestCase
 
     public function magentoPaymentActionProvider()
     {
-        return [['authorize_capture'], ['authorize']];
+        return [['PAYMENT'], ['DEFERRED'], ['AUTHENTICATE']];
     }
 
     public function testCanVoid()
