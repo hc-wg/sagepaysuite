@@ -19,11 +19,14 @@ class Payment
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $logger,
-        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        \Ebizmarts\SagePaySuite\Model\Config $config
+
     ) {
         $this->logger      = $logger;
         $this->sharedApi   = $sharedApi;
         $this->suiteHelper = $suiteHelper;
+        $this->_config = $config;
     }
 
     /**
