@@ -155,7 +155,7 @@ class Success extends \Magento\Framework\App\Action\Action
             $payment = $this->_order->getPayment();
 
             //update payment details
-            if (!empty($transactionId) && $payment->getLastTransId() == $response['VendorTxCode']) {
+            if (!empty($transactionId) && ($payment->getAdditionalInformation("vendorTxCode") == $response['VendorTxCode'])) {
                 $payment->setLastTransId($transactionId);
                 $payment->setAdditionalInformation('statusDetail', $response['StatusDetail']);
                 $payment->setAdditionalInformation('threeDStatus', $response['3DSecureStatus']);
