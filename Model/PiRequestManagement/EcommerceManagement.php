@@ -77,7 +77,6 @@ class EcommerceManagement extends RequestManagement
             $payment->save();
 
             $this->createInvoiceForSuccessPayment($payment, $order);
-
         } else {
             throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
         }
@@ -132,5 +131,4 @@ class EcommerceManagement extends RequestManagement
 
         $this->getPiRestApi()->void($this->getPayResult()->getTransactionId());
     }
-
 }
