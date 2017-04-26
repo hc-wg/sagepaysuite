@@ -263,13 +263,23 @@ class FormTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($form->isActive());
     }
 
-    public function testInitialize()
+    /**
+     * @dataProvider magentoPaymentActionProvider
+     */
+    public function testInitialize($paymentAction)
     {
         $stateObjectMock = $this->getMockBuilder(\Magento\Framework\DataObject::class)
             ->setMethods(['setState', 'setStatus', 'setIsNotified'])
             ->disableOriginalConstructor()->getMock();
-        $stateObjectMock->expects($this->once())->method('setState')->with('pending_payment');
-        $stateObjectMock->expects($this->once())->method('setStatus')->with('pending_payment');
+
+        if ($paymentAction == 'authorize_capture') {
+            $stateObjectMock->expects($this->once())->method('setState')->with('pending_payment');
+            $stateObjectMock->expects($this->once())->method('setStatus')->with('pending_payment');
+        } elseif ($paymentAction == 'authorize') {
+            $stateObjectMock->expects($this->once())->method('setState')->with('new');
+            $stateObjectMock->expects($this->once())->method('setStatus')->with('pending');
+        }
+
         $stateObjectMock->expects($this->once())->method('setIsNotified')->with(false);
 
         $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
@@ -295,7 +305,12 @@ class FormTest extends \PHPUnit_Framework_TestCase
 
         $this->formModelObject->setInfoInstance($infoInstanceMock);
 
-        $this->formModelObject->initialize('authorize_capture', $stateObjectMock);
+        $this->formModelObject->initialize($paymentAction, $stateObjectMock);
+    }
+
+    public function magentoPaymentActionProvider()
+    {
+        return [['authorize_capture'], ['authorize']];
     }
 
     public function testCanVoid()

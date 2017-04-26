@@ -223,7 +223,12 @@ class Success extends \Magento\Framework\App\Action\Action
     {
         //invoice
         $payment = $this->_order->getPayment();
-        $payment->getMethodInstance()->markAsInitialized();
+
+        $sagePayPaymentAction = $this->_config->getSagepayPaymentAction();
+        if ($sagePayPaymentAction != 'DEFERRED' && $sagePayPaymentAction != 'AUTHENTICATE') {
+            $payment->getMethodInstance()->markAsInitialized();
+        }
+
         $this->_order->place()->save();
 
         if ((bool)$payment->getAdditionalInformation('euroPayment') !== true) {
@@ -232,7 +237,7 @@ class Success extends \Magento\Framework\App\Action\Action
         }
 
         /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
-        $actionClosed = $this->actionFactory->create(['paymentAction' => $this->_config->getSagepayPaymentAction()]);
+        $actionClosed = $this->actionFactory->create(['paymentAction' => $sagePayPaymentAction]);
         list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
 
         $transaction = $this->_transactionFactory->create();

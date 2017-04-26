@@ -176,7 +176,12 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
                 ]
             );
 
-        $paymentMock->expects($this->once())->method('getMethodInstance')->willReturn($formModelMock);
+        if ($paymentAction == 'DEFERRED' or $paymentAction == 'AUTHENTICATE') {
+            $formModelMock->expects($this->never())->method('markAsInitialized');
+        } else {
+            $paymentMock->expects($this->once())->method('getMethodInstance')->willReturn($formModelMock);
+            $formModelMock->expects($this->once())->method('markAsInitialized');
+        }
 
         $quoteMock1 = $this->getMockBuilder('\Magento\Quote\Model\Quote')
             ->disableOriginalConstructor()

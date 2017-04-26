@@ -62,10 +62,10 @@ class Payment
                 $payment->setIsTransactionClosed(1);
             }
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->logger->critical($apiException);
+            $this->logger->logException($apiException);
             throw new \Magento\Framework\Exception\LocalizedException(__("There was an error %1 Sage Pay transaction %2: %3", $action, $transactionId, $apiException->getUserMessage()));
         } catch (\Exception $e) {
-            $this->logger->critical($e);
+            $this->logger->logException($e);
             throw new \Magento\Framework\Exception\LocalizedException(__("There was an error %1 Sage Pay transaction %2: %3", $action, $transactionId, $e->getMessage()));
         }
 
@@ -89,10 +89,10 @@ class Payment
             $payment->setIsTransactionClosed(1);
             $payment->setShouldCloseParentTransaction(1);
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->logger->critical($apiException);
+            $this->logger->logException($apiException);
             throw new \Magento\Framework\Exception\LocalizedException(__("There was an error refunding Sage Pay transaction %1: %2", $transactionId, $apiException->getUserMessage()));
         } catch (\Exception $e) {
-            $this->logger->critical($e);
+            $this->logger->logException($e);
             throw new \Magento\Framework\Exception\LocalizedException(__("There was an error refunding Sage Pay transaction %1: %2", $transactionId, $e->getMessage()));
         }
 

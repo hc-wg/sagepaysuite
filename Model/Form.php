@@ -226,9 +226,8 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         $order   = $payment->getOrder();
         $order->setCanSendNewEmailFlag(false);
 
-        //set pending payment state
-        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
-        $stateObject->setStatus('pending_payment');
+        $this->setOrderStateAndStatus($paymentAction, $stateObject);
+
         $stateObject->setIsNotified(false);
     }
     // @codingStandardsIgnoreEnd
@@ -391,5 +390,20 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     public function canReviewPayment()
     {
         return true;
+    }
+
+    /**
+     * @param $paymentAction
+     * @param $stateObject
+     */
+    private function setOrderStateAndStatus($paymentAction, $stateObject)
+    {
+        if ($paymentAction == 'authorize_capture') {
+            $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
+            $stateObject->setStatus('pending_payment');
+        } elseif ($paymentAction == 'authorize') {
+            $stateObject->setState(\Magento\Sales\Model\Order::STATE_NEW);
+            $stateObject->setStatus('pending');
+        }
     }
 }
