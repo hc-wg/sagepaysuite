@@ -98,4 +98,32 @@ class Payment
 
         return $this;
     }
+
+    /**
+     * @param $payment
+     * @param $paymentAction
+     * @param $stateObject
+     */
+    public function setOrderStateAndStatus($payment, $paymentAction, $stateObject)
+    {
+        if ($paymentAction == 'PAYMENT') {
+            $this->setPendingPaymentState($stateObject);
+        } elseif ($paymentAction == 'DEFERRED' || $paymentAction == 'AUTHENTICATE') {
+            if ($payment->getLastTransId() !== null) {
+                $stateObject->setState(\Magento\Sales\Model\Order::STATE_NEW);
+                $stateObject->setStatus('pending');
+            } else {
+                $this->setPendingPaymentState($stateObject);
+            }
+        }
+    }
+
+    /**
+     * @param $stateObject
+     */
+    private function setPendingPaymentState($stateObject)
+    {
+        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
+        $stateObject->setStatus('pending_payment');
+    }
 }
