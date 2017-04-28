@@ -144,9 +144,7 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Quote\Model\Quote\Address')
             ->disableOriginalConstructor()
             ->getMock();
-        $addressMock->expects($this->once())
-            ->method('getCustomerId')
-            ->will($this->returnValue(null));
+
         $addressMock->expects($this->once())
             ->method('exportCustomerAddress')
             ->willReturn($addressInterfaceMock);
@@ -260,7 +258,6 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
                 [
                     'getDefaultShipping',
                     'getDefaultBilling',
-                    'getById',
                     'save',
                     'get',
                     'getList',
@@ -269,7 +266,7 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             )
             ->disableOriginalConstructor()
             ->getMock();
-        $customerRepositoryMock->expects($this->once())->method('getById')->willReturnSelf();
+
         $customerRepositoryMock->expects($this->once())->method('getDefaultBilling')->willReturn(true);
         $customerRepositoryMock->expects($this->once())->method('getDefaultShipping')->willReturn(true);
 
@@ -317,8 +314,6 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Customer\Api\Data\AddressInterface')
             ->disableOriginalConstructor()
             ->getMock();
-        $addressInterfaceMock->expects($this->once())
-            ->method('setIsDefaultShipping');
 
         $addressMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote\Address')
@@ -348,8 +343,6 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Customer\Api\Data\AddressInterface')
             ->disableOriginalConstructor()
             ->getMock();
-        $addressInterfaceMock->expects($this->once())
-            ->method('setIsDefaultShipping');
 
         $addressMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote\Address')
