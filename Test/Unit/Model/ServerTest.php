@@ -170,9 +170,6 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $stateMock->expects($this->once())
-            ->method('setStatus')
-            ->with('pending_payment');
-        $stateMock->expects($this->once())
             ->method('setIsNotified')
             ->with(false);
 
