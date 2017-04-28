@@ -62,10 +62,10 @@ class Payment
                 $payment->setIsTransactionClosed(1);
             }
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->logger->critical($apiException);
+            $this->logger->logException($apiException);
             throw new \Magento\Framework\Exception\LocalizedException(__("There was an error %1 Sage Pay transaction %2: %3", $action, $transactionId, $apiException->getUserMessage()));
         } catch (\Exception $e) {
-            $this->logger->critical($e);
+            $this->logger->logException($e);
             throw new \Magento\Framework\Exception\LocalizedException(__("There was an error %1 Sage Pay transaction %2: %3", $action, $transactionId, $e->getMessage()));
         }
 
@@ -89,13 +89,41 @@ class Payment
             $payment->setIsTransactionClosed(1);
             $payment->setShouldCloseParentTransaction(1);
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->logger->critical($apiException);
+            $this->logger->logException($apiException);
             throw new \Magento\Framework\Exception\LocalizedException(__("There was an error refunding Sage Pay transaction %1: %2", $transactionId, $apiException->getUserMessage()));
         } catch (\Exception $e) {
-            $this->logger->critical($e);
+            $this->logger->logException($e);
             throw new \Magento\Framework\Exception\LocalizedException(__("There was an error refunding Sage Pay transaction %1: %2", $transactionId, $e->getMessage()));
         }
 
         return $this;
+    }
+
+    /**
+     * @param $payment
+     * @param $paymentAction
+     * @param $stateObject
+     */
+    public function setOrderStateAndStatus($payment, $paymentAction, $stateObject)
+    {
+        if ($paymentAction == 'PAYMENT') {
+            $this->setPendingPaymentState($stateObject);
+        } elseif ($paymentAction == 'DEFERRED' || $paymentAction == 'AUTHENTICATE') {
+            if ($payment->getLastTransId() !== null) {
+                $stateObject->setState(\Magento\Sales\Model\Order::STATE_NEW);
+                $stateObject->setStatus('pending');
+            } else {
+                $this->setPendingPaymentState($stateObject);
+            }
+        }
+    }
+
+    /**
+     * @param $stateObject
+     */
+    private function setPendingPaymentState($stateObject)
+    {
+        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
+        $stateObject->setStatus('pending_payment');
     }
 }

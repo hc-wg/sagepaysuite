@@ -109,8 +109,6 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['setTransactionId', 'setLastTransId', 'setAdditionalInformation', 'save'])
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())->method('setTransactionId')->with("00000024-2016-03-16");
-        $paymentMock->expects($this->once())->method('setLastTransId')->with("00000024-2016-03-16");
         $paymentMock->expects($this->exactly(4))->method('setAdditionalInformation');
         $paymentMock->expects($this->once())->method('save')->willReturnSelf();
 

@@ -69,7 +69,9 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->exactly(2))->method('getLastTransId')->willReturn("100000001-2016-12-12-12346789");
+        $paymentMock
+            ->method('getAdditionalInformation')
+            ->willReturnOnConsecutiveCalls("100000001-2016-12-12-12346789", false);
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
@@ -134,23 +136,6 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
         $this->orderMock->expects($this->once())
             ->method('loadByIncrementId')
             ->willReturnSelf();
-        $this->orderMock->expects($this->once())
-            ->method('place')
-            ->willReturnSelf();
-
-        $transactionMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $transactionFactoryMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
-            ->setMethods(['create'])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $transactionFactoryMock->expects($this->any())
-            ->method('create')
-            ->will($this->returnValue($transactionMock));
 
         $this->checkoutHelperMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Checkout')
@@ -176,8 +161,6 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
                 ]
             );
 
-        $paymentMock->expects($this->once())->method('getMethodInstance')->willReturn($formModelMock);
-
         $quoteMock1 = $this->getMockBuilder('\Magento\Quote\Model\Quote')
             ->disableOriginalConstructor()
             ->getMock();
@@ -200,38 +183,13 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->willReturn($this->orderMock);
 
-        $orderSenderMock = $this->getMockBuilder(\Magento\Sales\Model\Order\Email\Sender\OrderSender::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderSenderMock->expects($this->once())->method('send');
-
         $this->orderMock->expects($this->exactly(2))
             ->method('getId')
             ->willReturn(4);
 
-        $invoiceCollectionMock = $this
-            ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $invoiceCollectionMock->expects($this->once())->method('setDataToAll')->willReturnSelf();
-        $this->orderMock
-            ->expects($this->once())
-            ->method('getInvoiceCollection')
-            ->willReturn($invoiceCollectionMock);
-
         $this->checkoutHelperMock->expects($this->any())
             ->method('placeOrder')
             ->will($this->returnValue($this->orderMock));
-
-        $closedForActionMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config\ClosedForAction::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $actionFactoryMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['create'])
-            ->getMock();
-         $actionFactoryMock->expects($this->once())->method('create')->willReturn($closedForActionMock);
 
         $this->_expectRedirect("checkout/onepage/success");
 
@@ -243,12 +201,9 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
                 'config'             => $configMock,
                 'checkoutSession'    => $checkoutSessionMock,
                 'checkoutHelper'     => $this->checkoutHelperMock,
-                'transactionFactory' => $transactionFactoryMock,
                 'formModel'          => $formModelMock,
                 'quoteFactory'       => $this->quoteFactoryMock,
                 'orderFactory'       => $this->orderFactoryMock,
-                'orderSender'        => $orderSenderMock,
-                "actionFactory"      => $actionFactoryMock
             ]
         );
 
@@ -264,7 +219,9 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())->method('getLastTransId')->willReturn("100000001-2016-12-12-12346789");
+        $paymentMock
+            ->method('getAdditionalInformation')
+            ->willReturnOnConsecutiveCalls("100000001-2016-12-12-12346789", true);
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
@@ -657,23 +614,15 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
         $expectedException = new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay.'));
 
         $loggerMock = $this
-            ->getMockBuilder(\Psr\Log\LoggerInterface::class)
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
             ->setMethods(
                 [
-                    'critical',
-                    'emergency',
-                    'alert',
-                    'error',
-                    'notice',
-                    'warning',
-                    'info',
-                    'debug',
-                    'log',
+                    'logException'
                 ]
             )
             ->disableOriginalConstructor()
             ->getMock();
-        $loggerMock->expects($this->once())->method('critical')->with($expectedException);
+        $loggerMock->expects($this->once())->method('logException')->with($expectedException);
 
         $formModelMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Form::class)
@@ -696,7 +645,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             [
                 'context'   => $this->contextMock,
                 'formModel' => $formModelMock,
-                'logger'    => $loggerMock
+                'suiteLogger'    => $loggerMock
             ]
         );
 
@@ -712,7 +661,8 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $paymentMock
             ->expects($this->once())
-            ->method('getLastTransId')
+            ->method('getAdditionalInformation')
+            ->with("vendorTxCode")
             ->willReturn("100000001-2016-12-12-12346789");
 
         $quoteMock = $this
@@ -771,23 +721,16 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
         $expectedException = new \Magento\Framework\Validator\Exception(__('Invalid transaction id.'));
 
         $loggerMock = $this
-            ->getMockBuilder(\Psr\Log\LoggerInterface::class)
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
             ->setMethods(
                 [
-                    'critical',
-                    'emergency',
-                    'alert',
-                    'error',
-                    'notice',
-                    'warning',
-                    'info',
-                    'debug',
-                    'log',
+                    'logException',
+                    'sageLog'
                 ]
             )
             ->disableOriginalConstructor()
             ->getMock();
-        $loggerMock->expects($this->once())->method('critical')->with($expectedException);
+        $loggerMock->expects($this->once())->method('logException')->with($expectedException);
 
         $formModelMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Form::class)
@@ -849,7 +792,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
                 'formModel'          => $formModelMock,
                 'quoteFactory'       => $quoteFactoryMock,
                 'orderFactory'       => $orderFactoryMock,
-                'logger'             => $loggerMock
+                'suiteLogger'        => $loggerMock
             ]
         );
 

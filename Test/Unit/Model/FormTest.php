@@ -263,15 +263,12 @@ class FormTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($form->isActive());
     }
 
-    public function testInitialize()
+    /**
+     * @dataProvider magentoPaymentActionProvider
+     * @param string $paymentAction
+     */
+    public function testInitialize($paymentAction)
     {
-        $stateObjectMock = $this->getMockBuilder(\Magento\Framework\DataObject::class)
-            ->setMethods(['setState', 'setStatus', 'setIsNotified'])
-            ->disableOriginalConstructor()->getMock();
-        $stateObjectMock->expects($this->once())->method('setState')->with('pending_payment');
-        $stateObjectMock->expects($this->once())->method('setStatus')->with('pending_payment');
-        $stateObjectMock->expects($this->once())->method('setIsNotified')->with(false);
-
         $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
             ->setMethods(['setCanSendNewEmailFlag'])
             ->disableOriginalConstructor()->getMock();
@@ -281,6 +278,7 @@ class FormTest extends \PHPUnit_Framework_TestCase
             ->setMethods(
                 [
                     'getOrder',
+                    'getLastTransId',
                     'encrypt',
                     'decrypt',
                     'setAdditionalInformation',
@@ -293,9 +291,30 @@ class FormTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()->getMock();
         $infoInstanceMock->expects($this->once())->method('getOrder')->willReturn($orderMock);
 
-        $this->formModelObject->setInfoInstance($infoInstanceMock);
+        $paymentOperationsMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Payment::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentOperationsMock->expects($this->once())->method('setOrderStateAndStatus');
 
-        $this->formModelObject->initialize('authorize_capture', $stateObjectMock);
+        $formModel = $this->objectManagerHelper->getObject(
+            '\Ebizmarts\SagePaySuite\Model\Form',
+            ["paymentOps" => $paymentOperationsMock]
+        );
+
+        $formModel->setInfoInstance($infoInstanceMock);
+
+        $stateObjectMock = $this->getMockBuilder(\Magento\Framework\DataObject::class)
+            ->setMethods(['setIsNotified'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $stateObjectMock->expects($this->once())->method('setIsNotified')->with(false);
+
+        $formModel->initialize($paymentAction, $stateObjectMock);
+    }
+
+    public function magentoPaymentActionProvider()
+    {
+        return [['PAYMENT'], ['DEFERRED'], ['AUTHENTICATE']];
     }
 
     public function testCanVoid()
