@@ -151,9 +151,6 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             ->method('exportCustomerAddress')
             ->willReturn($addressInterfaceMock);
 
-        $addressInterfaceMock->expects($this->once())
-            ->method('setIsDefaultBilling');
-
         $this->checkoutHelper->placeOrder();
     }
 
@@ -248,7 +245,6 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
         $quoteMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)
             ->disableOriginalConstructor()->getMock();
         $quoteMock->expects($this->once())->method('collectTotals')->willReturnSelf();
-        $quoteMock->expects($this->once())->method('getBillingAddress')->willReturn($billingAddressMock);
 
         $checkoutSessionMock = $this->getMockBuilder(\Magento\Checkout\Model\Session::class)
             ->disableOriginalConstructor()->getMock();
@@ -339,9 +335,6 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
         $this->quoteMock->expects($this->once())
             ->method('setCheckoutMethod')->with('register')->willReturnSelf();
 
-        $this->quoteMock->expects($this->once())
-            ->method('addCustomerAddress');
-
         $this->checkoutHelper->placeOrder();
     }
 
@@ -369,9 +362,6 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
         $this->quoteMock->expects($this->exactly(2))
             ->method('getCheckoutMethod')
             ->willReturn(null);
-
-        $this->quoteMock->expects($this->once())
-            ->method('setCheckoutMethod')->with('guest')->willReturnSelf();
 
         $this->checkoutHelperMock->expects($this->once())->method('isAllowedGuestCheckout')->willReturn(true);
 
