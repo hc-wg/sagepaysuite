@@ -226,7 +226,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         $order   = $payment->getOrder();
         $order->setCanSendNewEmailFlag(false);
 
-        $this->setOrderStateAndStatus($payment, $paymentAction, $stateObject);
+        $this->paymentOps->setOrderStateAndStatus($payment, $paymentAction, $stateObject);
 
         $stateObject->setIsNotified(false);
     }
@@ -392,30 +392,4 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         return true;
     }
 
-    /**
-     * @param $paymentAction
-     * @param $stateObject
-     */
-    private function setOrderStateAndStatus($payment, $paymentAction, $stateObject)
-    {
-        if ($paymentAction == 'PAYMENT') {
-            $this->setPendingPaymentState($stateObject);
-        } elseif ($paymentAction == 'DEFERRED' || $paymentAction == 'AUTHENTICATE') {
-            if ($payment->getLastTransId() !== null) {
-                $stateObject->setState(\Magento\Sales\Model\Order::STATE_NEW);
-                $stateObject->setStatus('pending');
-            } else {
-                $this->setPendingPaymentState($stateObject);
-            }
-        }
-    }
-
-    /**
-     * @param $stateObject
-     */
-    private function setPendingPaymentState($stateObject)
-    {
-        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
-        $stateObject->setStatus('pending_payment');
-    }
 }
