@@ -391,5 +391,4 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     {
         return true;
     }
-
 }

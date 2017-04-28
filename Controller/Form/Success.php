@@ -206,5 +206,4 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->messageManager->addError($errorMessage);
         $this->_redirect('checkout/cart');
     }
-
 }

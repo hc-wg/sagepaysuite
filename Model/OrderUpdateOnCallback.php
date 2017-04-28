@@ -2,7 +2,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-
 use Braintree\Exception;
 
 class OrderUpdateOnCallback
@@ -27,8 +26,7 @@ class OrderUpdateOnCallback
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderEmailSender,
         \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory $actionFactory,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
-    )
-    {
+    ) {
         $this->config = $config;
         $this->orderEmailSender = $orderEmailSender;
         $this->actionFactory = $actionFactory;

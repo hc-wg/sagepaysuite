@@ -296,8 +296,9 @@ class FormTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $paymentOperationsMock->expects($this->once())->method('setOrderStateAndStatus');
 
-        $formModel = $this->objectManagerHelper->getObject('\Ebizmarts\SagePaySuite\Model\Form',
-        ["paymentOps" => $paymentOperationsMock]
+        $formModel = $this->objectManagerHelper->getObject(
+            '\Ebizmarts\SagePaySuite\Model\Form',
+            ["paymentOps" => $paymentOperationsMock]
         );
 
         $formModel->setInfoInstance($infoInstanceMock);
