@@ -74,9 +74,6 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Customer\Api\CustomerRepositoryInterface')
             ->disableOriginalConstructor()
             ->getMock();
-        $customerRepositoryMock->expects($this->any())
-            ->method('getById')
-            ->will($this->returnValue($customerMock));
 
         $quoteManagementMock = $this
             ->getMockBuilder('Magento\Quote\Model\QuoteManagement')
