@@ -74,6 +74,9 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Customer\Api\CustomerRepositoryInterface')
             ->disableOriginalConstructor()
             ->getMock();
+        $customerRepositoryMock->expects($this->any())
+            ->method('getById')
+            ->will($this->returnValue($customerMock));
 
         $quoteManagementMock = $this
             ->getMockBuilder('Magento\Quote\Model\QuoteManagement')
@@ -131,20 +134,6 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
         $this->customerSessionMock->expects($this->once())
             ->method('isLoggedIn')
             ->will($this->returnValue(true));
-
-        $addressInterfaceMock = $this
-            ->getMockBuilder('Magento\Customer\Api\Data\AddressInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $addressMock = $this
-            ->getMockBuilder('Magento\Quote\Model\Quote\Address')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $addressMock->expects($this->once())
-            ->method('exportCustomerAddress')
-            ->willReturn($addressInterfaceMock);
 
         $this->checkoutHelper->placeOrder();
     }
@@ -233,10 +222,6 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()->getMock();
         $customerSessionMock->expects($this->once())->method('isLoggedIn')->willReturn(true);
 
-        $billingAddressMock = $this->getMockBuilder(\Magento\Quote\Model\Quote\Address::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $quoteMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)
             ->disableOriginalConstructor()->getMock();
         $quoteMock->expects($this->once())->method('collectTotals')->willReturnSelf();
@@ -253,8 +238,7 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
         $customerRepositoryMock = $this->getMockBuilder(\Magento\Customer\Api\CustomerRepositoryInterface::class)
             ->setMethods(
                 [
-                    'getDefaultShipping',
-                    'getDefaultBilling',
+                    'getById',
                     'save',
                     'get',
                     'getList',
@@ -263,9 +247,7 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             )
             ->disableOriginalConstructor()
             ->getMock();
-
-        $customerRepositoryMock->expects($this->once())->method('getDefaultBilling')->willReturn(true);
-        $customerRepositoryMock->expects($this->once())->method('getDefaultShipping')->willReturn(true);
+        $customerRepositoryMock->expects($this->any())->method('getById')->willReturnSelf();
 
         $checkoutHelperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Checkout::class)
             ->setConstructorArgs(
@@ -307,19 +289,6 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             ->method('isLoggedIn')
             ->will($this->returnValue(false));
 
-        $addressInterfaceMock = $this
-            ->getMockBuilder('Magento\Customer\Api\Data\AddressInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $addressMock = $this
-            ->getMockBuilder('Magento\Quote\Model\Quote\Address')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $addressMock->expects($this->once())
-            ->method('exportCustomerAddress')
-            ->will($this->returnValue($addressInterfaceMock));
-
         $this->quoteMock->expects($this->exactly(2))
             ->method('getCheckoutMethod')
             ->willReturn(null);
@@ -336,22 +305,12 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
             ->method('isLoggedIn')
             ->will($this->returnValue(false));
 
-        $addressInterfaceMock = $this
-            ->getMockBuilder('Magento\Customer\Api\Data\AddressInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $addressMock = $this
-            ->getMockBuilder('Magento\Quote\Model\Quote\Address')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $addressMock->expects($this->once())
-            ->method('exportCustomerAddress')
-            ->will($this->returnValue($addressInterfaceMock));
-
         $this->quoteMock->expects($this->exactly(2))
             ->method('getCheckoutMethod')
             ->willReturn(null);
+
+        $this->quoteMock->expects($this->once())
+            ->method('setCheckoutMethod')->with('guest')->willReturnSelf();
 
         $this->checkoutHelperMock->expects($this->once())->method('isAllowedGuestCheckout')->willReturn(true);
 
