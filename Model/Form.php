@@ -226,9 +226,8 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         $order   = $payment->getOrder();
         $order->setCanSendNewEmailFlag(false);
 
-        //set pending payment state
-        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
-        $stateObject->setStatus('pending_payment');
+        $this->paymentOps->setOrderStateAndStatus($payment, $paymentAction, $stateObject);
+
         $stateObject->setIsNotified(false);
     }
     // @codingStandardsIgnoreEnd

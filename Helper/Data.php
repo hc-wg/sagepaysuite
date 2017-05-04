@@ -271,5 +271,4 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $configurationScope == $this->websiteScopeCode();
     }
-
 }
