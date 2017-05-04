@@ -213,7 +213,7 @@ class Reporting
         $fraudResponse->setTimestamp((string)$result->timestamp);
         $fraudResponse->setFraudProviderName((string)$result->fraudprovidername);
 
-        if($fraudResponse->getErrorCode() == '0000') {
+        if ($fraudResponse->getErrorCode() == '0000') {
             if ($fraudResponse->getFraudProviderName() == 'ReD') {
                 $fraudResponse->setFraudScreenRecommendation((string)$result->fraudscreenrecommendation);
                 $fraudResponse->setFraudId((string)$result->fraudid);

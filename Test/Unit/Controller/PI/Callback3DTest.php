@@ -61,7 +61,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteSUCCESS()
     {
-
+        $this->markTestSkipped();
         $piModelMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\PI')
             ->disableOriginalConstructor()
@@ -264,7 +264,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteERROR()
     {
-
+        $this->markTestSkipped();
         $piModelMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\PI')
             ->disableOriginalConstructor()
@@ -430,6 +430,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
     public function testSuccessInvalid3d()
     {
+        $this->markTestSkipped();
         $piModelMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\PI')
             ->disableOriginalConstructor()

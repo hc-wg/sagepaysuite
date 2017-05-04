@@ -52,11 +52,11 @@ define([
         dropInEnabled: function () {
             return this.options.dropin == 1;
         },
-        validate : function() {
+        validate : function () {
             var isValid = this.isValidOrderForm();
 
-            if(isValid && !this.dropInEnabled()) {
-                this.inputs.each(function(elemIndex) {
+            if (isValid && !this.dropInEnabled()) {
+                this.inputs.each(function (elemIndex) {
                     if ($('#' + this.options.code + '_' + elemIndex)) {
                         if (!$('#edit_form').validate().element($('#' + this.options.code + '_' + elemIndex))) {
                             isValid = false;
@@ -81,8 +81,7 @@ define([
 
             if (self.dropInEnabled() && !$('#dropin_start_lbl').is(":visible")) {
                 self.dropInInstance.tokenise();
-            }
-            else {
+            } else {
                 self.resetPaymentErrors();
 
                 var serviceUrl = this.options.url.generateMerchantKey;
@@ -137,15 +136,12 @@ define([
                                     self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
                                 }
                             }
-                        }
-                    ); //.form();
+                        }); //.form();
 
                     document.getElementById('submit_dropin_payment').style.display = "block";
                 }
-            }
-            else {
+            } else {
                 if (merchant_session_key) {
-
                     var token_form = document.getElementById(self.getCode() + '-token-form');
 
                     if (!token_form) {
@@ -186,7 +182,7 @@ define([
         processNokResponse: function (status, response) {
             var errorMessages = "";
 
-            if(status === 401) {
+            if (status === 401) {
                 errorMessages += response.description;
             } else {
                 var errorsCount = response.responseJSON.errors.length;

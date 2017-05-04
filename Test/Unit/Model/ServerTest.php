@@ -94,7 +94,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
     public function testRefund()
     {
-       $paymentMock = $this
+        $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
@@ -169,9 +169,6 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             ->setMethods(["offsetExists","offsetGet","offsetSet","offsetUnset","setStatus","setIsNotified"])
             ->disableOriginalConstructor()
             ->getMock();
-        $stateMock->expects($this->once())
-            ->method('setStatus')
-            ->with('pending_payment');
         $stateMock->expects($this->once())
             ->method('setIsNotified')
             ->with(false);

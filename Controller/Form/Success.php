@@ -22,16 +22,6 @@ class Success extends \Magento\Framework\App\Action\Action
     private $_quote;
 
     /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    private $_logger;
-
-    /**
-     * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
-     */
-    private $_transactionFactory;
-
-    /**
      * @var \Magento\Customer\Model\Session
      */
     private $_customerSession;
@@ -75,8 +65,8 @@ class Success extends \Magento\Framework\App\Action\Action
     /** @var \Magento\Sales\Model\Order\Email\Sender\OrderSender */
     private $orderSender;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory */
-    private $actionFactory;
+    /** @var \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback */
+    private $updateOrderCallback;
 
     /**
      * Success constructor.
@@ -84,36 +74,32 @@ class Success extends \Magento\Framework\App\Action\Action
      * @param \Magento\Customer\Model\Session $customerSession
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
-     * @param \Psr\Log\LoggerInterface $logger
      * @param Logger $suiteLogger
      * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
      * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
      * @param \Ebizmarts\SagePaySuite\Model\Form $formModel
      * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
-     * @param \Magento\Sales\Model\OrderFactory $orderFactory,
-    \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory $actionFactory
+     * @param \Magento\Sales\Model\OrderFactory $orderFactory
+     * @param \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender
+     * @param \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback $updateOrderCallback
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Psr\Log\LoggerInterface $logger,
         Logger $suiteLogger,
-        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Model\Form $formModel,
         \Magento\Quote\Model\QuoteFactory $quoteFactory,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
-        \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory $actionFactory
+        \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback $updateOrderCallback
     ) {
     
         parent::__construct($context);
         $this->_config             = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
-        $this->_logger             = $logger;
-        $this->_transactionFactory = $transactionFactory;
         $this->_customerSession    = $customerSession;
         $this->_checkoutSession    = $checkoutSession;
         $this->_checkoutHelper     = $checkoutHelper;
@@ -122,7 +108,7 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_formModel          = $formModel;
         $this->_orderFactory       = $orderFactory;
         $this->orderSender         = $orderSender;
-        $this->actionFactory       = $actionFactory;
+        $this->updateOrderCallback = $updateOrderCallback;
     }
 
     /**
@@ -153,8 +139,10 @@ class Success extends \Magento\Framework\App\Action\Action
 
             $payment = $this->_order->getPayment();
 
+            $vendorTxCode = $payment->getAdditionalInformation("vendorTxCode");
+
             //update payment details
-            if (!empty($transactionId) && $payment->getLastTransId() == $response['VendorTxCode']) {
+            if (!empty($transactionId) && ($vendorTxCode == $response['VendorTxCode'])) {
                 $payment->setLastTransId($transactionId);
                 $payment->setAdditionalInformation('statusDetail', $response['StatusDetail']);
                 $payment->setAdditionalInformation('threeDStatus', $response['3DSecureStatus']);
@@ -175,7 +163,8 @@ class Success extends \Magento\Framework\App\Action\Action
             $redirect = 'sagepaysuite/form/failure';
             $status   = $response['Status'];
             if ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
-                $this->_confirmPayment($transactionId);
+                $this->updateOrderCallback->setOrder($this->_order);
+                $this->updateOrderCallback->confirmPayment($transactionId);
                 $redirect = 'checkout/onepage/success';
             } elseif ($status == "PENDING") {
                 //Transaction in PENDING state (this is just for Euro Payments)
@@ -199,7 +188,7 @@ class Success extends \Magento\Framework\App\Action\Action
 
             return $this->_redirect($redirect);
         } catch (\Exception $e) {
-            $this->_logger->critical($e);
+            $this->_suiteLogger->logException($e);
             $this->_redirectToCartAndShowError(
                 __('Your payment was successful but the order was NOT created, please contact us: %1', $e->getMessage())
             );
@@ -216,36 +205,5 @@ class Success extends \Magento\Framework\App\Action\Action
     {
         $this->messageManager->addError($errorMessage);
         $this->_redirect('checkout/cart');
-    }
-
-    private function _confirmPayment($transactionId)
-    {
-        //invoice
-        $payment = $this->_order->getPayment();
-        $payment->getMethodInstance()->markAsInitialized();
-        $this->_order->place()->save();
-
-        if ((bool)$payment->getAdditionalInformation('euroPayment') !== true) {
-            //don't send email if EURO PAYMENT as it was already sent
-            $this->orderSender->send($this->_order);
-        }
-
-        /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
-        $actionClosed = $this->actionFactory->create(['paymentAction' => $this->_config->getSagepayPaymentAction()]);
-        list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
-
-        $transaction = $this->_transactionFactory->create();
-        $transaction->setOrderPaymentObject($payment);
-        $transaction->setTxnId($transactionId);
-        $transaction->setOrderId($this->_order->getEntityId());
-        $transaction->setTxnType($action);
-        $transaction->setPaymentId($payment->getId());
-        $transaction->setIsClosed($closed);
-        $transaction->save();
-
-        //update invoice transaction id
-        $this->_order->getInvoiceCollection()
-            ->setDataToAll('transaction_id', $payment->getLastTransId())
-            ->save();
     }
 }

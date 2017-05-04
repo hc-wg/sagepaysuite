@@ -8,7 +8,6 @@
 
 namespace Ebizmarts\SagePaySuite\Api\Data;
 
-
 class PiRequestManager extends \Ebizmarts\SagePaySuite\Api\Data\PiRequest implements PiRequestManagerInterface
 {
     /**

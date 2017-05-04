@@ -2,7 +2,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 
-
 class ThreeDSecureCallbackManagement extends RequestManagement
 {
     /** @var \Magento\Checkout\Model\Session */
@@ -92,7 +91,6 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         $payResult = $this->pay();
 
         if ($payResult->getStatus() !== null) {
-
             //request transaction details to confirm payment
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult $transactionDetailsResult */
             $transactionDetailsResult = $this->getPiRestApi()->transactionDetails(
@@ -103,7 +101,6 @@ class ThreeDSecureCallbackManagement extends RequestManagement
 
             //remove order pre-saved flag from checkout
             $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
-
         } else {
             $this->getResult()->setErrorMessage("Invalid 3D secure authentication.");
         }
@@ -124,7 +121,6 @@ class ThreeDSecureCallbackManagement extends RequestManagement
             $this->order   = $this->orderFactory->create()->load($orderId);
 
             if (!empty($this->order)) {
-
                 $this->getPayResult()->setPaymentMethod($response->getPaymentMethod());
                 $this->getPayResult()->setStatusDetail($response->getStatusDetail());
                 $this->getPayResult()->setStatusCode($response->getStatusCode());

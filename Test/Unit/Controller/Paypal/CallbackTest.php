@@ -164,6 +164,15 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
         $this->orderFactoryMock->method('create')->willReturnSelf();
         $this->orderFactoryMock->method('loadByIncrementId')->willReturn($this->orderMock);
 
+        $closedForActionFactoryMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory::class)
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $closedForActionMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config\ClosedForAction::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $closedForActionFactoryMock->method('create')->willReturn($closedForActionMock);
+
         $objectManagerHelper            = new ObjectManagerHelper($this);
         $this->paypalCallbackController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Paypal\Callback',
@@ -175,7 +184,8 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
                 'postApi'            => $postApiMock,
                 'transactionFactory' => $transactionFactoryMock,
                 'quoteFactory'       => $quoteFactoryMock,
-                'orderFactory'       => $this->orderFactoryMock
+                'orderFactory'       => $this->orderFactoryMock,
+                "actionFactory"      => $closedForActionFactoryMock
             ]
         );
     }
@@ -201,16 +211,6 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
         $this->paymentMock->method('getLastTransId')->willReturn(self::TEST_VPSTXID);
         $this->orderMock->expects($this->exactly(2))->method('getId')->willReturn(70);
         $this->quoteMock->expects($this->exactly(3))->method('getId')->willReturn(69);
-
-        $invoiceCollectionMock = $this
-            ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $invoiceCollectionMock->expects($this->once())->method('setDataToAll')->willReturnSelf();
-        $this->orderMock
-            ->expects($this->once())
-            ->method('getInvoiceCollection')
-            ->willReturn($invoiceCollectionMock);
 
         $this->requestMock->expects($this->once())
             ->method('getPost')

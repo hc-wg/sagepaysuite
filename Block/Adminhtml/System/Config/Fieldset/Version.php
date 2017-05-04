@@ -53,7 +53,7 @@ class Version extends Template implements RendererInterface
 
     public function getVersion()
     {
-        return $this->_suiteHelper->getVersion();
+        return $this->_suiteHelper->getSagePaySuiteModuleVersionNumber();
     }
 
     /**

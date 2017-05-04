@@ -2,7 +2,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
-
 abstract class Http
 {
     /** @var string */
