@@ -1,3 +1,31 @@
+1.1.11 (04/05/2017)
+=============
+**This release requires Magento 2.1.0 at least.**
+- Improvements
+  - Change wording on configuration settings.
+- Bug fixes
+  - Order status for Deferred and Authenticate transactions. Now the initial status is Pending Payment, then it moves to Pending and when the invoice is created it moves to processing.
+  - Fix error when creating an invoice "Notice: Undefined property: \Ebizmarts\SagePaySuite\Model\Payment::$_config"
+  - Fix for duplicate customer address when checking out as logged in customer.
+  - Duplicate payment on failed orders, happens rarely but now those payments are voided when the defect occurs.
+  - Error on backend (MOTO) orders with multiple currencies. MultiStore MOTO Payments.
+  - Fix postcode error when postcode is not required for the country.
+  - Fix for "Notice: Object of class Magento\Framework\ObjectManager\ObjectManager could not be converted to ..." when Magento is in production mode and using Form.
+  
+1.1.10 (07/02/2017)
+=============
+**This release requires Magento 2.1.0 at least.**
+- Improvements
+  - PI requests migrated to WEBAPIs, this fixes issues on frontend orders with custom options.
+  - A lot of refactoring, removing duplicate code.
+- Bug fixes
+  - additional_information fraud rules object currupting the row.
+  - quoteIdMaskFactory is declared too many times fix.
+  - Undefined property: stdClass::$code fix.
+  - Division by zero fix on basket.
+- New features
+  - DropIn checkout (SAQ-A) for frontend and backend orders.
+
 1.1.9 (21/12/2016)
 =============
 **This release requires Magento 2.1.0 at least.**
