@@ -1,3 +1,9 @@
+1.1.12 (05/05/2017)
+=============
+**This release requires Magento 2.1.0 at least.**
+- Bug fixes
+  - Fix test.param is not a funcion on PI MOTO transactions.
+
 1.1.11 (04/05/2017)
 =============
 **This release requires Magento 2.1.0 at least.**
