@@ -30,6 +30,6 @@ dependencies:
 
 test:
   override:
-    - cd magento2-$MAGE_VERSION && composer require --prefer-source --no-interaction "squizlabs/php_codesniffer=2.6.2" magento-ecg/coding-standard && vendor/squizlabs/php_codesniffer/scripts/phpcs --config-set installed_paths vendor/magento-ecg/coding-standard && ./vendor/squizlabs/php_codesniffer/scripts/phpcs -n --standard="EcgM2" ./app/code/Ebizmarts/SagePaySuite;
+    - cd magento2-$MAGE_VERSION && composer require --prefer-source --no-interaction "squizlabs/php_codesniffer=2.6.2" "magento-ecg/coding-standard=^2.0" && vendor/squizlabs/php_codesniffer/scripts/phpcs --config-set installed_paths vendor/magento-ecg/coding-standard && ./vendor/squizlabs/php_codesniffer/scripts/phpcs -n --standard="EcgM2" ./app/code/Ebizmarts/SagePaySuite;
     - magento2-$MAGE_VERSION/vendor/bin/phpunit -c magento2-$MAGE_VERSION/dev/tests/unit/phpunit_config.xml --coverage-text
     - cd magento2-$MAGE_VERSION && vendor/squizlabs/php_codesniffer/scripts/phpcs --config-set installed_paths /home/ubuntu/magento2-sage-pay-suite/marketplace-eqp-$MARKETPLACE_EQP_VERSION && ./vendor/squizlabs/php_codesniffer/scripts/phpcs -n --standard="MEQP2" ./app/code/Ebizmarts/SagePaySuite;
