@@ -36,7 +36,12 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     /** @var \Ebizmarts\SagePaySuite\Model\Payment */
     private $paymentOps;
 
+    private $formCrypt;
+
     /**
+     * Form constructor.
+     * @param FormCrypt $formCrypt
+     * @param Payment $paymentOps
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory
@@ -52,6 +57,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      * @param array $data
      */
     public function __construct(
+        \Ebizmarts\SagePaySuite\Model\FormCrypt $formCrypt,
         \Ebizmarts\SagePaySuite\Model\Payment $paymentOps,
         \Magento\Framework\Model\Context $context,
         \Magento\Framework\Registry $registry,
@@ -87,6 +93,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         $this->paymentOps   = $paymentOps;
         $this->_suiteHelper = $suiteHelper;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
+        $this->formCrypt    = $formCrypt;
     }
 
     /**
@@ -167,32 +174,9 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     private function getDecryptedRequest($password, $string)
     {
-        //** remove the first char which is @ to flag this is AES encrypted
-        $hex = substr($string, 1);
+        $this->formCrypt->initInitializationVectorAndKey($password);
 
-        // Throw exception if string is malformed
-        if (!preg_match('/^[0-9a-fA-F]+$/', $hex)) {
-            throw new LocalizedException(__('Invalid encryption string'));
-        }
-
-        //** HEX decoding
-        $strIn = pack('H*', $hex);
-
-        $decryptor = $this->getObjManager()
-            ->create('\phpseclib\Crypt\AES', ['mode' => \phpseclib\Crypt\Base::MODE_CBC]);
-        $decryptor->setBlockLength(128);
-        $decryptor->setKey($password);
-        $decryptor->setIV($password);
-
-        return $decryptor->decrypt($strIn);
-    }
-
-    /**
-     * @return \Magento\Framework\App\ObjectManager
-     */
-    private function getObjManager()
-    {
-        return \Magento\Framework\App\ObjectManager::getInstance();
+        return $this->formCrypt->decrypt($string);
     }
 
     /**
@@ -242,9 +226,8 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         $order   = $payment->getOrder();
         $order->setCanSendNewEmailFlag(false);
 
-        //set pending payment state
-        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
-        $stateObject->setStatus('pending_payment');
+        $this->paymentOps->setOrderStateAndStatus($payment, $paymentAction, $stateObject);
+
         $stateObject->setIsNotified(false);
     }
     // @codingStandardsIgnoreEnd

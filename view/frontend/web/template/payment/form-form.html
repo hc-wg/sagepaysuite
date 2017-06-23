@@ -43,7 +43,7 @@
             <div class="primary">
                 <button class="action primary checkout"
                         type="submit"
-                        data-bind="click: preparePayment, enable: (getCode() == isChecked())"
+                        data-bind="click: preparePayment, enable: (getCode() == isChecked()), css: {disabled: !isPlaceOrderActionAllowed()}"
                         disabled>
                     <span data-bind="text: $t('Continue to SagePay')"></span>
                 </button>

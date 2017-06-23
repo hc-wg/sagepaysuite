@@ -216,6 +216,7 @@ class PiRequestTest extends \PHPUnit_Framework_TestCase
                                     'address1'   => "50-51 Patrick Street",
                                     'city'       => "Dun Laoghaire",
                                     'country'    => "IE",
+                                    'postalCode' => "000"
             ],
             'shippingDetails'  => [
                                     "recipientFirstName" => "Juan",
@@ -223,6 +224,7 @@ class PiRequestTest extends \PHPUnit_Framework_TestCase
                                     "shippingAddress1"   => "50-51 Patrick Street",
                                     "shippingCity"       => "Dun Laoghaire",
                                     "shippingCountry"    => "IE",
+                                    "shippingPostalCode"   => "000"
             ],
             'amount'           => 1500,
             'currency'         => 'GBP'

@@ -45,16 +45,17 @@ class Request extends \Magento\Backend\App\AbstractAction
      */
     private $_quoteSession;
 
-    /** @var \Magento\Framework\ObjectManagerInterface */
-    private $objectManager;
+    private $formCrypt;
 
     /**
+     * Request constructor.
      * @param \Magento\Backend\App\Action\Context $context
-     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param Config $config
      * @param Logger $suiteLogger
      * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
      * @param \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
      * @param \Magento\Backend\Model\Session\Quote $quoteSession
+     * @param \Ebizmarts\SagePaySuite\Model\FormCrypt $formCrypt
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
@@ -62,7 +63,8 @@ class Request extends \Magento\Backend\App\AbstractAction
         Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
-        \Magento\Backend\Model\Session\Quote $quoteSession
+        \Magento\Backend\Model\Session\Quote $quoteSession,
+        \Ebizmarts\SagePaySuite\Model\FormCrypt $formCrypt
     ) {
     
         parent::__construct($context);
@@ -73,7 +75,7 @@ class Request extends \Magento\Backend\App\AbstractAction
         $this->_requestHelper = $requestHelper;
         $this->_quoteSession  = $quoteSession;
         $this->_quote         = $this->_quoteSession->getQuote();
-        $this->objectManager  = $context->getObjectManager();
+        $this->formCrypt      = $formCrypt;
     }
 
     public function execute()
@@ -175,29 +177,16 @@ class Request extends \Magento\Backend\App\AbstractAction
     }
 
     /**
-     * @return \Magento\Framework\ObjectManagerInterface
-     */
-    public function getObjManager()
-    {
-        return $this->objectManager;
-    }
-
-    /**
      * @param $encryptedPassword
      * @param $preCryptString
      * @return string
      */
     private function getEncryptedRequest($encryptedPassword, $preCryptString)
     {
-        $encryptor = $this
-            ->getObjManager()
-            ->create('\phpseclib\Crypt\AES', ['mode' => \phpseclib\Crypt\Base::MODE_CBC]);
-        $encryptor->setBlockLength(128);
-        $encryptor->setKey($encryptedPassword);
-        $encryptor->setIV($encryptedPassword);
+        $this->formCrypt->initInitializationVectorAndKey($encryptedPassword);
 
-        $crypt = $encryptor->encrypt($preCryptString);
+        $crypt = $this->formCrypt->encrypt($preCryptString);
 
-        return "@" . strtoupper(bin2hex($crypt));
+        return $crypt;
     }
 }

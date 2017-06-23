@@ -30,11 +30,6 @@ class Notify extends \Magento\Framework\App\Action\Action
     private $_orderSender;
 
     /**
-     * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
-     */
-    private $_transactionFactory;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
     private $_config;
@@ -64,8 +59,8 @@ class Notify extends \Magento\Framework\App\Action\Action
      */
     private $_tokenModel;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory */
-    private $actionFactory;
+    /** @var \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback */
+    private $updateOrderCallback;
 
     /**
      * Notify constructor.
@@ -73,36 +68,34 @@ class Notify extends \Magento\Framework\App\Action\Action
      * @param Logger $suiteLogger
      * @param \Magento\Sales\Model\OrderFactory $orderFactory
      * @param OrderSender $orderSender
-     * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
      * @param \Ebizmarts\SagePaySuite\Model\Config $config
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Ebizmarts\SagePaySuite\Model\Token $tokenModel
      * @param \Magento\Quote\Model\Quote $quote
+     * @param \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback $updateOrderCallback
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         Logger $suiteLogger,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         OrderSender $orderSender,
-        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
         \Magento\Quote\Model\Quote $quote,
-        \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory $actionFactory
+        \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback $updateOrderCallback
     ) {
     
         parent::__construct($context);
 
         $this->_suiteLogger        = $suiteLogger;
+        $this->updateOrderCallback = $updateOrderCallback;
         $this->_orderFactory       = $orderFactory;
         $this->_orderSender        = $orderSender;
-        $this->_transactionFactory = $transactionFactory;
         $this->_config             = $config;
         $this->_checkoutSession    = $checkoutSession;
         $this->_tokenModel         = $tokenModel;
         $this->_quote              = $quote;
-        $this->actionFactory       = $actionFactory;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
     }
 
@@ -151,45 +144,6 @@ class Notify extends \Magento\Framework\App\Action\Action
 
             $this->persistToken($order);
 
-            /**
-             * OK = Process executed without error.
-             *
-             * NOTAUTHED = The Sage Pay gateway could not authorise the
-             * transaction because the details provided by the customer were
-             * incorrect, or insufficient funds were available. However the
-             * transaction has completed.
-             *
-             * PENDING = This only affects European Payment methods.
-             * Indicates a transaction has yet to fail or succeed. This will be
-             * updated by Sage Pay when we receive a notification from PPRO.
-             * The updated status can be seen in MySagePay.
-             *
-             * ABORT = The Transaction could not be completed because the
-             * user clicked the CANCEL button on the payment pages, or went
-             * inactive for 15 minutes or longer.
-             *
-             * REJECTED = The Sage Pay System rejected the transaction
-             * Appendix B: Notification of Transaction Results
-             * Sage Pay Server Integration and Protocol and Guidelines 3.00 Page 65 of 72
-             * because of the fraud screening rules you have set on your
-             * account.
-             * Note: The bank may have authorised the transaction but your
-             * own rule bases for AVS/CV2 or 3D-Secure caused the
-             * transaction to be rejected.
-             *
-             * AUTHENTICATED = The 3D-Secure checks were performed
-             * successfully and the card details secured at Sage Pay. Only
-             * returned if TxType is AUTHENTICATE.
-             *
-             * REGISTERED = 3D-Secure checks failed or were not performed,
-             * but the card details are still secured at Sage Pay. Only returned if
-             * TxType is AUTHENTICATE.
-             *
-             * ERROR = A problem occurred at Sage Pay which prevented
-             * transaction registration.
-             *
-             */
-
             if ($status == "ABORT") { //Transaction canceled by customer
 
                 //cancel pending payment order
@@ -197,7 +151,8 @@ class Notify extends \Magento\Framework\App\Action\Action
 
                 return $this->_returnAbort();
             } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
-                $this->_confirmPayment($transactionId);
+                $this->updateOrderCallback->setOrder($this->_order);
+                $this->updateOrderCallback->confirmPayment($transactionId);
                 return $this->_returnOk();
             } elseif ($status == "PENDING") {
                 //Transaction in PENDING state (this is just for Euro Payments)
@@ -278,38 +233,6 @@ class Notify extends \Magento\Framework\App\Action\Action
         }
     }
 
-    private function _confirmPayment($transactionId)
-    {
-        //invoice
-        $payment = $this->_order->getPayment();
-        $payment->getMethodInstance()->markAsInitialized();
-        $this->_order->place()->save();
-
-        if ((bool)$payment->getAdditionalInformation('euroPayment') !== true) {
-            //don't send email if EURO PAYMENT as it was already sent
-            $this->_orderSender->send($this->_order);
-        }
-
-        //create transaction record
-        /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
-        $actionClosed = $this->actionFactory->create(['paymentAction' => $this->_config->getSagepayPaymentAction()]);
-        list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
-
-        $transaction = $this->_transactionFactory->create();
-        $transaction->setOrderPaymentObject($payment);
-        $transaction->setTxnId($transactionId);
-        $transaction->setOrderId($this->_order->getEntityId());
-        $transaction->setTxnType($action);
-        $transaction->setPaymentId($payment->getId());
-        $transaction->setIsClosed($closed);
-        $transaction->save();
-
-        //update invoice transaction id
-        $this->_order->getInvoiceCollection()
-            ->setDataToAll('transaction_id', $payment->getLastTransId())
-            ->save();
-    }
-
     private function _returnAbort()
     {
         $strResponse = 'Status=OK' . "\r\n";
@@ -365,7 +288,6 @@ class Notify extends \Magento\Framework\App\Action\Action
     {
         $url = $this->_url->getUrl('*/*/success', [
             '_secure' => true,
-            //'_store' => $this->getRequest()->getParam('_store') @codingStandardsIgnoreLine
         ]);
 
         $url .= "?quoteid=" . $this->_quote->getId();
@@ -377,7 +299,6 @@ class Notify extends \Magento\Framework\App\Action\Action
     {
         $url = $this->_url->getUrl('*/*/cancel', [
             '_secure' => true,
-            //'_store' => $this->getRequest()->getParam('_store') @codingStandardsIgnoreLine
         ]);
 
         $url .= "?message=" . $message;
@@ -394,7 +315,6 @@ class Notify extends \Magento\Framework\App\Action\Action
         $localMd5Hash = hash('md5', $this->_getVPSSignatureString($payment));
 
         if (strtoupper($localMd5Hash) != $this->_postData->VPSSignature) {
-            //log full values for VPS signature
             $this->_suiteLogger->sageLog(
                 Logger::LOG_REQUEST,
                 "INVALID SIGNATURE: " . $this->_getVPSSignatureString($payment),

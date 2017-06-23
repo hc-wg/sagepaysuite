@@ -109,8 +109,6 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['setTransactionId', 'setLastTransId', 'setAdditionalInformation', 'save'])
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())->method('setTransactionId')->with("00000024-2016-03-16");
-        $paymentMock->expects($this->once())->method('setLastTransId')->with("00000024-2016-03-16");
         $paymentMock->expects($this->exactly(4))->method('setAdditionalInformation');
         $paymentMock->expects($this->once())->method('save')->willReturnSelf();
 
@@ -122,15 +120,6 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
         $quoteMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
 
-        $objectManagerMock = $this->getMockBuilder(\Magento\Framework\ObjectManager\ObjectManager::class)
-            ->setMethods(['create'])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $phpseclib = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
-        $objectManagerMock
-            ->method('create')
-            ->willReturn($phpseclib);
-
         $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -141,6 +130,8 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $checkoutHelperMock->expects($this->once())->method('placeOrder')->willReturn($orderMock);
+
+        $cryptObject = new \Ebizmarts\SagePaySuite\Model\FormCrypt();
 
         $requestMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\FormRequestManagement::class)
@@ -158,7 +149,7 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
                     "quoteRepository"    => $quoteRepoMock,
                     "quoteIdMaskFactory" => $quoteIdMaskRepoMock,
                     "coreUrl"            => $url,
-                    "objectManager"      => $objectManagerMock
+                    "formCrypt"          => $cryptObject
                 ]
             )
             ->getMock();
