@@ -34,24 +34,36 @@ class PI extends CcGenericConfigProvider
      */
     private $_config;
 
+    /** @var \Magento\Store\Model\StoreManagerInterface */
+    private $storeManager;
+
     /**
+     * PI constructor.
      * @param CcConfig $ccConfig
      * @param PaymentHelper $paymentHelper
      * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+     * @param Config $config
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      */
     public function __construct(
         CcConfig $ccConfig,
         PaymentHelper $paymentHelper,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
-        \Ebizmarts\SagePaySuite\Model\Config $config
+        \Ebizmarts\SagePaySuite\Model\Config $config,
+        \Magento\Store\Model\StoreManagerInterface $storeManager
     ) {
     
         parent::__construct($ccConfig, $paymentHelper);
+
+        $this->storeManager = $storeManager;
+
+        $store = $this->storeManager->getStore();
 
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
         $this->_suiteHelper = $suiteHelper;
 
         $config->setMethodCode($this->methodCode);
+        $config->setConfigurationScopeId($store->getId());
         $this->_config = $config;
     }
 
