@@ -15,9 +15,10 @@ define(
         'Magento_Customer/js/model/customer',
         'Magento_Checkout/js/model/quote',
         'Magento_Checkout/js/model/full-screen-loader',
-        'Magento_Checkout/js/model/payment/additional-validators'
+        'Magento_Checkout/js/model/payment/additional-validators',
+        'Magento_Customer/js/customer-data'
     ],
-    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader, additionalValidators) {
+    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader, additionalValidators, customerData) {
         'use strict';
 
         $(document).ready(function () {
@@ -117,6 +118,9 @@ define(
                                     function (response) {
 
                                         if (response.success) {
+
+                                            customerData.invalidate(['cart']);
+
                                             //set form data and submit
                                             var form_form = document.getElementById(self.getCode() + '-form');
                                             form_form.setAttribute('action',response.redirect_url);
