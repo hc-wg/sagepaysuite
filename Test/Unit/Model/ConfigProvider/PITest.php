@@ -72,7 +72,8 @@ class PITest extends \PHPUnit_Framework_TestCase
             [
                 "config"        => $this->configMock,
                 "paymentHelper" => $paymentHelperMock,
-                'suiteHelper'   => $suiteHelperMock
+                "suiteHelper"   => $suiteHelperMock,
+                "storeManager"  => $this->getStoreManagerMock()
             ]
         );
 
@@ -117,10 +118,28 @@ class PITest extends \PHPUnit_Framework_TestCase
         $this->piConfigProviderModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\ConfigProvider\PI',
             [
-                "paymentHelper" => $paymentHelperMock
+                "paymentHelper" => $paymentHelperMock,
+                "storeManager"  => $this->getStoreManagerMock()
             ]
         );
 
         $this->assertEquals([], $this->piConfigProviderModel->getConfig());
+    }
+
+    /**
+     * @return \Magento\Store\Model\StoreManagerInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private function getStoreManagerMock()
+    {
+        $storeMock = $this->getMockBuilder(\Magento\Store\Api\Data\StoreInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storeMock->expects($this->once())->method("getId")->willReturn(4);
+        $storeManagerMock = $this->getMockBuilder(\Magento\Store\Model\StoreManagerInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storeManagerMock->expects($this->once())->method("getStore")->willReturn($storeMock);
+
+        return $storeManagerMock;
     }
 }
