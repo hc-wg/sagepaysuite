@@ -17,10 +17,10 @@ define(
         'Magento_Ui/js/modal/modal',
         'Magento_Checkout/js/model/payment/additional-validators',
         'Magento_Checkout/js/model/url-builder',
-        'Magento_Checkout/js/model/quote'
-
+        'Magento_Checkout/js/model/quote',
+        'Magento_Customer/js/customer-data'
     ],
-    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal, additionalValidators, urlBuilder, quote) {
+    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal, additionalValidators, urlBuilder, quote, customerData) {
         'use strict';
 
         $(document).ready(function () {
@@ -259,15 +259,18 @@ define(
                                 /**
                                  * transaction authenticated, redirect to success
                                  */
-
+                                customerData.invalidate(['cart']);
                                 window.location.replace(url.build('checkout/onepage/success/'));
                             } else if (response.status == "3DAuth") {
+
+
+                                customerData.invalidate(['cart']);
 
                                 /**
                                  * 3D secure authentication required
                                  */
 
-                                    //add transactionId param to callback
+                                //add transactionId param to callback
                                 callbackUrl += "?transactionId=" + response.transaction_id +
                                     "&orderId=" + response.order_id +
                                     "&quoteId=" + response.quote_id;
@@ -336,6 +339,7 @@ define(
              * Place order.
              */
             placeOrder: function (data, event) {
+
                 if (event) {
                     event.preventDefault();
                 }
