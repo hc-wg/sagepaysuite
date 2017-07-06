@@ -53,7 +53,7 @@ class Payment
                     || $paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED
                 ) {
                     $action = 'releasing';
-                    $this->sharedApi->releaseTransaction($transactionId, $amount);
+                    $this->sharedApi->captureDeferredTransaction($transactionId, $amount);
                 } elseif ($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE) {
                     $action = 'authorizing';
                     $this->sharedApi->authorizeTransaction($transactionId, $amount, $order->getIncrementId());
