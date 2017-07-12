@@ -6,10 +6,10 @@ class HttpText extends Http
 {
     public function __construct(
         \Magento\Framework\HTTP\Adapter\Curl $curl,
-        \Ebizmarts\SagePaySuite\Api\Data\HttpResponseInterface $responseData,
+        \Ebizmarts\SagePaySuite\Api\Data\HttpResponseInterface $returnData,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $logger
     ) {
-        parent::__construct($curl, $responseData, $logger);
+        parent::__construct($curl, $returnData, $logger);
 
         $this->setContentType("application/x-www-form-urlencoded");
     }
