@@ -218,6 +218,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $transactionId;
     }
 
+    public function removeCurlyBraces($text)
+    {
+        return str_replace(["{", "}"], "", $text);
+    }
+
     /**
      * @param string $methodCode
      * @return bool
