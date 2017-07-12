@@ -143,9 +143,14 @@ class Success extends \Magento\Framework\App\Action\Action
 
             //update payment details
             if (!empty($transactionId) && ($vendorTxCode == $response['VendorTxCode'])) {
+
+                foreach($response as $name => $value) {
+                    $payment->setTransactionAdditionalInfo($name, $value);
+                    $payment->setAdditionalInformation($name, $value);
+                }
+
                 $payment->setLastTransId($transactionId);
                 $payment->setAdditionalInformation('statusDetail', $response['StatusDetail']);
-                $payment->setAdditionalInformation('threeDStatus', $response['3DSecureStatus']);
                 $payment->setCcType($response['CardType']);
                 $payment->setCcLast4($response['Last4Digits']);
                 if (array_key_exists("ExpiryDate", $response)) {
