@@ -203,7 +203,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         try {
             /** @var \Magento\Sales\Model\Order $order */
             $order        = $payment->getOrder();
-            $vpsTxId      = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
+            $vpsTxId      = $this->_suiteHelper->clearTransactionId($payment->getParentTransactionId());
             $vendorTxCode = $this->_suiteHelper->generateVendorTxCode($order->getIncrementId(), Config::ACTION_REFUND);
             $description  = 'Magento backend refund.';
 

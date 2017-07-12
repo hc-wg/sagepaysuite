@@ -15,9 +15,10 @@ define(
         'Magento_Customer/js/model/customer',
         'Magento_Checkout/js/model/quote',
         'Magento_Checkout/js/model/full-screen-loader',
-        'Magento_Checkout/js/model/payment/additional-validators'
+        'Magento_Checkout/js/model/payment/additional-validators',
+        'Magento_Customer/js/customer-data'
     ],
-    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader, additionalValidators) {
+    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader, additionalValidators, customerData) {
         'use strict';
 
         $(document).ready(function () {
@@ -145,15 +146,8 @@ define(
                                      function (response) {
 
                                          if (response.success) {
-                                            //self.hideOtherPaymentOptions();
 
-                                            //$('#sagepaysuiteserver-actions-toolbar').css('display', 'none');
-                                            //$('#payment_form_sagepaysuiteserver .payment-method-note').css('display', 'none');
-                                            //$('#' + self.getCode() + '-tokens').css('display', 'none');
-
-
-                                            //$('#sagepaysuiteserver_embed_iframe_container').html("<iframe class='main-iframe' src='" +
-                                            //    response.response.data.NextURL + "'></iframe>");
+                                             customerData.invalidate(['cart']);
 
                                             self.openSERVERModal(response.response[1].NextURL);
 

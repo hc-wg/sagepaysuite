@@ -14,6 +14,9 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
  */
 class Shared
 {
+    const DEFERRED_AWAITING_RELEASE = 14;
+    const SUCCESSFULLY_AUTHORISED   = 16;
+
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
      */
@@ -43,6 +46,8 @@ class Shared
     /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory  */
     private $httpTextFactory;
 
+    private $requestHelper;
+
     /**
      * Shared constructor.
      * @param HttpTextFactory $httpTextFactory
@@ -58,7 +63,8 @@ class Shared
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi,
-        Logger $suiteLogger
+        Logger $suiteLogger,
+        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
     ) {
         $this->_config              = $config;
         $this->_apiExceptionFactory = $apiExceptionFactory;
@@ -66,6 +72,7 @@ class Shared
         $this->_suiteHelper         = $suiteHelper;
         $this->_reportingApi        = $reportingApi;
         $this->httpTextFactory      = $httpTextFactory;
+        $this->requestHelper        = $requestHelper;
     }
 
     public function voidTransaction($vpstxid)
@@ -102,11 +109,36 @@ class Shared
         return $this->_executeRequest(Config::ACTION_REFUND, $data);
     }
 
+    public function captureDeferredTransaction($vpsTxId, $amount)
+    {
+        $vpsTxId = $this->_suiteHelper->clearTransactionId($vpsTxId);
+
+        $transaction = $this->_reportingApi->getTransactionDetails($vpsTxId);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $transaction, [__METHOD__, __LINE__]);
+
+        $result = null;
+
+        $txStateId = (int)$transaction->txstateid;
+        if ($txStateId == self::DEFERRED_AWAITING_RELEASE) {
+            $result = $this->releaseTransaction($vpsTxId, $amount);
+        } else {
+            if($txStateId == self::SUCCESSFULLY_AUTHORISED) {
+                $data = [];
+                $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode("", Config::ACTION_REPEAT);
+                $data['Description']  = "REPEAT deferred transaction from Magento.";
+                $data['ReferrerID']   = $this->requestHelper->getReferrerId();
+                $data['Currency']     = (string)$transaction->currency;
+                $data['Amount']       = $amount;
+                $result = $this->repeatTransaction($vpsTxId, $data, Config::ACTION_REPEAT);
+            }
+        }
+
+        return $result;
+    }
+
     public function releaseTransaction($vpstxid, $amount)
     {
         $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
-
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $transaction, [__METHOD__, __LINE__]);
 
         $data['VPSProtocol']   = $this->_config->getVPSProtocol();
         $data['TxType']        = Config::ACTION_RELEASE;

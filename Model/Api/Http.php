@@ -89,7 +89,6 @@ abstract class Http
     {
         $config = [
             'timeout'    => 120,
-            'verifypeer' => false,
             'verifyhost' => 2,
         ];
 

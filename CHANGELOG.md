@@ -1,3 +1,16 @@
+1.1.13 (12/07/2017)
+=============
+**This release requires Magento 2.1.0 at least.**
+- Bug fixes
+  - Partial refunds after partial invoices.
+  - Email error when placing 2 different orders on PI.
+  - Can't create 2 credit memos for a transaction using PI.
+  - Cart still contains items after purchase.
+  - DroPin config per store view not working in frontend.
+  - Extensions are not reporting support for all required PHP versions in the composer.json.
+  - Different billing address button enabled before update the address.
+  - Verifypeer set to true by default.
+
 1.1.12 (05/05/2017)
 =============
 **This release requires Magento 2.1.0 at least.**

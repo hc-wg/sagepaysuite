@@ -20,11 +20,11 @@ class MotoManagement extends RequestManagement
     private $backendUrl;
 
     public function __construct(
+        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Model\Api\PIRest $piRestApi,
         \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConvert,
         \Ebizmarts\SagePaySuite\Model\PiRequest $piRequest,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
-        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface $result,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Framework\App\RequestInterface $httpRequest,

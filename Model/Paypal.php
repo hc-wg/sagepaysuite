@@ -129,11 +129,11 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
 
     /**
      * Paypal constructor.
-     * @param Payment $paymentOps
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory
      * @param \Magento\Framework\Api\AttributeValueFactory $customAttributeFactory
+     * @param Payment $paymentOps
      * @param \Magento\Payment\Helper\Data $paymentData
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Magento\Payment\Model\Method\Logger $logger
@@ -145,11 +145,11 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
      * @param array $data
      */
     public function __construct(
-        \Ebizmarts\SagePaySuite\Model\Payment $paymentOps,
         \Magento\Framework\Model\Context $context,
         \Magento\Framework\Registry $registry,
         \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory,
         \Magento\Framework\Api\AttributeValueFactory $customAttributeFactory,
+        \Ebizmarts\SagePaySuite\Model\Payment $paymentOps,
         \Magento\Payment\Helper\Data $paymentData,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Payment\Model\Method\Logger $logger,

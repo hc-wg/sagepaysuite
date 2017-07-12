@@ -224,6 +224,15 @@ class DataTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('\Ebizmarts\SagePaySuite\Model\Config', $this->dataHelper->getSagePayConfig());
     }
 
+    public function testRemoveCurlyBraces()
+    {
+        $this->dataHelper = $this->objectManagerHelper->getObject('Ebizmarts\SagePaySuite\Helper\Data');
+
+        $t1 = "{asd-asd}";
+
+        $this->assertEquals("asd-asd", $this->dataHelper->removeCurlyBraces($t1));
+    }
+
     /**
      * @param $bool
      * @param $code
