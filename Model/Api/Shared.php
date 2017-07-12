@@ -116,9 +116,11 @@ class Shared
         $transaction = $this->_reportingApi->getTransactionDetails($vpsTxId);
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $transaction, [__METHOD__, __LINE__]);
 
+        $result = null;
+
         $txStateId = (int)$transaction->txstateid;
         if ($txStateId == self::DEFERRED_AWAITING_RELEASE) {
-            $this->releaseTransaction($vpsTxId, $amount);
+            $result = $this->releaseTransaction($vpsTxId, $amount);
         } else {
             if($txStateId == self::SUCCESSFULLY_AUTHORISED) {
                 $data = [];
@@ -127,9 +129,11 @@ class Shared
                 $data['ReferrerID']   = $this->requestHelper->getReferrerId();
                 $data['Currency']     = (string)$transaction->currency;
                 $data['Amount']       = $amount;
-                $this->repeatTransaction($vpsTxId, $data, Config::ACTION_REPEAT);
+                $result = $this->repeatTransaction($vpsTxId, $data, Config::ACTION_REPEAT);
             }
         }
+
+        return $result;
     }
 
     public function releaseTransaction($vpstxid, $amount)
