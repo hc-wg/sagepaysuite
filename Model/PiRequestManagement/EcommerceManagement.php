@@ -21,8 +21,8 @@ class EcommerceManagement extends RequestManagement
         \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConvert,
         \Ebizmarts\SagePaySuite\Model\PiRequest $piRequest,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
-        \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface $result,
+        \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $sagePaySuiteLogger
     ) {
         parent::__construct(
@@ -129,6 +129,8 @@ class EcommerceManagement extends RequestManagement
         $this->getResult()->setSuccess(false);
         $this->getResult()->setErrorMessage(__('Something went wrong: ' . $exceptionObject->getMessage()));
 
-        $this->getPiRestApi()->void($this->getPayResult()->getTransactionId());
+        if ($this->getPayResult() !== null) {
+            $this->getPiRestApi()->void($this->getPayResult()->getTransactionId());
+        }
     }
 }
