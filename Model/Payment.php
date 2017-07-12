@@ -2,8 +2,13 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
+use Magento\Framework\Exception\LocalizedException;
+
 class Payment
 {
+    const ERROR_MESSAGE = "There was an error %1 Sage Pay transaction %2: %3";
+
     /** @var Api\Shared */
     private $sharedApi;
 
@@ -32,7 +37,7 @@ class Payment
      * @param \Magento\Payment\Model\InfoInterface $payment
      * @param $amount
      * @return $this
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
@@ -41,32 +46,39 @@ class Payment
             $action        = "with";
             $order         = $payment->getOrder();
 
-            if ($payment->getLastTransId() && $order->getState() != \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
-                $transactionId = $payment->getLastTransId();
+            if ($this->canCaptureAuthorizedTransaction($payment, $order)) {
+                $transactionId = $payment->getParentTransactionId();
 
-                $paymentAction = $this->_config->getSagepayPaymentAction();
-                if ($payment->getAdditionalInformation('paymentAction')) {
-                    $paymentAction = $payment->getAdditionalInformation('paymentAction');
-                }
+                $paymentAction = $this->getTransactionPaymentAction($payment);
 
-                if ($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER
-                    || $paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED
-                ) {
+                if ($this->isDeferredOrRepeatDeferredAction($paymentAction)) {
                     $action = 'releasing';
-                    $this->sharedApi->captureDeferredTransaction($transactionId, $amount);
-                } elseif ($paymentAction == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE) {
+                    $result = $this->sharedApi->captureDeferredTransaction($transactionId, $amount);
+                } elseif ($this->isAuthenticateAction($paymentAction)) {
                     $action = 'authorizing';
-                    $this->sharedApi->authorizeTransaction($transactionId, $amount, $order->getIncrementId());
+                    $result = $this->sharedApi->authorizeTransaction($transactionId, $amount, $order->getIncrementId());
                 }
 
-                $payment->setIsTransactionClosed(1);
+                $this->addAdditionalInformationToTransaction($payment, $result);
+
+                if (is_array($result) && array_key_exists('data', $result)) {
+                    if (array_key_exists('VPSTxId', $result['data'])) {
+                        $payment->setTransactionId($this->suiteHelper->removeCurlyBraces($result['data']['VPSTxId']));
+                    }
+                    $payment->setParentTransactionId($payment->getParentTransactionId());
+                } else {
+                    $payment->setTransactonId($payment->getLastTransId());
+                    $payment->setParentTransactionId($payment->getLastTransId());
+                }
+
+                //TODO: También probar AUTHENTICATE.
             }
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+        } catch (ApiException $apiException) {
             $this->logger->logException($apiException);
-            throw new \Magento\Framework\Exception\LocalizedException(__("There was an error %1 Sage Pay transaction %2: %3", $action, $transactionId, $apiException->getUserMessage()));
+            throw new LocalizedException(__(self::ERROR_MESSAGE, $action, $transactionId, $apiException->getUserMessage()));
         } catch (\Exception $e) {
             $this->logger->logException($e);
-            throw new \Magento\Framework\Exception\LocalizedException(__("There was an error %1 Sage Pay transaction %2: %3", $action, $transactionId, $e->getMessage()));
+            throw new LocalizedException(__(self::ERROR_MESSAGE, $action, $transactionId, $e->getMessage()));
         }
 
         return $this;
@@ -76,27 +88,40 @@ class Payment
      * @param \Magento\Payment\Model\InfoInterface $payment
      * @param float $amount
      * @return $this
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function refund(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
+        $transactionId = $this->suiteHelper->clearTransactionId($payment->getParentTransactionId());
         try {
-            $transactionId = $this->suiteHelper->clearTransactionId($payment->getLastTransId());
-            $order         = $payment->getOrder();
-
-            $this->sharedApi->refundTransaction($transactionId, $amount, $order->getIncrementId());
-
-            $payment->setIsTransactionClosed(1);
-            $payment->setShouldCloseParentTransaction(1);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+            $this->tryRefund($payment, $transactionId, $amount);
+        } catch (ApiException $apiException) {
             $this->logger->logException($apiException);
-            throw new \Magento\Framework\Exception\LocalizedException(__("There was an error refunding Sage Pay transaction %1: %2", $transactionId, $apiException->getUserMessage()));
+            throw new LocalizedException(__(self::ERROR_MESSAGE, "refunding", $transactionId, $apiException->getUserMessage()));
         } catch (\Exception $e) {
             $this->logger->logException($e);
-            throw new \Magento\Framework\Exception\LocalizedException(__("There was an error refunding Sage Pay transaction %1: %2", $transactionId, $e->getMessage()));
+            throw new LocalizedException(__(self::ERROR_MESSAGE, "refunding", $transactionId, $e->getMessage()));
         }
 
         return $this;
+    }
+
+    /**
+     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param $transactionId
+     * @param $amount
+     * @return mixed
+     */
+    private function tryRefund(\Magento\Payment\Model\InfoInterface $payment, $transactionId, $amount)
+    {
+        $result = $this->sharedApi->refundTransaction($transactionId, $amount, $payment->getOrder()->getIncrementId());
+
+        $this->addAdditionalInformationToTransaction($payment, $result);
+
+        $payment->setIsTransactionClosed(1);
+        $payment->setShouldCloseParentTransaction(1);
+
+        return $transactionId;
     }
 
     /**
@@ -125,5 +150,60 @@ class Payment
     {
         $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
         $stateObject->setStatus('pending_payment');
+    }
+
+    /**
+     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param $result
+     */
+    private function addAdditionalInformationToTransaction(\Magento\Payment\Model\InfoInterface $payment, $result)
+    {
+        if (is_array($result) && array_key_exists('data', $result)) {
+            foreach ($result['data'] as $name => $value) {
+                $payment->setTransactionAdditionalInfo($name, $value);
+            }
+        }
+    }
+
+    /**
+     * @param $paymentAction
+     * @return bool
+     */
+    private function isDeferredOrRepeatDeferredAction($paymentAction)
+    {
+        return $paymentAction == Config::ACTION_DEFER || $paymentAction == Config::ACTION_REPEAT_DEFERRED;
+    }
+
+    /**
+     * @param $paymentAction
+     * @return bool
+     */
+    private function isAuthenticateAction($paymentAction)
+    {
+        return $paymentAction == Config::ACTION_AUTHENTICATE;
+    }
+
+    /**
+     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param $order
+     * @return bool
+     */
+    private function canCaptureAuthorizedTransaction(\Magento\Payment\Model\InfoInterface $payment, $order)
+    {
+        return $payment->getLastTransId() && $order->getState() != \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT;
+    }
+
+    /**
+     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @return mixed|null|string
+     */
+    private function getTransactionPaymentAction(\Magento\Payment\Model\InfoInterface $payment)
+    {
+        $paymentAction = $this->_config->getSagepayPaymentAction();
+        if ($payment->getAdditionalInformation('paymentAction')) {
+            $paymentAction = $payment->getAdditionalInformation('paymentAction');
+        }
+
+        return $paymentAction;
     }
 }
