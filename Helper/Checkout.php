@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Helper;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Checkout\Model\Type\Onepage;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 
@@ -107,16 +108,17 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
      * Place order manually from default checkout
      *
      * @return \Magento\Sales\Model\Order
+     * @param $quote \Magento\Quote\Api\Data\CartInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function placeOrder()
+    public function placeOrder($quote = null)
     {
 
         switch ($this->_getCheckoutMethod()) {
-            case \Magento\Checkout\Model\Type\Onepage::METHOD_GUEST:
+            case Onepage::METHOD_GUEST:
                 $this->_prepareGuestQuote();
                 break;
-            case \Magento\Checkout\Model\Type\Onepage::METHOD_REGISTER:
+            case Onepage::METHOD_REGISTER:
                 $this->_prepareNewCustomerQuote();
                 break;
             default:
@@ -125,7 +127,7 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
 
         $this->_quote->collectTotals();
 
-        $order = $this->_quoteManagement->submit($this->_quote);
+        $order = $this->_quoteManagement->submit( (null === $quote ? $this->_quote : $quote) );
 
         if (!$order) {
             throw new \Magento\Framework\Exception\LocalizedException(
@@ -144,13 +146,13 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
     private function _getCheckoutMethod()
     {
         if ($this->_customerSession->isLoggedIn()) {
-            return \Magento\Checkout\Model\Type\Onepage::METHOD_CUSTOMER;
+            return Onepage::METHOD_CUSTOMER;
         }
         if (!$this->_quote->getCheckoutMethod()) {
             if ($this->_checkoutData->isAllowedGuestCheckout($this->_quote)) {
-                $this->_quote->setCheckoutMethod(\Magento\Checkout\Model\Type\Onepage::METHOD_GUEST);
+                $this->_quote->setCheckoutMethod(Onepage::METHOD_GUEST);
             } else {
-                $this->_quote->setCheckoutMethod(\Magento\Checkout\Model\Type\Onepage::METHOD_REGISTER);
+                $this->_quote->setCheckoutMethod(Onepage::METHOD_REGISTER);
             }
         }
         return $this->_quote->getCheckoutMethod();
