@@ -3,6 +3,8 @@
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite;
+use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Framework\Validator\Exception as InputException;
 
 class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManagementInterface
 {
@@ -16,7 +18,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
     private $_coreUrl;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
+     * @var Config
      */
     private $_config;
 
@@ -83,7 +85,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
     private $quoteIdMaskFactory;
 
     public function __construct(
-        \Ebizmarts\SagePaySuite\Model\Config $config,
+        Config $config,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
@@ -113,7 +115,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         $this->_coreUrl           = $coreUrl;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
 
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+        $this->_config->setMethodCode(Config::METHOD_SERVER);
     }
 
     /**
@@ -148,7 +150,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
             $transactionId = $post_response["data"]["VPSTxId"];
             $transactionId = str_replace(["}", "{"], [""], $transactionId);
             $payment       = $quote->getPayment();
-            $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+            $payment->setMethod(Config::METHOD_SERVER);
 
             //save order with pending payment
             $order = $this->_checkoutHelper->placeOrder($quote);
@@ -172,7 +174,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
                 $this->result->setSuccess(true);
                 $this->result->setResponse($post_response);
             } else {
-                throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
+                throw new InputException(__('Unable to save Sage Pay order'));
             }
         } catch (Api\ApiException $apiException) {
             $this->_suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
@@ -210,10 +212,10 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
      */
     private function _getServiceURL()
     {
-        if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_LIVE;
+        if ($this->_config->getMode() == Config::MODE_LIVE) {
+            return Config::URL_SERVER_POST_LIVE;
         } else {
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_SERVER_POST_TEST;
+            return Config::URL_SERVER_POST_TEST;
         }
     }
 
@@ -235,7 +237,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         $data["ReferrerID"]      = $this->_requestHelper->getReferrerId();
 
         //populate payment amount information
-        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
+        $data = array_merge($data, $this->_requestHelper->populatePaymentAmountAndCurrency($this->_quote));
 
         if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_DISABLED) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
