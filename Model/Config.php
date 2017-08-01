@@ -525,24 +525,21 @@ class Config
 
     public function getCurrencyCode()
     {
-        $currency_settings = $this->_scopeConfig->getValue(
-            $this->_getGlobalConfigPath("currency"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        $currencyConfig = $this->getCurrencyConfig();
+
+        $store = $this->_storeManager->getStore();
 
         //store base currency as default
-        $currency = $this->_storeManager->getStore()->getBaseCurrencyCode();
+        $currency = $store->getBaseCurrencyCode();
 
-        switch ($currency_settings) {
+        switch ($currencyConfig) {
             //store default display currency
-            case \Ebizmarts\SagePaySuite\Model\Config::CURRENCY_STORE:
-                $currency = $this->_storeManager->getStore()->getDefaultCurrencyCode();
+            case self::CURRENCY_STORE:
+                $currency = $store->getDefaultCurrencyCode();
                 break;
-
             //frontend currency switcher
-            case \Ebizmarts\SagePaySuite\Model\Config::CURRENCY_SWITCHER:
-                $currency = $this->_storeManager->getStore()->getCurrentCurrencyCode();
+            case self::CURRENCY_SWITCHER:
+                $currency = $store->getCurrentCurrencyCode();
                 break;
         }
 
