@@ -37,7 +37,7 @@ class PiRequestTest extends \PHPUnit_Framework_TestCase
 
         $requestHelperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Request::class)
             ->disableOriginalConstructor()
-            ->setMethods(['populatePaymentAmount', 'getOrderDescription'])
+            ->setMethods(['populatePaymentAmountAndCurrency', 'getOrderDescription'])
             ->getMock();
         $requestHelperMock
             ->expects($this->once())
@@ -46,7 +46,7 @@ class PiRequestTest extends \PHPUnit_Framework_TestCase
             ->willReturn("Online transaction.");
         $requestHelperMock
             ->expects($this->once())
-            ->method('populatePaymentAmount')
+            ->method('populatePaymentAmountAndCurrency')
             ->willReturn(
                 [
                     "amount"   => 1500,
@@ -147,7 +147,7 @@ class PiRequestTest extends \PHPUnit_Framework_TestCase
 
         $requestHelperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Request::class)
             ->disableOriginalConstructor()
-            ->setMethods(['populatePaymentAmount', 'getOrderDescription'])
+            ->setMethods(['populatePaymentAmountAndCurrency', 'getOrderDescription'])
             ->getMock();
         $requestHelperMock
             ->expects($this->once())
@@ -156,7 +156,7 @@ class PiRequestTest extends \PHPUnit_Framework_TestCase
             ->willReturn("Online transaction.");
         $requestHelperMock
             ->expects($this->once())
-            ->method('populatePaymentAmount')
+            ->method('populatePaymentAmountAndCurrency')
             ->willReturn(
                 [
                     "amount"   => 1500,
@@ -261,7 +261,7 @@ class PiRequestTest extends \PHPUnit_Framework_TestCase
 
         $requestHelperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Request::class)
             ->disableOriginalConstructor()
-            ->setMethods(['populatePaymentAmount', 'getOrderDescription'])
+            ->setMethods(['populatePaymentAmountAndCurrency', 'getOrderDescription'])
             ->getMock();
         $requestHelperMock
             ->expects($this->once())
@@ -270,7 +270,7 @@ class PiRequestTest extends \PHPUnit_Framework_TestCase
             ->willReturn("Online transaction.");
         $requestHelperMock
             ->expects($this->once())
-            ->method('populatePaymentAmount')
+            ->method('populatePaymentAmountAndCurrency')
             ->willReturn(
                 [
                     "amount"   => 1500,

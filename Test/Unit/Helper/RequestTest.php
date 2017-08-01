@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
 use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Symfony\Component\DependencyInjection\SimpleXMLElement;
 
 class RequestTest extends \PHPUnit_Framework_TestCase
@@ -37,7 +38,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->objectManagerHelper = new ObjectManager($this);
         $this->requestHelper = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Request',
             ['config' => $this->_configMock, 'objectManager' => $this->objectManagerMock]
@@ -193,7 +194,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $result = $data["result"];
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $objectManagerHelper = new ObjectManager($this);
         $this->requestHelper = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Request',
             [
@@ -204,7 +205,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             $result,
-            $this->requestHelper->populatePaymentAmount($quoteMock, $data['isRestRequest'])
+            $this->requestHelper->populatePaymentAmountAndCurrency($quoteMock, $data['isRestRequest'])
         );
     }
 

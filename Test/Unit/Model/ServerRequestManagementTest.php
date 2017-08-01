@@ -88,10 +88,10 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
         $checkoutHelperMock->expects($this->once())->method('placeOrder')->willReturn($orderMock);
 
         $requestHelperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Request::class)
-            ->setMethods(['populatePaymentAmount', 'populateAddressInformation'])
+            ->setMethods(['populatePaymentAmountAndCurrency', 'populateAddressInformation'])
             ->disableOriginalConstructor()
             ->getMock();
-        $requestHelperMock->expects($this->once())->method('populatePaymentAmount')->willReturn(
+        $requestHelperMock->expects($this->once())->method('populatePaymentAmountAndCurrency')->willReturn(
             [
                 'Amount' => 56.98,
                 'Currency' => 'GBP',
@@ -257,10 +257,10 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $requestHelperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Request::class)
-            ->setMethods(['populatePaymentAmount', 'populateAddressInformation'])
+            ->setMethods(['populatePaymentAmountAndCurrency', 'populateAddressInformation'])
             ->disableOriginalConstructor()
             ->getMock();
-        $requestHelperMock->expects($this->once())->method('populatePaymentAmount')->willReturn(
+        $requestHelperMock->expects($this->once())->method('populatePaymentAmountAndCurrency')->willReturn(
             [
                 'Amount' => 56.98,
                 'Currency' => 'GBP',
