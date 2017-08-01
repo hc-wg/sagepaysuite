@@ -174,7 +174,7 @@ class PayPalRequestManagement implements \Ebizmarts\SagePaySuite\Api\PayPalManag
         $data["CardType"] = "PAYPAL";
 
         //populate payment amount information
-        $data = array_merge($data, $this->requestHelper->populatePaymentAmount($this->quote));
+        $data = array_merge($data, $this->requestHelper->populatePaymentAmountAndCurrency($this->quote));
 
         $data = $this->requestHelper->unsetBasketXMLIfAmountsDontMatch($data);
 
