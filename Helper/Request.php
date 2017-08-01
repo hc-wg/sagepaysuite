@@ -8,8 +8,10 @@ namespace Ebizmarts\SagePaySuite\Helper;
 
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\ObjectManager\ObjectManager;
 
-class Request extends \Magento\Framework\App\Helper\AbstractHelper
+class Request extends AbstractHelper
 {
 
     /**
@@ -24,7 +26,7 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
     private $_suiteLogger;
 
     /**
-     * @var \Magento\Framework\ObjectManager\ObjectManager
+     * @var ObjectManager
      */
     private $objectManager;
 
@@ -32,14 +34,10 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * Request constructor.
      * @param Config $config
      * @param Logger $suiteLogger
-     * @param \Magento\Framework\ObjectManager\ObjectManager $objectManager
+     * @param ObjectManager $objectManager
      */
-    public function __construct(
-        \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
-        \Magento\Framework\ObjectManager\ObjectManager $objectManager
-    ) {
-    
+    public function __construct(Config $config, Logger $suiteLogger, ObjectManager $objectManager)
+    {
         $this->_config       = $config;
         $this->_suiteLogger  = $suiteLogger;
         $this->objectManager = $objectManager;
@@ -140,16 +138,14 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      * @param bool|false $isRestRequest
      * @return array
      */
-    public function populatePaymentAmount($quote, $isRestRequest = false)
+    public function populatePaymentAmountAndCurrency($quote, $isRestRequest = false)
     {
         $currencyCode = $this->_config->getCurrencyCode();
 
         $amount = $quote->getBaseGrandTotal();
 
-        switch ($this->_config->getCurrencyConfig()) {
-            case Config::CURRENCY_SWITCHER:
-                $amount = $quote->getGrandTotal();
-                break;
+        if (Config::CURRENCY_SWITCHER == $this->_config->getCurrencyConfig()) {
+            $amount = $quote->getGrandTotal();
         }
 
         $quoteCurrencyCode = $quote->getQuoteCurrencyCode();
@@ -176,12 +172,12 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
 
         $basketFormat = $this->_config->getBasketFormat();
 
-        if ($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML || $force_xml == true) {
+        if ($basketFormat == Config::BASKETFORMAT_XML || $force_xml == true) {
             $_basket = $this->_getBasketXml($quote);
             if ($this->_validateBasketXml($_basket)) {
                 $data['BasketXML'] = $_basket;
             }
-        } elseif ($basketFormat == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50) {
+        } elseif ($basketFormat == Config::BASKETFORMAT_SAGE50) {
             $data['Basket'] = $this->_getBasketSage50($quote);
         }
 
@@ -194,7 +190,6 @@ class Request extends \Magento\Framework\App\Helper\AbstractHelper
      */
     private function _getBasketSage50($quote)
     {
-
         $BASKET_SEP = ':';
         $BASKET_SEP_ESCAPE = '-';
 
