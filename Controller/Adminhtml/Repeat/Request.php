@@ -201,7 +201,8 @@ class Request extends \Magento\Backend\App\AbstractAction
         $data['ReferrerID']   = $this->_requestHelper->getReferrerId();
 
         //populate payment amount information
-        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
+        $amount = $this->_requestHelper->populatePaymentAmountAndCurrency($this->_quote);
+        $data = array_merge($data, $amount);
 
         //populate address information
         $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
