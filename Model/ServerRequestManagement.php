@@ -107,7 +107,6 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         $this->_postApi           = $postApi;
         $this->_checkoutSession   = $checkoutSession;
         $this->_customerSession   = $customerSession;
-        $this->_quote             = $this->_checkoutSession->getQuote();
         $this->_suiteLogger       = $suiteLogger;
         $this->_checkoutHelper    = $checkoutHelper;
         $this->_requestHelper     = $requestHelper;
@@ -133,6 +132,8 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         try {
             //prepare quote
             $quote = $this->getQuoteById($cartId);
+            $this->_quote = $quote;
+
             $quote->collectTotals();
             $quote->reserveOrderId();
 
