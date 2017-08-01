@@ -205,7 +205,7 @@ class FormRequestManagement implements FormManagementInterface
         $data['EmailMessage'] = substr($this->_config->getFormEmailMessage(), 0, 7500);
 
         //populate payment amount information
-        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
+        $data = array_merge($data, $this->_requestHelper->populatePaymentAmountAndCurrency($this->_quote));
 
         $data = $this->_requestHelper->unsetBasketXMLIfAmountsDontMatch($data);
 
