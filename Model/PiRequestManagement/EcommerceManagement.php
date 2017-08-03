@@ -65,7 +65,7 @@ class EcommerceManagement extends RequestManagement
         $this->processPayment();
 
         //save order with pending payment
-        $order = $this->getCheckoutHelper()->placeOrder();
+        $order = $this->getCheckoutHelper()->placeOrder($this->getQuote());
 
         if ($order !== null) {
             //set pre-saved order flag in checkout session
