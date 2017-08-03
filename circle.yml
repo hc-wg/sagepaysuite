@@ -1,12 +1,17 @@
 machine:
+  services:
+    - redis
   php:
-    version: 5.6.14
+    version: 7.0.7
   environment:
-    MAGE_VERSION: 2.1.0
+    MAGE_VERSION: 2.1.6
     MARKETPLACE_EQP_VERSION: 1.0.5
     DB_URL: 127.0.0.1
     DB_NAME: circle_test
     DB_USER: ubuntu
+
+  hosts:
+    mage2.dev: 127.0.0.1
 
 dependencies:
   pre:
@@ -19,6 +24,9 @@ dependencies:
     - wget https://github.com/magento/marketplace-eqp/archive/$MARKETPLACE_EQP_VERSION.zip
     - unzip -qq $MAGE_VERSION.zip
     - unzip -qq $MARKETPLACE_EQP_VERSION.zip
+    - echo "<?php return ['db-host'=>'127.0.0.1','db-user'=>'ubuntu','db-password'=>'','db-name'=>'circle_test','db-prefix'=>'int_','backend-frontname' => 'backend','admin-user' => 'admin',    'admin-password' => 'admin123',    'admin-email' => 'user@example.com', 'admin-firstname' => 'Admin', 'admin-lastname' => 'Admin'];" > ../magento2-$MAGE_VERSION/dev/tests/integration/etc/install-config-mysql.php
+    - echo "<?php return ['language' => 'en_US', 'timezone' => 'America/Los_Angeles', 'currency' => 'USD', 'db-host'=>'127.0.0.1','db-user'=>'ubuntu','db-password'=>'','db-name'=>'circle_test','db-prefix'=>'int_','backend-frontname' => 'backend', 'base_url' => 'http://mage2.dev:8080/', 'use-secure' => '0', 'use-rewrites' => '0', 'admin-user' => 'admin',    'admin-password' => 'admin123', 'admin-email' => 'user@example.com',    'admin-firstname' => 'Admin','admin-lastname' => 'Admin', 'admin-use-security-key' => '0', 'sales-order-increment-prefix' => time(), 'session-save' => 'db', 'cleanup-database' => true,];" > ../magento2-$MAGE_VERSION/dev/tests/api-functional/config/install-config-mysql.php
+    - echo "<?php return [];" > ../magento2-$MAGE_VERSION/dev/tests/api-functional/config/config-global.php
     - mkdir -p magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite
     - cp -r Api Block Controller Helper Model Observer Setup Test etc view i18n registration.php magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite
     - cd magento2-$MAGE_VERSION && wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
