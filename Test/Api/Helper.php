@@ -1,6 +1,6 @@
 <?php
 
-namespace Ebizmarts\SagePaySuite\Test\API;
+namespace Ebizmarts\SagePaySuite\Test\Api;
 
 use Magento\TestFramework\Helper\Bootstrap;
 
