@@ -4,6 +4,7 @@ machine:
   php:
     version: 7.0.7
   environment:
+    MAGE_ROOT: /home/ubuntu/
     MAGE_VERSION: 2.1.6
     MARKETPLACE_EQP_VERSION: 1.0.5
     DB_URL: 127.0.0.1
