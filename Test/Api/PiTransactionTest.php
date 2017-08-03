@@ -25,6 +25,9 @@ class PiTransactionTest extends WebapiAbstract
     /** @var  \Ebizmarts\SagePaySuite\Test\API\Helper */
     private $helper;
 
+    /** @var \Magento\Framework\HTTP\Adapter\Curl */
+    private $curl;
+
     protected function setUp()
     {
         $this->config = Bootstrap::getObjectManager()->create(
@@ -34,6 +37,7 @@ class PiTransactionTest extends WebapiAbstract
         $this->objectManager = Bootstrap::getObjectManager();
 
         $this->helper = $this->objectManager->create("Ebizmarts\SagePaySuite\Test\API\Helper");
+        $this->curl = $this->objectManager->create("Magento\Framework\HTTP\Adapter\Curl");
     }
 
     /**
@@ -60,8 +64,6 @@ class PiTransactionTest extends WebapiAbstract
      */
     private function getCardIdentifier($merchantSessionKey)
     {
-        $curl = curl_init();
-
         $payload = [
             "cardDetails" => [
                 "cardholderName" => "Owner",
@@ -71,21 +73,16 @@ class PiTransactionTest extends WebapiAbstract
             ]
         ];
 
-        curl_setopt_array($curl, array(
-            CURLOPT_URL            => "https://pi-test.sagepay.com/api/v1/card-identifiers",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CUSTOMREQUEST  => "POST",
-            CURLOPT_POSTFIELDS     => json_encode($payload),
-            CURLOPT_HTTPHEADER     => array(
-                "Authorization: Bearer $merchantSessionKey",
-                "Cache-Control: no-cache",
-                "Content-Type: application/json"
-            ),
-        ));
+        $this->curl->write(
+            \Zend_Http_Client::POST,
+            "https://pi-test.sagepay.com/api/v1/card-identifiers",
+            '1.0',
+            ["Content-type: application/json", "Authorization: Bearer $merchantSessionKey", "Cache-Control: no-cache"],
+            json_encode($payload)
+        );
 
-        $cardIdentifierResponse = curl_exec($curl);
-        $err                    = curl_error($curl);
-        curl_close($curl);
+        $cardIdentifierResponseBody = $this->curl->read();
+        $cardIdentifierResponse = \Zend_Http_Response::extractBody($cardIdentifierResponseBody);
 
         $this->assertJson($cardIdentifierResponse);
 
