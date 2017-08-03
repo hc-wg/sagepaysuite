@@ -60,10 +60,7 @@ class ServerRegisterTransactionTest extends WebapiAbstract
 
         $cartId = $quote->getId();
 
-        $quoteIdMask = $this->objectManager
-            ->create('Magento\Quote\Model\QuoteIdMaskFactory')
-            ->create()
-            ->load($cartId, 'quote_id');
+        $quoteIdMask = $this->quoteMaskIdFromCartId($cartId);
 
         $response = $this->_webApiCall($serviceInfo, [
             'cartId'     => $quoteIdMask->getMaskedId(),
@@ -82,6 +79,7 @@ class ServerRegisterTransactionTest extends WebapiAbstract
         $this->checkSagePayResponseDataIsCorrect($response);
 
         $this->checkOrderStatusIsPendingPayment();
+
     }
 
     private function setPaymentActionAsPayment()
@@ -143,5 +141,17 @@ class ServerRegisterTransactionTest extends WebapiAbstract
         /** @var \Magento\Sales\Model\Order $order */
         $order = $this->objectManager->create('Magento\Sales\Model\Order')->load('test_order_1', 'increment_id');
         $this->assertEquals("pending_payment", $order->getStatus());
+    }
+
+    /**
+     * @param $cartId
+     * @return mixed
+     */
+    private function quoteMaskIdFromCartId($cartId)
+    {
+        $quoteIdMask = $this->objectManager
+            ->create('Magento\Quote\Model\QuoteIdMaskFactory')->create()->load($cartId, 'quote_id');
+
+        return $quoteIdMask;
     }
 }
