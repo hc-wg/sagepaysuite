@@ -43,7 +43,7 @@ dependencies:
     - cd ../magento2-$MAGE_VERSION && wget https://gist.githubusercontent.com/centerax/f1ae700530a0112140011d846014eab9/raw/f5b8e32548b30bd1595671230657195a0b7bedd1/env.php -O app/etc/env.php
     - cd ../magento2-$MAGE_VERSION && bin/magento setup:upgrade
   post:
-    - sudo cp mage2.dev.conf /etc/apache2/sites-available
+    - sudo wget https://gist.githubusercontent.com/centerax/80a1ef3a33b18aa998ebd9657a6057d4/raw/ef0674096f9bd37e79d9b4d60c43f541ab167888/mage2.dev.conf -O /etc/apache2/sites-available/mage2.dev.conf
     - sudo ln -s /etc/apache2/sites-available/mage2.dev.conf /etc/apache2/sites-enabled/mage2.dev.conf
     - sudo rm /etc/apache2/mods-enabled/php5.load
     - sudo service apache2 restart
