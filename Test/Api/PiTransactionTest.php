@@ -36,7 +36,7 @@ class PiTransactionTest extends WebapiAbstract
 
         $this->objectManager = Bootstrap::getObjectManager();
 
-        $this->helper = $this->objectManager->create("Ebizmarts\SagePaySuite\Test\API\Helper");
+        $this->helper = $this->objectManager->create("Ebizmarts\SagePaySuite\Test\Api\Helper");
         $this->curl = $this->objectManager->create("Magento\Framework\HTTP\Adapter\Curl");
     }
 
@@ -54,8 +54,24 @@ class PiTransactionTest extends WebapiAbstract
 
         $response = $this->payAndCreateOrder($cardIdentifier, $merchantSessionKey);
 
-        $this->assertEquals("Ok", $response["status"]);
-        $this->arrayHasKey("transaction_id");
+        $transactionDetails = $this->helper->getTransactionDetails($response['transaction_id']);
+
+        $this->assertEquals("USD", $transactionDetails->currency);
+    }
+
+    /**
+     * @magentoApiDataFixture Ebizmarts/SagePaySuite/_files/quote_with_sagepaysuitepi_payment.php
+     */
+    public function testPiCompleteTransactionCurrencyOptions()
+    {
+        $this->helper->savePiKey();
+        $this->helper->savePiPassword();
+
+        $merchantSessionKey = $this->obtainMerchantSessionKey();
+
+        $cardIdentifier = $this->getCardIdentifier($merchantSessionKey);
+
+        $response = $this->payAndCreateOrder($cardIdentifier, $merchantSessionKey);
 
         $transactionDetails = $this->helper->getTransactionDetails($response['transaction_id']);
 
@@ -147,6 +163,9 @@ class PiTransactionTest extends WebapiAbstract
         ];
 
         $response = $this->_webApiCall($serviceInfo, $body);
+
+        $this->assertEquals("Ok", $response["status"]);
+        $this->arrayHasKey("transaction_id");
 
         return $response;
     }

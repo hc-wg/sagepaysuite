@@ -24,7 +24,7 @@ class MerchantSessionKeyTest extends WebapiAbstract
             'Magento\Config\Model\Config'
         );
 
-        $this->helper = $this->objectManager->create("Ebizmarts\SagePaySuite\Test\API\Helper");
+        $this->helper = $this->objectManager->create("Ebizmarts\SagePaySuite\Test\Api\Helper");
     }
 
     public function testMskCall()
