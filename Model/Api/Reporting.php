@@ -6,20 +6,26 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
+use Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterfaceFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterfaceFactory;
+use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\ObjectManager\ObjectManager;
 
 /**
  * Sage Pay Reporting API parent class
  */
 class Reporting
 {
+    const DEFAULT_SUBNET_MASK = "255.255.255.255";
+
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
+     * @var ApiExceptionFactory
      */
     private $_apiExceptionFactory;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
+     * @var Config
      */
     private $_config;
 
@@ -29,7 +35,7 @@ class Reporting
     private $_suiteLogger;
 
     /**
-     * @var \Magento\Framework\ObjectManager\ObjectManager
+     * @var ObjectManager
      */
     private $objectManager;
 
@@ -45,20 +51,20 @@ class Reporting
     /**
      * Reporting constructor.
      * @param ApiExceptionFactory $apiExceptionFactory
-     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param Config $config
      * @param Logger $suiteLogger
-     * @param \Magento\Framework\ObjectManager\ObjectManager $objectManager
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterfaceFactory $fraudResponse
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterfaceFactory $fraudScreenRule
+     * @param ObjectManager $objectManager
+     * @param FraudScreenResponseInterfaceFactory $fraudResponse
+     * @param FraudScreenRuleInterfaceFactory $fraudScreenRule
      */
     public function __construct(
-        \Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory $httpTextFactory,
-        \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
+        HttpTextFactory $httpTextFactory,
+        ApiExceptionFactory $apiExceptionFactory,
+        Config $config,
         Logger $suiteLogger,
-        \Magento\Framework\ObjectManager\ObjectManager $objectManager,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterfaceFactory $fraudResponse,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterfaceFactory $fraudScreenRule
+        ObjectManager $objectManager,
+        FraudScreenResponseInterfaceFactory $fraudResponse,
+        FraudScreenRuleInterfaceFactory $fraudScreenRule
     ) {
 
         $this->_config              = $config;
@@ -71,14 +77,14 @@ class Reporting
     }
 
     /**
-     * Returns url for each enviroment according the configuration.
+     * Returns url for each environment according the configuration.
      */
     private function _getServiceUrl()
     {
-        if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_LIVE;
+        if ($this->_config->getMode() == Config::MODE_LIVE) {
+            return Config::URL_REPORTING_API_LIVE;
         } else {
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_TEST;
+            return Config::URL_REPORTING_API_TEST;
         }
     }
 
@@ -86,6 +92,7 @@ class Reporting
      * Creates the connection's signature.
      *
      * @param string $command Param request to the API.
+     * @param string $params
      * @return string MD5 hash signature.
      */
     private function _getXmlSignature($command, $params)
@@ -175,6 +182,14 @@ class Reporting
     {
         $params = '<vpstxid>' . $vpstxid . '</vpstxid>';
         $xml = $this->_createXml('getTransactionDetail', $params);
+        return $this->_handleApiErrors($this->_executeRequest($xml));
+    }
+
+    public function whitelistIpAddress($ipAddress)
+    {
+        $params = "<validips><ipaddress><address>$ipAddress</address>";
+        $params .= "<mask>".self::DEFAULT_SUBNET_MASK."</mask></ipaddress></validips>";
+        $xml = $this->_createXml('addValidIPs', $params);
         return $this->_handleApiErrors($this->_executeRequest($xml));
     }
 
