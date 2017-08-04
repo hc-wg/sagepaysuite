@@ -60,13 +60,13 @@ class Helper
         $model->save();
     }
 
-    private function saveReportingApiUser()
+    public function saveReportingApiUser()
     {
         $this->config->setDataByPath("sagepaysuite/global/reporting_user", self::TEST_REPORTING_USERNAME);
         $this->config->save();
     }
 
-    private function saveReportingApiPassword()
+    public function saveReportingApiPassword()
     {
         $model = $this->configEncrypted;
         $model->setPath('sagepaysuite/global/reporting_password');
