@@ -17,7 +17,7 @@ machine:
 dependencies:
   pre:
     - echo "memory_limit = 768M" > /opt/circleci/php/7.0.7/etc/conf.d/memory.ini
-    - echo "always_populate_raw_post_data=-1" >> /opt/circleci/php/7.0.7/etc/conf.d/memory.ini
+    - echo "always_populate_raw_post_data = -1" > /opt/circleci/php/7.0.7/etc/conf.d/deprecated.ini
     - sudo apt-add-repository -y 'deb http://ppa.launchpad.net/ondrej/mysql-experimental/ubuntu precise main'
     - sudo apt-get update; sudo DEBIAN_FRONTEND=noninteractive apt-get install -y php5-curl apache2-mpm-prefork
   override:
