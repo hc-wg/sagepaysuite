@@ -17,6 +17,7 @@ machine:
 dependencies:
   pre:
     - echo "memory_limit = 768M" > /opt/circleci/php/7.0.7/etc/conf.d/memory.ini
+    - echo "always_populate_raw_post_data=-1" > /opt/circleci/php/7.0.7/etc/conf.d/memory.ini
     - sudo apt-add-repository -y 'deb http://ppa.launchpad.net/ondrej/mysql-experimental/ubuntu precise main'
     - sudo apt-get update; sudo DEBIAN_FRONTEND=noninteractive apt-get install -y php5-curl apache2-mpm-prefork
   override:
@@ -38,6 +39,7 @@ dependencies:
     - cd ../magento2-$MAGE_VERSION && wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
     - cp phpunit_config.xml ../magento2-$MAGE_VERSION/dev/tests/unit/
     - cp phpunit_config_functional.xml ../magento2-$MAGE_VERSION/dev/tests/api-functional/phpunit.xml
+    #- cp phpunit_config_integration.xml ../magento2-$MAGE_VERSION/dev/tests/integration/phpunit.xml
     - mkdir -p ../magento2-$MAGE_VERSION/dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
     - cp Test/Api/_files/* ../magento2-$MAGE_VERSION/dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
     - cd ../magento2-$MAGE_VERSION && composer install --prefer-source --no-interaction
@@ -57,5 +59,6 @@ test:
     - cd ../magento2-$MAGE_VERSION && bin/magento setup:di:compile
     - cd ../magento2-$MAGE_VERSION && chmod -R 777 var/log
     - /opt/circleci/php/7.0.7/bin/php ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c $MAGE_ROOT/magento2-$MAGE_VERSION/dev/tests/api-functional/phpunit.xml
+    #- /opt/circleci/php/7.0.7/bin/php ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c $MAGE_ROOT/magento2-$MAGE_VERSION/dev/tests/integration/phpunit.xml
     - ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c ../magento2-$MAGE_VERSION/dev/tests/unit/phpunit_config.xml --coverage-text
     - cd ../magento2-$MAGE_VERSION && ../magento2-$MAGE_VERSION/phpcs.phar --config-set installed_paths $MAGE_ROOT/marketplace-eqp-$MARKETPLACE_EQP_VERSION && ../magento2-$MAGE_VERSION/phpcs.phar -n --standard="MEQP2" ../magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite;
