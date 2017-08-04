@@ -24,10 +24,22 @@ class ServerRegisterTransactionTest extends WebapiAbstract
     /** @var \Magento\Config\Model\Config */
     private $config;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Api\Reporting */
+    private $reporting;
+
+    /** @var \Magento\Framework\HTTP\Adapter\Curl */
+    private $curl;
+
     protected function setUp()
     {
-        $this->config = Bootstrap::getObjectManager()->create('Magento\Config\Model\Config');
         $this->objectManager = Bootstrap::getObjectManager();
+        $this->config = $this->objectManager->create('Magento\Config\Model\Config');
+
+        $this->curl = $this->objectManager->create("Magento\Framework\HTTP\Adapter\Curl");
+
+        /** @var \Ebizmarts\SagePaySuite\Model\Api\Reporting */
+        $this->reporting = $this->objectManager->create('Ebizmarts\SagePaySuite\Model\Api\Reporting');
+        $this->reporting->whitelistIpAddress($this->getCurrentIpAddress());
 
         $appConfig = $this->objectManager->get(Config::class);
         $appConfig->clean();
@@ -154,4 +166,25 @@ class ServerRegisterTransactionTest extends WebapiAbstract
 
         return $quoteIdMask;
     }
+
+    private function getCurrentIpAddress()
+    {
+        /** @var \Magento\Framework\HTTP\Adapter\Curl */
+        $this->curl->write(
+            \Zend_Http_Client::GET,
+            "http://checkip.amazonaws.com/"
+        );
+
+        $ipAddressResponse = $this->curl->read();
+        $ipAddress = \Zend_Http_Response::extractBody($ipAddressResponse);
+
+        $ip = array_map(array($this, "padIpAddress"), explode('.', $ipAddress));
+        return trim(implode(".", $ip));
+    }
+
+    public function padIpAddress($n)
+    {
+        return str_pad($n, 3, "0", STR_PAD_LEFT);
+    }
+
 }
