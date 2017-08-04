@@ -57,7 +57,7 @@ test:
   override:
     - cd ../magento2-$MAGE_VERSION && ./phpcs.phar --config-set installed_paths coding-standard-2.0/ && ./phpcs.phar -n --standard="EcgM2" app/code/Ebizmarts/SagePaySuite;
     - cd ../magento2-$MAGE_VERSION && bin/magento setup:di:compile
-    - cd ../magento2-$MAGE_VERSION && chmod -R 777 var/log
+    - cd ../magento2-$MAGE_VERSION && touch var/log/SagePaySuite/Request.log && chmod -R 777 var/log
     - /opt/circleci/php/5.6.22/bin/php ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c $MAGE_ROOT/magento2-$MAGE_VERSION/dev/tests/api-functional/phpunit.xml
     #- /opt/circleci/php/5.6.22/bin/php ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c $MAGE_ROOT/magento2-$MAGE_VERSION/dev/tests/integration/phpunit.xml
     - ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c ../magento2-$MAGE_VERSION/dev/tests/unit/phpunit_config.xml --coverage-text
