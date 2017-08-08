@@ -398,17 +398,19 @@ class PIRest
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard $card */
             $card = $this->cardResultFactory->create();
 
-            if (isset($captureResult->paymentMethod->card->cardIdentifier)) {
-                $card->setCardIdentifier($captureResult->paymentMethod->card->cardIdentifier);
-            }
+            if (isset($captureResult->paymentMethod)) {
+                if (isset($captureResult->paymentMethod->card->cardIdentifier)) {
+                    $card->setCardIdentifier($captureResult->paymentMethod->card->cardIdentifier);
+                }
 
-            if (isset($captureResult->paymentMethod->card->reusable)) {
-                $card->setIsReusable($captureResult->paymentMethod->card->reusable);
-            }
+                if (isset($captureResult->paymentMethod->card->reusable)) {
+                    $card->setIsReusable($captureResult->paymentMethod->card->reusable);
+                }
 
-            $card->setCardType($captureResult->paymentMethod->card->cardType);
-            $card->setLastFourDigits($captureResult->paymentMethod->card->lastFourDigits);
-            $card->setExpiryDate($captureResult->paymentMethod->card->expiryDate);
+                $card->setCardType($captureResult->paymentMethod->card->cardType);
+                $card->setLastFourDigits($captureResult->paymentMethod->card->lastFourDigits);
+                $card->setExpiryDate($captureResult->paymentMethod->card->expiryDate);
+            }
 
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod $paymentMethod */
             $paymentMethod = $this->paymentMethodResultFactory->create();
