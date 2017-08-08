@@ -166,6 +166,7 @@ class PiTransactionTest extends WebapiAbstract
 
         $this->assertEquals("Ok", $response["status"]);
         $this->arrayHasKey("transaction_id");
+        $this->assertEmpty($response["error_message"]);
 
         return $response;
     }
