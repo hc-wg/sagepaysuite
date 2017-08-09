@@ -1,6 +1,6 @@
 <?php
 
-namespace Ebizmarts\SagePaySuite\Test\Integration;
+namespace Ebizmarts\SagePaySuite\Test\Api;
 
 use Magento\Framework\Webapi\Rest\Request;
 use Magento\TestFramework\Helper\Bootstrap;
@@ -22,7 +22,7 @@ class PiTransactionTest extends WebapiAbstract
     /** @var \Magento\Config\Model\Config */
     private $config;
 
-    /** @var  \Ebizmarts\SagePaySuite\Test\API\Helper */
+    /** @var  \Ebizmarts\SagePaySuite\Test\Api\Helper */
     private $helper;
 
     /** @var \Magento\Framework\HTTP\Adapter\Curl */

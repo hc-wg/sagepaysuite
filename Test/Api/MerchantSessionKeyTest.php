@@ -1,6 +1,6 @@
 <?php
 
-namespace Ebizmarts\SagePaySuite\Test\Integration;
+namespace Ebizmarts\SagePaySuite\Test\Api;
 
 use Magento\Framework\Webapi\Rest\Request;
 use Magento\TestFramework\Helper\Bootstrap;
@@ -13,7 +13,7 @@ class MerchantSessionKeyTest extends WebapiAbstract
     /** @var \Magento\Framework\ObjectManagerInterface */
     private $objectManager;
 
-    /** @var  \Ebizmarts\SagePaySuite\Test\API\Helper */
+    /** @var  \Ebizmarts\SagePaySuite\Test\Api\Helper */
     private $helper;
 
     protected function setUp()

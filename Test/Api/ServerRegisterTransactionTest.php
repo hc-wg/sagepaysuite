@@ -6,8 +6,7 @@
  * Time: 11:43 AM
  */
 
-namespace Ebizmarts\SagePaySuite\Test\Integration;
-
+namespace Ebizmarts\SagePaySuite\Test\Api;
 
 use Magento\Framework\App\Config;
 use Magento\Framework\Webapi\Rest\Request;
