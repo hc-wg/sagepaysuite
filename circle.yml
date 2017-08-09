@@ -43,7 +43,8 @@ dependencies:
     - mkdir -p ../magento2-$MAGE_VERSION/dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
     - cp Test/Api/_files/* ../magento2-$MAGE_VERSION/dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
     - cd ../magento2-$MAGE_VERSION && composer install --prefer-source --no-interaction
-    - cd ../magento2-$MAGE_VERSION && bin/magento setup:install --base-url=http://mage2.dev:8080/ --db-host=$DB_URL --db-name=$DB_NAME --db-user=$DB_USER --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1 --cleanup-database --use-sample-data
+    #- cd ../magento2-$MAGE_VERSION && bin/magento setup:install --base-url=http://mage2.dev:8080/ --db-host=$DB_URL --db-name=$DB_NAME --db-user=$DB_USER --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1 --cleanup-database --use-sample-data
+    - cd ../magento2-$MAGE_VERSION && bin/magento setup:install --base-url=http://mage2.dev:8080/ --db-host=$DB_URL --db-name=$DB_NAME --db-user=$DB_USER --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1 --cleanup-database
     - rm ../magento2-$MAGE_VERSION/app/etc/env.php
     - cd ../magento2-$MAGE_VERSION && wget https://gist.githubusercontent.com/centerax/f1ae700530a0112140011d846014eab9/raw/f5b8e32548b30bd1595671230657195a0b7bedd1/env.php -O app/etc/env.php
     - cd ../magento2-$MAGE_VERSION && bin/magento setup:upgrade
