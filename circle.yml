@@ -5,7 +5,7 @@ machine:
     version: 7.0.7
   environment:
     MAGE_ROOT: /home/ubuntu/
-    MAGE_VERSION: 2.1.6
+    MAGE_VERSION: 2.1.8
     MARKETPLACE_EQP_VERSION: 1.0.5
     DB_URL: 127.0.0.1
     DB_NAME: circle_test
@@ -21,8 +21,8 @@ dependencies:
     - sudo apt-add-repository -y 'deb http://ppa.launchpad.net/ondrej/mysql-experimental/ubuntu precise main'
     - sudo apt-get update; sudo DEBIAN_FRONTEND=noninteractive apt-get install -y php5-curl apache2-mpm-prefork
   override:
-    - cd .. && wget http://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.1.6_sample_data.tar.gz
-    - cd .. && mkdir magento2-$MAGE_VERSION && cd magento2-$MAGE_VERSION && tar xzf ../Magento-EE-2.1.6_sample_data.tar.gz
+    - cd .. && wget http://ebizmartsbackup.s3.amazonaws.com/Magento-EE-$MAGE_VERSION.tar.gz
+    - cd .. && mkdir magento2-$MAGE_VERSION && cd magento2-$MAGE_VERSION && tar xzf ../Magento-EE-$MAGE_VERSION.tar.gz
     - cd ../magento2-$MAGE_VERSION && wget http://ebizmartsbackup.s3.amazonaws.com/phpunit-4.8.27.phar
     - chmod +x ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar
     - cd ../magento2-$MAGE_VERSION && wget https://github.com/squizlabs/PHP_CodeSniffer/releases/download/2.7.1/phpcs.phar
