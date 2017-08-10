@@ -46,8 +46,8 @@ dependencies:
     - rm ../magento2-$MAGE_VERSION/app/etc/env.php
     - cd ../magento2-$MAGE_VERSION && wget https://gist.githubusercontent.com/centerax/f1ae700530a0112140011d846014eab9/raw/f5b8e32548b30bd1595671230657195a0b7bedd1/env.php -O app/etc/env.php
     - cd ../magento2-$MAGE_VERSION && bin/magento setup:upgrade
-    - echo "\r\n" >> ../magento2-$MAGE_VERSION/.user.ini
-    - echo "always_populate_raw_post_data = -1" >> ../magento2-$MAGE_VERSION/.user.ini
+    - echo " " >> ../magento2-$MAGE_VERSION/.user.ini
+    - echo "always_populate_raw_post_data = 0" >> ../magento2-$MAGE_VERSION/.user.ini
   post:
     -
     - sudo wget https://gist.githubusercontent.com/centerax/80a1ef3a33b18aa998ebd9657a6057d4/raw/ef0674096f9bd37e79d9b4d60c43f541ab167888/mage2.dev.conf -O /etc/apache2/sites-available/mage2.dev.conf
@@ -59,9 +59,9 @@ test:
   override:
     - cat ../magento2-$MAGE_VERSION/.user.ini
     - cd ../magento2-$MAGE_VERSION && bin/magento setup:di:compile
+    - /opt/circleci/php/7.0.7/bin/php ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c $MAGE_ROOT/magento2-$MAGE_VERSION/dev/tests/api-functional/phpunit.xml
     - cd ../magento2-$MAGE_VERSION && ./phpcs.phar --config-set installed_paths coding-standard-2.0/ && ./phpcs.phar -n --standard="EcgM2" app/code/Ebizmarts/SagePaySuite;
     - cd ../magento2-$MAGE_VERSION && ../magento2-$MAGE_VERSION/phpcs.phar --config-set installed_paths $MAGE_ROOT/marketplace-eqp-$MARKETPLACE_EQP_VERSION && ../magento2-$MAGE_VERSION/phpcs.phar -n --standard="MEQP2" ../magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite;
     - cd ../magento2-$MAGE_VERSION && mkdir var/log/SagePaySuite && touch var/log/SagePaySuite/Request.log && chmod -R 777 var/log
     - ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c ../magento2-$MAGE_VERSION/dev/tests/unit/phpunit_config.xml --coverage-text
-    - /opt/circleci/php/7.0.7/bin/php -dalways_populate_raw_post_data=-1 ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c $MAGE_ROOT/magento2-$MAGE_VERSION/dev/tests/api-functional/phpunit.xml
     #- /opt/circleci/php/7.0.7/bin/php ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c $MAGE_ROOT/magento2-$MAGE_VERSION/dev/tests/integration/phpunit.xml
