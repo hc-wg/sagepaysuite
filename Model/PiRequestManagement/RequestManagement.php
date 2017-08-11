@@ -2,6 +2,9 @@
 
 namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 
+use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Framework\Validator\Exception as ValidatorException;
+
 abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderPlaceInterface
 {
     /** @var \Ebizmarts\SagePaySuite\Model\Api\PIRest */
@@ -111,21 +114,16 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
     }
 
     /**
-     * @throws \Magento\Framework\Validator\Exception
+     * @throws Exception
      */
     public function processPayment()
     {
-        if ($this->getPayResult()->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS ||
-            $this->getPayResult()->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS
-        ) {
-            //set payment info for save order
-            $payment = $this->getPayment();
+        if ($this->isSuccessOrThreedAuth()) {
+            $this->saveAdditionalPaymentInformation();
 
-            $this->saveAdditionalPaymentInformation($payment);
-
-            $this->saveCreditCardInformationInPayment($payment);
+            $this->saveCreditCardInformationInPayment();
         } else {
-            throw new \Magento\Framework\Validator\Exception(
+            throw new ValidatorException(
                 __('Invalid Sage Pay response, please use another payment method.')
             );
         }
@@ -133,7 +131,7 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
 
     private function saveAdditionalPaymentInformation()
     {
-        $this->getPayment()->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
+        $this->getPayment()->setMethod(Config::METHOD_PI);
         $this->getPayment()->setTransactionId($this->getPayResult()->getTransactionId());
         $this->getPayment()->setAdditionalInformation('statusCode', $this->getPayResult()->getStatusCode());
         $this->getPayment()->setAdditionalInformation('statusDetail', $this->getPayResult()->getStatusDetail());
@@ -229,5 +227,13 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
     public function getRequestData()
     {
         return $this->requestData;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isSuccessOrThreedAuth()
+    {
+        return $this->getPayResult()->getStatusCode() == Config::SUCCESS_STATUS || $this->getPayResult()->getStatusCode() == Config::AUTH3D_REQUIRED_STATUS;
     }
 }
