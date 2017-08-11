@@ -821,9 +821,14 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             )
             ->willReturn($data["currency_setting"]);
 
+        $quoteMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote')
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $this->assertEquals(
             $data["expects"],
-            $this->configModel->getQuoteCurrencyCode()
+            $this->configModel->getQuoteCurrencyCode($quoteMock)
         );
     }
 
