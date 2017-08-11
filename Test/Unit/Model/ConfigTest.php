@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
 use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Store\Model\ScopeInterface;
 
 class ConfigTest extends \PHPUnit_Framework_TestCase
 {
@@ -75,7 +76,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/sagepaysuiteform/active_moto',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(true);
@@ -94,7 +95,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM . '/active',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(true);
@@ -121,7 +122,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/sagepaysuiteform/send_email',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(1);
@@ -137,7 +138,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/sagepaysuitepaypal/force_xml',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(1);
@@ -153,7 +154,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/sagepaysuiteform/vendor_email',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn("me@example.com:me+1@example.com");
@@ -169,7 +170,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/sagepaysuiteform/email_message',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.");
@@ -191,7 +192,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/' . $data["code"] . '/payment_action',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn($data["payment_action"]);
@@ -233,7 +234,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/' . $data["code"] . '/payment_action',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn($data["payment_action"]);
@@ -277,7 +278,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/global/vendorname',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn('testebizmarts');
@@ -294,7 +295,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/global/license',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn('f678dfs786fds786dfs876dfs');
@@ -311,7 +312,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 \Magento\Store\Model\Store::XML_PATH_UNSECURE_BASE_URL,
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn('http://example.com');
@@ -328,7 +329,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/global/mode',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn('live');
@@ -345,7 +346,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/global/token',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(true);
@@ -387,7 +388,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM . '/encrypted_password',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn('345jh345hj45');
@@ -404,7 +405,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/global/reporting_user',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn('ebizmarts');
@@ -421,7 +422,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/global/reporting_password',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn('fds678dsf68ds');
@@ -440,7 +441,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI . '/password',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn('fd67sf8ds6f78ds6f78ds');
@@ -459,7 +460,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI . '/key',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn('fd7s6f87ds6f78ds6f78dsf8ds76f7ds8f687dsf8');
@@ -478,7 +479,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/threedsecure',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(Config::MODE_3D_DISABLE);
@@ -497,7 +498,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/threedsecure',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn('UseMSPSetting');
@@ -516,7 +517,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/threedsecure',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(Config::MODE_3D_DEFAULT);
@@ -535,7 +536,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/threedsecure',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(Config::MODE_3D_FORCE);
@@ -554,7 +555,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/threedsecure',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(Config::MODE_3D_DISABLE);
@@ -573,7 +574,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/threedsecure',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(Config::MODE_3D_IGNORE);
@@ -592,7 +593,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/avscvc',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(Config::MODE_AVSCVC_DISABLE);
@@ -611,7 +612,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/avscvc',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(Config::MODE_AVSCVC_DEFAULT);
@@ -630,7 +631,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/avscvc',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(Config::MODE_AVSCVC_FORCE);
@@ -649,7 +650,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/avscvc',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(Config::MODE_AVSCVC_DISABLE);
@@ -668,7 +669,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/avscvc',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(Config::MODE_AVSCVC_IGNORE);
@@ -685,7 +686,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/basket_format',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn('Sage50');
@@ -704,7 +705,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/billing_agreement',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(false);
@@ -721,7 +722,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/fraud_autoinvoice',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(true);
@@ -738,7 +739,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/fraud_notify',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn('medium_risk');
@@ -757,7 +758,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/cctypes',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn("VI,MC");
@@ -776,7 +777,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/allowspecific',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(0);
@@ -795,7 +796,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/specificcountry',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn("UY,US");
@@ -815,7 +816,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/global/currency',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn($data["currency_setting"]);
@@ -856,7 +857,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/global/currency',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(Config::CURRENCY_BASE);
@@ -873,7 +874,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ->method('getValue')
             ->with(
                 'sagepaysuite/advanced/giftaid',
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                ScopeInterface::SCOPE_STORE,
                 null
             )
             ->willReturn(true);
