@@ -143,7 +143,7 @@ define([
                                     }
                                 }
                             }
-                        }); //.form();
+                        });
 
                     document.getElementById('submit_dropin_payment').style.display = "block";
                 }
