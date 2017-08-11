@@ -822,7 +822,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             $data["expects"],
-            $this->configModel->getCurrencyCode()
+            $this->configModel->getQuoteCurrencyCode()
         );
     }
 

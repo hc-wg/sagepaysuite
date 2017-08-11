@@ -67,6 +67,18 @@ class PiTransactionTest extends WebapiAbstract
         $this->helper->savePiKey();
         $this->helper->savePiPassword();
 
+        $this->config->setDataByPath("sagepaysuite/global/currency", \Ebizmarts\SagePaySuite\Model\Config::CURRENCY_BASE);
+        $this->config->save();
+
+        $this->config->setDataByPath("currency/options/base", "GBP");
+        $this->config->save();
+
+        $this->config->setDataByPath("currency/options/default", "USD");
+        $this->config->save();
+
+        $this->config->setDataByPath("currency/options/allow", "GBP,EUR,USD");
+        $this->config->save();
+
         $merchantSessionKey = $this->obtainMerchantSessionKey();
 
         $cardIdentifier = $this->getCardIdentifier($merchantSessionKey);
@@ -75,7 +87,7 @@ class PiTransactionTest extends WebapiAbstract
 
         $transactionDetails = $this->helper->getTransactionDetails($response['transaction_id']);
 
-        $this->assertEquals("USD", $transactionDetails->currency);
+        $this->assertEquals("GBP", $transactionDetails->currency);
     }
 
     /**
