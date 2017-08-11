@@ -21,14 +21,14 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    private $_configMock;
+    private $configMock;
 
     private $objectManagerMock;
 
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
-        $this->_configMock = $this
+        $this->configMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
             ->disableOriginalConstructor()
             ->getMock();
@@ -41,7 +41,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->objectManagerHelper = new ObjectManager($this);
         $this->requestHelper = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Request',
-            ['config' => $this->_configMock, 'objectManager' => $this->objectManagerMock]
+            ['config' => $this->configMock, 'objectManager' => $this->objectManagerMock]
         );
     }
     // @codingStandardsIgnoreEnd
@@ -164,49 +164,44 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
+    private function makeQuoteMockWithMethods($methodsToMock = [])
+    {
+        return $this
+        ->getMockBuilder('Magento\Quote\Model\Quote')
+        ->setMethods($methodsToMock)
+        ->disableOriginalConstructor()
+        ->getMock();
+    }
+
     /**
      * @dataProvider populatePaymentAmountDataProvider
      */
     public function testPopulatePaymentAmount($data)
     {
-        $this->_configMock->expects($this->once())
-            ->method('getCurrencyCode')
-            ->will($this->returnValue($data['currency']));
-        $this->_configMock->expects($this->once())
-            ->method('getCurrencyConfig')
-            ->will($this->returnValue($data['currency_setting']));
+        $storeMock = $this->makeStoreMock($data);
 
-        $quoteMock = $this
-            ->getMockBuilder('Magento\Quote\Model\Quote')
-            ->setMethods(["getBaseGrandTotal", "getGrandTotal", "getQuoteCurrencyCode"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $quoteMock->expects($this->once())
-            ->method('getBaseGrandTotal')
-            ->willReturn("100");
-        $quoteMock->expects($this->any())
-            ->method('getGrandTotal')
-            ->will($this->returnValue(200));
-        $quoteMock
-            ->expects($this->any())
-            ->method('getQuoteCurrencyCode')
-            ->willReturn($data['quoteCurrencyCode']);
+        $configMock = $this->makeConfigMock($storeMock);
+        //$configMock->expects($this->once())->method('getQuoteCurrencyCode')->willReturn($data['currency']);
+        $configMock->expects($this->exactly(2))->method('getCurrencyConfig')->willReturn($data['currency_setting']);
+        $configMock->expects($this->exactly(3))->method('setConfigurationScopeId')->with(1234);
 
-        $result = $data["result"];
-
-        $objectManagerHelper = new ObjectManager($this);
-        $this->requestHelper = $objectManagerHelper->getObject(
+        $this->requestHelper = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Request',
             [
-                'config'        => $this->_configMock,
+                'config'        => $configMock,
                 'objectManager' => $this->objectManagerMock
             ]
         );
 
-        $this->assertEquals(
-            $result,
-            $this->requestHelper->populatePaymentAmountAndCurrency($quoteMock, $data['isRestRequest'])
-        );
+        $quoteMock = $this->makeQuoteMockWithMethods(["getStoreId", "getBaseGrandTotal", "getGrandTotal", "getQuoteCurrencyCode"]);
+        $quoteMock->expects($this->exactly(3))->method('getStoreId')->willReturn(1234);
+        $quoteMock->expects($this->any())->method('getBaseGrandTotal')->willReturn(100);
+        $quoteMock->expects($this->any())->method('getGrandTotal')->willReturn(200);
+
+
+        $result = $data["result"];
+        $actual = $this->requestHelper->populatePaymentAmountAndCurrency($quoteMock, $data['isRestRequest']);
+        $this->assertEquals($result, $actual);
     }
 
     public function populatePaymentAmountDataProvider()
@@ -216,11 +211,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 [
                     'currency_setting' => Config::CURRENCY_BASE,
                     'isRestRequest' => true,
-                    'currency' => 'USD',
-                    'quoteCurrencyCode' => 'USD',
                     'result' => [
                         'amount' => 10000,
-                        'currency' => 'USD'
+                        'currency' => 'GBP'
                     ]
                 ]
             ],
@@ -228,10 +221,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 [
                     'currency_setting' => Config::CURRENCY_BASE,
                     'isRestRequest' => true,
-                    'currency' => 'USD',
-                    'quoteCurrencyCode' => 'GBP',
                     'result' => [
-                        'amount' => 20000,
+                        'amount' => 10000,
                         'currency' => 'GBP'
                     ]
                 ]
@@ -240,8 +231,6 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 [
                     'currency_setting' => Config::CURRENCY_SWITCHER,
                     'isRestRequest' => true,
-                    'currency' => 'EUR',
-                    'quoteCurrencyCode' => 'EUR',
                     'result' => [
                         'amount' => 20000,
                         'currency' => 'EUR'
@@ -252,15 +241,50 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 [
                     'currency_setting' => Config::CURRENCY_BASE,
                     'isRestRequest' => false,
-                    'currency' => 'USD',
-                    'quoteCurrencyCode' => 'USD',
                     'result' => [
                         'Amount' => 100.00,
-                        'Currency' => 'USD'
+                        'Currency' => 'GBP'
+                    ]
+                ]
+            ],
+            'test issue 166' => [
+                [
+                    'currency_setting' => Config::CURRENCY_BASE,
+                    'isRestRequest' => false,
+                    'result' => [
+                        'Amount' => '100.00',
+                        'Currency' => 'GBP'
                     ]
                 ]
             ]
         ];
+    }
+
+    private function makeConfigMock($storeMock)
+    {
+        $scopeConfigMock = $this->getMockBuilder("Magento\Framework\App\Config\ScopeConfigInterface")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storeManagerMock = $this->getMockBuilder("Magento\Store\Model\StoreManagerInterface")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storeManagerMock->expects($this->once())->method("getStore")->with(1234)->willReturn($storeMock);
+
+        $suiteLoggerMock = $this->getMockBuilder("Ebizmarts\SagePaySuite\Model\Logger\Logger")
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $configMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
+            ->setMethods(["getCurrencyConfig", "setConfigurationScopeId"])
+            ->setConstructorArgs([
+                "_scopeConfig" => $scopeConfigMock,
+                "storemManager" => $storeManagerMock,
+                "suiteLogger" => $suiteLoggerMock
+            ])
+            ->getMock();
+
+        return $configMock;
     }
 
     public function testGetOrderDescription()
@@ -645,7 +669,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('getAllAddresses')
             ->willReturn($data['allAddresses']);
 
-         $this->_configMock->expects($this->any())
+         $this->configMock->expects($this->any())
              ->method('getBasketFormat')
              ->willReturn($data['format']);
 
@@ -656,7 +680,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $this->requestHelper = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Request',
-            ['config' => $this->_configMock, 'objectManager' => $this->objectManagerMock]
+            ['config' => $this->configMock, 'objectManager' => $this->objectManagerMock]
         );
 
         $this->assertEquals(
@@ -688,7 +712,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->willReturn($simpleInstance);
         $this->requestHelper = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Request',
-            ['config' => $this->_configMock, 'objectManager' => $this->objectManagerMock]
+            ['config' => $this->configMock, 'objectManager' => $this->objectManagerMock]
         );
 
         $this->assertTrue($this->requestHelper->validateBasketXmlAmounts($basket));
@@ -707,7 +731,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->willReturn($simpleInstance);
         $this->requestHelper = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Request',
-            ['config' => $this->_configMock, 'objectManager' => $this->objectManagerMock]
+            ['config' => $this->configMock, 'objectManager' => $this->objectManagerMock]
         );
 
         $this->assertEquals($totalBasketAmount, $this->requestHelper->getBasketXmlTotalAmount($basket));
@@ -1184,7 +1208,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->willReturn($simpleInstance);
         $this->requestHelper = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Request',
-            ['config' => $this->_configMock, 'objectManager' => $this->objectManagerMock]
+            ['config' => $this->configMock, 'objectManager' => $this->objectManagerMock]
         );
 
         $requestData = $this->requestHelper->unsetBasketXMLIfAmountsDontMatch($requestData);
@@ -1256,7 +1280,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->willReturn($simpleInstance);
         $this->requestHelper = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Request',
-            ['config' => $this->_configMock, 'objectManager' => $this->objectManagerMock]
+            ['config' => $this->configMock, 'objectManager' => $this->objectManagerMock]
         );
 
         $requestData = $this->requestHelper->unsetBasketXMLIfAmountsDontMatch($requestData);
@@ -1677,5 +1701,44 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 </basket>';
 
         $this->assertFalse($this->requestHelper->validateBasketXmlLength($basket));
+    }
+
+    /**
+     * @param $data
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeStoreMock($data)
+    {
+        $storeMock = $this->getMockBuilder("Magento\Store\Api\Data\StoreInterface")->setMethods([
+                "getBaseCurrencyCode",
+                "getId",
+                "setId",
+                "getCode",
+                "setCode",
+                "getName",
+                "setName",
+                "getWebsiteId",
+                "setWebsiteId",
+                "getStoreGroupId",
+                "setStoreGroupId",
+                "getExtensionAttributes",
+                "setExtensionAttributes",
+                "getDefaultCurrencyCode",
+                "getCurrentCurrencyCode"
+            ])->disableOriginalConstructor()->getMock();
+
+        if ($data["currency_setting"] == "base_currency") {
+            $storeMock->expects($this->once())->method("getBaseCurrencyCode")->willReturn("GBP");
+        }
+
+        if ($data["currency_setting"] == "store_currency") {
+            $storeMock->expects($this->once())->method("getDefaultCurrencyCode")->willReturn("USD");
+        }
+
+        if ($data["currency_setting"] == "switcher_currency") {
+            $storeMock->expects($this->once())->method("getCurrentCurrencyCode")->willReturn("EUR");
+        }
+
+        return $storeMock;
     }
 }

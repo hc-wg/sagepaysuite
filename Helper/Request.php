@@ -17,7 +17,7 @@ class Request extends AbstractHelper
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    private $_config;
+    private $sagepaySuiteConfig;
 
     /**
      * Logging instance
@@ -38,9 +38,9 @@ class Request extends AbstractHelper
      */
     public function __construct(Config $config, Logger $suiteLogger, ObjectManager $objectManager)
     {
-        $this->_config       = $config;
-        $this->_suiteLogger  = $suiteLogger;
-        $this->objectManager = $objectManager;
+        $this->sagepaySuiteConfig = $config;
+        $this->_suiteLogger       = $suiteLogger;
+        $this->objectManager      = $objectManager;
     }
 
     public function populateAddressInformation($quote)
@@ -140,27 +140,18 @@ class Request extends AbstractHelper
      */
     public function populatePaymentAmountAndCurrency($quote, $isRestRequest = false)
     {
-        $currencyCode = $this->_config->getCurrencyCode();
+        $this->sagepaySuiteConfig->setConfigurationScopeId($quote->getStoreId());
 
-        $amount = $quote->getBaseGrandTotal();
-
-        if (Config::CURRENCY_SWITCHER == $this->_config->getCurrencyConfig()) {
-            $amount = $quote->getGrandTotal();
-        }
-
-        $quoteCurrencyCode = $quote->getQuoteCurrencyCode();
-        if ($quote->getQuoteCurrencyCode() != $currencyCode) {
-            $currencyCode = $quoteCurrencyCode;
-            $amount       = $quote->getGrandTotal();
-        }
+        $amount = $this->sagepaySuiteConfig->getQuoteAmount($quote);
+        $storeCurrencyCode = $this->sagepaySuiteConfig->getQuoteCurrencyCode($quote);
 
         $data = [];
         if ($isRestRequest) {
             $data["amount"]   = $amount * 100;
-            $data["currency"] = $currencyCode;
+            $data["currency"] = $storeCurrencyCode;
         } else {
             $data["Amount"]   = $this->formatPrice($amount);
-            $data["Currency"] = $currencyCode;
+            $data["Currency"] = $storeCurrencyCode;
         }
 
         return $data;
@@ -170,7 +161,7 @@ class Request extends AbstractHelper
     {
         $data = [];
 
-        $basketFormat = $this->_config->getBasketFormat();
+        $basketFormat = $this->sagepaySuiteConfig->getBasketFormat();
 
         if ($basketFormat == Config::BASKETFORMAT_XML || $force_xml == true) {
             $_basket = $this->_getBasketXml($quote);

@@ -6,10 +6,11 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-use Magento\Payment\Model\MethodInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class Config to handle all sagepay integrations configs
@@ -165,36 +166,36 @@ class Config
     /**
      * Store manager
      *
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
-    private $_storeManager;
+    private $storeManager;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
      * @var ScopeConfigInterface
      */
-    private $_scopeConfig;
+    private $scopeConfig;
 
     /**
      * Config constructor.
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param ScopeConfigInterface $scopeConfig
+     * @param StoreManagerInterface $storeManager
      * @param Logger $suiteLogger
      */
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger
+        ScopeConfigInterface $scopeConfig,
+        StoreManagerInterface $storeManager,
+        Logger $suiteLogger
     ) {
     
-        $this->_scopeConfig  = $scopeConfig;
-        $this->_storeManager = $storeManager;
-        $this->_suiteLogger  = $suiteLogger;
+        $this->scopeConfig  = $scopeConfig;
+        $this->storeManager = $storeManager;
+        $this->suiteLogger  = $suiteLogger;
 
         $this->configurationScopeId = null;
         $this->configurationScope   = ScopeInterface::SCOPE_STORE;
@@ -237,7 +238,7 @@ class Config
 
         $path = $this->_getSpecificConfigPath($key);
 
-        return $this->_scopeConfig->getValue($path, $this->configurationScope, $configurationScopeId);
+        return $this->scopeConfig->getValue($path, $this->configurationScope, $configurationScopeId);
     }
 
     /**
@@ -339,7 +340,7 @@ class Config
 
     public function getVendorname()
     {
-        return $this->_scopeConfig->getValue(
+        return $this->scopeConfig->getValue(
             $this->_getGlobalConfigPath("vendorname"),
             $this->configurationScope,
             $this->configurationScopeId
@@ -348,7 +349,7 @@ class Config
 
     public function getLicense()
     {
-        $licenseKey = $this->_scopeConfig->getValue(
+        $licenseKey = $this->scopeConfig->getValue(
             $this->_getGlobalConfigPath("license"),
             $this->configurationScope,
             $this->configurationScopeId
@@ -359,7 +360,7 @@ class Config
 
     public function getStoreDomain()
     {
-        return $this->_scopeConfig->getValue(
+        return $this->scopeConfig->getValue(
             Store::XML_PATH_UNSECURE_BASE_URL,
             $this->configurationScope,
             $this->configurationScopeId
@@ -391,7 +392,7 @@ class Config
 
     public function getMode()
     {
-        return $this->_scopeConfig->getValue(
+        return $this->scopeConfig->getValue(
             $this->_getGlobalConfigPath("mode"),
             $this->configurationScope,
             $this->configurationScopeId
@@ -400,7 +401,7 @@ class Config
 
     public function isTokenEnabled()
     {
-        return $this->_scopeConfig->getValue(
+        return $this->scopeConfig->getValue(
             $this->_getGlobalConfigPath("token"),
             $this->configurationScope,
             $this->configurationScopeId
@@ -409,7 +410,7 @@ class Config
 
     public function getReportingApiUser()
     {
-        return $this->_scopeConfig->getValue(
+        return $this->scopeConfig->getValue(
             $this->_getGlobalConfigPath("reporting_user"),
             $this->configurationScope,
             $this->configurationScopeId
@@ -418,7 +419,7 @@ class Config
 
     public function getReportingApiPassword()
     {
-        return $this->_scopeConfig->getValue(
+        return $this->scopeConfig->getValue(
             $this->_getGlobalConfigPath("reporting_password"),
             $this->configurationScope,
             $this->configurationScopeId
@@ -442,7 +443,7 @@ class Config
      */
     public function get3Dsecure($forceDisable = false)
     {
-        $config_value = $this->_scopeConfig->getValue(
+        $config_value = $this->scopeConfig->getValue(
             $this->_getAdvancedConfigPath("threedsecure"),
             $this->configurationScope,
             $this->configurationScopeId
@@ -465,7 +466,7 @@ class Config
      */
     public function getAvsCvc()
     {
-        $configValue = $this->_scopeConfig->getValue(
+        $configValue = $this->scopeConfig->getValue(
             $this->_getAdvancedConfigPath("avscvc"),
             $this->configurationScope,
             $this->configurationScopeId
@@ -480,7 +481,7 @@ class Config
 
     public function getAutoInvoiceFraudPassed()
     {
-        $config_value = $this->_scopeConfig->getValue(
+        $config_value = $this->scopeConfig->getValue(
             $this->_getAdvancedConfigPath("fraud_autoinvoice"),
             $this->configurationScope,
             $this->configurationScopeId
@@ -490,7 +491,7 @@ class Config
 
     public function getNotifyFraudResult()
     {
-        $config_value = $this->_scopeConfig->getValue(
+        $config_value = $this->scopeConfig->getValue(
             $this->_getAdvancedConfigPath("fraud_notify"),
             $this->configurationScope,
             $this->configurationScopeId
@@ -523,32 +524,58 @@ class Config
         return $this->getValue("specificcountry");
     }
 
-    public function getCurrencyCode()
+    /**
+     * @param \Magento\Quote\Model\Quote $quote
+     * @return string
+     */
+    public function getQuoteCurrencyCode($quote)
     {
+        $storeId = $quote->getStoreId();
+
+        $this->setConfigurationScopeId($storeId);
         $currencyConfig = $this->getCurrencyConfig();
 
-        $store = $this->_storeManager->getStore();
-
-        //store base currency as default
-        $currency = $store->getBaseCurrencyCode();
+        /** @var \Magento\Store\Model\Store $store */
+        $store = $this->storeManager->getStore($storeId);
 
         switch ($currencyConfig) {
-            //store default display currency
             case self::CURRENCY_STORE:
                 $currency = $store->getDefaultCurrencyCode();
                 break;
-            //frontend currency switcher
             case self::CURRENCY_SWITCHER:
                 $currency = $store->getCurrentCurrencyCode();
                 break;
+            default:
+                $currency = $store->getBaseCurrencyCode();
         }
 
         return $currency;
     }
 
+    /**
+     * @param \Magento\Quote\Model\Quote $quote
+     * @return float
+     */
+    public function getQuoteAmount($quote)
+    {
+        $this->setConfigurationScopeId($quote->getStoreId());
+        $currencyConfig = $this->getCurrencyConfig();
+
+        switch ($currencyConfig) {
+            case Config::CURRENCY_STORE:
+            case Config::CURRENCY_SWITCHER:
+                $amount = $quote->getGrandTotal();
+                break;
+            default:
+                $amount = $quote->getBaseGrandTotal();
+        }
+
+        return $amount;
+    }
+
     public function getCurrencyConfig()
     {
-        return $this->_scopeConfig->getValue(
+        return $this->scopeConfig->getValue(
             $this->_getGlobalConfigPath("currency"),
             $this->configurationScope,
             $this->configurationScopeId
@@ -557,7 +584,7 @@ class Config
 
     public function getBasketFormat()
     {
-        $config_value = $this->_scopeConfig->getValue(
+        $config_value = $this->scopeConfig->getValue(
             $this->_getAdvancedConfigPath("basket_format"),
             $this->configurationScope,
             $this->configurationScopeId
@@ -572,7 +599,7 @@ class Config
 
     public function isGiftAidEnabled()
     {
-        $config_value = $this->_scopeConfig->getValue(
+        $config_value = $this->scopeConfig->getValue(
             $this->_getAdvancedConfigPath("giftaid"),
             $this->configurationScope,
             $this->configurationScopeId
