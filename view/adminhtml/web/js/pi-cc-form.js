@@ -133,7 +133,14 @@ define([
                                         self.showPaymentError("Unable to initialize Sage Pay payment method, please use another payment method.");
                                     }
                                 } else {
-                                    self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
+                                    //Check if it is "Authentication failed"
+                                    if (tokenisationResult.error.errorCode == 1002) {
+                                        self.dropInInstance.destroy();
+                                        $('#dropin_start_lbl').show();
+                                        document.getElementById('submit_dropin_payment').style.display = "none";
+                                    } else {
+                                        self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
+                                    }
                                 }
                             }
                         }); //.form();
@@ -172,7 +179,6 @@ define([
                             }
                         });
                     } catch (err) {
-                        console.log(err);
                         //errorProcessor.process(err);
                         alert("Unable to initialize Sage Pay payment method, please refresh the page and try again.");
                     }
