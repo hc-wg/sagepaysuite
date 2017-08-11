@@ -8,27 +8,46 @@
 
 namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 
+use Ebizmarts\SagePaySuite\Api\Data\PiResultInterface;
+use Ebizmarts\SagePaySuite\Helper\Checkout;
+use Ebizmarts\SagePaySuite\Helper\Data;
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
+use Ebizmarts\SagePaySuite\Model\Api\PIRest;
+use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Config\SagePayCardType;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\PiRequest;
+use Magento\Backend\Model\UrlInterface;
+use Magento\Framework\App\RequestInterface;
+use Magento\Framework\ObjectManagerInterface;
+use Magento\Framework\Validator\Exception;
+
 class MotoManagement extends RequestManagement
 {
-    /** @var \Magento\Framework\ObjectManagerInterface */
+    /** @var ObjectManagerInterface */
     private $objectManager;
 
-    /** @var \Magento\Framework\App\RequestInterface */
+    /** @var RequestInterface */
     private $httpRequest;
 
-    /** @var \Magento\Backend\Model\UrlInterface */
+    /** @var UrlInterface */
     private $backendUrl;
+    private $logger;
+
+    /** @var \Magento\Sales\Model\Order */
+    private $order;
 
     public function __construct(
-        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Ebizmarts\SagePaySuite\Model\Api\PIRest $piRestApi,
-        \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConvert,
-        \Ebizmarts\SagePaySuite\Model\PiRequest $piRequest,
-        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
-        \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface $result,
-        \Magento\Framework\ObjectManagerInterface $objectManager,
-        \Magento\Framework\App\RequestInterface $httpRequest,
-        \Magento\Backend\Model\UrlInterface $backendUrl
+        Checkout $checkoutHelper,
+        PIRest $piRestApi,
+        SagePayCardType $ccConvert,
+        PiRequest $piRequest,
+        Data $suiteHelper,
+        PiResultInterface $result,
+        ObjectManagerInterface $objectManager,
+        RequestInterface $httpRequest,
+        UrlInterface $backendUrl,
+        Logger $suiteLogger
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -41,6 +60,7 @@ class MotoManagement extends RequestManagement
         $this->objectManager = $objectManager;
         $this->httpRequest   = $httpRequest;
         $this->backendUrl    = $backendUrl;
+        $this->logger = $suiteLogger;
     }
 
     /**
@@ -57,11 +77,6 @@ class MotoManagement extends RequestManagement
     public function placeOrder()
     {
         try {
-            $this->pay();
-
-            $this->processPayment();
-
-            //save order with pending payment
             $order = $this
                 ->getOrderCreateModel()
                 ->setIsValidate(true)
@@ -69,6 +84,12 @@ class MotoManagement extends RequestManagement
                 ->createOrder();
 
             if ($order) {
+                $this->order = $order;
+
+                $this->pay();
+
+                $this->processPayment();
+
                 $this->_confirmPayment($order);
 
                 //add success url to response
@@ -77,19 +98,24 @@ class MotoManagement extends RequestManagement
                 $this->getResult()->setSuccess(true);
                 $this->getResult()->setResponse($url);
             } else {
-                throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order.'));
+                throw new Exception(__('Unable to save Sage Pay order.'));
             }
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            #$this->_logger->critical($apiException);
+        } catch (ApiException $apiException) {
+            $this->logger->logException($apiException, [__METHOD__, __LINE__]);
             $this->getResult()->setSuccess(false);
             $this->getResult()->setErrorMessage(__('Something went wrong: ' . $apiException->getUserMessage()));
         } catch (\Exception $e) {
-            #$this->_logger->critical($e);
+            $this->logger->logException($e, [__METHOD__, __LINE__]);
             $this->getResult()->setSuccess(false);
             $this->getResult()->setErrorMessage(__('Something went wrong: ' . $e->getMessage()));
         }
 
         return $this->getResult();
+    }
+
+    public function getPayment()
+    {
+        return $this->order->getPayment();
     }
 
     /**
@@ -109,8 +135,7 @@ class MotoManagement extends RequestManagement
         $payment->setLastTransId($this->getPayResult()->getTransactionId());
 
         //leave transaction open in case defer or authorize
-        if ($this->getRequestData()->getPaymentAction() == \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE ||
-            $this->getRequestData()->getPaymentAction() == \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER) {
+        if ($this->isPaymentActionDeferredOrAuthenticate()) {
             $payment->setIsTransactionClosed(0);
         }
 
@@ -121,5 +146,13 @@ class MotoManagement extends RequestManagement
 
         //send email
         $this->getCheckoutHelper()->sendOrderEmail($order);
+    }
+
+    /**
+     * @return bool
+     */
+    private function isPaymentActionDeferredOrAuthenticate()
+    {
+        return $this->getRequestData()->getPaymentAction() == Config::ACTION_AUTHENTICATE || $this->getRequestData()->getPaymentAction() == Config::ACTION_DEFER;
     }
 }
