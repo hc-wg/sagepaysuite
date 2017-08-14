@@ -6,28 +6,40 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Paypal;
 
+use Ebizmarts\SagePaySuite\Helper\Checkout;
+use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
+use Ebizmarts\SagePaySuite\Model\Api\Post;
+use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
+use Magento\Checkout\Model\Session;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Validator\Exception as ValidatorException;
+use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\QuoteFactory;
+use Magento\Sales\Model\OrderFactory;
 
 class Callback extends \Magento\Framework\App\Action\Action
 {
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
+     * @var Config
      */
     private $_config;
 
     /**
-     * @var \Magento\Quote\Model\Quote
+     * @var Quote
      */
     private $_quote;
 
     /**
-     * @var \Magento\Checkout\Model\Session
+     * @var Session
      */
     private $_checkoutSession;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Helper\Checkout
+     * @var Checkout
      */
     private $_checkoutHelper;
 
@@ -39,47 +51,52 @@ class Callback extends \Magento\Framework\App\Action\Action
 
     private $_postData;
 
-    /** @var \Magento\Sales\Model\OrderFactory */
+    /** @var OrderFactory */
     private $_orderFactory;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\Api\Post */
+    /** @var Post */
     private $_postApi;
 
     /** @var \Magento\Sales\Model\Order */
     private $_order;
 
     /**
-     * @var \Magento\Quote\Model\QuoteFactory
+     * @var QuoteFactory
      */
     private $_quoteFactory;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback */
+    /** @var OrderUpdateOnCallback */
     private $updateOrderCallback;
+
+    /** @var SuiteHelper */
+    private $suiteHelper;
 
     /**
      * Callback constructor.
-     * @param \Magento\Framework\App\Action\Context $context
-     * @param \Magento\Checkout\Model\Session $checkoutSession
-     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param Context $context
+     * @param Session $checkoutSession
+     * @param Config $config
      * @param Logger $suiteLogger
-     * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
-     * @param \Ebizmarts\SagePaySuite\Model\Api\Post $postApi
-     * @param \Magento\Quote\Model\Quote $quote
-     * @param \Magento\Sales\Model\OrderFactory $orderFactory
-     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
-     * @param \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback $updateOrderCallback
+     * @param Checkout $checkoutHelper
+     * @param Post $postApi
+     * @param Quote $quote
+     * @param OrderFactory $orderFactory
+     * @param QuoteFactory $quoteFactory
+     * @param OrderUpdateOnCallback $updateOrderCallback
+     * @param SuiteHelper $suiteHelper
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
+        Context $context,
+        Session $checkoutSession,
+        Config $config,
         Logger $suiteLogger,
-        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
-        \Magento\Quote\Model\Quote $quote,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory,
-        \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback $updateOrderCallback
+        Checkout $checkoutHelper,
+        Post $postApi,
+        Quote $quote,
+        OrderFactory $orderFactory,
+        QuoteFactory $quoteFactory,
+        OrderUpdateOnCallback $updateOrderCallback,
+        SuiteHelper $suiteHelper
     ) {
     
         parent::__construct($context);
@@ -92,14 +109,15 @@ class Callback extends \Magento\Framework\App\Action\Action
         $this->_orderFactory       = $orderFactory;
         $this->_quoteFactory       = $quoteFactory;
         $this->updateOrderCallback = $updateOrderCallback;
+        $this->suiteHelper         = $suiteHelper;
 
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
+        $this->_config->setMethodCode(Config::METHOD_PAYPAL);
     }
 
     /**
      * Paypal callback
      * @throws LocalizedException
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function execute()
     {
@@ -119,7 +137,7 @@ class Callback extends \Magento\Framework\App\Action\Action
             $completionResponse = $this->_sendCompletionPost()["data"];
 
             $transactionId = $completionResponse["VPSTxId"];
-            $transactionId = str_replace("{", "", str_replace("}", "", $transactionId));
+            $transactionId = $this->suiteHelper->removeCurlyBraces($transactionId);
 
             $payment = $order->getPayment();
 
@@ -178,10 +196,10 @@ class Callback extends \Magento\Framework\App\Action\Action
 
     private function _getServiceURL()
     {
-        if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_PAYPAL_COMPLETION_LIVE;
+        if ($this->_config->getMode() == Config::MODE_LIVE) {
+            return Config::URL_PAYPAL_COMPLETION_LIVE;
         } else {
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_PAYPAL_COMPLETION_TEST;
+            return Config::URL_PAYPAL_COMPLETION_TEST;
         }
     }
 
@@ -189,9 +207,9 @@ class Callback extends \Magento\Framework\App\Action\Action
     {
         if (empty($this->_postData) || !isset($this->_postData->Status) || $this->_postData->Status != "PAYPALOK") {
             if (!empty($this->_postData) && isset($this->_postData->StatusDetail)) {
-                throw new \Magento\Framework\Exception\LocalizedException(__("Can not place PayPal order: " . $this->_postData->StatusDetail));
+                throw new LocalizedException(__("Can not place PayPal order: " . $this->_postData->StatusDetail));
             } else {
-                throw new \Magento\Framework\Exception\LocalizedException(__("Can not place PayPal order, please try another payment method"));
+                throw new LocalizedException(__("Can not place PayPal order, please try another payment method"));
             }
         }
     }
@@ -200,19 +218,19 @@ class Callback extends \Magento\Framework\App\Action\Action
     {
         $this->_quote = $this->_quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
         if (empty($this->_quote->getId())) {
-            throw new \Magento\Framework\Exception\LocalizedException(__("Unable to find payment data."));
+            throw new LocalizedException(__("Unable to find payment data."));
         }
     }
 
     /**
      * @return mixed
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     private function loadOrderFromDataSource()
     {
         $order = $this->_order = $this->_orderFactory->create()->loadByIncrementId($this->_quote->getReservedOrderId());
         if ($order === null || $order->getId() === null) {
-            throw new \Magento\Framework\Exception\LocalizedException(__("Invalid order."));
+            throw new LocalizedException(__("Invalid order."));
         }
 
         return $order;
@@ -222,7 +240,7 @@ class Callback extends \Magento\Framework\App\Action\Action
      * @param $transactionId
      * @param $payment
      * @param $completionResponse
-     * @throws \Magento\Framework\Validator\Exception
+     * @throws ValidatorException
      */
     private function updatePaymentInformation($transactionId, $payment, $completionResponse)
     {
@@ -233,7 +251,7 @@ class Callback extends \Magento\Framework\App\Action\Action
             $payment->setLastTransId($transactionId);
             $payment->save();
         } else {
-            throw new \Magento\Framework\Validator\Exception(__('Invalid transaction id'));
+            throw new ValidatorException(__('Invalid transaction id'));
         }
     }
 }
