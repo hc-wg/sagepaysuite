@@ -170,7 +170,7 @@ class Callback extends \Magento\Framework\App\Action\Action
             "VPSProtocol" => $this->_config->getVPSProtocol(),
             "TxType"      => "COMPLETE",
             "VPSTxId"     => $this->_postData->VPSTxId,
-            "Amount"      => number_format($this->_quote->getGrandTotal(), 2, '.', ''),
+            "Amount"      => $this->getAuthorisedAmount(),
             "Accept"      => "YES"
         ];
 
@@ -180,6 +180,13 @@ class Callback extends \Magento\Framework\App\Action\Action
             ["OK", 'REGISTERED', 'AUTHENTICATED'],
             'Invalid response from PayPal'
         );
+    }
+
+    private function getAuthorisedAmount()
+    {
+        $quoteAmount = $this->_config->getQuoteAmount($this->_quote);
+        $amount = number_format($quoteAmount, 2, '.', '');
+        return $amount;
     }
 
     /**
