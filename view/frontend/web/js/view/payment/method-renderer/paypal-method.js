@@ -15,9 +15,10 @@ define(
         'Magento_Customer/js/model/customer',
         'Magento_Checkout/js/model/quote',
         'Magento_Checkout/js/model/full-screen-loader',
-        'Magento_Checkout/js/model/payment/additional-validators'
+        'Magento_Checkout/js/model/payment/additional-validators',
+        'Magento_Customer/js/customer-data'
     ],
-    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader, additionalValidators) {
+    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader, additionalValidators, customerData) {
         'use strict';
 
         $(document).ready(function () {
@@ -123,6 +124,7 @@ define(
                                         function (response) {
                                             if (response.success) {
                                                 if (response.response[1].PayPalRedirectURL) {
+                                                    customerData.invalidate(['cart']);
                                                     window.location.href = response.response[1].PayPalRedirectURL;
                                                 } else {
                                                     self.showPaymentError("Invalid response from PayPal, please try again later.");
