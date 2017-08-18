@@ -8,6 +8,8 @@
 
 namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
+
 class EcommerceManagement extends RequestManagement
 {
     /** @var \Magento\Checkout\Model\Session */
@@ -49,7 +51,7 @@ class EcommerceManagement extends RequestManagement
     {
         try {
             $this->tryToChargeCustomerAndCreateOrder();
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+        } catch (ApiException $apiException) {
             $this->tryToVoidTransactionLogErrorAndUpdateResult($apiException);
         } catch (\Exception $e) {
             $this->tryToVoidTransactionLogErrorAndUpdateResult($e);
@@ -129,7 +131,7 @@ class EcommerceManagement extends RequestManagement
         $this->getResult()->setSuccess(false);
         $this->getResult()->setErrorMessage(__('Something went wrong: ' . $exceptionObject->getMessage()));
 
-        if ($this->getPayResult() !== null) {
+        if ($this->getPayResult() !== null && $this->getPayResult()->getStatusCode() == "0000") {
             $this->getPiRestApi()->void($this->getPayResult()->getTransactionId());
         }
     }
