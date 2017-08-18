@@ -123,8 +123,14 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
 
             $this->saveCreditCardInformationInPayment();
         } else {
+            $statusDetail = "";
+
+            if ($this->getPayResult() !== null) {
+                $statusDetail = $this->getPayResult()->getStatusDetail();
+            }
+
             throw new ValidatorException(
-                __('Invalid Sage Pay response, please use another payment method.')
+                __('Invalid Sage Pay response. %1', $statusDetail)
             );
         }
     }
