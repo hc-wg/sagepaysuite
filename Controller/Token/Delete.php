@@ -60,6 +60,9 @@ class Delete extends \Magento\Framework\App\Action\Action
         $this->_isCustomerArea  = true;
     }
 
+    /**
+     * @return bool|\Magento\Framework\Controller\ResultInterface
+     */
     public function execute()
     {
         try {
