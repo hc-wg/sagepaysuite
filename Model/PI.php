@@ -6,12 +6,12 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Sales\Model\ResourceModel\Order\Payment\Transaction\CollectionFactory as TransactionCollectionFactory;
 use Magento\Payment\Model\InfoInterface;
 use Ebizmarts\SagePaySuite\Model\Api\PIRest;
-use Magento\Sales\Model\Order\Payment\Transaction as PaymentTransaction;
 
 /**
  * Class PI
@@ -172,7 +172,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $this->_suiteLogger = $suiteLogger;
     }
 
-    public function assignData(\Magento\Framework\DataObject $data)
+    public function assignData(DataObject $data)
     {
         parent::assignData($data);
         $infoInstance = $this->getInfoInstance();
@@ -219,7 +219,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $payment->setTransactionId($refundResult->getTransactionId());
             $payment->setIsTransactionClosed(1);
             $payment->setShouldCloseParentTransaction(1);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+        } catch (ApiException $apiException) {
             $this->_logger->critical($apiException);
             throw new LocalizedException(
                 __(
@@ -252,8 +252,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
         try {
             $this->_pirestapi->void($transactionId);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            if ($apiException->getCode() == \Ebizmarts\SagePaySuite\Model\Api\ApiException::INVALID_TRANSACTION_STATE) {
+        } catch (ApiException $apiException) {
+            if ($this->exceptionCodeIsInvalidTransactionState($apiException)) {
                 //unable to void transaction
                 throw new LocalizedException(
                     __('Unable to VOID Sage Pay transaction %1: %2', $transactionId, $apiException->getUserMessage())
@@ -291,7 +291,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      * Instantiate state and set it to state object
      *
      * @param string $paymentAction
-     * @param \Magento\Framework\DataObject $stateObject
+     * @param DataObject $stateObject
      * @return void
      */
     public function initialize($paymentAction, $stateObject) // @codingStandardsIgnoreLine
@@ -348,7 +348,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         }
 
         if ($errorMsg) {
-            throw new \Magento\Framework\Exception\LocalizedException($errorMsg);
+            throw new LocalizedException($errorMsg);
         }
 
         return $this;
@@ -383,5 +383,14 @@ class PI extends \Magento\Payment\Model\Method\Cc
         }
 
         return (bool)(int)$this->getConfigData('active' . $moto, $storeId);
+    }
+
+    /**
+     * @param $apiException
+     * @return bool
+     */
+    private function exceptionCodeIsInvalidTransactionState($apiException)
+    {
+        return $apiException->getCode() == ApiException::INVALID_TRANSACTION_STATE;
     }
 }
