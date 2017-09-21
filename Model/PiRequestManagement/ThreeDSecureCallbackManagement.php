@@ -3,11 +3,14 @@
 namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface;
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Validator\Exception as ValidatorException;
 
 class ThreeDSecureCallbackManagement extends RequestManagement
 {
+    const NUM_OF_ATTEMPTS = 5;
+
     /** @var \Magento\Checkout\Model\Session */
     private $checkoutSession;
 
@@ -95,21 +98,52 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         $payResult = $this->pay();
 
         if ($payResult->getStatus() !== null) {
-            //request transaction details to confirm payment
-            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult $transactionDetailsResult */
-            $transactionDetailsResult = $this->getPiRestApi()->transactionDetails(
-                $this->getRequestData()->getTransactionId()
-            );
+
+            $transactionDetailsResult = $this->retrieveTransactionDetails();
 
             $this->_confirmPayment($transactionDetailsResult);
 
             //remove order pre-saved flag from checkout
             $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
+
         } else {
             $this->getResult()->setErrorMessage("Invalid 3D secure authentication.");
         }
 
         return $this->getResult();
+    }
+
+    /**
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult
+     */
+    private function retrieveTransactionDetails()
+    {
+        $attempts = 0;
+        $transactionDetailsResult = null;
+
+        $vpsTxId = $this->getRequestData()->getTransactionId();
+
+        do {
+
+            try {
+                /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult $transactionDetailsResult */
+                $transactionDetailsResult = $this->getPiRestApi()->transactionDetails($vpsTxId);
+            } catch (ApiException $e) {
+                $attempts++;
+                sleep(1);
+                continue;
+            }
+
+            break;
+
+        } while ($attempts < self::NUM_OF_ATTEMPTS);
+
+        if (null === $transactionDetailsResult) {
+            $this->getPiRestApi()->void($vpsTxId);
+            throw new \LogicException("Could not retrieve transaction details");
+        }
+
+        return $transactionDetailsResult;
     }
 
     /**
