@@ -11,7 +11,7 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
     private $piRestApi;
 
     /** @var \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType */
-    private $ccConverter;
+    protected $ccConverter;
 
     /** @var \Ebizmarts\SagePaySuite\Model\PiRequest */
     private $piRequest;

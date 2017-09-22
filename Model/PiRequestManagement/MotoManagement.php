@@ -80,8 +80,14 @@ class MotoManagement extends RequestManagement
             $order = $this
                 ->getOrderCreateModel()
                 ->setIsValidate(true)
-                ->importPostData($this->httpRequest->getPost('order'))
-                ->createOrder();
+                ->importPostData($this->httpRequest->getPost('order'));
+
+            if ($paymentData = $this->httpRequest->getPost('payment')) {
+                $paymentData["cc_type"] = $this->ccConverter->convert($this->getRequestData()->getCcType());
+                $this->getOrderCreateModel()->getQuote()->getPayment()->addData($paymentData);
+            }
+
+            $order = $order->createOrder();
 
             if ($order) {
                 $this->order = $order;
