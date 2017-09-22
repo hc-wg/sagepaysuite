@@ -142,6 +142,7 @@ abstract class Http
         );
         $this->responseData = $this->curl->read();
 
+        $this->getLogger()->sageLog(Logger::LOG_REQUEST, $this->destinationUrl, [__METHOD__, __LINE__]);
         $this->getLogger()->sageLog(Logger::LOG_REQUEST, $this->responseData, [__METHOD__, __LINE__]);
 
         $this->responseCode = $this->curl->getInfo(CURLINFO_HTTP_CODE);
