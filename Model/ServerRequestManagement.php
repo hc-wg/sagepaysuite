@@ -41,7 +41,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
     /**
      * @var string
      */
-    private $_assignedVendorTxCode;
+    private $assignedVendorTxCode;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Checkout
@@ -164,7 +164,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
                 $payment = $order->getPayment();
                 $payment->setTransactionId($transactionId);
                 $payment->setLastTransId($transactionId);
-                $payment->setAdditionalInformation('vendorTxCode', $this->_assignedVendorTxCode);
+                $payment->setAdditionalInformation('vendorTxCode', $this->assignedVendorTxCode);
                 $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
                 $payment->setAdditionalInformation('mode', $this->_config->getMode());
                 $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
@@ -232,7 +232,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         $data["VPSProtocol"]     = $this->_config->getVPSProtocol();
         $data["TxType"]          = $this->_config->getSagepayPaymentAction();
         $data["Vendor"]          = $this->_config->getVendorname();
-        $data["VendorTxCode"]    = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
+        $data["VendorTxCode"]    = $this->assignedVendorTxCode = $this->_suiteHelper->generateVendorTxCode($this->_quote->getReservedOrderId());
         $data["Description"]     = $this->_requestHelper->getOrderDescription();
         $data["NotificationURL"] = $this->_getNotificationUrl();
         $data["ReferrerID"]      = $this->_requestHelper->getReferrerId();
