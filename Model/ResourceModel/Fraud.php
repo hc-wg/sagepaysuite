@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Model\ResourceModel;
 
 use \Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Sales\Model\Order\Payment\Transaction;
 
 /**
  * Fraud dummy resource model.
@@ -59,26 +60,25 @@ class Fraud extends AbstractDb
     public function getShadowPaidPaymentTransactions()
     {
 
-        $transactionTableName = $this->getTable('sales_payment_transaction');
-        $paymentTableName = $this->getTable('sales_order_payment');
+        $transactionTableName = $this->getTable("sales_payment_transaction");
+        $paymentTableName = $this->getTable("sales_order_payment");
         $connection = $this->getConnection();
 
         $select = $connection->select()
-            ->from($transactionTableName, 'transaction_id')
+            ->from($transactionTableName, "transaction_id")
             ->where(
-                'sagepaysuite_fraud_check=0'
+                "sagepaysuite_fraud_check = 0"
             )->where(
-                "txn_type='" . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE .
-                "' OR txn_type='" . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH . "'"
+                "txn_type='" . Transaction::TYPE_CAPTURE . "' OR txn_type='" . Transaction::TYPE_AUTH . "'"
             )->where(
-                $transactionTableName . '.parent_id IS NULL'
+                "$transactionTableName.parent_id IS NULL"
             )->where(
-                'created_at >= now() - INTERVAL 2 DAY'
+                "created_at >= now() - INTERVAL 2 DAY"
             )->where(
                 "method LIKE '%sagepaysuite%'"
             )->joinLeft(
-                ['payment' => $paymentTableName],
-                $transactionTableName . '.payment_id = payment.entity_id',
+                ["payment" => $paymentTableName],
+                "$transactionTableName.payment_id = payment.entity_id",
                 []
             )
             ->limit(20);
