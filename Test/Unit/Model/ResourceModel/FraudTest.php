@@ -85,22 +85,32 @@ class FraudTest extends \PHPUnit_Framework_TestCase
     {
         $selectMock = $this
             ->getMockBuilder('Magento\Framework\DB\Select')
-            ->setMethods(['from', 'where', 'limit'])
+            ->setMethods(['from', 'where', 'limit', 'joinLeft'])
             ->disableOriginalConstructor()
             ->getMock();
+        $selectMock
+            ->expects($this->once())
+            ->method('joinLeft')
+            ->with(
+                ["payment" => "sales_order_payment"],
+                'sales_payment_transaction.payment_id = payment.entity_id',
+                []
+            )
+            ->willReturnSelf();
         $selectMock
             ->expects($this->once())
             ->method('from')
             ->with('sales_payment_transaction', 'transaction_id')
             ->willReturnSelf();
         $selectMock
-            ->expects($this->exactly(4))
+            ->expects($this->exactly(5))
             ->method('where')
             ->withConsecutive(
-                ["sagepaysuite_fraud_check=0"],
+                ["sagepaysuite_fraud_check = 0"],
                 ["txn_type='capture' OR txn_type='authorization'"],
-                ["parent_id IS NULL"],
-                ["created_at >= now() - INTERVAL 2 DAY"]
+                ["sales_payment_transaction.parent_id IS NULL"],
+                ["created_at >= now() - INTERVAL 2 DAY"],
+                ["method LIKE '%sagepaysuite%'"]
             )
             ->willReturnSelf();
         $selectMock
@@ -151,10 +161,10 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->method('getConnection')
             ->willReturn($connectionMock);
         $fraudModelMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('getTable')
-            ->with('sales_payment_transaction')
-            ->willReturn('sales_payment_transaction');
+            ->withConsecutive(["sales_payment_transaction"], ["sales_order_payment"])
+        ->willReturnOnConsecutiveCalls("sales_payment_transaction", "sales_order_payment");
 
         $this->assertEquals([['transaction_id' => 198]], $fraudModelMock->getShadowPaidPaymentTransactions());
     }
