@@ -11,6 +11,8 @@ class ThreeDSecureCallbackManagement extends RequestManagement
 {
     const NUM_OF_ATTEMPTS = 5;
 
+    const RETRY_INTERVAL = 1;
+
     /** @var \Magento\Checkout\Model\Session */
     private $checkoutSession;
 
@@ -130,7 +132,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
                 $transactionDetailsResult = $this->getPiRestApi()->transactionDetails($vpsTxId);
             } catch (ApiException $e) {
                 $attempts++;
-                sleep(1);
+                usleep(self::RETRY_INTERVAL*1000000);
                 continue;
             }
 
