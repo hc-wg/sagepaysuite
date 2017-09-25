@@ -41,8 +41,9 @@
                 <div class="actions-toolbar">
                     <div class="primary">
                         <button class="action primary checkout" style="display:none;" id="submit_dropin_payment"
-                                type="submit"
+                                type="button"
                                 data-bind="
+                            click: tokenise,
                             attr: {title: $t('Submit payment')},
                             css: {disabled: isPlaceOrderActionAllowed()},
                             enable: (getCode() == isChecked())
