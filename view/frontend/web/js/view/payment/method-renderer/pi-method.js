@@ -42,6 +42,7 @@ define(
                 creditCardLast4: '',
                 merchantSessionKey: '',
                 cardIdentifier: '',
+                dropInInstance: null
             },
             setPlaceOrderHandler: function (handler) {
                 this.placeOrderHandler = handler;
@@ -58,6 +59,45 @@ define(
             isActive: function () {
                 return true;
             },
+            getRemoteJsName: function () {
+                var self = this;
+                var jsName = 'sagepayjs_';
+                if (self.dropInEnabled()) {
+                    jsName = jsName + 'dropin_';
+                }
+                return jsName;
+            },
+            getConfiguredMode: function () {
+                return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.mode;
+            },
+            getPostCartsUrl: function () {
+                var serviceUrl;
+                if (!customer.isLoggedIn()) {
+                    serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/billing-address', {
+                        cartId: quote.getQuoteId()
+                    });
+                } else {
+                    serviceUrl = urlBuilder.createUrl('/carts/mine/billing-address', {});
+                }
+                return serviceUrl;
+            },
+            createMerchantSessionKey: function () {
+                var self = this;
+                storage.get(urlBuilder.createUrl('/sagepay/pi-msk', {})).done(
+                    function (response) {
+
+                        if (response.success) {
+                            self.sagepayTokeniseCard(response.response);
+                        } else {
+                            self.showPaymentError(response.error_message);
+                        }
+                    }
+                ).fail(
+                    function (response) {
+                        self.showPaymentError("Unable to create Sage Pay merchant session key.");
+                    }
+                );
+            },
             preparePayment: function () {
                 var self = this;
                 self.resetPaymentErrors();
@@ -69,56 +109,20 @@ define(
 
                 fullScreenLoader.startLoader();
 
-                /**
-                 * Save billing address
-                 * Checkout for guest and registered customer.
-                 */
-                var serviceUrl,
-                    payload;
-                if (!customer.isLoggedIn()) {
-                    serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/billing-address', {
-                        cartId: quote.getQuoteId()
-                    });
-                    payload = {
-                        cartId: quote.getQuoteId(),
-                        address: quote.billingAddress()
-                    };
-                } else {
-                    serviceUrl = urlBuilder.createUrl('/carts/mine/billing-address', {});
-                    payload = {
-                        cartId: quote.getQuoteId(),
-                        address: quote.billingAddress()
-                    };
-                }
+                var serviceUrl = self.getPostCartsUrl();
 
-                var jsName = 'sagepayjs_';
-                if (self.dropInEnabled()) {
-                    jsName = jsName + 'dropin_';
-                }
+                var payload = {
+                    cartId: quote.getQuoteId(),
+                    address: quote.billingAddress()
+                };
 
-                requirejs([jsName + window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.mode], function () {
+                requirejs([self.getRemoteJsName() + self.getConfiguredMode()], function () {
                     storage.post(
                         serviceUrl,
                         JSON.stringify(payload)
                     ).done(
                         function () {
-                            serviceUrl = urlBuilder.createUrl('/sagepay/pi-msk', {});
-
-                            //generate merchant session key
-                            storage.get(serviceUrl).done(
-                                function (response) {
-
-                                    if (response.success) {
-                                        self.sagepayTokeniseCard(response.response);
-                                    } else {
-                                        self.showPaymentError(response.error_message);
-                                    }
-                                }
-                            ).fail(
-                                function (response) {
-                                    self.showPaymentError("Unable to create Sage Pay merchant session key.");
-                                }
-                            );
+                            self.createMerchantSessionKey();
                         }
                     ).fail(
                         function (response) {
@@ -129,6 +133,15 @@ define(
 
                 return false;
             },
+            tokenisationAuthenticationFailed: function (tokenisationResult) {
+                return tokenisationResult.error.errorCode === 1002;
+            },
+            tokenise: function() {
+                var self = this;
+                if(self.dropInInstance !== null) {
+                    self.dropInInstance.tokenise();
+                }
+            },
             sagepayTokeniseCard: function (merchant_session_key) {
 
                 var self = this;
@@ -137,7 +150,7 @@ define(
                     if (merchant_session_key) {
                         self.isPlaceOrderActionAllowed(false);
                         self.merchantSessionKey = merchant_session_key;
-                        sagepayCheckout({
+                        self.dropInInstance = sagepayCheckout({
                                 merchantSessionKey: merchant_session_key,
                                 onTokenise: function (tokenisationResult) {
                                     if (tokenisationResult.success) {
@@ -153,10 +166,20 @@ define(
                                             self.showPaymentError("Unable to initialize Sage Pay payment method, please use another payment method.");
                                         }
                                     } else {
-                                        //console.error('Tokenisation failed', tokenisationResult.error.errorMessage);
+                                        //Check if it is "Authentication failed"
+                                        if (self.tokenisationAuthenticationFailed(tokenisationResult)) {
+                                            self.dropInInstance.destroy();
+                                            self.isPlaceOrderActionAllowed(true);
+                                            document.getElementById('submit_dropin_payment').style.display = "none";
+                                            document.getElementById('submit_dropin_payment').onclick = "alert('h'); return false";
+                                            self.resetPaymentErrors();
+                                        } else {
+                                            self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
+                                        }
                                     }
                                 }
-                            }).form();
+                            });
+                        self.dropInInstance.form();
                         fullScreenLoader.stopLoader();
 
                         document.getElementById('submit_dropin_payment').style.display = "block";
@@ -169,7 +192,7 @@ define(
                         token_form.elements[1].setAttribute('value', "Owner");
                         token_form.elements[2].setAttribute('value', document.getElementById(self.getCode() + '_cc_number').value);
                         var expiration = document.getElementById(self.getCode() + '_expiration').value;
-                        expiration = expiration.length == 1 ? "0" + expiration : expiration;
+                        expiration = expiration.length === 1 ? "0" + expiration : expiration;
                         expiration += document.getElementById(self.getCode() + '_expiration_yr').value.substring(2, 4);
                         token_form.elements[3].setAttribute('value', expiration);
                         token_form.elements[4].setAttribute('value', document.getElementById(self.getCode() + '_cc_cid').value);
@@ -214,16 +237,16 @@ define(
                     }
                 }
             },
-            placeTransaction: function () {
-
-                var self = this;
-
+            getPlaceTransactionUrl: function () {
                 var serviceUrl = null;
                 if (customer.isLoggedIn()) {
                     serviceUrl = urlBuilder.createUrl('/sagepay/pi', {});
                 } else {
                     serviceUrl = urlBuilder.createUrl('/sagepay-guest/pi', {});
                 }
+                return serviceUrl;
+            }, placeTransaction: function () {
+                var self = this;
 
                 var callbackUrl = url.build('sagepaysuite/pi/callback3D');
 
@@ -243,6 +266,7 @@ define(
                     fullScreenLoader.startLoader();
                 }
 
+                var serviceUrl = self.getPlaceTransactionUrl();
                 storage.post(
                     serviceUrl,
                     JSON.stringify(payload)
@@ -255,7 +279,7 @@ define(
 
                         if (response.success) {
 
-                            if (response.status == "Ok") {
+                            if (response.status === "Ok") {
 
                                 /**
                                  * transaction authenticated, redirect to success
@@ -267,7 +291,7 @@ define(
                                 }
 
                                 window.location.replace(url.build('checkout/onepage/success/'));
-                            } else if (response.status == "3DAuth") {
+                            } else if (response.status === "3DAuth") {
 
 
                                 customerData.invalidate(['cart']);
@@ -303,6 +327,11 @@ define(
                             }
                         } else {
                             self.showPaymentError(response.error_message);
+                            if (self.dropInEnabled()) {
+                                self.dropInInstance.destroy();
+                                self.isPlaceOrderActionAllowed(true);
+                                document.getElementById('submit_dropin_payment').style.display = "none";
+                            }
                         }
                     }
                 ).fail(
@@ -367,7 +396,6 @@ define(
 
                     $.when(placeOrder).done(
                         function (order_id, response, extra) {
-                            console.log("success");
                             window.location.replace(url.build('checkout/onepage/success/'));
                         }
                     ).fail(
@@ -398,7 +426,7 @@ define(
             resetPaymentErrors: function () {
                 var span = document.getElementById('sagepaysuitepi-payment-errors');
 
-                if (null != span) {
+                if (null !== span) {
                     span.style.display = "none";
                 }
             }
