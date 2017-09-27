@@ -10,13 +10,13 @@
 "repositories": [
          {
             "type": "composer",
-            "url": "https://repo.packagist.com/ebizmartscorp/"
+            "url": "https://packages.ebizmarts.com"
         }
    ]
 ```
 2. Run this command on Magento's root dir. Contact us to get your access token.
 
-`composer config http-basic.repo.packagist.com token your_token`
+`composer config http-basic.gitlab.ebizmarts.com token your_token`
 
 3. Run this command to get the module.
 
@@ -30,7 +30,7 @@
 
 __Requirements__
 
-  - The ZIP file named **Ebizmarts_SagePaySuiteM2-1.1.12.zip**
+  - The ZIP file named **Ebizmarts_SagePaySuiteM2-1.1.14.zip**
   - Access to the Magento 2 server via SSH
   - The unzip command should be available, check by running `which unzip`
   - [Composer](https://getcomposer.org/) needs to be installed in the server
@@ -54,7 +54,7 @@ __Installation__
    
   6. Uncompress Sage Pay Suite package
   
-    $ unzip /PATH/TO/PACKAGE/Ebizmarts_SagePaySuiteM2-1.1.12.zip
+    $ unzip /PATH/TO/PACKAGE/Ebizmarts_SagePaySuiteM2-1.1.14.zip
 
   7. This will create the following content in $MAGENTO_FOLDER$/app/code
     <pre>

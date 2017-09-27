@@ -1,6 +1,23 @@
+1.1.14 (27/09/2017)
+=============
+**This release requires Magento 2.1.x.**
+- Bug fixes
+  - Fix FORM transactions not cancelling when in pending_payment state and customer leaves the payment pages.
+  - Fix error where if a wrong CVC is entered in PI DropIn you cannot retry.
+  - Fix MOTO pricing problem.
+  - Fix SERVER integration VendorTxCode null value.
+  - Fix Transaction not Found error with DropIn.
+  - Fix multiple requests on MOTO orders when changing shipping method.
+  - Show correct error in cart instead of Something went wrong: Invalid Sage Pay Response.
+  - Clear mini-cart after paypal order.
+  - Fix MOTO customer already exists error but payment is taken anyway.
+  - Fix paypal callback using wrong total.
+  - Fix currency:base problem in frontend.
+  - Fix conflict with credit card form dates when other cc payment methods are enabled on frontend.
+  
 1.1.13 (12/07/2017)
 =============
-**This release requires Magento 2.1.0 at least.**
+**This release requires Magento 2.1.x.**
 - Bug fixes
   - Partial refunds after partial invoices.
   - Email error when placing 2 different orders on PI.
@@ -13,13 +30,13 @@
 
 1.1.12 (05/05/2017)
 =============
-**This release requires Magento 2.1.0 at least.**
+**This release requires Magento 2.1.x.**
 - Bug fixes
   - Fix test.param is not a funcion on PI MOTO transactions.
 
 1.1.11 (04/05/2017)
 =============
-**This release requires Magento 2.1.0 at least.**
+**This release requires Magento 2.1.x.**
 - Improvements
   - Change wording on configuration settings.
 - Bug fixes
@@ -33,7 +50,7 @@
   
 1.1.10 (07/02/2017)
 =============
-**This release requires Magento 2.1.0 at least.**
+**This release requires Magento 2.1.x.**
 - Improvements
   - PI requests migrated to WEBAPIs, this fixes issues on frontend orders with custom options.
   - A lot of refactoring, removing duplicate code.
@@ -47,7 +64,7 @@
 
 1.1.9 (21/12/2016)
 =============
-**This release requires Magento 2.1.0 at least.**
+**This release requires Magento 2.1.x.**
 * Improvements
     * PI void using instructions/void API.
     * PI refund using own API.
@@ -62,7 +79,7 @@
 
 1.1.8 (28/10/2016)
 =============
-**This release requires Magento 2.1.0 at least.**
+**This release requires Magento 2.1.x.**
 * Improvements
     * Enable disable form and pi on moto, different config.
     * Add CardHolder to FORM requests for ReD validation.
@@ -84,7 +101,7 @@
 
 1.1.7 (18/08/2016)
 =============
-**This release requires Magento 2.1.0 at least.**
+**This release requires Magento 2.1.x.**
 * Improvements
     * Coding standards for Magento Marketplace.
 * Bug fixes
@@ -93,7 +110,7 @@
 
 1.1.6.0 (12/07/2016)
 =============
-**This release requires Magento 2.1.0 at least.**
+**This release requires Magento 2.1.x.**
 * Improvements
     * Change PI wording for Direct.
 * Bug fixes
