@@ -3,6 +3,7 @@
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite\Api\FormManagementInterface;
+use Ebizmarts\SagePaySuite\Model\Config;
 
 class FormRequestManagement implements FormManagementInterface
 {
@@ -11,7 +12,7 @@ class FormRequestManagement implements FormManagementInterface
     private $result;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
+     * @var Config
      */
     private $_config;
 
@@ -118,7 +119,7 @@ class FormRequestManagement implements FormManagementInterface
 
             //set payment info for save order
             $payment = $this->_quote->getPayment();
-            $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
+            $payment->setMethod(Config::METHOD_FORM);
 
             //save order with pending payment
             /** @var \Magento\Sales\Api\Data\OrderInterface $order */
