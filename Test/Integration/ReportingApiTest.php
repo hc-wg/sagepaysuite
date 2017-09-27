@@ -4,7 +4,7 @@ namespace Ebizmarts\SagePaySuite\Test\Integration;
 
 use Magento\TestFramework\ObjectManager;
 
-class ReportingApiTest extends \PHPUnit_Framework_TestCase
+class ReportingApiTest extends \PHPUnit\Framework\TestCase
 {
     const WHITELIST_IP_ADDRESS = "192.124.249.056";
 

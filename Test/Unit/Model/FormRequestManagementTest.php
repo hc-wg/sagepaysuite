@@ -2,7 +2,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
-class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
+class FormRequestManagementTest extends \PHPUnit\Framework\TestCase
 {
     public function testResponseIsOk()
     {

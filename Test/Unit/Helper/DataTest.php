@@ -8,7 +8,7 @@ namespace Ebizmarts\SagePaySuite\Helper;
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
-class DataTest extends \PHPUnit_Framework_TestCase
+class DataTest extends \PHPUnit\Framework\TestCase
 {
     private $objectManagerHelper;
     /**

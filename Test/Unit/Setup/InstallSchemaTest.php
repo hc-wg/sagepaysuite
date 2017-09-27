@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Setup;
 
-class InstallSchemaTest extends \PHPUnit_Framework_TestCase
+class InstallSchemaTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Setup\InstallSchema

@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Block\Customer;
 
-class TokenListTest extends \PHPUnit_Framework_TestCase
+class TokenListTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Block\Customer\TokenList|\PHPUnit_Framework_MockObject_MockObject

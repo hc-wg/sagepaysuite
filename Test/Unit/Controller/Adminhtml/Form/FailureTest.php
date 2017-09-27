@@ -8,7 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Adminhtml\Form;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class FailureTest extends \PHPUnit_Framework_TestCase
+class FailureTest extends \PHPUnit\Framework\TestCase
 {
 
     /**

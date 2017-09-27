@@ -2,7 +2,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
-class HttpTextTest extends \PHPUnit_Framework_TestCase
+class HttpTextTest extends \PHPUnit\Framework\TestCase
 {
     private $httpTextMock;
 

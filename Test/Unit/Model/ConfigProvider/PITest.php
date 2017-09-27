@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\ConfigProvider;
 
-class PITest extends \PHPUnit_Framework_TestCase
+class PITest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Model\ConfigProvider\PI

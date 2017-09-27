@@ -10,7 +10,7 @@ use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Symfony\Component\DependencyInjection\SimpleXMLElement;
 
-class RequestTest extends \PHPUnit_Framework_TestCase
+class RequestTest extends \PHPUnit\Framework\TestCase
 {
     private $objectManagerHelper;
     /**

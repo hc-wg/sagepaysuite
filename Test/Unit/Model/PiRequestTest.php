@@ -8,7 +8,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
-class PiRequestTest extends \PHPUnit_Framework_TestCase
+class PiRequestTest extends \PHPUnit\Framework\TestCase
 {
 
     public function testGetRequesData()

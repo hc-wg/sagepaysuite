@@ -8,7 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Adminhtml\PI;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
+class GenerateMerchantKeyTest extends \PHPUnit\Framework\TestCase
 {
     public function testExecute()
     {

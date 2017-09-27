@@ -2,7 +2,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\PiRequestManagement;
 
-class ThreeDSecureCallbackManagementTest extends \PHPUnit_Framework_TestCase
+class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
 {
 
     public function testIsNotMotoTransaction()

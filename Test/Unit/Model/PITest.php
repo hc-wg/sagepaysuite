@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
-class PITest extends \PHPUnit_Framework_TestCase
+class PITest extends \PHPUnit\Framework\TestCase
 {
     private $objectManagerHelper;
     private $suiteHelperMock;

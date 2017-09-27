@@ -5,7 +5,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model\ResourceModel;
 use Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud;
 use Magento\Framework\DB\Statement\Pdo\Mysql;
 
-class FraudTest extends \PHPUnit_Framework_TestCase
+class FraudTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetOrdersToCancel()
     {

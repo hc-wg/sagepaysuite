@@ -8,7 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Paypal;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class ProcessingTest extends \PHPUnit_Framework_TestCase
+class ProcessingTest extends \PHPUnit\Framework\TestCase
 {
 
     /**
