@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
+use Ebizmarts\SagePaySuite\Model\Config;
+
 /**
  * Sage Pay PI REST API
  *
@@ -19,7 +21,7 @@ class PIRest
     const ACTION_SUBMIT_3D                = '3d-secure';
     const ACTION_TRANSACTION_DETAILS      = 'transaction_details';
 
-    /** @var \Ebizmarts\SagePaySuite\Model\Config */
+    /** @var Config */
     private $_config;
 
     /** @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory */
@@ -64,7 +66,7 @@ class PIRest
     /**
      * PIRest constructor.
      * @param HttpRestFactory $httpRestFactory
-     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param Config $config
      * @param ApiExceptionFactory $apiExceptionFactory
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $piCaptureResultFactory
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory $paymentMethodResultFactory
@@ -80,7 +82,7 @@ class PIRest
      */
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory $httpRestFactory,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
+        Config $config,
         \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $piCaptureResultFactory,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory $paymentMethodResultFactory,
@@ -96,7 +98,7 @@ class PIRest
     ) {
 
         $this->_config = $config;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
+        $this->_config->setMethodCode(Config::METHOD_PI);
         $this->_apiExceptionFactory       = $apiExceptionFactory;
         $this->piCaptureResultFactory     = $piCaptureResultFactory;
         $this->paymentMethodResultFactory = $paymentMethodResultFactory;
@@ -155,10 +157,10 @@ class PIRest
     {
         switch ($action) {
             case self::ACTION_TRANSACTION_DETAILS:
-                $endpoint = "transactions/" . $vpsTxId;
+                $endpoint = "transactions/$vpsTxId";
                 break;
             case self::ACTION_SUBMIT_3D:
-                $endpoint = "transactions/" . $vpsTxId . "/" . $action;
+                $endpoint = "transactions/$vpsTxId/$action";
                 break;
             case self::ACTION_TRANSACTION_INSTRUCTIONS:
                 $endpoint = sprintf(self::ACTION_TRANSACTION_INSTRUCTIONS, $vpsTxId);
@@ -168,10 +170,10 @@ class PIRest
                 break;
         }
 
-        if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_LIVE . $endpoint;
+        if ($this->_config->getMode() == Config::MODE_LIVE) {
+            return Config::URL_PI_API_LIVE . $endpoint;
         } else {
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_PI_API_TEST . $endpoint;
+            return Config::URL_PI_API_TEST . $endpoint;
         }
     }
 
@@ -398,17 +400,19 @@ class PIRest
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard $card */
             $card = $this->cardResultFactory->create();
 
-            if (isset($captureResult->paymentMethod->card->cardIdentifier)) {
-                $card->setCardIdentifier($captureResult->paymentMethod->card->cardIdentifier);
-            }
+            if (isset($captureResult->paymentMethod)) {
+                if (isset($captureResult->paymentMethod->card->cardIdentifier)) {
+                    $card->setCardIdentifier($captureResult->paymentMethod->card->cardIdentifier);
+                }
 
-            if (isset($captureResult->paymentMethod->card->reusable)) {
-                $card->setIsReusable($captureResult->paymentMethod->card->reusable);
-            }
+                if (isset($captureResult->paymentMethod->card->reusable)) {
+                    $card->setIsReusable($captureResult->paymentMethod->card->reusable);
+                }
 
-            $card->setCardType($captureResult->paymentMethod->card->cardType);
-            $card->setLastFourDigits($captureResult->paymentMethod->card->lastFourDigits);
-            $card->setExpiryDate($captureResult->paymentMethod->card->expiryDate);
+                $card->setCardType($captureResult->paymentMethod->card->cardType);
+                $card->setLastFourDigits($captureResult->paymentMethod->card->lastFourDigits);
+                $card->setExpiryDate($captureResult->paymentMethod->card->expiryDate);
+            }
 
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod $paymentMethod */
             $paymentMethod = $this->paymentMethodResultFactory->create();

@@ -18,7 +18,7 @@ class Cron
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
      * @var \Magento\Sales\Api\OrderPaymentRepositoryInterface
@@ -91,7 +91,7 @@ class Cron
         \Magento\Framework\Api\FilterBuilder $filterBuilder
     ) {
 
-        $this->_suiteLogger            = $suiteLogger;
+        $this->suiteLogger             = $suiteLogger;
         $this->_orderPaymentRepository = $orderPaymentRepository;
         $this->_objectManager          = $objectManager;
         $this->_config                 = $config;
@@ -108,7 +108,7 @@ class Cron
      */
     public function cancelPendingPaymentOrders()
     {
-        $orderIds = $this->fraudModel->getOrdersToCancel();
+        $orderIds = $this->fraudModel->getOrderIdsToCancel();
 
         if (!count($orderIds)) {
             return $this;
@@ -125,55 +125,16 @@ class Cron
             try {
                 /** @var \Magento\Sales\Model\Order\Payment $payment */
                 $payment = $_order->getPayment();
-                if ($payment !== null && !empty($payment->getLastTransId())) {
-                    if ($this->transactionIsPayment($payment->getLastTransId()) === false) {
-                        /**
-                         * CANCEL ORDER AS THERE IS NO TRANSACTION ASSOCIATED
-                         */
-                        $_order->cancel()->save(); //@codingStandardsIgnoreLine
-
-                        $this->_suiteLogger->sageLog(
-                            Logger::LOG_CRON,
-                            ["OrderId" => $orderId,
-                                "Result" => "CANCELLED : No payment received."],
-                            [__METHOD__, __LINE__]
-                        );
-                    } else {
-                        $this->_suiteLogger->sageLog(
-                            Logger::LOG_CRON,
-                            ["OrderId" => $orderId,
-                                "Result" => "ERROR : Transaction found: " . $payment->getLastTransId()],
-                            [__METHOD__, __LINE__]
-                        );
-                    }
+                if ($payment !== null) {
+                    $_order->cancel()->save(); //@codingStandardsIgnoreLine
+                    $this->logCancelledPayment($orderId);
                 } else {
-                    $this->_suiteLogger->sageLog(
-                        Logger::LOG_CRON,
-                        ["OrderId" => $orderId,
-                            "Result" => "ERROR : No payment found."],
-                        [__METHOD__, __LINE__]
-                    );
+                    $this->logErrorPaymentNotFound($orderId);
                 }
             } catch (ApiException $apiException) {
-                $this->_suiteLogger->sageLog(
-                    Logger::LOG_CRON,
-                    [
-                        "OrderId" => $orderId,
-                        "Result"  => $apiException->getUserMessage(),
-                        "Stack"   => $apiException->getTraceAsString()
-                    ],
-                    [__METHOD__, __LINE__]
-                );
+                $this->logApiException($orderId, $apiException);
             } catch (\Exception $e) {
-                $this->_suiteLogger->sageLog(
-                    Logger::LOG_CRON,
-                    [
-                        "OrderId" => $orderId,
-                        "Result"  => $e->getMessage(),
-                        "Trace"   => $e->getTraceAsString()
-                    ],
-                    [__METHOD__, __LINE__]
-                );
+                $this->logGeneralException($orderId, $e);
             }
         }
     }
@@ -209,26 +170,67 @@ class Cron
             }
 
             //log
-            $this->_suiteLogger->sageLog(Logger::LOG_CRON, $logData, [__METHOD__, __LINE__]);
+            $this->suiteLogger->sageLog(Logger::LOG_CRON, $logData, [__METHOD__, __LINE__]);
         }
     }
 
-    private function transactionIsPayment($vpsTxId)
+    /**
+     * @param $orderId
+     */
+    private function logCancelledPayment($orderId)
     {
-        /** @var \Magento\Sales\Api\Data\TransactionSearchResultInterface $transactions */
-        $transactions = $this->_transactionRepository->getList(
-            $this->searchCriteriaBuilderTxnId($vpsTxId)
-        );
-
-        return count($transactions->getItems()) === 1;
+        $this->suiteLogger->sageLog(Logger::LOG_CRON, [
+                "OrderId" => $orderId,
+                "Result"  => "CANCELLED : No payment received."
+            ], [__METHOD__, __LINE__]);
     }
 
-    private function searchCriteriaBuilderTxnId($id)
+    /**
+     * @param $orderId
+     * @param $payment
+     */
+    private function logErrorTransactionNotFound($orderId, $payment)
     {
-        $this->criteriaBuilder->addFilters(
-            [$this->filterBuilder->setField('txn_id')->setValue($id)->setConditionType('eq')->create()]
-        );
+        $this->suiteLogger->sageLog(Logger::LOG_CRON, [
+                "OrderId" => $orderId,
+                "Result"  => "ERROR : Transaction found."
+            ], [__METHOD__, __LINE__]);
+    }
 
-        return $this->criteriaBuilder->create();
+    /**
+     * @param $orderId
+     */
+    private function logErrorPaymentNotFound($orderId)
+    {
+        $this->suiteLogger->sageLog(Logger::LOG_CRON, [
+                "OrderId" => $orderId,
+                "Result"  => "ERROR : No payment found."
+            ], [__METHOD__, __LINE__]);
+    }
+
+    /**
+     * @param $orderId
+     * @param $apiException
+     */
+    private function logApiException($orderId, $apiException)
+    {
+        $this->suiteLogger->sageLog(Logger::LOG_CRON, [
+                "OrderId" => $orderId,
+                "Result"  => $apiException->getUserMessage(),
+                "Stack"   => $apiException->getTraceAsString()
+            ], [__METHOD__, __LINE__]);
+    }
+
+    /**
+     * @param $orderId
+     * @param $e
+     */
+    private function logGeneralException($orderId, $e)
+    {
+        $this->suiteLogger->sageLog(Logger::LOG_CRON, [
+                "OrderId" => $orderId,
+                "Result"  => $e->getMessage(),
+                "Trace"   => $e->getTraceAsString()
+            ], [__METHOD__, __LINE__]);
     }
 }

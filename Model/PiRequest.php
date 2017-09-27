@@ -102,7 +102,7 @@ class PiRequest
         }
 
         //populate payment amount information
-        $data = array_merge($data, $this->requestHelper->populatePaymentAmount($this->getCart(), true));
+        $data = array_merge($data, $this->requestHelper->populatePaymentAmountAndCurrency($this->getCart(), true));
 
         return $data;
     }

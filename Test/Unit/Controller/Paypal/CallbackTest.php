@@ -45,6 +45,9 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
      */
     private $orderMock;
 
+    /** @var \Ebizmarts\SagePaySuite\Helper\Data|\PHPUnit_Framework_MockObject_MockObject */
+    private $suiteHelperMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -173,6 +176,11 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $closedForActionFactoryMock->method('create')->willReturn($closedForActionMock);
 
+        $this->suiteHelperMock = $this->getMockBuilder("Ebizmarts\SagePaySuite\Helper\Data")
+            ->disableOriginalConstructor()
+            ->setMethods(["removeCurlyBraces"])
+            ->getMock();
+
         $objectManagerHelper            = new ObjectManagerHelper($this);
         $this->paypalCallbackController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Paypal\Callback',
@@ -185,7 +193,8 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
                 'transactionFactory' => $transactionFactoryMock,
                 'quoteFactory'       => $quoteFactoryMock,
                 'orderFactory'       => $this->orderFactoryMock,
-                "actionFactory"      => $closedForActionFactoryMock
+                "actionFactory"      => $closedForActionFactoryMock,
+                "suiteHelper"        => $this->suiteHelperMock
             ]
         );
     }
@@ -206,6 +215,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecuteSUCCESS($mode, $paymentAction)
     {
+        $this->suiteHelperMock->expects($this->once())->method("removeCurlyBraces")->willReturn(self::TEST_VPSTXID);
         $this->configMock->method('getMode')->willReturn($mode);
         $this->configMock->method('getSagepayPaymentAction')->willReturn($paymentAction);
         $this->paymentMock->method('getLastTransId')->willReturn(self::TEST_VPSTXID);

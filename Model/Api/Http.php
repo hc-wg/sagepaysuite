@@ -2,6 +2,8 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+
 abstract class Http
 {
     /** @var string */
@@ -25,13 +27,13 @@ abstract class Http
     /** @var \Magento\Framework\HTTP\Adapter\Curl */
     private $curl;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\Logger\Logger */
+    /** @var Logger */
     private $logger;
 
     public function __construct(
         \Magento\Framework\HTTP\Adapter\Curl $curl,
         \Ebizmarts\SagePaySuite\Api\Data\HttpResponseInterface $returnData,
-        \Ebizmarts\SagePaySuite\Model\Logger\Logger $logger
+        Logger $logger
     ) {
         $this->curl        = $curl;
         $this->returnData  = $returnData;
@@ -39,7 +41,7 @@ abstract class Http
     }
 
     /**
-     * @return \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     * @return Logger
      */
     public function getLogger()
     {
@@ -107,7 +109,8 @@ abstract class Http
     {
         $this->initialize();
 
-        $this->getLogger()->sageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST, $body, [__METHOD__, __LINE__]);
+        $formattedBody = str_replace("&", "&\r\n", $body);
+        $this->getLogger()->sageLog(Logger::LOG_REQUEST, $formattedBody, [__METHOD__, __LINE__]);
 
         $this->curl->write(
             \Zend_Http_Client::POST,
@@ -139,7 +142,8 @@ abstract class Http
         );
         $this->responseData = $this->curl->read();
 
-        $this->getLogger()->sageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST, $this->responseData, [__METHOD__, __LINE__]);
+        $this->getLogger()->sageLog(Logger::LOG_REQUEST, $this->destinationUrl, [__METHOD__, __LINE__]);
+        $this->getLogger()->sageLog(Logger::LOG_REQUEST, $this->responseData, [__METHOD__, __LINE__]);
 
         $this->responseCode = $this->curl->getInfo(CURLINFO_HTTP_CODE);
         $this->curl->close();

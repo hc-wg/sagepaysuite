@@ -6,11 +6,10 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Paypal;
 
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\App\Action\Action;
 
-class Processing extends \Magento\Framework\App\Action\Action
+class Processing extends Action
 {
-
     /**
      * @throws LocalizedException
      */

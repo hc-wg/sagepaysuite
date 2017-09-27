@@ -180,7 +180,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $requestHelperMock->expects($this->any())
-            ->method('populatePaymentAmount')
+            ->method('populatePaymentAmountAndCurrency')
             ->will($this->returnValue([]));
         $requestHelperMock->expects($this->any())
             ->method('populateAddressInformation')

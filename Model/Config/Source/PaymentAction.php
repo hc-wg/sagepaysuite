@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Config\Source;
 
+use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Option\ArrayInterface;
 
 /**
@@ -21,15 +22,15 @@ class PaymentAction implements ArrayInterface
     {
         return [
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT,
+                'value' => Config::ACTION_PAYMENT,
                 'label' => __('Payment - Authorize and Capture'),
             ],
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER,
+                'value' => Config::ACTION_DEFER,
                 'label' => __('Defer - Authorize Only'),
             ],
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE,
+                'value' => Config::ACTION_AUTHENTICATE,
                 'label' => __('Authenticate - Authenticate Only'),
             ]
         ];

@@ -2,8 +2,17 @@
 
 namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface;
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
+use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Framework\Validator\Exception as ValidatorException;
+
 class ThreeDSecureCallbackManagement extends RequestManagement
 {
+    const NUM_OF_ATTEMPTS = 5;
+
+    const RETRY_INTERVAL = 1000000;
+
     /** @var \Magento\Checkout\Model\Session */
     private $checkoutSession;
 
@@ -57,7 +66,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     }
 
     /**
-     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
+     * @return PiTransactionResultInterface
      */
     public function pay()
     {
@@ -91,16 +100,14 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         $payResult = $this->pay();
 
         if ($payResult->getStatus() !== null) {
-            //request transaction details to confirm payment
-            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult $transactionDetailsResult */
-            $transactionDetailsResult = $this->getPiRestApi()->transactionDetails(
-                $this->getRequestData()->getTransactionId()
-            );
+
+            $transactionDetailsResult = $this->retrieveTransactionDetails();
 
             $this->_confirmPayment($transactionDetailsResult);
 
             //remove order pre-saved flag from checkout
             $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
+
         } else {
             $this->getResult()->setErrorMessage("Invalid 3D secure authentication.");
         }
@@ -109,13 +116,42 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     }
 
     /**
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $response
-     * @throws \Magento\Framework\Validator\Exception
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult
      */
-    private function _confirmPayment(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $response)
+    private function retrieveTransactionDetails()
+    {
+        $attempts = 0;
+        $transactionDetailsResult = null;
+
+        $vpsTxId = $this->getRequestData()->getTransactionId();
+
+        do {
+            try {
+                /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult $transactionDetailsResult */
+                $transactionDetailsResult = $this->getPiRestApi()->transactionDetails($vpsTxId);
+            } catch (ApiException $e) {
+                $attempts++;
+                usleep(self::RETRY_INTERVAL);
+                continue;
+            }
+        } while ($attempts < self::NUM_OF_ATTEMPTS && $transactionDetailsResult === null);
+
+        if (null === $transactionDetailsResult) {
+            $this->getPiRestApi()->void($vpsTxId);
+            throw new \LogicException("Could not retrieve transaction details");
+        }
+
+        return $transactionDetailsResult;
+    }
+
+    /**
+     * @param PiTransactionResultInterface $response
+     * @throws ValidatorException
+     */
+    private function _confirmPayment(PiTransactionResultInterface $response)
     {
 
-        if ($response->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
+        if ($response->getStatusCode() == Config::SUCCESS_STATUS) {
             $orderId = $this->httpRequest->getParam("orderId");
             $quoteId = $this->httpRequest->getParam("quoteId");
             $this->order   = $this->orderFactory->create()->load($orderId);
@@ -140,15 +176,6 @@ class ThreeDSecureCallbackManagement extends RequestManagement
                 //send email
                 $this->getCheckoutHelper()->sendOrderEmail($this->order);
 
-                /*$transaction = $this->transactionFactory->create();
-                $transaction->setOrderPaymentObject($payment);
-                $transaction->setTxnId($this->getPayResult()->getTransactionId());
-                $transaction->setOrderId($this->order->getEntityId());
-                $transaction->setTxnType(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE);
-                $transaction->setPaymentId($payment->getId());
-                $transaction->setIsClosed(true);
-                $transaction->save();*/
-
                 //update invoice transaction id
                 $this->order->getInvoiceCollection()
                     ->setDataToAll('transaction_id', $payment->getLastTransId())
@@ -162,10 +189,10 @@ class ThreeDSecureCallbackManagement extends RequestManagement
                 $this->checkoutSession->setLastRealOrderId($this->order->getIncrementId());
                 $this->checkoutSession->setLastOrderStatus($this->order->getStatus());
             } else {
-                throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
+                throw new ValidatorException(__('Unable to save Sage Pay order'));
             }
         } else {
-            throw new \Magento\Framework\Validator\Exception(__('Invalid Sage Pay response'));
+            throw new ValidatorException(__('Invalid Sage Pay response: %1', $response->getStatusDetail()));
         }
     }
 }

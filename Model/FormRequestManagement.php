@@ -3,6 +3,7 @@
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite\Api\FormManagementInterface;
+use Ebizmarts\SagePaySuite\Model\Config;
 
 class FormRequestManagement implements FormManagementInterface
 {
@@ -11,7 +12,7 @@ class FormRequestManagement implements FormManagementInterface
     private $result;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
+     * @var Config
      */
     private $_config;
 
@@ -118,7 +119,7 @@ class FormRequestManagement implements FormManagementInterface
 
             //set payment info for save order
             $payment = $this->_quote->getPayment();
-            $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
+            $payment->setMethod(Config::METHOD_FORM);
 
             //save order with pending payment
             /** @var \Magento\Sales\Api\Data\OrderInterface $order */
@@ -205,7 +206,7 @@ class FormRequestManagement implements FormManagementInterface
         $data['EmailMessage'] = substr($this->_config->getFormEmailMessage(), 0, 7500);
 
         //populate payment amount information
-        $data = array_merge($data, $this->_requestHelper->populatePaymentAmount($this->_quote));
+        $data = array_merge($data, $this->_requestHelper->populatePaymentAmountAndCurrency($this->_quote));
 
         $data = $this->_requestHelper->unsetBasketXMLIfAmountsDontMatch($data);
 
