@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Model\ResourceModel;
 
 use \Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment\Transaction;
 
 /**
@@ -29,21 +30,28 @@ class Fraud extends AbstractDb
     /**
      * @return array
      */
-    public function getOrdersToCancel()
+    public function getOrderIdsToCancel()
     {
         $ordersTableName = $this->getTable('sales_order');
+        $paymentTableName = $this->salesOrderPaymentTableName();
         $connection      = $this->getConnection();
 
         $select = $connection->select()
-            ->from($ordersTableName, 'entity_id')
+            ->from($ordersTableName, "$ordersTableName.entity_id")
             ->where(
-                'state=?',
-                \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT
+                "$ordersTableName.state=?",
+                Order::STATE_PENDING_PAYMENT
             )
             ->where(
-                'created_at <= now() - INTERVAL 15 MINUTE'
+                "$ordersTableName.created_at <= now() - INTERVAL 15 MINUTE"
             )->where(
-                'created_at >= now() - INTERVAL 2 DAY'
+                "$ordersTableName.created_at >= now() - INTERVAL 2 DAY"
+            )->where(
+                "payment.method LIKE '%sagepaysuite%'"
+            )->joinInner(
+                ["payment" => $paymentTableName],
+                "$ordersTableName.entity_id = payment.parent_id",
+                []
             )
             ->limit(10);
 
@@ -61,7 +69,7 @@ class Fraud extends AbstractDb
     {
 
         $transactionTableName = $this->getTable("sales_payment_transaction");
-        $paymentTableName = $this->getTable("sales_order_payment");
+        $paymentTableName = $this->salesOrderPaymentTableName();
         $connection = $this->getConnection();
 
         $select = $connection->select()
@@ -91,5 +99,13 @@ class Fraud extends AbstractDb
         }
 
         return $data;
+    }
+
+    /**
+     * @return string
+     */
+    private function salesOrderPaymentTableName()
+    {
+        return $this->getTable("sales_order_payment");
     }
 }
