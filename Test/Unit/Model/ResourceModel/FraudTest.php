@@ -2,27 +2,40 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\ResourceModel;
 
+use Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud;
+use Magento\Framework\DB\Statement\Pdo\Mysql;
+
 class FraudTest extends \PHPUnit_Framework_TestCase
 {
     public function testGetOrdersToCancel()
     {
         $selectMock = $this
             ->getMockBuilder('Magento\Framework\DB\Select')
-            ->setMethods(['from', 'where', 'limit'])
+            ->setMethods(['from', 'where', 'limit', 'joinInner'])
             ->disableOriginalConstructor()
             ->getMock();
         $selectMock
             ->expects($this->once())
             ->method('from')
-            ->with('sales_order', 'entity_id')
+            ->with('sales_order', 'sales_order.entity_id')
             ->willReturnSelf();
         $selectMock
-            ->expects($this->exactly(3))
+            ->expects($this->exactly(4))
             ->method('where')
             ->withConsecutive(
-                ['state=?', 'pending_payment'],
-                ['created_at <= now() - INTERVAL 15 MINUTE'],
-                ['created_at >= now() - INTERVAL 2 DAY']
+                ['sales_order.state=?', 'pending_payment'],
+                ['sales_order.created_at <= now() - INTERVAL 15 MINUTE'],
+                ['sales_order.created_at >= now() - INTERVAL 2 DAY'],
+                ["payment.method LIKE '%sagepaysuite%'"]
+            )
+            ->willReturnSelf();
+        $selectMock
+            ->expects($this->once())
+            ->method("joinInner")
+            ->with(
+                ["payment" => "sales_order_payment"],
+                "sales_order.entity_id = payment.parent_id",
+                []
             )
             ->willReturnSelf();
         $selectMock
@@ -32,7 +45,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->willReturnSelf();
 
         $queryMock = $this
-            ->getMockBuilder(\Magento\Framework\DB\Statement\Pdo\Mysql::class)
+            ->getMockBuilder(Mysql::class)
             ->setMethods(['fetchColumn'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -63,8 +76,9 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->method('getConnection')
             ->willReturn($connectionMock);
 
+        /** @var Fraud $fraudModelMock */
         $fraudModelMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+            ->getMockBuilder(Fraud::class)
             ->setMethods(['getTable', 'getConnection'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -73,12 +87,13 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->method('getConnection')
             ->willReturn($connectionMock);
         $fraudModelMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('getTable')
-            ->with('sales_order')
-            ->willReturn('sales_order');
+            ->withConsecutive(
+                ["sales_order"], ["sales_order_payment"])
+            ->willReturnOnConsecutiveCalls("sales_order", "sales_order_payment");
 
-        $this->assertEquals([198], $fraudModelMock->getOrdersToCancel());
+        $this->assertEquals([198], $fraudModelMock->getOrderIdsToCancel());
     }
 
     public function testGetShadowPaidPaymentTransactions()
@@ -120,7 +135,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->willReturnSelf();
 
         $queryMock = $this
-            ->getMockBuilder(\Magento\Framework\DB\Statement\Pdo\Mysql::class)
+            ->getMockBuilder(Mysql::class)
             ->setMethods(['fetch'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -152,7 +167,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->willReturn($connectionMock);
 
         $fraudModelMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+            ->getMockBuilder(Fraud::class)
             ->setMethods(['getTable', 'getConnection'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -172,7 +187,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
     public function testConstructIsCallingResetter()
     {
         $fraudModelMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+            ->getMockBuilder(Fraud::class)
             ->disableOriginalConstructor()
             ->getMock();
 
