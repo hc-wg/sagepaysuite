@@ -52,7 +52,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
     protected function setUp()
     {
         $this->paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->setMethods(["getMethodInstance"])
+            ->setMethods(["getMethodInstance", "getLastTransId"])
             ->disableOriginalConstructor()->getMock();
         $this->paymentMock->method('getMethodInstance')->willReturnSelf();
 
@@ -78,7 +78,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->will($this->returnValue($quoteMock));
 
         $this->responseMock = $this
-            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->getMockBuilder('Magento\Framework\App\Response\Http')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -119,7 +119,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
 
         $this->orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
-            ->setMethods(["getPayment", "place"])
+            ->setMethods(["getPayment", "place", "getId"])
             ->disableOriginalConstructor()
             ->getMock();
         $this->orderMock->expects($this->any())
@@ -166,7 +166,10 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->method('placeOrder')
             ->will($this->returnValue($this->orderMock));
 
-        $this->quoteMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)->disableOriginalConstructor()->getMock();
+        $this->quoteMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["getId"])
+            ->getMock();
 
         $quoteFactoryMock = $this->getMockBuilder(\Magento\Quote\Model\QuoteFactory::class)
             ->setMethods(['create', 'load'])
