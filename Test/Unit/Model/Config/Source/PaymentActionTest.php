@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Config\Source;
 
-class PaymentActionTest extends \PHPUnit_Framework_TestCase
+class PaymentActionTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config\Source\PaymentAction

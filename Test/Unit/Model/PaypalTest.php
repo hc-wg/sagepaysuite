@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
-class PaypalTest extends \PHPUnit_Framework_TestCase
+class PaypalTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * Sage Pay Transaction ID

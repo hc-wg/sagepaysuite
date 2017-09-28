@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer;
 
-class RulesTest extends \PHPUnit_Framework_TestCase
+class RulesTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer\Rules

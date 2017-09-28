@@ -9,7 +9,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Store\Model\ScopeInterface;
 
-class ConfigTest extends \PHPUnit_Framework_TestCase
+class ConfigTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
@@ -65,7 +65,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     public function testSetConfigurationStoreId()
     {
         $this->configModel->setConfigurationScopeId(59);
-        \PHPUnit_Framework_Assert::assertAttributeEquals(59, "configurationScopeId", $this->configModel);
+        \PHPUnit\Framework\Assert::assertAttributeEquals(59, "configurationScopeId", $this->configModel);
     }
 
     public function testIsMethodActiveMoto()

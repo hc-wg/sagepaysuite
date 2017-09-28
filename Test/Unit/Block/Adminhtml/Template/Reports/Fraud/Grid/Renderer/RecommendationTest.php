@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer;
 
-class RecommendationTest extends \PHPUnit_Framework_TestCase
+class RecommendationTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @param $data

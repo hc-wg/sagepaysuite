@@ -8,7 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Adminhtml\PI;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class RequestTest extends \PHPUnit_Framework_TestCase
+class RequestTest extends \PHPUnit\Framework\TestCase
 {
     private $contextMock;
     private $configMock;
@@ -75,6 +75,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
+            ->setMethods(["getGrandTotal", "getQuoteCurrencyCode", "getPayment", "getBillingAddress"])
             ->disableOriginalConstructor()
             ->getMock();
         $quoteMock->expects($this->any())
@@ -99,7 +100,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($quoteMock));
 
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->resultJson = $this->getMockBuilder('Magento\Framework\Controller\Result\Json')
             ->disableOriginalConstructor()
@@ -176,6 +179,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $requestHelperMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Request')
+            ->setMethods(["populatePaymentAmount", "getOrderDescription"])
             ->disableOriginalConstructor()
             ->getMock();
         $requestHelperMock->expects($this->any())
@@ -185,10 +189,14 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->method('getOrderDescription')
             ->will($this->returnValue("description"));
 
-        $this->adminOrder = $this->getMock('Magento\Sales\Model\AdminOrder\Create', [], [], '', false);
+        $this->adminOrder = $this->getMockBuilder('Magento\Sales\Model\AdminOrder\Create', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->adminOrder->method('setIsValidate')->willReturnSelf();
         $this->adminOrder->method('importPostData')->willReturnSelf();
-        $objManager = $this->getMock('\Magento\Framework\ObjectManager\ObjectManager', [], [], '', false);
+        $objManager = $this->getMockBuilder('\Magento\Framework\ObjectManager\ObjectManager', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
         $objManager->method('get')->willReturn($this->adminOrder);
         $contextMock->method('getObjectManager')
             ->willReturn($objManager);
@@ -349,30 +357,6 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $requesterMock->expects($this->once())->method('setRequestdata');
         $requesterMock->expects($this->once())->method('setQuote');
         $requesterMock->expects($this->once())->method('placeOrder')->willReturn($piResultInterfaceMock);
-
-//        $this->paymentMock->expects($this->once())->method('setCcLast4');
-//        $this->paymentMock->expects($this->once())->method('setCcExpMonth');
-//        $this->paymentMock->expects($this->once())->method('setCcExpYear');
-//        $this->paymentMock->expects($this->once())->method('setCcType');
-//        $this->paymentMock->expects($this->exactly(8))->method('setAdditionalInformation');
-//
-//        $this->pirestapiMock
-//            ->expects($this->once())
-//            ->method('capture')
-//            ->willReturn($captureData);
-//
-//        $this->requestMock
-//            ->expects($this->exactly(2))
-//            ->method('getPost')
-//            ->willReturn($postData);
-//
-//        $this->adminOrder->method('createOrder')->willReturn($this->orderMock);
-//
-//        $this->quoteManagementMock->expects($this->any())
-//            ->method('submit')
-//            ->willreturn($this->orderMock);
-//
-//        $this->_expectResultJson($expectedResponse);
 
         $objectManagerHelper       = new ObjectManagerHelper($this);
         $this->piRequestController = $objectManagerHelper->getObject(

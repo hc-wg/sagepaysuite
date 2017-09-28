@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Setup;
 
-class UpgradeSchemaTest extends \PHPUnit_Framework_TestCase
+class UpgradeSchemaTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Setup\UpgradeSchema
@@ -64,10 +64,7 @@ class UpgradeSchemaTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $schemaSetupMock->expects($this->at(0))
-            ->method('1.0.0')
-            ->willReturn($connectionMock);
-        $schemaSetupMock->expects($this->at(0))
-            ->method('1.1.0')
+            ->method('getConnection')
             ->willReturn($connectionMock);
 
         $this->upgradeSchema->upgrade($schemaSetupMock, $moduleContextMock);

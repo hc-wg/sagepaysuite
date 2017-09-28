@@ -8,7 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Observer;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
+class CheckoutCartIndexTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Observer\CheckoutCartIndex

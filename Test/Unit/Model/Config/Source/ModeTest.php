@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Config\Source;
 
-class ModeTest extends \PHPUnit_Framework_TestCase
+class ModeTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config\Source\Mode

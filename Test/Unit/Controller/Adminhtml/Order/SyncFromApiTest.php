@@ -8,7 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Adminhtml\Order;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class SyncFromApiTest extends \PHPUnit_Framework_TestCase
+class SyncFromApiTest extends \PHPUnit\Framework\TestCase
 {
     /** @var \Magento\Framework\TestFramework\Unit\Helper\ObjectManager */
     private $objectManagerHelper;
@@ -25,7 +25,9 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
         $responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
             ->disableOriginalConstructor()
@@ -232,7 +234,9 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $contextMock->expects($this->any())
             ->method('getResponse')
             ->will($this->returnValue($this
-                ->getMock('Magento\Framework\App\Response\Http', [], [], '', false)));
+                ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+                ->disableOriginalConstructor()
+                ->getMock()));
         $contextMock->expects($this->any())
             ->method('getHelper')
             ->will($this->returnValue($helperMock));
@@ -252,7 +256,9 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
         $responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
             ->disableOriginalConstructor()

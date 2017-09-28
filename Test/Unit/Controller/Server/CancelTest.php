@@ -8,7 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Server;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class CancelTest extends \PHPUnit_Framework_TestCase
+class CancelTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Controller\Server\Cancel
@@ -46,7 +46,9 @@ class CancelTest extends \PHPUnit_Framework_TestCase
             ->willReturn("Error message");
 
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
             ->disableOriginalConstructor()

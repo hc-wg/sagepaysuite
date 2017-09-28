@@ -123,9 +123,11 @@ define(
                                     .done(
                                         function (response) {
                                             if (response.success) {
-                                                if (response.response[1].PayPalRedirectURL) {
+                                                var sagePayResponse = $.parseJSON(response.response[1]);
+                                                var redirectUrl = sagePayResponse.PayPalRedirectURL;
+                                                if (redirectUrl) {
                                                     customerData.invalidate(['cart']);
-                                                    window.location.href = response.response[1].PayPalRedirectURL;
+                                                    window.location.href = redirectUrl;
                                                 } else {
                                                     self.showPaymentError("Invalid response from PayPal, please try again later.");
                                                 }

@@ -187,10 +187,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function canUseInternal()
     {
-        $configEnabled = (bool)(int)$this->_config->setMethodCode(
-            \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM
-        )->isMethodActiveMoto();
-        return $configEnabled;
+        return false;
     }
 
     /**
@@ -201,14 +198,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function isActive($storeId = null)
     {
-        $areaCode = $this->_context->getAppState()->getAreaCode();
-
-        $moto = '';
-        if ($areaCode == 'adminhtml') {
-            $moto .= '_moto';
-        }
-
-        return (bool)(int)$this->getConfigData('active' . $moto, $storeId);
+        return (bool)(int)$this->getConfigData('active', $storeId);
     }
 
     /**

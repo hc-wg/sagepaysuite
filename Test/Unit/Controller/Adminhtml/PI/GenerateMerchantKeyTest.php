@@ -8,12 +8,14 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Adminhtml\PI;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
+class GenerateMerchantKeyTest extends \PHPUnit\Framework\TestCase
 {
     public function testExecute()
     {
         $responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $resultJson = $this
             ->getMockBuilder('Magento\Framework\Controller\Result\Json')
@@ -84,7 +86,9 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
     public function testExecuteApiException()
     {
         $responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $resultJson = $this->getMockBuilder('Magento\Framework\Controller\Result\Json')
             ->disableOriginalConstructor()

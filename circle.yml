@@ -2,11 +2,12 @@ machine:
   services:
     - redis
   php:
-    version: 7.0.7
+    version: 7.0.20
   environment:
     MAGE_ROOT: /home/ubuntu/
-    MAGE_VERSION: 2.1.6
+    MAGE_VERSION: 2.2.0
     MARKETPLACE_EQP_VERSION: 1.0.5
+    PHPUNIT_VERSION: 6.2.4
     DB_URL: 127.0.0.1
     DB_NAME: circle_test
     DB_USER: ubuntu
@@ -16,14 +17,14 @@ machine:
 
 dependencies:
   pre:
-    - echo "memory_limit = 768M" > /opt/circleci/php/7.0.7/etc/conf.d/memory.ini
+    - echo "memory_limit = 768M" > /opt/circleci/php/7.0.20/etc/conf.d/memory.ini
     - sudo apt-add-repository -y 'deb http://ppa.launchpad.net/ondrej/mysql-experimental/ubuntu precise main'
     - sudo apt-get update; sudo DEBIAN_FRONTEND=noninteractive apt-get install -y php5-curl apache2-mpm-prefork
   override:
     - cd .. && wget http://ebizmartsbackup.s3.amazonaws.com/Magento-EE-$MAGE_VERSION.tar.gz
     - cd .. && mkdir magento2-$MAGE_VERSION && cd magento2-$MAGE_VERSION && tar xzf ../Magento-EE-$MAGE_VERSION.tar.gz
-    - cd ../magento2-$MAGE_VERSION && wget http://ebizmartsbackup.s3.amazonaws.com/phpunit-4.8.27.phar
-    - chmod +x ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar
+    - cd ../magento2-$MAGE_VERSION && wget http://ebizmartsbackup.s3.amazonaws.com/phpunit-$PHPUNIT_VERSION.phar
+    - chmod +x ../magento2-$MAGE_VERSION/phpunit-$PHPUNIT_VERSION.phar
     - cd ../magento2-$MAGE_VERSION && wget https://github.com/squizlabs/PHP_CodeSniffer/releases/download/2.7.1/phpcs.phar
     - cd ../magento2-$MAGE_VERSION && chmod +x phpcs.phar
     - cd ../magento2-$MAGE_VERSION && wget https://github.com/magento-ecg/coding-standard/archive/2.0.tar.gz && tar xzf 2.0.tar.gz
@@ -63,5 +64,5 @@ test:
     - cd ../magento2-$MAGE_VERSION && ../magento2-$MAGE_VERSION/phpcs.phar --config-set installed_paths $MAGE_ROOT/marketplace-eqp-$MARKETPLACE_EQP_VERSION && ../magento2-$MAGE_VERSION/phpcs.phar -n --standard="MEQP2" ../magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite;
     - cd ../magento2-$MAGE_VERSION && mkdir var/log/SagePaySuite && touch var/log/SagePaySuite/Request.log && chmod -R 777 var/log
     #- /opt/circleci/php/7.0.7/bin/php ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c $MAGE_ROOT/magento2-$MAGE_VERSION/dev/tests/api-functional/phpunit.xml
-    - ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c ../magento2-$MAGE_VERSION/dev/tests/unit/phpunit_config.xml --coverage-text
+    - ../magento2-$MAGE_VERSION/phpunit-$PHPUNIT_VERSION.phar -c ../magento2-$MAGE_VERSION/dev/tests/unit/phpunit_config.xml --coverage-text
     #- /opt/circleci/php/7.0.7/bin/php ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c $MAGE_ROOT/magento2-$MAGE_VERSION/dev/tests/integration/phpunit.xml

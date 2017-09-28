@@ -1,3 +1,8 @@
+1.2.0 (28/09/2017)
+=============
+**This release requires Magento 2.2.0.**
+- First release with Magento 2.2.0 compatibility.
+
 1.1.14 (27/09/2017)
 =============
 **This release requires Magento 2.1.x.**

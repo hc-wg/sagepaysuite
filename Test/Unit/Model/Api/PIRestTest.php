@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
-class PIRestTest extends \PHPUnit_Framework_TestCase
+class PIRestTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest

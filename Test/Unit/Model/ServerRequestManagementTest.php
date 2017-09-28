@@ -2,7 +2,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
-class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
+class ServerRequestManagementTest extends \PHPUnit\Framework\TestCase
 {
     private $objectManagerHelper;
 

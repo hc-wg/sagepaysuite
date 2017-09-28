@@ -8,7 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\PI;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class Callback3DTest extends \PHPUnit_Framework_TestCase
+class Callback3DTest extends \PHPUnit\Framework\TestCase
 {
     private $objectManagerHelper;
 

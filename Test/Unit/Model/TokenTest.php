@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
-class TokenTest extends \PHPUnit_Framework_TestCase
+class TokenTest extends \PHPUnit\Framework\TestCase
 {
     private $objectManagerHelper;
     /**
@@ -196,21 +196,6 @@ class TokenTest extends \PHPUnit_Framework_TestCase
                 \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_TEST,
                 ["OK"]
             );
-
-        $token->deleteToken();
-    }
-
-    public function testDeleteToken2()
-    {
-        $token = $this->tokenModel->saveToken(
-            1,
-            'fsd587fds78dfsfdsa687dsa',
-            'VISA',
-            '0006',
-            '02',
-            '22',
-            ''
-        );
 
         $token->deleteToken();
     }

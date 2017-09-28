@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
-class CheckoutTest extends \PHPUnit_Framework_TestCase
+class CheckoutTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Checkout
@@ -41,6 +41,7 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
     {
         $customerMock = $this
             ->getMockBuilder('Magento\Customer\Model\Customer')
+            ->setMethods(["getDefaultBilling"])
             ->disableOriginalConstructor()
             ->getMock();
         $customerMock->expects($this->any())

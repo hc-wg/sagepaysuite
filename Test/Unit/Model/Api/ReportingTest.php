@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
-class ReportingTest extends \PHPUnit_Framework_TestCase
+class ReportingTest extends \PHPUnit\Framework\TestCase
 {
     private $curlMockFactory;
     /**

@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\ConfigProvider;
 
-class PaypalTest extends \PHPUnit_Framework_TestCase
+class PaypalTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Model\ConfigProvider\Paypal

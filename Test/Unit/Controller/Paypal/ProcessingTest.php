@@ -8,7 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Paypal;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class ProcessingTest extends \PHPUnit_Framework_TestCase
+class ProcessingTest extends \PHPUnit\Framework\TestCase
 {
 
     /**
@@ -30,7 +30,9 @@ class ProcessingTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')

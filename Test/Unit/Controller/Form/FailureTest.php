@@ -8,12 +8,14 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Form;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class FailureTest extends \PHPUnit_Framework_TestCase
+class FailureTest extends \PHPUnit\Framework\TestCase
 {
     public function testExecute()
     {
         $responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $requestMock = $this
             ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
@@ -128,7 +130,9 @@ class FailureTest extends \PHPUnit_Framework_TestCase
     public function testExecuteException()
     {
         $responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $requestMock = $this
             ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
@@ -193,7 +197,9 @@ class FailureTest extends \PHPUnit_Framework_TestCase
     public function testExecuteOrderCancelException()
     {
         $responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $requestMock = $this
             ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')

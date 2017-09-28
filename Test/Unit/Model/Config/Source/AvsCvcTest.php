@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Config\Source;
 
-class AvsCvcTest extends \PHPUnit_Framework_TestCase
+class AvsCvcTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config\Source\AvsCvc
