@@ -15,13 +15,16 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
     private $configMock;
     private $paymentMock;
 
+    /** @var \Magento\Checkout\Model\Session|\PHPUnit_Framework_MockObject_MockObject */
+    private $checkoutSessionMock;
+
     /**
      * Sage Pay Transaction ID
      */
     const TEST_VPSTXID = 'F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F';
 
     /**
-     * @var /Ebizmarts\SagePaySuite\Controller\Paypal\Callback
+     * @var \Ebizmarts\SagePaySuite\Controller\Paypal\Callback
      */
     private $paypalCallbackController;
 
@@ -52,7 +55,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
     protected function setUp()
     {
         $this->paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->setMethods(["getMethodInstance", "getLastTransId"])
+            ->setMethods(["getMethodInstance", "getLastTransId", "save"])
             ->disableOriginalConstructor()->getMock();
         $this->paymentMock->method('getMethodInstance')->willReturnSelf();
 
@@ -68,12 +71,22 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->method('getPayment')
             ->will($this->returnValue($this->paymentMock));
 
-        $checkoutSessionMock = $this
-            ->getMockBuilder(\Magento\Checkout\Model\Session::class)
-            ->setMethods(["getQuote"])
+        $this->checkoutSessionMock = $this->getMockBuilder(\Magento\Checkout\Model\Session::class)
+            ->setMethods(
+                [
+                    "getQuote",
+                    "clearHelperData",
+                    "setLastQuoteId",
+                    "setLastSuccessQuoteId",
+                    "setLastOrderId",
+                    "setLastRealOrderId",
+                    "setLastOrderStatus",
+                    "setData"
+                ]
+            )
             ->disableOriginalConstructor()
             ->getMock();
-        $checkoutSessionMock->expects($this->any())
+        $this->checkoutSessionMock->expects($this->any())
             ->method('getQuote')
             ->will($this->returnValue($quoteMock));
 
@@ -193,7 +206,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
 
         $this->suiteHelperMock = $this->getMockBuilder("Ebizmarts\SagePaySuite\Helper\Data")
             ->disableOriginalConstructor()
-            ->setMethods(["removeCurlyBraces"])
+            ->setMethods(["methodCodeIsSagePay"])
             ->getMock();
 
         $objectManagerHelper            = new ObjectManagerHelper($this);
@@ -202,7 +215,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             [
                 'context'            => $contextMock,
                 'config'             => $this->configMock,
-                'checkoutSession'    => $checkoutSessionMock,
+                'checkoutSession'    => $this->checkoutSessionMock,
                 'checkoutHelper'     => $checkoutHelperMock,
                 'postApi'            => $postApiMock,
                 'transactionFactory' => $transactionFactoryMock,
@@ -230,18 +243,24 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
      */
     public function testExecuteSUCCESS($mode, $paymentAction)
     {
-        $this->suiteHelperMock->expects($this->once())->method("removeCurlyBraces")->willReturn(self::TEST_VPSTXID);
         $this->configMock->method('getMode')->willReturn($mode);
         $this->configMock->method('getSagepayPaymentAction')->willReturn($paymentAction);
         $this->paymentMock->method('getLastTransId')->willReturn(self::TEST_VPSTXID);
         $this->orderMock->expects($this->exactly(2))->method('getId')->willReturn(70);
         $this->quoteMock->expects($this->exactly(3))->method('getId')->willReturn(69);
+        $this->checkoutSessionMock->expects($this->once())->method("clearHelperData")->willReturn(null);
+        $this->checkoutSessionMock
+            ->expects($this->once())->method("setLastQuoteId")->with(69);
+        $this->checkoutSessionMock
+            ->expects($this->once())->method("setLastSuccessQuoteId")->with(69);
+        $this->checkoutSessionMock
+            ->expects($this->once())->method("setLastOrderId")->with(70);
 
         $this->requestMock->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
                 "Status" => "PAYPALOK",
-                "StatusDetail" => "OK STATUS",
+                "StatusDetail" => "OK STATUS SUCCESS",
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
             ]));
 
@@ -313,6 +332,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
         $this->quoteMock->method('getId')->willReturn(69);
         $this->orderMock->method('getId')->willReturn(70);
         $this->paymentMock->method('getLastTransId')->willReturn('notequal');
+        $this->paymentMock->method('save')->willReturnSelf();
 
         $this->requestMock->expects($this->once())
             ->method('getPost')
