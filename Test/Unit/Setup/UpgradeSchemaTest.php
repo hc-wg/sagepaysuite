@@ -64,10 +64,7 @@ class UpgradeSchemaTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $schemaSetupMock->expects($this->at(0))
-            ->method('1.0.0')
-            ->willReturn($connectionMock);
-        $schemaSetupMock->expects($this->at(0))
-            ->method('1.1.0')
+            ->method('getConnection')
             ->willReturn($connectionMock);
 
         $this->upgradeSchema->upgrade($schemaSetupMock, $moduleContextMock);

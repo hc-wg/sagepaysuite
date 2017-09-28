@@ -51,11 +51,14 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
-        $this->paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')->disableOriginalConstructor()->getMock();
+        $this->paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->setMethods(["getMethodInstance"])
+            ->disableOriginalConstructor()->getMock();
         $this->paymentMock->method('getMethodInstance')->willReturnSelf();
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
+            ->setMethods(["getGrandTotal", "getPayment"])
             ->disableOriginalConstructor()
             ->getMock();
         $quoteMock->expects($this->any())
@@ -66,7 +69,8 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->will($this->returnValue($this->paymentMock));
 
         $checkoutSessionMock = $this
-            ->getMockBuilder('Magento\Checkout\Model\Session')
+            ->getMockBuilder(\Magento\Checkout\Model\Session::class)
+            ->setMethods(["getQuote"])
             ->disableOriginalConstructor()
             ->getMock();
         $checkoutSessionMock->expects($this->any())
@@ -74,20 +78,25 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->will($this->returnValue($quoteMock));
 
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
+        $this->redirectMock = $this->getMockBuilder(\Magento\Store\App\Response\Redirect::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
             ->disableOriginalConstructor()
             ->getMock();
 
         $contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')
+            ->setMethods(["getRequest","getResponse", "getRedirect", "getMessageManager"])
             ->disableOriginalConstructor()
             ->getMock();
         $contextMock->expects($this->any())
@@ -110,6 +119,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
 
         $this->orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
+            ->setMethods(["getPayment", "place"])
             ->disableOriginalConstructor()
             ->getMock();
         $this->orderMock->expects($this->any())
@@ -134,6 +144,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
 
         $postApiMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Post')
+            ->setMethods(["sendPost"])
             ->disableOriginalConstructor()
             ->getMock();
         $postApiMock->expects($this->any())
@@ -148,6 +159,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
 
         $checkoutHelperMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Checkout')
+            ->setMethods(["placeOrder"])
             ->disableOriginalConstructor()
             ->getMock();
         $checkoutHelperMock->expects($this->any())

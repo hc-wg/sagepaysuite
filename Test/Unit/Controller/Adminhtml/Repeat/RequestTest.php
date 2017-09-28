@@ -64,6 +64,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
+            ->setMethods(["getGrandTotal", "getQuoteCurrencyCode", "getPayment", "getBillingAddress"])
             ->disableOriginalConstructor()
             ->getMock();
         $quoteMock->expects($this->any())
@@ -88,7 +89,9 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             ->will($this->returnValue($quoteMock));
 
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->resultJson = $this->getMockBuilder('Magento\Framework\Controller\Result\Json')
             ->disableOriginalConstructor()

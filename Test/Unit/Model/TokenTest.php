@@ -200,21 +200,6 @@ class TokenTest extends \PHPUnit\Framework\TestCase
         $token->deleteToken();
     }
 
-    public function testDeleteToken2()
-    {
-        $token = $this->tokenModel->saveToken(
-            1,
-            'fsd587fds78dfsfdsa687dsa',
-            'VISA',
-            '0006',
-            '02',
-            '22',
-            ''
-        );
-
-        $token->deleteToken();
-    }
-
     public function testDeleteTokenDelete()
     {
         /** @var \Ebizmarts\SagePaySuite\Model\Token $tokenModelMock */

@@ -241,7 +241,9 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()->getMock();
 
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\App\Request\Http')
@@ -395,7 +397,9 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()->getMock();
 
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\App\Request\Http')
@@ -538,7 +542,9 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()->getMock();
 
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\App\Request\Http')
@@ -686,7 +692,9 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()->getMock();
 
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\App\Request\Http')
@@ -803,7 +811,9 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
     public function testExecuteNoQuote()
     {
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\App\Request\Http')
@@ -867,7 +877,9 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()->getMock();
 
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\App\Request\Http')
@@ -1149,7 +1161,9 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()->getMock();
 
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\App\Request\Http')
