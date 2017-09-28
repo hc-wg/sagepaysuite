@@ -25,7 +25,9 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
         $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
         $responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
             ->disableOriginalConstructor()
@@ -232,7 +234,9 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
         $contextMock->expects($this->any())
             ->method('getResponse')
             ->will($this->returnValue($this
-                ->getMock('Magento\Framework\App\Response\Http', [], [], '', false)));
+                ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+                ->disableOriginalConstructor()
+                ->getMock()));
         $contextMock->expects($this->any())
             ->method('getHelper')
             ->will($this->returnValue($helperMock));
@@ -252,7 +256,9 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
         $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
         $responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
             ->disableOriginalConstructor()
