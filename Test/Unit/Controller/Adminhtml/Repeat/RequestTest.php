@@ -64,9 +64,15 @@ class RequestTest extends \PHPUnit\Framework\TestCase
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
-            ->setMethods(["getGrandTotal", "getQuoteCurrencyCode", "getPayment", "getBillingAddress"])
+            ->setMethods(["getGrandTotal", "getQuoteCurrencyCode", "getPayment", "getBillingAddress", "collectTotals", "reserveOrderId"])
             ->disableOriginalConstructor()
             ->getMock();
+        $quoteMock->expects($this->exactly(1))
+            ->method('collectTotals')
+            ->willReturnSelf();
+        $quoteMock->expects($this->exactly(1))
+            ->method('reserveOrderId')
+            ->willReturnSelf();
         $quoteMock->expects($this->any())
             ->method('getGrandTotal')
             ->will($this->returnValue(100));
