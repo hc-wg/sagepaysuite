@@ -146,10 +146,10 @@ define(
                                      function (response) {
 
                                          if (response.success) {
-
                                              customerData.invalidate(['cart']);
 
-                                            self.openSERVERModal(response.response[1].NextURL);
+                                             var sagePayResponse = $.parseJSON(response.response[1]);
+                                             self.openSERVERModal(sagePayResponse.NextURL);
 
                                             fullScreenLoader.stopLoader();
                                          } else {
