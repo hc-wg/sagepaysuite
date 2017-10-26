@@ -8,6 +8,12 @@ $_code   = $block->escapeHtml($block->getMethodCode());
 
 /** @var \Ebizmarts\SagePaySuite\Model\Config $_config */
 $_config = $this->helper('Ebizmarts\SagePaySuite\Helper\Data')->getSagePayConfig();
+$_config->setMethodCode($block->getMethodCode());
+
+$storeId = $block->getBackendSession()->getStoreId();
+$_config->setConfigurationScopeId($storeId);
+
+$_config->setConfigurationScope(\Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE);
 
 $dropInEnabled = $_config->dropInEnabled();
 ?>
