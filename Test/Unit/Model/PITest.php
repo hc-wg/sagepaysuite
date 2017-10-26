@@ -72,6 +72,18 @@ class PITest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testCheckFormBlock()
+    {
+        $this->assertClassHasAttribute("_formBlockType", "Ebizmarts\SagePaySuite\Model\PI");
+    }
+
+    public function testFormBlockType()
+    {
+        $piModel = $this->objectManagerHelper->getObject("Ebizmarts\SagePaySuite\Model\PI");
+
+        $this->assertEquals("Ebizmarts\SagePaySuite\Block\Form\Pi", $piModel->getFormBlockType());
+    }
+
     public function testRefund()
     {
         $orderMock = $this
