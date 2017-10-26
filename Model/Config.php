@@ -225,20 +225,38 @@ class Config
      * Returns payment configuration value
      *
      * @param string $key
-     * @param null $storeId
+     * @param null $configurationScopeId
      * @return null|string
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function getValue($key, $configurationScopeId = null)
     {
-        if ($configurationScopeId === null) {
-            $configurationScopeId = $this->configurationScopeId;
-        }
+        $resolvedConfigurationScopeId = $this->resolveConfigurationScopeId($configurationScopeId);
 
         $path = $this->_getSpecificConfigPath($key);
 
-        return $this->scopeConfig->getValue($path, $this->configurationScope, $configurationScopeId);
+        return $this->scopeConfig->getValue($path, $this->configurationScope, $resolvedConfigurationScopeId);
+    }
+
+    public function getGlobalValue($key, $configurationScopeId = null)
+    {
+        $resolvedConfigurationScopeId = $this->resolveConfigurationScopeId($configurationScopeId);
+
+        $path = $this->_getGlobalConfigPath($key);
+
+        return $this->scopeConfig->getValue($path, $this->configurationScope, $resolvedConfigurationScopeId);
+    }
+
+    /**
+     * @return int
+     */
+    private function getCurrentStoreId()
+    {
+        /** @var \Magento\Store\Model\Store $store */
+        $store = $this->storeManager->getStore();
+
+        return $store->getId();
     }
 
     /**
@@ -340,30 +358,21 @@ class Config
 
     public function getVendorname()
     {
-        return $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("vendorname"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        return $this->getGlobalValue("vendorname");
     }
 
     public function getLicense()
     {
-        $licenseKey = $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("license"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
-
-        return $licenseKey;
+        return $this->getGlobalValue("license");
     }
 
     public function getStoreDomain()
     {
+        $resolvedConfigurationScopeId = $this->resolveConfigurationScopeId($this->configurationScopeId);
         return $this->scopeConfig->getValue(
             Store::XML_PATH_UNSECURE_BASE_URL,
             $this->configurationScope,
-            $this->configurationScopeId
+            $resolvedConfigurationScopeId
         );
     }
 
@@ -392,38 +401,22 @@ class Config
 
     public function getMode()
     {
-        return $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("mode"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        return $this->getGlobalValue("mode");
     }
 
     public function isTokenEnabled()
     {
-        return $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("token"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        return $this->getGlobalValue("token");
     }
 
     public function getReportingApiUser()
     {
-        return $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("reporting_user"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        return $this->getGlobalValue("reporting_user");
     }
 
     public function getReportingApiPassword()
     {
-        return $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("reporting_password"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        return $this->getGlobalValue("reporting_password");
     }
 
     public function getPIPassword()
@@ -575,11 +568,7 @@ class Config
 
     public function getCurrencyConfig()
     {
-        return $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("currency"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        return $this->getGlobalValue("currency");
     }
 
     public function getBasketFormat()
@@ -685,5 +674,21 @@ class Config
         }
 
         return $return;
+    }
+
+    /**
+     * @param $configurationScopeId
+     * @return int|null
+     */
+    private function resolveConfigurationScopeId($configurationScopeId)
+    {
+        if ($configurationScopeId === null) {
+            $configurationScopeId = $this->configurationScopeId;
+            if ($configurationScopeId === null) {
+                $configurationScopeId = $this->getCurrentStoreId();
+            }
+        }
+
+        return $configurationScopeId;
     }
 }
