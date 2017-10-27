@@ -12,38 +12,17 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
 {
     public function testExecute()
     {
-        $responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
-
-        $resultJson = $this
-            ->getMockBuilder('Magento\Framework\Controller\Result\Json')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $resultFactoryMock = $this
-            ->getMockBuilder('Magento\Framework\Controller\ResultFactory')
-            ->setMethods(['create'])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $resultFactoryMock->expects($this->once())
-            ->method('create')
-            ->willReturn($resultJson);
-
-        $contextMock = $this->getMockBuilder('Magento\Backend\App\Action\Context')
-            ->disableOriginalConstructor()
-            ->getMock();
-
+        $resultJson = $this->makeResultJsonMock();
+        $responseMock = $this->makeResponseMock();
+        $quoteMock = $this->makeQuoteMock();
+        $backendQuoteMock = $this->makeBackendQuoteMock($quoteMock);
+        $objectManagerMock = $this->makeObjectManagerMock($backendQuoteMock);
+        $contextMock = $this->makeContextMock($responseMock, $resultJson);
         $contextMock->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($responseMock);
-        $contextMock->expects($this->once())
-            ->method('getResultFactory')
-            ->willReturn($resultFactoryMock);
+            ->method("getObjectManager")
+            ->willReturn($objectManagerMock);
 
-        $mskResultMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\Result::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $mskResultMock = $this->makeMskResultMock();
         $mskResultMock
             ->expects($this->once())
             ->method('getSuccess')
@@ -52,23 +31,9 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('__toArray')
             ->willReturn(['success' => true, 'response' => '12345']);
-        $piServiceMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PiMsk::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $piServiceMock
-            ->expects($this->once())
-            ->method('getSessionKey')
-            ->willReturn($mskResultMock);
+        $piServiceMock = $this->makeServiceMock($quoteMock, $mskResultMock);
 
-        $objectManagerHelper = new ObjectManagerHelper($this);
-        $piGenerateMerchantKeyController = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Controller\Adminhtml\PI\GenerateMerchantKey',
-            [
-                'context' => $contextMock,
-                'piMsk'   => $piServiceMock
-            ]
-        );
+        $piGenerateMerchantKeyController = $this->makePiGenerateMerchantKeyController($contextMock, $piServiceMock);
 
         $resultJson
             ->expects($this->once())
@@ -81,15 +46,8 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
         $piGenerateMerchantKeyController->execute();
     }
 
-    public function testExecuteApiException()
+    private function makeResultFactoryMock($resultJson)
     {
-        $responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
-
-        $resultJson = $this->getMockBuilder('Magento\Framework\Controller\Result\Json')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $resultFactoryMock = $this->getMockBuilder('Magento\Framework\Controller\ResultFactory')
             ->setMethods(['create'])
             ->disableOriginalConstructor()
@@ -97,6 +55,21 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
         $resultFactoryMock->expects($this->once())
             ->method('create')
             ->willReturn($resultJson);
+
+        return $resultFactoryMock;
+    }
+
+    private function makeResultJsonMock()
+    {
+        return $this->getMockBuilder('Magento\Framework\Controller\Result\Json')
+            ->disableOriginalConstructor()
+            ->getMock();
+    }
+
+    public function testExecuteApiException()
+    {
+        $resultJson = $this->makeResultJsonMock();
+        $responseMock = $this->makeResponseMock();
 
         $messageManagerMock = $this->getMockBuilder(\Magento\Framework\Message\ManagerInterface::class)
             ->disableOriginalConstructor()
@@ -106,24 +79,18 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
             ->method('addError')
             ->with("Something went wrong: Authentication values are missing");
 
-        $contextMock = $this->getMockBuilder('Magento\Backend\App\Action\Context')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $contextMock->expects($this->once())
-            ->method('getResponse')
-            ->will($this->returnValue($responseMock));
-        $contextMock->expects($this->once())
-            ->method('getResultFactory')
-            ->will($this->returnValue($resultFactoryMock));
+        $quoteMock = $this->makeQuoteMock();
+        $backendQuoteMock = $this->makeBackendQuoteMock($quoteMock);
+        $objectManagerMock = $this->makeObjectManagerMock($backendQuoteMock);
+        $contextMock = $this->makeContextMock($responseMock, $resultJson);
         $contextMock->expects($this->once())
             ->method('getMessageManager')
             ->willReturn($messageManagerMock);
+        $contextMock->expects($this->once())
+            ->method("getObjectManager")
+            ->willReturn($objectManagerMock);
 
-        $mskResultMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\Result::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $mskResultMock = $this->makeMskResultMock();
         $mskResultMock
             ->expects($this->once())
             ->method('getSuccess')
@@ -141,23 +108,10 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
                     'error_message' => 'Authentication values are missing'
                 ]
             );
-        $piServiceMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PiMsk::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $piServiceMock
-            ->expects($this->once())
-            ->method('getSessionKey')
-            ->willReturn($mskResultMock);
 
-        $objectManagerHelper = new ObjectManagerHelper($this);
-        $piGenerateMerchantKeyController = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Controller\Adminhtml\PI\GenerateMerchantKey',
-            [
-                'context' => $contextMock,
-                'piMsk'   => $piServiceMock
-            ]
-        );
+        $piServiceMock = $this->makeServiceMock($quoteMock, $mskResultMock);
+
+        $piGenerateMerchantKeyController = $this->makePiGenerateMerchantKeyController($contextMock, $piServiceMock);
 
         $resultJson
             ->expects($this->once())
@@ -168,5 +122,104 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
             ]);
 
         $piGenerateMerchantKeyController->execute();
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeResponseMock()
+    {
+        $responseMock = $this->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+
+        return $responseMock;
+    }
+
+    /**
+     * @param $responseMock
+     * @param $resultJson
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeContextMock($responseMock, $resultJson)
+    {
+        $contextMock = $this->getMockBuilder('Magento\Backend\App\Action\Context')->disableOriginalConstructor()->getMock();
+
+        $contextMock->expects($this->once())->method('getResponse')->will($this->returnValue($responseMock));
+        $contextMock->expects($this->once())->method('getResultFactory')->willReturn($this->makeResultFactoryMock($resultJson));
+
+        return $contextMock;
+    }
+
+    /**
+     * @param $backendQuoteMock
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeObjectManagerMock($backendQuoteMock)
+    {
+        $objectManagerMock = $this->getMockBuilder("Magento\Framework\ObjectManager\ObjectManager")->disableOriginalConstructor()->getMock();
+        $objectManagerMock->expects($this->once())->method("get")->with("Magento\Backend\Model\Session\Quote")->willReturn($backendQuoteMock);
+
+        return $objectManagerMock;
+    }
+
+    /**
+     * @param $quoteMock
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeBackendQuoteMock($quoteMock)
+    {
+        $backendQuoteMock = $this->getMockBuilder("Magento\Backend\Model\Session\Quote")->disableOriginalConstructor()->getMock();
+        $backendQuoteMock->expects($this->once())->method("getQuote")->willReturn($quoteMock);
+
+        return $backendQuoteMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeQuoteMock()
+    {
+        $quoteMock = $this->getMockBuilder("\Magento\Quote\Model\Quote")->disableOriginalConstructor()->getMock();
+
+        return $quoteMock;
+    }
+
+    /**
+     * @param $quoteMock
+     * @param $mskResultMock
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeServiceMock($quoteMock, $mskResultMock)
+    {
+        $piServiceMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PiMsk::class)->disableOriginalConstructor()->getMock();
+        $piServiceMock->expects($this->once())->method('getSessionKey')->with($quoteMock)->willReturn($mskResultMock);
+
+        return $piServiceMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeMskResultMock()
+    {
+        $mskResultMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\Result::class)->disableOriginalConstructor()->getMock();
+
+        return $mskResultMock;
+    }
+
+    /**
+     * @param $contextMock
+     * @param $piServiceMock
+     * @return object
+     */
+    private function makePiGenerateMerchantKeyController($contextMock, $piServiceMock)
+    {
+        $objectManagerHelper             = new ObjectManagerHelper($this);
+        $piGenerateMerchantKeyController = $objectManagerHelper->getObject('Ebizmarts\SagePaySuite\Controller\Adminhtml\PI\GenerateMerchantKey',
+            [
+                'context' => $contextMock,
+                'piMsk'   => $piServiceMock
+            ]);
+
+        return $piGenerateMerchantKeyController;
     }
 }

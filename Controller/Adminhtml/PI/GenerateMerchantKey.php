@@ -27,8 +27,10 @@ class GenerateMerchantKey extends \Magento\Backend\App\AbstractAction
      */
     public function execute()
     {
+        $quote = $this->_getSession()->getQuote();
+
         /** @var \Ebizmarts\SagePaySuite\Api\Data\ResultInterface $result */
-        $result = $this->piMsk->getSessionKey();
+        $result = $this->piMsk->getSessionKey($quote);
 
         if ($result->getSuccess() === false) {
             $this->messageManager->addError(__('Something went wrong: ' . $result->getErrorMessage()));
@@ -37,5 +39,15 @@ class GenerateMerchantKey extends \Magento\Backend\App\AbstractAction
         $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
         $resultJson->setData($result->__toArray());
         return $resultJson;
+    }
+
+    /**
+     * Retrieve session object
+     *
+     * @return \Magento\Backend\Model\Session\Quote
+     */
+    protected function _getSession()
+    {
+        return $this->_objectManager->get('Magento\Backend\Model\Session\Quote');
     }
 }

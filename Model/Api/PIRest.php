@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
 use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Store\Model\ScopeInterface;
 
 /**
  * Sage Pay PI REST API
@@ -180,13 +181,18 @@ class PIRest
     /**
      * Make POST request to ask for merchant key
      *
+     * @param \Magento\Quote\Model\Quote $quote
      * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseInterface
      * @throws
      */
-    public function generateMerchantKey()
+    public function generateMerchantKey(\Magento\Quote\Model\Quote $quote)
     {
+        $this->_config->setConfigurationScopeId($quote->getStoreId());
+        $this->_config->setConfigurationScope(ScopeInterface::SCOPE_STORE);
+
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequest $request */
         $request = $this->mskRequest->create();
+
         $request->setVendorName($this->_config->getVendorname());
 
         $jsonBody = json_encode($request->__toArray());
