@@ -151,13 +151,6 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->method('setMerchantSessionKey')
             ->with("M1E996F5-A9BC-41FE-B088-E5B73DB94277");
 
-        $quoteMock = $this->getMockBuilder("\Magento\Quote\Model\Quote")
-            ->disableOriginalConstructor()
-            ->getMock();
-        $quoteMock->expects($this->once())
-            ->method("getStoreId")
-            ->willReturn(1);
-
         $this->configMock->expects($this->once())->method("setConfigurationScopeId")
             ->with(1);
         $this->configMock->expects($this->once())->method("setConfigurationScope")
@@ -175,7 +168,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf(
             '\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponse',
-            $this->pirestApiModel->generateMerchantKey($quoteMock)
+            $this->pirestApiModel->generateMerchantKey($this->makeQuoteMock())
         );
     }
 
@@ -250,7 +243,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ]
         );
 
-        $this->pirestApiModel->generateMerchantKey();
+        $this->pirestApiModel->generateMerchantKey($this->makeQuoteMock());
     }
 
     /**
@@ -1033,5 +1026,16 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             "GBP",
             "Magento backend refund."
         );
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeQuoteMock(): \PHPUnit_Framework_MockObject_MockObject
+    {
+        $quoteMock = $this->getMockBuilder("\Magento\Quote\Model\Quote")->disableOriginalConstructor()->getMock();
+        $quoteMock->expects($this->once())->method("getStoreId")->willReturn(1);
+
+        return $quoteMock;
     }
 }
