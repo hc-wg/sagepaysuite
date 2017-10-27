@@ -314,7 +314,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
             ->with(
-                \Magento\Store\Model\Store::XML_PATH_UNSECURE_BASE_URL,
+                \Magento\Store\Model\Store::XML_PATH_SECURE_BASE_URL,
                 ScopeInterface::SCOPE_STORE,
                 1
             )
