@@ -151,6 +151,18 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->method('setMerchantSessionKey')
             ->with("M1E996F5-A9BC-41FE-B088-E5B73DB94277");
 
+        $quoteMock = $this->getMockBuilder("\Magento\Quote\Model\Quote")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $quoteMock->expects($this->once())
+            ->method("getStoreId")
+            ->willReturn(1);
+
+        $this->configMock->expects($this->once())->method("setConfigurationScopeId")
+            ->with(1);
+        $this->configMock->expects($this->once())->method("setConfigurationScope")
+            ->with(\Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
         $this->pirestApiModel  = $this->objectManager->getObject(
             'Ebizmarts\SagePaySuite\Model\Api\PIRest',
             [
@@ -163,7 +175,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf(
             '\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponse',
-            $this->pirestApiModel->generateMerchantKey()
+            $this->pirestApiModel->generateMerchantKey($quoteMock)
         );
     }
 
