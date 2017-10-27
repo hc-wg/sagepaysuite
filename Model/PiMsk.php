@@ -30,11 +30,11 @@ class PiMsk implements \Ebizmarts\SagePaySuite\Api\PiMerchantInterface
     /**
      * @inheritdoc
      */
-    public function getSessionKey()
+    public function getSessionKey(\Magento\Quote\Model\Quote $quote)
     {
         try {
             $this->result->setSuccess(true);
-            $this->result->setResponse($this->piRestApi->generateMerchantKey()->getMerchantSessionKey());
+            $this->result->setResponse($this->piRestApi->generateMerchantKey($quote)->getMerchantSessionKey());
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->result->setSuccess(false);
             $this->result->setErrorMessage(__($apiException->getUserMessage()));
