@@ -17,24 +17,41 @@ class PiMsk implements \Ebizmarts\SagePaySuite\Api\PiMerchantInterface
     /** @var \Ebizmarts\SagePaySuite\Model\Logger\Logger */
     private $log;
 
+    /** @var \Magento\Store\Model\StoreManagerInterface */
+    private $storeManager;
+
+    /** @var \Magento\Quote\Model\QuoteFactory */
+    private $quoteFactory;
+
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Api\PIRest $piRestApi,
         \Ebizmarts\SagePaySuite\Api\Data\ResultInterface $result,
-        \Ebizmarts\SagePaySuite\Model\Logger\Logger $log
+        \Ebizmarts\SagePaySuite\Model\Logger\Logger $log,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory
     ) {
         $this->piRestApi = $piRestApi;
         $this->result    = $result;
         $this->log       = $log;
+        $this->storeManager = $storeManager;
+        $this->quoteFactory = $quoteFactory;
     }
 
     /**
      * @inheritdoc
      */
-    public function getSessionKey(\Magento\Quote\Model\Quote $quote)
+    public function getSessionKey(\Magento\Quote\Model\Quote $quote = null)
     {
         try {
+
+            if (null === $quote) {
+                $quote = $this->getFrontendQuote();
+            }
+
+            $merchantSession = $this->piRestApi->generateMerchantKey($quote);
+
             $this->result->setSuccess(true);
-            $this->result->setResponse($this->piRestApi->generateMerchantKey($quote)->getMerchantSessionKey());
+            $this->result->setResponse($merchantSession->getMerchantSessionKey());
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->result->setSuccess(false);
             $this->result->setErrorMessage(__($apiException->getUserMessage()));
@@ -46,5 +63,16 @@ class PiMsk implements \Ebizmarts\SagePaySuite\Api\PiMerchantInterface
         }
 
         return $this->result;
+    }
+
+    private function getFrontendQuote()
+    {
+        $currentStoreId = $this->storeManager->getStore(true)->getId();
+
+        /** @var \Magento\Quote\Model\Quote $quote */
+        $quote = $this->quoteFactory->create();
+        $quote->setStoreId($currentStoreId);
+
+        return $quote;
     }
 }

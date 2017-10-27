@@ -14,5 +14,5 @@ interface PiMerchantInterface
      * @param \Magento\Quote\Model\Quote $quote $quote
      * @return \Ebizmarts\SagePaySuite\Api\Data\ResultInterface
      */
-    public function getSessionKey(\Magento\Quote\Model\Quote $quote);
+    public function getSessionKey(\Magento\Quote\Model\Quote $quote = null);
 }
