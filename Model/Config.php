@@ -370,7 +370,7 @@ class Config
     {
         $resolvedConfigurationScopeId = $this->resolveConfigurationScopeId($this->configurationScopeId);
         return $this->scopeConfig->getValue(
-            Store::XML_PATH_UNSECURE_BASE_URL,
+            Store::XML_PATH_SECURE_BASE_URL,
             $this->configurationScope,
             $resolvedConfigurationScopeId
         );
