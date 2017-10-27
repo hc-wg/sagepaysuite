@@ -45,7 +45,7 @@ class PiMsk implements \Ebizmarts\SagePaySuite\Api\PiMerchantInterface
         try {
 
             if (null === $quote) {
-                $quote = $this->getFrontendQuote();
+                $quote = $this->getDummyQuote();
             }
 
             $merchantSession = $this->piRestApi->generateMerchantKey($quote);
@@ -65,14 +65,10 @@ class PiMsk implements \Ebizmarts\SagePaySuite\Api\PiMerchantInterface
         return $this->result;
     }
 
-    private function getFrontendQuote()
+    private function getDummyQuote()
     {
-        $currentStoreId = $this->storeManager->getStore(true)->getId();
-
         /** @var \Magento\Quote\Model\Quote $quote */
         $quote = $this->quoteFactory->create();
-        $quote->setStoreId($currentStoreId);
-
         return $quote;
     }
 }
