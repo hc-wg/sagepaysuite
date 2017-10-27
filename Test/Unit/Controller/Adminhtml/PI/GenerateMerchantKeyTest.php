@@ -29,6 +29,25 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->willReturn($resultJson);
 
+        $quoteMock = $this->getMockBuilder("\Magento\Quote\Model\Quote")
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $backendQuoteMock = $this->getMockBuilder("Magento\Backend\Model\Session\Quote")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $backendQuoteMock->expects($this->once())
+            ->method("getQuote")
+            ->willReturn($quoteMock);
+
+        $objectManagerMock = $this->getMockBuilder("Magento\Framework\ObjectManager\ObjectManager")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $objectManagerMock->expects($this->once())
+            ->method("get")
+            ->with("Magento\Backend\Model\Session\Quote")
+            ->willReturn($backendQuoteMock);
+
         $contextMock = $this->getMockBuilder('Magento\Backend\App\Action\Context')
             ->disableOriginalConstructor()
             ->getMock();
@@ -39,6 +58,9 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
         $contextMock->expects($this->once())
             ->method('getResultFactory')
             ->willReturn($resultFactoryMock);
+        $contextMock->expects($this->once())
+            ->method("getObjectManager")
+            ->willReturn($objectManagerMock);
 
         $mskResultMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\Result::class)
@@ -59,6 +81,7 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
         $piServiceMock
             ->expects($this->once())
             ->method('getSessionKey')
+            ->with($quoteMock)
             ->willReturn($mskResultMock);
 
         $objectManagerHelper = new ObjectManagerHelper($this);
