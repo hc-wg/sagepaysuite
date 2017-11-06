@@ -149,9 +149,6 @@ class MotoManagement extends RequestManagement
 
         $payment->getMethodInstance()->markAsInitialized();
         $order->place()->save();
-
-        //send email
-        $this->getCheckoutHelper()->sendOrderEmail($order);
     }
 
     /**
