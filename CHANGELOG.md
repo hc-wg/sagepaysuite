@@ -1,3 +1,10 @@
+1.1.15 (06/11/2017)
+=============
+**This release requires Magento 2.1.x.**
+- Bug fixes
+  - Fix different vendornames per installation.
+  - Direct MOTO Double confirmation email.
+  
 1.1.14 (27/09/2017)
 =============
 **This release requires Magento 2.1.x.**
