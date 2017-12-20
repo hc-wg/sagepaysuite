@@ -123,6 +123,7 @@ class Cancel extends \Magento\Framework\App\Action\Action
             try {
                 $cart->addOrderItem($item);
             } catch (\Exception $e) {
+                $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
             }
         }
         $cart->save();
