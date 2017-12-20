@@ -157,7 +157,6 @@ class Notify extends \Magento\Framework\App\Action\Action
 
                 //cancel pending payment order
                 $this->_cancelOrder($order);
-
                 return $this->_returnAbort($this->_quote->getId());
             } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
                 $this->updateOrderCallback->setOrder($this->_order);
