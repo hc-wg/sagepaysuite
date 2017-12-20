@@ -227,26 +227,7 @@ class Notify extends \Magento\Framework\App\Action\Action
     private function _cancelOrder($order)
     {
         try {
-
             $order->cancel()->save();
-//
-//            $this->_checkoutSession->clearQuote();
-//
-//            /** @var \Magento\Checkout\Model\Cart $cart */
-//            $cart = $this->_objectManager->get("Magento\Checkout\Model\Cart");
-//            //$cart->setQuote($this->_objectManager->get("Magento\Quote\Model\Quote"));
-//            $items = $order->getItemsCollection();
-//            foreach ($items as $item) {
-//                try {
-//                    $cart->addOrderItem($item);
-//                } catch (\Exception $e) {
-//                }
-//            }
-//            $cart->save();
-//
-//            $this->_checkoutSession->setQuoteId($cart->getQuote()->getId());
-//            $this->_quote = $cart->getQuote();
-
         } catch (\Exception $e) {
             $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
         }

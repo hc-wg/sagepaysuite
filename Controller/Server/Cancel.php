@@ -75,14 +75,47 @@ class Cancel extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
+        $this->saveErrorMessage();
+
+        $quote = $this->quote->load($this->getRequest()->getParam("quote"));
+        if (empty($this->quote->getId())) {
+            throw new \Exception("Quote not found.");
+        }
+
+        $order = $this->orderFactory->create()->loadByIncrementId($quote->getReservedOrderId());
+        if (empty($order->getId())) {
+            throw new \Exception("Order not found.");
+        }
+
+        $this->recoverCart($order);
+
+        $this->inactivateQuote($quote);
+
+        $this
+            ->getResponse()
+            ->setBody(
+            '<script>window.top.location.href = "'
+            . $this->_url->getUrl('checkout/cart', [
+                '_secure' => true,
+            ])
+            . '";</script>'
+        );
+    }
+
+    private function saveErrorMessage()
+    {
         $message = $this->getRequest()->getParam("message");
         if (!empty($message)) {
             $this->messageManager->addError($message);
         }
+    }
 
-        $quote = $this->quote->load($this->getRequest()->getParam("quote"));
-        $order = $this->orderFactory->create()->loadByIncrementId($quote->getReservedOrderId());
-         /** @var \Magento\Checkout\Model\Cart $cart */
+    /**
+     * @param \Magento\Sales\Model\Order $order
+     */
+    private function recoverCart($order)
+    {
+        /** @var \Magento\Checkout\Model\Cart $cart */
         $cart = $this->_objectManager->get("Magento\Checkout\Model\Cart");
         $cart->setQuote($this->_checkoutSession->getQuote());
         $items = $order->getItemsCollection();
@@ -90,20 +123,17 @@ class Cancel extends \Magento\Framework\App\Action\Action
             try {
                 $cart->addOrderItem($item);
             } catch (\Exception $e) {
-                throw new \Exception($e->getMessage());
             }
         }
         $cart->save();
+    }
 
+    /**
+     * @param \Magento\Quote\Model\Quote $quote
+     */
+    private function inactivateQuote($quote)
+    {
         $quote->setIsActive(0);
         $quote->save();
-
-        $this->getResponse()->setBody(
-            '<script>window.top.location.href = "'
-            . $this->_url->getUrl('checkout/cart', [
-                '_secure' => true,
-            ])
-            . '";</script>'
-        );
     }
 }

@@ -10,6 +10,9 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHe
 
 class CancelTest extends \PHPUnit_Framework_TestCase
 {
+    const QUOTE_ID = 1234;
+    const RESERVED_ORDER_ID = 5678;
+
     /**
      * @var \Ebizmarts\SagePaySuite\Controller\Server\Cancel
      */
@@ -41,9 +44,14 @@ class CancelTest extends \PHPUnit_Framework_TestCase
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\App\RequestInterface')
             ->getMockForAbstractClass();
-        $this->requestMock->expects($this->once())
+        $this->requestMock
+            ->expects($this->exactly(2))
             ->method('getParam')
-            ->willReturn("Error message");
+            ->withConsecutive(
+                ["message"],
+                ["quote"]
+            )
+            ->willReturnOnConsecutiveCalls("Error Message", self::QUOTE_ID);
 
         $this->responseMock = $this
             ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
@@ -76,11 +84,60 @@ class CancelTest extends \PHPUnit_Framework_TestCase
             ->method('getUrl')
             ->will($this->returnValue($this->urlBuilderMock));
 
+        $cartMock = $this->getMockBuilder(\Magento\Checkout\Model\Cart::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $cartMock->expects($this->once())->method("setQuote");
+        $cartMock->expects($this->once())->method("save");
+
+        $objectManagerMock = $this->getMockBuilder(\Magento\Framework\ObjectManager\ObjectManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $objectManagerMock->expects($this->once())->method("get")
+            ->with("Magento\Checkout\Model\Cart")
+            ->willReturn($cartMock);
+        $contextMock->expects($this->once())
+            ->method("getObjectManager")
+            ->willReturn($objectManagerMock);
+
+        $quoteMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)
+        ->disableOriginalConstructor()
+        ->getMock();
+        $quoteMock->expects($this->once())->method("getId")->willReturn(self::QUOTE_ID);
+        $quoteMock->expects($this->once())->method("load")->willReturnSelf();
+        $quoteMock->expects($this->once())->method("getReservedOrderId")->willReturn(self::RESERVED_ORDER_ID);
+
+        $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->expects($this->once())->method("loadByIncrementId")
+            ->with(self::RESERVED_ORDER_ID)
+        ->willReturnSelf();
+        $orderMock->expects($this->once())->method("getId")->willReturn(self::RESERVED_ORDER_ID);
+        $orderMock->expects($this->once())->method("getItemsCollection")
+            ->willReturn([]);
+
+        $orderFactoryMock = $this->getMockBuilder(\Magento\Sales\Model\OrderFactory::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderFactoryMock->expects($this->once())
+            ->method("create")
+            ->willReturn($orderMock);
+
+        $checkoutSessionMock = $this->getMockBuilder(\Magento\Checkout\Model\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $checkoutSessionMock->expects($this->once())->method("getQuote")
+            ->willReturn($quoteMock);
+
         $objectManagerHelper = new ObjectManagerHelper($this);
         $this->serverCancelController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Server\Cancel',
             [
-                'context' => $contextMock
+                'context'          => $contextMock,
+                "quote"            => $quoteMock,
+                "orderFactory"     => $orderFactoryMock,
+                "_checkoutSession" => $checkoutSessionMock
             ]
         );
     }
