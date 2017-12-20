@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Controller\Server;
 
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Checkout\Exception;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 
 class Notify extends \Magento\Framework\App\Action\Action
@@ -63,6 +64,11 @@ class Notify extends \Magento\Framework\App\Action\Action
     private $updateOrderCallback;
 
     /**
+     * @var \Magento\Quote\Model\QuoteIdMaskFactory
+     */
+    private $quoteIdMaskFactory;
+
+    /**
      * Notify constructor.
      * @param \Magento\Framework\App\Action\Context $context
      * @param Logger $suiteLogger
@@ -73,6 +79,7 @@ class Notify extends \Magento\Framework\App\Action\Action
      * @param \Ebizmarts\SagePaySuite\Model\Token $tokenModel
      * @param \Magento\Quote\Model\Quote $quote
      * @param \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback $updateOrderCallback
+     * @param \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -83,7 +90,8 @@ class Notify extends \Magento\Framework\App\Action\Action
         \Magento\Checkout\Model\Session $checkoutSession,
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
         \Magento\Quote\Model\Quote $quote,
-        \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback $updateOrderCallback
+        \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback $updateOrderCallback,
+        \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory
     ) {
     
         parent::__construct($context);
@@ -96,6 +104,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_checkoutSession    = $checkoutSession;
         $this->_tokenModel         = $tokenModel;
         $this->_quote              = $quote;
+        $this->quoteIdMaskFactory  = $quoteIdMaskFactory;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
     }
 
@@ -148,8 +157,7 @@ class Notify extends \Magento\Framework\App\Action\Action
 
                 //cancel pending payment order
                 $this->_cancelOrder($order);
-
-                return $this->_returnAbort();
+                return $this->_returnAbort($this->_quote->getId());
             } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
                 $this->updateOrderCallback->setOrder($this->_order);
                 $this->updateOrderCallback->confirmPayment($transactionId);
@@ -212,32 +220,23 @@ class Notify extends \Magento\Framework\App\Action\Action
         (property_exists($this->_postData, 'BankAuthCode') === true ? $this->_postData->BankAuthCode : '');
     }
 
+    /**
+     * @param \Magento\Sales\Model\Order $order
+     */
     private function _cancelOrder($order)
     {
         try {
             $order->cancel()->save();
-
-            //recover quote
-            if ($this->_quote->getId()) {
-                $this->_quote->setIsActive(1);
-                $this->_quote->setReservedOrderId(null);
-                $this->_quote->save();
-
-                $this->_checkoutSession->replaceQuote($this->_quote);
-            }
-
-            //Unset data
-            $this->_checkoutSession->unsLastRealOrderId();
         } catch (\Exception $e) {
             $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
         }
     }
 
-    private function _returnAbort()
+    private function _returnAbort($quoteId = null)
     {
         $strResponse = 'Status=OK' . "\r\n";
         $strResponse .= 'StatusDetail=Transaction ABORTED successfully' . "\r\n";
-        $strResponse .= 'RedirectURL=' . $this->_getAbortRedirectUrl() . "\r\n";
+        $strResponse .= 'RedirectURL=' . $this->_getAbortRedirectUrl($quoteId) . "\r\n";
 
         $this->getResponse()->setHeader('Content-type', 'text/plain');
         $this->getResponse()->setBody($strResponse);
@@ -272,14 +271,14 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse, [__METHOD__, __LINE__]);
     }
 
-    private function _getAbortRedirectUrl()
+    private function _getAbortRedirectUrl($quoteId = null)
     {
         $url = $this->_url->getUrl('*/*/cancel', [
             '_secure' => true,
             //'_store' => $this->getRequest()->getParam('_store') @codingStandardsIgnoreLine
         ]);
 
-        $url .= "?message=Transaction cancelled by customer";
+        $url .= "?quote={$quoteId}&message=Transaction cancelled by customer";
 
         return $url;
     }

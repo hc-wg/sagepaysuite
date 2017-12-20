@@ -493,7 +493,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->_expectSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction ABORTED successfully' . "\r\n" .
-            'RedirectURL=?message=Transaction cancelled by customer' . "\r\n"
+            'RedirectURL=?quote=1&message=Transaction cancelled by customer' . "\r\n"
         );
 
         $this->controllerInstantiate(
