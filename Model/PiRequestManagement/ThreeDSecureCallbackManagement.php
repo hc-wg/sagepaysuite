@@ -11,7 +11,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
 {
     const NUM_OF_ATTEMPTS = 5;
 
-    const RETRY_INTERVAL = 1000000;
+    const RETRY_INTERVAL = 6000000;
 
     /** @var \Magento\Checkout\Model\Session */
     private $checkoutSession;
