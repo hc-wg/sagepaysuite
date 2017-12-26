@@ -100,6 +100,9 @@ define(
             },
             preparePayment: function () {
                 var self = this;
+
+                self.destroyInstanceSagePay();
+
                 self.resetPaymentErrors();
 
                 //validations
@@ -142,6 +145,19 @@ define(
                     self.dropInInstance.tokenise();
                 }
             },
+            destroyInstanceSagePay: function() {
+                var self = this;
+                if (!self.dropInEnabled()) {
+                    return;
+                }
+
+                if (self.dropInInstance !== null)  {
+                    self.dropInInstance.destroy();
+                }
+
+                self.isPlaceOrderActionAllowed(true);
+                document.getElementById('submit_dropin_payment').style.display = "none";
+            },
             sagepayTokeniseCard: function (merchant_session_key) {
 
                 var self = this;
@@ -168,10 +184,7 @@ define(
                                     } else {
                                         //Check if it is "Authentication failed"
                                         if (self.tokenisationAuthenticationFailed(tokenisationResult)) {
-                                            self.dropInInstance.destroy();
-                                            self.isPlaceOrderActionAllowed(true);
-                                            document.getElementById('submit_dropin_payment').style.display = "none";
-                                            document.getElementById('submit_dropin_payment').onclick = "alert('h'); return false";
+                                            self.destroyInstanceSagePay();
                                             self.resetPaymentErrors();
                                         } else {
                                             self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
@@ -328,9 +341,7 @@ define(
                         } else {
                             self.showPaymentError(response.error_message);
                             if (self.dropInEnabled()) {
-                                self.dropInInstance.destroy();
-                                self.isPlaceOrderActionAllowed(true);
-                                document.getElementById('submit_dropin_payment').style.display = "none";
+                                self.destroyInstanceSagePay();
                             }
                         }
                     }
