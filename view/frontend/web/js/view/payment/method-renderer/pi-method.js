@@ -157,6 +157,7 @@ define(
 
                 self.isPlaceOrderActionAllowed(true);
                 document.getElementById('submit_dropin_payment').style.display = "none";
+                document.getElementById('sp-container').style.display = "payment-iframe";
             },
             sagepayTokeniseCard: function (merchant_session_key) {
 
@@ -226,11 +227,9 @@ define(
                                         self.placeTransaction();
                                     } catch (err) {
                                         self.showPaymentError("Unable to initialize Sage Pay payment method, please use another payment method.");
-                                        console.log(err);
                                     }
                                 } else {
                                     var errorMessage = "Unable to initialize Sage Pay payment method, please use another payment method.";
-                                    console.log(response);
                                     if (response.responseJSON) {
                                         response = response.responseJSON;
                                     }
@@ -243,8 +242,6 @@ define(
                                 }
                             });
                         } catch (err) {
-                            console.log(err);
-                            //errorProcessor.process(err);
                             alert("Unable to initialize Sage Pay payment method, please use another payment method.");
                         }
                     }
