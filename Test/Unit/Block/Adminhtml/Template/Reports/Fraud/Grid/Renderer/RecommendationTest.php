@@ -39,7 +39,7 @@ class RecommendationTest extends \PHPUnit_Framework_TestCase
             ->willReturn($data);
 
         $this->assertEquals(
-            '<span style="color:' . $color . ';">' . $recommendation . '</span>',
+            "<span style=\"color:{$color};\">{$recommendation}</span>",
             $recommendationRendererBlock->render($rowMock)
         );
     }
