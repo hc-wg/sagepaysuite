@@ -103,7 +103,7 @@ class FormRequestManagement implements FormManagementInterface
 
     /**
      * @param $cartId
-     * @return \Ebizmarts\SagePaySuite\Api\Data\ResultInterface|ResultInterface
+     * @return \Ebizmarts\SagePaySuite\Api\Data\ResultInterface
      */
     public function getEncryptedRequest($cartId)
     {
@@ -238,8 +238,8 @@ class FormRequestManagement implements FormManagementInterface
     }
 
     /**
-     * @param $encryptedPassword
-     * @param $preCryptString
+     * @param string $encryptedPassword
+     * @param string $preCryptString
      * @return string
      */
     private function encryptRequest($encryptedPassword, $preCryptString)

@@ -6,31 +6,34 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Plugin;
 
+use Magento\Checkout\Model\Session;
+use Magento\Quote\Model\QuoteFactory;
+
 class AccountManagement
 {
     /**
-     * @var \Magento\Quote\Model\QuoteFactory
+     * @var QuoteFactory
      */
-    private $_quoteFactory;
+    private $quoteFactory;
 
     /**
-     * @var \Magento\Checkout\Model\Session
+     * @var Session
      */
-    private $_checkoutSession;
+    private $checkoutSession;
 
     /**
      * AccountManagement constructor.
      *
-     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
-     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param QuoteFactory $quoteFactory
+     * @param Session $checkoutSession
      */
     public function __construct(
-        \Magento\Quote\Model\QuoteFactory $quoteFactory,
-        \Magento\Checkout\Model\Session $checkoutSession
+        QuoteFactory $quoteFactory,
+        Session $checkoutSession
     ) {
     
-        $this->_quoteFactory = $quoteFactory;
-        $this->_checkoutSession = $checkoutSession;
+        $this->quoteFactory    = $quoteFactory;
+        $this->checkoutSession = $checkoutSession;
     }
 
     /**
@@ -48,10 +51,10 @@ class AccountManagement
     ) {
         $accMgmnt = $accountManagement;
         $ret = $proceed($customerEmail,$websiteId);
-        if ($this->_checkoutSession) {
-            $quoteId = $this->_checkoutSession->getQuoteId();
+        if ($this->checkoutSession) {
+            $quoteId = $this->checkoutSession->getQuoteId();
             if ($quoteId) {
-                $quote = $this->_quoteFactory->create()->load($quoteId);
+                $quote = $this->quoteFactory->create()->load($quoteId);
                 $quote->setCustomerEmail($customerEmail);
                 $quote->setUpdatedAt(date('Y-m-d H:i:s'));
                 $quote->save();
