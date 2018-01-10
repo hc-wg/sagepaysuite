@@ -6,10 +6,17 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Helper\Fraud;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
+use Magento\Framework\Api\FilterBuilder;
+use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\LocalizedException;
 use \Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\ObjectManagerInterface;
+use Magento\Sales\Api\OrderPaymentRepositoryInterface;
 use \Magento\Sales\Api\TransactionRepositoryInterface;
+use Magento\Sales\Model\ResourceModel\Order\CollectionFactory;
+use \Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud as FraudModel;
 
 class Cron
 {
@@ -21,22 +28,22 @@ class Cron
     private $suiteLogger;
 
     /**
-     * @var \Magento\Sales\Api\OrderPaymentRepositoryInterface
+     * @var OrderPaymentRepositoryInterface
      */
     private $orderPaymentRepository;
 
     /**
-     * @var \Magento\Framework\ObjectManagerInterface
+     * @var ObjectManagerInterface
      */
     private $objectManager;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
+     * @var Config
      */
     private $config;
 
     /**
-         * @var \Magento\Sales\Model\ResourceModel\Order\CollectionFactory
+         * @var CollectionFactory
      */
     private $orderCollectionFactory;
 
@@ -46,7 +53,7 @@ class Cron
     private $transactionRepository;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Helper\Fraud
+     * @var Fraud
      */
     private $fraudHelper;
 
@@ -56,39 +63,39 @@ class Cron
     private $fraudModel;
 
     /**
-     * @var \Magento\Framework\Api\SearchCriteriaBuilder
+     * @var SearchCriteriaBuilder
      */
     private $criteriaBuilder;
 
     /**
-     * @var \Magento\Framework\Api\FilterBuilder
+     * @var FilterBuilder
      */
     private $filterBuilder;
 
     /**
      * Cron constructor.
      * @param Logger $suiteLogger
-     * @param \Magento\Sales\Api\OrderPaymentRepositoryInterface $orderPaymentRepository
-     * @param \Magento\Framework\ObjectManagerInterface $objectManager
-     * @param Config $config
-     * @param \Magento\Sales\Model\ResourceModel\Order\CollectionFactory $orderCollectionFactory
+     * @param OrderPaymentRepositoryInterface $orderPaymentRepository
+     * @param ObjectManagerInterface $objectManager
+     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param CollectionFactory $orderCollectionFactory
      * @param TransactionRepositoryInterface $transactionRepository
-     * @param \Ebizmarts\SagePaySuite\Helper\Fraud $fraudHelper
-     * @param ResourceModel\Fraud $fraudModel
-     * @param \Magento\Framework\Api\SearchCriteriaBuilder $criteriaBuilder
-     * @param \Magento\Framework\Api\FilterBuilder $filterBuilder
+     * @param Fraud $fraudHelper
+     * @param FraudModel $fraudModel
+     * @param SearchCriteriaBuilder $criteriaBuilder
+     * @param FilterBuilder $filterBuilder
      */
     public function __construct(
-        \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
-        \Magento\Sales\Api\OrderPaymentRepositoryInterface $orderPaymentRepository,
-        \Magento\Framework\ObjectManagerInterface $objectManager,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Magento\Sales\Model\ResourceModel\Order\CollectionFactory $orderCollectionFactory,
-        \Magento\Sales\Api\TransactionRepositoryInterface $transactionRepository,
-        \Ebizmarts\SagePaySuite\Helper\Fraud $fraudHelper,
-        \Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud $fraudModel,
-        \Magento\Framework\Api\SearchCriteriaBuilder $criteriaBuilder,
-        \Magento\Framework\Api\FilterBuilder $filterBuilder
+        Logger $suiteLogger,
+        OrderPaymentRepositoryInterface $orderPaymentRepository,
+        ObjectManagerInterface $objectManager,
+        Config $config,
+        CollectionFactory $orderCollectionFactory,
+        TransactionRepositoryInterface $transactionRepository,
+        Fraud $fraudHelper,
+        FraudModel $fraudModel,
+        SearchCriteriaBuilder $criteriaBuilder,
+        FilterBuilder $filterBuilder
     ) {
 
         $this->suiteLogger            = $suiteLogger;

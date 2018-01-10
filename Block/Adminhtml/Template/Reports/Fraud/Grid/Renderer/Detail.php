@@ -6,19 +6,22 @@
 
 namespace Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer;
 
+use Magento\Backend\Block\Widget\Grid\Column\Renderer\Text;
+use Magento\Framework\DataObject;
+
 /**
  * grid block action item renderer
  */
-class Detail extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
+class Detail extends Text
 {
 
     /**
      * Render grid column
      *
-     * @param \Magento\Framework\DataObject $row
+     * @param DataObject $row
      * @return string
      */
-    public function render(\Magento\Framework\DataObject $row)
+    public function render(DataObject $row)
     {
         $additionalInfo = $row->getData("additional_information");
         if (!empty($additionalInfo)) {

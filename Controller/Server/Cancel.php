@@ -5,70 +5,79 @@
  */
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
+use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Checkout\Model\Session;
+use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Context;
+use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\QuoteIdMaskFactory;
+use Magento\Sales\Model\OrderFactory;
+use Psr\Log\LoggerInterface;
 
-class Cancel extends \Magento\Framework\App\Action\Action
+class Cancel extends Action
 {
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
+     * @var Config
      */
-    private $_config;
+    private $config;
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
-    private $_logger;
-    /**
-     * @var \Magento\Checkout\Model\Session
-     */
-    private $_checkoutSession;
+    private $logger;
 
     /**
-     * @var \Magento\Quote\Model\Quote
+     * @var Session
+     */
+    private $checkoutSession;
+
+    /**
+     * @var Quote
      */
     private $quote;
 
-    /** @var \Magento\Quote\Model\QuoteIdMaskFactory */
+    /** @var QuoteIdMaskFactory */
     private $quoteIdMaskFactory;
 
     /**
-     * @var \Magento\Sales\Model\OrderFactory
+     * @var OrderFactory
      */
     private $orderFactory;
 
     /**
      * Cancel constructor.
-     * @param \Magento\Framework\App\Action\Context $context
+     * @param Context $context
      * @param Logger $suiteLogger
-     * @param \Ebizmarts\SagePaySuite\Model\Config $config
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Checkout\Model\Session $checkoutSession
-     * @param \Magento\Quote\Model\Quote $quote
-     * @param \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory
-     * @param \Magento\Sales\Model\OrderFactory $orderFactory
+     * @param Config $config
+     * @param LoggerInterface $logger
+     * @param Session $checkoutSession
+     * @param Quote $quote
+     * @param QuoteIdMaskFactory $quoteIdMaskFactory
+     * @param OrderFactory $orderFactory
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
+        Context $context,
         Logger $suiteLogger,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Quote\Model\Quote $quote,
-        \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory,
-        \Magento\Sales\Model\OrderFactory $orderFactory
+        Config $config,
+        LoggerInterface $logger,
+        Session $checkoutSession,
+        Quote $quote,
+        QuoteIdMaskFactory $quoteIdMaskFactory,
+        OrderFactory $orderFactory
     ) {
     
         parent::__construct($context);
-        $this->_suiteLogger     = $suiteLogger;
-        $this->_config          = $config;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
-        $this->_logger          = $logger;
-        $this->_checkoutSession = $checkoutSession;
-        $this->quote            = $quote;
+        $this->suiteLogger = $suiteLogger;
+        $this->config      = $config;
+        $this->config->setMethodCode(Config::METHOD_SERVER);
+        $this->logger             = $logger;
+        $this->checkoutSession    = $checkoutSession;
+        $this->quote              = $quote;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
         $this->orderFactory       = $orderFactory;
     }
@@ -117,20 +126,20 @@ class Cancel extends \Magento\Framework\App\Action\Action
     {
         /** @var \Magento\Checkout\Model\Cart $cart */
         $cart = $this->_objectManager->get("Magento\Checkout\Model\Cart");
-        $cart->setQuote($this->_checkoutSession->getQuote());
+        $cart->setQuote($this->checkoutSession->getQuote());
         $items = $order->getItemsCollection();
         foreach ($items as $item) {
             try {
                 $cart->addOrderItem($item);
             } catch (\Exception $e) {
-                $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
+                $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
             }
         }
         $cart->save();
     }
 
     /**
-     * @param \Magento\Quote\Model\Quote $quote
+     * @param Quote $quote
      */
     private function inactivateQuote($quote)
     {

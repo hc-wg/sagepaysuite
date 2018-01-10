@@ -6,42 +6,45 @@
 
 namespace Ebizmarts\SagePaySuite\Observer;
 
+use Magento\Checkout\Model\Session;
 use Magento\Framework\Event\ObserverInterface;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Quote\Model\QuoteFactory;
+use Magento\Sales\Model\OrderFactory;
 
 class CheckoutCartIndex implements ObserverInterface
 {
     /**
-     * @var \Magento\Checkout\Model\Session
+     * @var Session
      */
-    private $_checkoutSession;
+    private $checkoutSession;
 
     /**
      * @var Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
-     * @var \Magento\Sales\Model\OrderFactory
+     * @var OrderFactory
      */
-    private $_orderFactory;
+    private $orderFactory;
 
     /**
-     * @var \Magento\Quote\Model\QuoteFactory
+     * @var QuoteFactory
      */
-    private $_quoteFactory;
+    private $quoteFactory;
 
     public function __construct(
-        \Magento\Checkout\Model\Session $checkoutSession,
+        Session $checkoutSession,
         Logger $suiteLogger,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory
+        OrderFactory $orderFactory,
+        QuoteFactory $quoteFactory
     ) {
     
-        $this->_checkoutSession = $checkoutSession;
-        $this->_suiteLogger     = $suiteLogger;
-        $this->_orderFactory    = $orderFactory;
-        $this->_quoteFactory    = $quoteFactory;
+        $this->checkoutSession = $checkoutSession;
+        $this->suiteLogger     = $suiteLogger;
+        $this->orderFactory    = $orderFactory;
+        $this->quoteFactory    = $quoteFactory;
     }
 
     /**
@@ -55,29 +58,29 @@ class CheckoutCartIndex implements ObserverInterface
         /**
          * Reload quote and cancel order if it was pre-saved but not completed
          */
-        $presavedOrderId = $this->_checkoutSession->getData("sagepaysuite_presaved_order_pending_payment");
+        $presavedOrderId = $this->checkoutSession->getData("sagepaysuite_presaved_order_pending_payment");
 
         if (!empty($presavedOrderId)) {
-            $order = $this->_orderFactory->create()->load($presavedOrderId);
+            $order = $this->orderFactory->create()->load($presavedOrderId);
             if ($order !== null && $order->getId() !== null
                 && $order->getState() == \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT
             ) {
-                $quote = $this->_checkoutSession->getQuote();
+                $quote = $this->checkoutSession->getQuote();
                 if (empty($quote) || empty($quote->getId())) {
                 //cancel order
                     $order->cancel()->save();
 
                     //recover quote
-                    $quote = $this->_quoteFactory->create()->load($order->getQuoteId());
+                    $quote = $this->quoteFactory->create()->load($order->getQuoteId());
                     if ($quote->getId()) {
                         $quote->setIsActive(1);
                         $quote->setReservedOrderId(null);
                         $quote->save();
-                        $this->_checkoutSession->replaceQuote($quote);
+                        $this->checkoutSession->replaceQuote($quote);
                     }
 
                     //remove flag
-                    $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
+                    $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
                 }
             }
         }

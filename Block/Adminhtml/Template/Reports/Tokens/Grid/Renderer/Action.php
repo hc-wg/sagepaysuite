@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Tokens\Grid\Renderer;
 
+use Magento\Framework\DataObject;
+
 /**
  * grid block action item renderer
  */
@@ -14,10 +16,10 @@ class Action extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Action
     /**
      * Render grid column
      *
-     * @param \Magento\Framework\DataObject $row
+     * @param DataObject $row
      * @return string
      */
-    public function render(\Magento\Framework\DataObject $row)
+    public function render(DataObject $row)
     {
         $actions = [];
 

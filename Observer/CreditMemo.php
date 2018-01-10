@@ -3,41 +3,62 @@
 
 namespace Ebizmarts\SagePaySuite\Observer;
 
+use Ebizmarts\SagePaySuite\Helper\Data;
+use Ebizmarts\SagePaySuite\Model\Api\Reporting;
+use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Framework\Message\ManagerInterface;
 
 class CreditMemo implements ObserverInterface
 {
-    private $_suiteHelper;
-    private $_suiteReportingApi;
-    private $_messageManager;
+    /** @var Data */
+    private $suiteHelper;
+
+    /** @var Reporting */
+    private $reportingApi;
+
+    /** @var ManagerInterface */
+    private $messageManager;
 
     public function __construct(
-        \Magento\Framework\Message\ManagerInterface $messageManager,
-        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
-        \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi
+        ManagerInterface $messageManager,
+        Data $suiteHelper,
+        Reporting $reportingApi
     ) {
-        $this->_suiteHelper       = $suiteHelper;
-        $this->_suiteReportingApi = $reportingApi;
-        $this->_messageManager    = $messageManager;
+        $this->suiteHelper    = $suiteHelper;
+        $this->reportingApi   = $reportingApi;
+        $this->messageManager = $messageManager;
     }
 
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    /**
+     * @param Observer $observer
+     */
+    public function execute(Observer $observer)
     {
         $payment           = $observer->getData('creditmemo')->getOrder()->getPayment();
         $paymentMethodCode = $payment->getMethod();
 
-        if (!$this->_suiteHelper->methodCodeIsSagePay($paymentMethodCode)) {
+        if (!$this->suiteHelper->methodCodeIsSagePay($paymentMethodCode)) {
             return;
         }
 
         $vpsTxIdRaw = $observer->getData('creditmemo')->getOrder()->getPayment()->getLastTransId();
-        $vpsTxId    = $this->_suiteHelper->clearTransactionId($vpsTxIdRaw);
+        $vpsTxId    = $this->suiteHelper->clearTransactionId($vpsTxIdRaw);
 
         try {
-            $this->_suiteReportingApi->getTransactionDetails($vpsTxId);
+            $this->reportingApi->getTransactionDetails($vpsTxId);
         } catch (\Exception $e) {
-            $this->_messageManager->addErrorMessage(__("This Sage Pay transaction cannot be refunded online because the
-            Reporting API communication could not be established. The response is: %1", $e->getMessage()));
+            $this->messageManager->addErrorMessage($this->reportingApiErrorMessage($e));
         }
+    }
+
+    /**
+     * @param $e
+     * @return \Magento\Framework\Phrase
+     */
+    private function reportingApiErrorMessage($e)
+    {
+        $message = "This Sage Pay transaction cannot be refunded online because the Reporting API communication could not be established. The response is: %1";
+        return __($message, $e->getMessage());
     }
 }

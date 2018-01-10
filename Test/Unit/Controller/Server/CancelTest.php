@@ -6,7 +6,9 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Server;
 
+use Magento\Checkout\Model\Session;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
+use Magento\Quote\Model\Quote;
 
 class CancelTest extends \PHPUnit_Framework_TestCase
 {
@@ -19,12 +21,12 @@ class CancelTest extends \PHPUnit_Framework_TestCase
     private $serverCancelController;
 
     /**
-     * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Magento\Framework\App\RequestInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $requestMock;
 
     /**
-     * @var Http|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Magento\Framework\App\Response\Http|\PHPUnit_Framework_MockObject_MockObject
      */
     private $responseMock;
 
@@ -95,7 +97,7 @@ class CancelTest extends \PHPUnit_Framework_TestCase
             ->method("getObjectManager")
             ->willReturn($objectManagerMock);
 
-        $quoteMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)
+        $quoteMock = $this->getMockBuilder(Quote::class)
         ->disableOriginalConstructor()
         ->getMock();
         $quoteMock->expects($this->once())->method("getId")->willReturn(self::QUOTE_ID);
@@ -120,7 +122,7 @@ class CancelTest extends \PHPUnit_Framework_TestCase
             ->method("create")
             ->willReturn($orderMock);
 
-        $checkoutSessionMock = $this->getMockBuilder(\Magento\Checkout\Model\Session::class)
+        $checkoutSessionMock = $this->getMockBuilder(Session::class)
             ->disableOriginalConstructor()
             ->getMock();
         $checkoutSessionMock->expects($this->once())->method("getQuote")
@@ -130,10 +132,10 @@ class CancelTest extends \PHPUnit_Framework_TestCase
         $this->serverCancelController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Server\Cancel',
             [
-                'context'          => $contextMock,
+                "context"          => $contextMock,
                 "quote"            => $quoteMock,
                 "orderFactory"     => $orderFactoryMock,
-                "_checkoutSession" => $checkoutSessionMock
+                "checkoutSession" => $checkoutSessionMock
             ]
         );
     }
@@ -141,7 +143,7 @@ class CancelTest extends \PHPUnit_Framework_TestCase
 
     public function testExecute()
     {
-        $this->_expectSetBody(
+        $this->expectSetBody(
             '<script>window.top.location.href = "'
             . '";</script>'
         );
@@ -152,7 +154,7 @@ class CancelTest extends \PHPUnit_Framework_TestCase
     /**
      * @param $body
      */
-    private function _expectSetBody($body)
+    private function expectSetBody($body)
     {
         $this->responseMock->expects($this->once())
             ->method('setBody')

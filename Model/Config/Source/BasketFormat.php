@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Config\Source;
 
+use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Option\ArrayInterface;
 
 /**
@@ -21,15 +22,15 @@ class BasketFormat implements ArrayInterface
     {
         return [
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
+                'value' => Config::BASKETFORMAT_SAGE50,
                 'label' => __('Sage50 compatible')
             ],
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML,
+                'value' => Config::BASKETFORMAT_XML,
                 'label' => __('XML')
             ],
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_DISABLED,
+                'value' => Config::BASKETFORMAT_DISABLED,
                 'label' => __('Disabled')
             ]
         ];

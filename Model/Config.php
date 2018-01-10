@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Payment\Model\Method\AbstractMethod;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
@@ -341,15 +342,15 @@ class Config
         switch ($action) {
             case self::ACTION_PAYMENT:
             case self::ACTION_REPEAT:
-                $magentoAction = \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
+                $magentoAction = AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
                 break;
             case self::ACTION_DEFER:
             case self::ACTION_AUTHENTICATE:
             case self::ACTION_REPEAT_DEFERRED:
-                $magentoAction = \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE;
+                $magentoAction = AbstractMethod::ACTION_AUTHORIZE;
                 break;
             default:
-                $magentoAction = \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
+                $magentoAction = AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
                 break;
         }
 
