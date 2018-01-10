@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
+use Ebizmarts\SagePaySuite\Helper\Request;
+use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 /**
@@ -14,23 +16,23 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 class Post
 {
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory
+     * @var ApiExceptionFactory
      */
-    private $_apiExceptionFactory;
+    private $apiExceptionFactory;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
+     * @var Config
      */
-    private $_config;
+    private $config;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Helper\Request
+     * @var Request
      */
     private $suiteHelper;
 
@@ -41,25 +43,25 @@ class Post
      * Post constructor.
      * @param HttpTextFactory $httpTextFactory
      * @param ApiExceptionFactory $apiExceptionFactory
-     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param Config $config
      * @param Logger $suiteLogger
-     * @param \Ebizmarts\SagePaySuite\Helper\Request $suiteHelper
+     * @param Request $suiteHelper
      */
     public function __construct(
-        \Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory $httpTextFactory,
-        \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
-        \Ebizmarts\SagePaySuite\Helper\Request $suiteHelper
+        HttpTextFactory $httpTextFactory,
+        ApiExceptionFactory $apiExceptionFactory,
+        Config $config,
+        Logger $suiteLogger,
+        Request $suiteHelper
     ) {
-        $this->_config              = $config;
-        $this->_apiExceptionFactory = $apiExceptionFactory;
-        $this->_suiteLogger         = $suiteLogger;
-        $this->suiteHelper          = $suiteHelper;
-        $this->httpTextFactory      = $httpTextFactory;
+        $this->config              = $config;
+        $this->apiExceptionFactory = $apiExceptionFactory;
+        $this->suiteLogger         = $suiteLogger;
+        $this->suiteHelper         = $suiteHelper;
+        $this->httpTextFactory     = $httpTextFactory;
     }
 
-    private function _handleApiErrors($response, $expectedStatus, $defaultErrorMessage)
+    private function handleApiErrors($response, $expectedStatus, $defaultErrorMessage)
     {
         $success = false;
 
@@ -98,7 +100,7 @@ class Post
                 }
             }
 
-            $exception = $this->_apiExceptionFactory->create([
+            $exception = $this->apiExceptionFactory->create([
                 'phrase' => __($exceptionPhrase),
                 'code' => $exceptionCode
             ]);
@@ -135,6 +137,6 @@ class Post
             "data"   => $responseData
         ];
 
-        return $this->_handleApiErrors($response, $expectedStatus, $errorMessage);
+        return $this->handleApiErrors($response, $expectedStatus, $errorMessage);
     }
 }
