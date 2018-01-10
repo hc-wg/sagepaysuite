@@ -103,12 +103,12 @@ class Cancel extends Action
         $this
             ->getResponse()
             ->setBody(
-            '<script>window.top.location.href = "'
-            . $this->_url->getUrl('checkout/cart', [
-                '_secure' => true,
-            ])
-            . '";</script>'
-        );
+                '<script>window.top.location.href = "'
+                . $this->_url->getUrl('checkout/cart', [
+                    '_secure' => true,
+                ])
+                . '";</script>'
+            );
     }
 
     private function saveErrorMessage()

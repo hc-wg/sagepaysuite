@@ -19,7 +19,7 @@ class Payment
     private $suiteHelper;
 
     /** @var \Ebizmarts\SagePaySuite\Model\Config */
-    private $_config;
+    private $config;
 
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
@@ -30,7 +30,7 @@ class Payment
         $this->logger      = $logger;
         $this->sharedApi   = $sharedApi;
         $this->suiteHelper = $suiteHelper;
-        $this->_config = $config;
+        $this->config      = $config;
     }
 
     /**
@@ -98,7 +98,9 @@ class Payment
             $this->tryRefund($payment, $transactionId, $amount);
         } catch (ApiException $apiException) {
             $this->logger->logException($apiException);
-            throw new LocalizedException(__(self::ERROR_MESSAGE, "refunding", $transactionId, $apiException->getUserMessage()));
+            throw new LocalizedException(
+                __(self::ERROR_MESSAGE, "refunding", $transactionId, $apiException->getUserMessage())
+            );
         } catch (\Exception $e) {
             $this->logger->logException($e);
             throw new LocalizedException(__(self::ERROR_MESSAGE, "refunding", $transactionId, $e->getMessage()));
@@ -200,7 +202,7 @@ class Payment
      */
     private function getTransactionPaymentAction(\Magento\Payment\Model\InfoInterface $payment)
     {
-        $paymentAction = $this->_config->getSagepayPaymentAction();
+        $paymentAction = $this->config->getSagepayPaymentAction();
         if ($payment->getAdditionalInformation('paymentAction')) {
             $paymentAction = $payment->getAdditionalInformation('paymentAction');
         }

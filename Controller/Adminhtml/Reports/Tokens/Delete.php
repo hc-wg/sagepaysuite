@@ -20,19 +20,19 @@ class Delete extends \Magento\Backend\App\Action
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    private $_logger;
+    private $logger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Token
      */
-    private $_tokenModel;
+    private $tokenModel;
 
-    private $_tokenId;
+    private $tokenId;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -48,32 +48,32 @@ class Delete extends \Magento\Backend\App\Action
     ) {
     
         parent::__construct($context);
-        $this->_suiteLogger = $suiteLogger;
-        $this->_logger      = $logger;
-        $this->_tokenModel  = $tokenModel;
+        $this->suiteLogger = $suiteLogger;
+        $this->logger      = $logger;
+        $this->tokenModel  = $tokenModel;
     }
 
     public function execute()
     {
         try {
             $this->_view->loadLayout();
-            $this->_tokenId = $this->getRequest()->getParam('id');
+            $this->tokenId = $this->getRequest()->getParam('id');
 
-            if (empty($this->_tokenId)) {
+            if (empty($this->tokenId)) {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to delete token: Invalid token id.'));
             }
 
-            $token = $this->_tokenModel->loadToken($this->_tokenId);
+            $token = $this->tokenModel->loadToken($this->tokenId);
 
             //delete
             $token->deleteToken();
 
             $this->messageManager->addSuccess(__('Token deleted successfully.'));
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->_logger->critical($apiException);
+            $this->logger->critical($apiException);
             $this->messageManager->addError(__($apiException->getUserMessage()));
         } catch (\Exception $e) {
-            $this->_logger->critical($e);
+            $this->logger->critical($e);
             $this->messageManager->addError(__($e->getMessage()));
         }
 

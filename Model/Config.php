@@ -152,7 +152,7 @@ class Config
      *
      * @var string
      */
-    private $_methodCode;
+    private $methodCode;
 
     /**
      * Current store id
@@ -208,7 +208,7 @@ class Config
      */
     public function setMethodCode($methodCode)
     {
-        $this->_methodCode = $methodCode;
+        $this->methodCode = $methodCode;
         return $this;
     }
 
@@ -219,7 +219,7 @@ class Config
      */
     public function getMethodCode()
     {
-        return $this->_methodCode;
+        return $this->methodCode;
     }
 
     /**
@@ -235,7 +235,7 @@ class Config
     {
         $resolvedConfigurationScopeId = $this->resolveConfigurationScopeId($configurationScopeId);
 
-        $path = $this->_getSpecificConfigPath($key);
+        $path = $this->getSpecificConfigPath($key);
 
         return $this->scopeConfig->getValue($path, $this->configurationScope, $resolvedConfigurationScopeId);
     }
@@ -244,7 +244,7 @@ class Config
     {
         $resolvedConfigurationScopeId = $this->resolveConfigurationScopeId($configurationScopeId);
 
-        $path = $this->_getGlobalConfigPath($key);
+        $path = $this->getGlobalConfigPath($key);
 
         return $this->scopeConfig->getValue($path, $this->configurationScope, $resolvedConfigurationScopeId);
     }
@@ -285,17 +285,17 @@ class Config
      * @param string $fieldName
      * @return string|null
      */
-    private function _getSpecificConfigPath($fieldName)
+    private function getSpecificConfigPath($fieldName)
     {
-        return "payment/{$this->_methodCode}/{$fieldName}";
+        return "payment/{$this->methodCode}/{$fieldName}";
     }
 
-    private function _getGlobalConfigPath($fieldName)
+    private function getGlobalConfigPath($fieldName)
     {
         return "sagepaysuite/global/{$fieldName}";
     }
 
-    private function _getAdvancedConfigPath($fieldName)
+    private function getAdvancedConfigPath($fieldName)
     {
         return "sagepaysuite/advanced/{$fieldName}";
     }
@@ -326,7 +326,7 @@ class Config
 
     public function getSagepayPaymentAction()
     {
-        if ($this->_methodCode == self::METHOD_PI) {
+        if ($this->methodCode == self::METHOD_PI) {
             return self::ACTION_PAYMENT_PI;
         } else {
             return $this->getValue("payment_action");
@@ -438,7 +438,7 @@ class Config
     public function get3Dsecure($forceDisable = false)
     {
         $config_value = $this->scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("threedsecure"),
+            $this->getAdvancedConfigPath("threedsecure"),
             $this->configurationScope,
             $this->configurationScopeId
         );
@@ -447,7 +447,7 @@ class Config
             $config_value = self::MODE_3D_DISABLE;
         }
 
-        if ($this->_methodCode != self::METHOD_PI) {
+        if ($this->methodCode != self::METHOD_PI) {
             $config_value = $this->getThreeDSecureLegacyIntegrations($config_value);
         }
 
@@ -461,12 +461,12 @@ class Config
     public function getAvsCvc()
     {
         $configValue = $this->scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("avscvc"),
+            $this->getAdvancedConfigPath("avscvc"),
             $this->configurationScope,
             $this->configurationScopeId
         );
 
-        if ($this->_methodCode != self::METHOD_PI) {
+        if ($this->methodCode != self::METHOD_PI) {
             $configValue = $this->getAvsCvcLegacyIntegrations($configValue);
         }
 
@@ -476,7 +476,7 @@ class Config
     public function getAutoInvoiceFraudPassed()
     {
         $config_value = $this->scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("fraud_autoinvoice"),
+            $this->getAdvancedConfigPath("fraud_autoinvoice"),
             $this->configurationScope,
             $this->configurationScopeId
         );
@@ -486,7 +486,7 @@ class Config
     public function getNotifyFraudResult()
     {
         $config_value = $this->scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("fraud_notify"),
+            $this->getAdvancedConfigPath("fraud_notify"),
             $this->configurationScope,
             $this->configurationScopeId
         );
@@ -575,7 +575,7 @@ class Config
     public function getBasketFormat()
     {
         $config_value = $this->scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("basket_format"),
+            $this->getAdvancedConfigPath("basket_format"),
             $this->configurationScope,
             $this->configurationScopeId
         );
@@ -590,7 +590,7 @@ class Config
     public function isGiftAidEnabled()
     {
         $config_value = $this->scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("giftaid"),
+            $this->getAdvancedConfigPath("giftaid"),
             $this->configurationScope,
             $this->configurationScopeId
         );

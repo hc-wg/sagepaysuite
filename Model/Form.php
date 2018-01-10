@@ -15,20 +15,20 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    private $_suiteHelper;
+    private $suiteHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    private $_config;
+    private $config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Shared
      */
-    private $_sharedApi;
+    private $sharedApi;
 
     /** @var \Magento\Framework\Model\Context */
-    private $_context;
+    private $context;
 
     /** @var bool */
     private $isInitializeNeeded = true;
@@ -87,12 +87,12 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
             $data
         );
 
-        $this->_config      = $config;
-        $this->_context     = $context;
-        $this->_sharedApi   = $sharedApi;
-        $this->paymentOps   = $paymentOps;
-        $this->_suiteHelper = $suiteHelper;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
+        $this->config      = $config;
+        $this->context     = $context;
+        $this->sharedApi   = $sharedApi;
+        $this->paymentOps  = $paymentOps;
+        $this->suiteHelper = $suiteHelper;
+        $this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
         $this->formCrypt    = $formCrypt;
     }
 
@@ -132,7 +132,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function getConfigPaymentAction()
     {
-        return $this->_config->getPaymentAction();
+        return $this->config->getPaymentAction();
     }
 
     /**
@@ -149,7 +149,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
         } else {
             $response = [];
 
-            $cryptPass  = $this->_config->getFormEncryptedPassword();
+            $cryptPass  = $this->config->getFormEncryptedPassword();
             $strDecoded = $this->getDecryptedRequest($cryptPass, $crypt);
 
             if (false !== $strDecoded) {
@@ -187,7 +187,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function canUseInternal()
     {
-        $configEnabled = (bool)(int)$this->_config->setMethodCode(
+        $configEnabled = (bool)(int)$this->config->setMethodCode(
             \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM
         )->isMethodActiveMoto();
         return $configEnabled;
@@ -201,7 +201,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function isActive($storeId = null)
     {
-        $areaCode = $this->_context->getAppState()->getAreaCode();
+        $areaCode = $this->context->getAppState()->getAreaCode();
 
         $moto = '';
         if ($areaCode == 'adminhtml') {

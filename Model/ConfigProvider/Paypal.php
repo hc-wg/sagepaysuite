@@ -25,7 +25,7 @@ class Paypal implements ConfigProviderInterface
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    private $_suiteHelper;
+    private $suiteHelper;
 
     /**
      * @param PaymentHelper $paymentHelper
@@ -35,8 +35,8 @@ class Paypal implements ConfigProviderInterface
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
     ) {
     
-        $this->method = $paymentHelper->getMethodInstance($this->methodCode);
-        $this->_suiteHelper = $suiteHelper;
+        $this->method      = $paymentHelper->getMethodInstance($this->methodCode);
+        $this->suiteHelper = $suiteHelper;
     }
 
     public function getConfig()
@@ -48,8 +48,8 @@ class Paypal implements ConfigProviderInterface
         return [
             'payment' => [
                 'ebizmarts_sagepaysuitepaypal' => [
-                    'licensed' => $this->_suiteHelper->verify(),
-                    'mode' => $this->_suiteHelper->getSagePayConfig()->getMode()
+                    'licensed' => $this->suiteHelper->verify(),
+                    'mode' => $this->suiteHelper->getSagePayConfig()->getMode()
                 ],
             ]
         ];
