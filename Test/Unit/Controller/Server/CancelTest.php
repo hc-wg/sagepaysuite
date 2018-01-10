@@ -118,6 +118,7 @@ class CancelTest extends \PHPUnit_Framework_TestCase
             ->willReturn([]);
 
         $orderFactoryMock = $this->getMockBuilder(\Magento\Sales\Model\OrderFactory::class)
+            ->setMethods(["create"])
             ->disableOriginalConstructor()
             ->getMock();
         $orderFactoryMock->expects($this->once())
