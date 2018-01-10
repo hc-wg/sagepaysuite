@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Block\Adminhtml\Template\Reports\Tokens\Grid\Renderer;
 
+use Magento\Framework\DataObject;
+
 class ActionTest extends \PHPUnit_Framework_TestCase
 {
     /**
@@ -35,7 +37,7 @@ class ActionTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             "&nbsp;",
-            $this->actionRendererBlock->render(new \Magento\Framework\DataObject)
+            $this->actionRendererBlock->render(new DataObject)
         );
     }
 }

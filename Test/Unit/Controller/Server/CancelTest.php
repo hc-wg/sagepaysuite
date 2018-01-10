@@ -29,11 +29,6 @@ class CancelTest extends \PHPUnit_Framework_TestCase
     private $responseMock;
 
     /**
-     * @var CheckoutSession|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $checkoutSessionMock;
-
-    /**
      * @var \Magento\Framework\UrlInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $urlBuilderMock;

@@ -11,7 +11,7 @@ require BP . '/dev/tests/integration/testsuite/Magento/Checkout/_files/quote_wit
 /** @var $rate \Magento\Quote\Model\Quote\Address\Rate */
 $rate = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()->create('Magento\Quote\Model\Quote\Address\Rate');
 $rate->setCode('freeshipping_freeshipping');
-$rate->getPrice(1);
+$rate->getPrice();
 
 $quote->getShippingAddress()->setShippingMethod('freeshipping_freeshipping');
 $quote->getShippingAddress()->addShippingRate($rate);

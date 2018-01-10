@@ -8,7 +8,6 @@ namespace Ebizmarts\SagePaySuite\Controller\Server;
 
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Magento\Checkout\Exception;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 
 class Notify extends \Magento\Framework\App\Action\Action

@@ -3,7 +3,6 @@
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite\Api\FormManagementInterface;
-use Ebizmarts\SagePaySuite\Model\Config;
 
 class FormRequestManagement implements FormManagementInterface
 {

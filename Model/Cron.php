@@ -7,7 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
-use Magento\Sales\Model\Order;
+use Magento\Framework\Exception\LocalizedException;
 use \Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use \Magento\Sales\Api\TransactionRepositoryInterface;
 
@@ -23,32 +23,32 @@ class Cron
     /**
      * @var \Magento\Sales\Api\OrderPaymentRepositoryInterface
      */
-    private $_orderPaymentRepository;
+    private $orderPaymentRepository;
 
     /**
      * @var \Magento\Framework\ObjectManagerInterface
      */
-    private $_objectManager;
+    private $objectManager;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    private $_config;
+    private $config;
 
     /**
          * @var \Magento\Sales\Model\ResourceModel\Order\CollectionFactory
      */
-    private $_orderCollectionFactory;
+    private $orderCollectionFactory;
 
     /**
      * @var \Magento\Sales\Api\TransactionRepositoryInterface;
      */
-    private $_transactionRepository;
+    private $transactionRepository;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Fraud
      */
-    private $_fraudHelper;
+    private $fraudHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud;
@@ -91,16 +91,16 @@ class Cron
         \Magento\Framework\Api\FilterBuilder $filterBuilder
     ) {
 
-        $this->suiteLogger             = $suiteLogger;
-        $this->_orderPaymentRepository = $orderPaymentRepository;
-        $this->_objectManager          = $objectManager;
-        $this->_config                 = $config;
-        $this->_orderCollectionFactory = $orderCollectionFactory;
-        $this->_transactionRepository  = $transactionRepository;
-        $this->_fraudHelper            = $fraudHelper;
-        $this->fraudModel              = $fraudModel;
-        $this->criteriaBuilder         = $criteriaBuilder;
-        $this->filterBuilder           = $filterBuilder;
+        $this->suiteLogger            = $suiteLogger;
+        $this->orderPaymentRepository = $orderPaymentRepository;
+        $this->objectManager          = $objectManager;
+        $this->config                 = $config;
+        $this->orderCollectionFactory = $orderCollectionFactory;
+        $this->transactionRepository  = $transactionRepository;
+        $this->fraudHelper            = $fraudHelper;
+        $this->fraudModel             = $fraudModel;
+        $this->criteriaBuilder        = $criteriaBuilder;
+        $this->filterBuilder          = $filterBuilder;
     }
 
     /**
@@ -114,7 +114,7 @@ class Cron
             return $this;
         }
 
-        $orderCollection = $this->_orderCollectionFactory->create()
+        $orderCollection = $this->orderCollectionFactory->create()
             ->addFieldToFilter('entity_id', ['in' => implode(',', $orderIds)])
             ->load();
 
@@ -137,6 +137,7 @@ class Cron
                 $this->logGeneralException($orderId, $e);
             }
         }
+        return $this;
     }
 
     /**
@@ -149,18 +150,18 @@ class Cron
 
         foreach ($transactions as $_transaction) {
             try {
-                $transaction = $this->_transactionRepository->get($_transaction["transaction_id"]);
+                $transaction = $this->transactionRepository->get($_transaction["transaction_id"]);
                 $logData = [];
 
-                $payment = $this->_orderPaymentRepository->get($transaction->getPaymentId());
+                $payment = $this->orderPaymentRepository->get($transaction->getPaymentId());
                 if ($payment === null) {
-                    throw new \Magento\Framework\Exception\LocalizedException(
+                    throw new LocalizedException(
                         __('Payment not found for this transaction.')
                     );
                 }
 
                 //process fraud information
-                $logData = $this->_fraudHelper->processFraudInformation($transaction, $payment);
+                $logData = $this->fraudHelper->processFraudInformation($transaction, $payment);
             } catch (ApiException $apiException) {
                 $logData["ERROR"] = $apiException->getUserMessage();
                 $logData["Trace"] = $apiException->getTraceAsString();
@@ -172,6 +173,7 @@ class Cron
             //log
             $this->suiteLogger->sageLog(Logger::LOG_CRON, $logData, [__METHOD__, __LINE__]);
         }
+        return $this;
     }
 
     /**
@@ -182,18 +184,6 @@ class Cron
         $this->suiteLogger->sageLog(Logger::LOG_CRON, [
                 "OrderId" => $orderId,
                 "Result"  => "CANCELLED : No payment received."
-            ], [__METHOD__, __LINE__]);
-    }
-
-    /**
-     * @param $orderId
-     * @param $payment
-     */
-    private function logErrorTransactionNotFound($orderId, $payment)
-    {
-        $this->suiteLogger->sageLog(Logger::LOG_CRON, [
-                "OrderId" => $orderId,
-                "Result"  => "ERROR : Transaction found."
             ], [__METHOD__, __LINE__]);
     }
 
