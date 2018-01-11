@@ -829,7 +829,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             'RedirectURL=?message=Something went wrong: Invalid transaction id' . "\r\n"
         );
 
-        $helperMock = $this->makeHelperMockCalledNever();
+        $helperMock = $this->makeHelperMockCalledOnce('INVALID_TRANSACTION');
 
         $this->controllerInstantiate(
             $this->contextMock,
@@ -1372,12 +1372,17 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @return \Ebizmarts\SagePaySuite\Helper\Data|\PHPUnit_Framework_MockObject_MockObject
+     * @param string $returnValue
+     * @return Data|\PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeHelperMockCalledOnce()
+    private function makeHelperMockCalledOnce($returnValue = null)
     {
+        if ($returnValue === null) {
+            $returnValue = self::TEST_VPSTXID;
+        }
+
         $helperMock = $this->makeSuiteHelperMock();
-        $helperMock->expects($this->once())->method("removeCurlyBraces")->willReturn(self::TEST_VPSTXID);
+        $helperMock->expects($this->once())->method("removeCurlyBraces")->willReturn($returnValue);
 
         return $helperMock;
     }
