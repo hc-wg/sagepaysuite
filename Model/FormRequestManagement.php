@@ -2,68 +2,77 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Api\Data\FormResultInterface;
 use Ebizmarts\SagePaySuite\Api\FormManagementInterface;
-use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Helper\Checkout;
+use Ebizmarts\SagePaySuite\Helper\Data;
+use Ebizmarts\SagePaySuite\Helper\Request;
+use Ebizmarts\SagePaySuite\Model\FormCrypt;
+use Magento\Checkout\Model\Session;
+use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Framework\UrlInterface;
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Quote\Model\QuoteIdMaskFactory;
 
 class FormRequestManagement implements FormManagementInterface
 {
 
-    /** @var \Ebizmarts\SagePaySuite\Api\Data\FormResultInterface  */
+    /** @var FormResultInterface  */
     private $result;
 
     /**
      * @var Config
      */
-    private $_config;
+    private $config;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Helper\Data
+     * @var Data
      */
-    private $_suiteHelper;
+    private $suiteHelper;
 
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    private $_quote;
+    private $quote;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
      * Sage Pay Suite Request Helper
-     * @var \Ebizmarts\SagePaySuite\Helper\Request
+     * @var Request
      */
-    private $_requestHelper;
+    private $requestHelper;
 
     /**
-     * @var \Magento\Checkout\Model\Session
+     * @var Session
      */
-    private $_checkoutSession;
+    private $checkoutSession;
 
     /**
      * @var \Magento\Customer\Model\Session
      */
-    private $_customerSession;
+    private $customerSession;
 
     /**
-     * @var \Magento\Quote\Api\CartRepositoryInterface
+     * @var CartRepositoryInterface
      */
     private $quoteRepository;
 
     /**
-     * @var \Magento\Quote\Model\QuoteIdMaskFactory
+     * @var QuoteIdMaskFactory
      */
     private $quoteIdMaskFactory;
 
     /**
-     * @var \Magento\Framework\UrlInterface
+     * @var UrlInterface
      */
     private $url;
 
-    /** @var \Ebizmarts\SagePaySuite\Helper\Checkout */
+    /** @var Checkout */
     private $checkoutHelper;
 
     private $transactionVendorTxCode;
@@ -72,33 +81,33 @@ class FormRequestManagement implements FormManagementInterface
 
     public function __construct(
         Config $config,
-        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        Data $suiteHelper,
         Logger\Logger $suiteLogger,
-        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
-        \Ebizmarts\SagePaySuite\Api\Data\FormResultInterface $result,
-        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Customer\Model\Session $customerSession,
-        \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
-        \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory,
-        \Magento\Framework\UrlInterface $coreUrl,
-        \Ebizmarts\SagePaySuite\Model\FormCrypt $formCrypt
+        Request $requestHelper,
+        FormResultInterface $result,
+        Checkout $checkoutHelper,
+        Session $checkoutSession,
+        CustomerSession $customerSession,
+        CartRepositoryInterface $quoteRepository,
+        QuoteIdMaskFactory $quoteIdMaskFactory,
+        UrlInterface $coreUrl,
+        FormCrypt $formCrypt
     ) {
     
         $this->result             = $result;
         $this->quoteRepository    = $quoteRepository;
-        $this->_config            = $config;
-        $this->_suiteHelper       = $suiteHelper;
-        $this->_checkoutSession   = $checkoutSession;
-        $this->_customerSession   = $customerSession;
-        $this->_suiteLogger       = $suiteLogger;
-        $this->_requestHelper     = $requestHelper;
+        $this->config             = $config;
+        $this->suiteHelper        = $suiteHelper;
+        $this->checkoutSession    = $checkoutSession;
+        $this->customerSession    = $customerSession;
+        $this->suiteLogger        = $suiteLogger;
+        $this->requestHelper      = $requestHelper;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
         $this->url                = $coreUrl;
         $this->formCrypt          = $formCrypt;
         $this->checkoutHelper     = $checkoutHelper;
 
-        $this->_config->setMethodCode(Config::METHOD_FORM);
+        $this->config->setMethodCode(Config::METHOD_FORM);
     }
 
     /**
@@ -108,17 +117,17 @@ class FormRequestManagement implements FormManagementInterface
     public function getEncryptedRequest($cartId)
     {
         try {
-            $this->_quote = $this->getQuoteById($cartId);
-            $this->_quote->collectTotals();
-            $this->_quote->reserveOrderId();
+            $this->quote = $this->getQuoteById($cartId);
+            $this->quote->collectTotals();
+            $this->quote->reserveOrderId();
 
-            $vendorname = $this->_config->getVendorname();
-            $this->transactionVendorTxCode = $this->_suiteHelper->generateVendorTxCode(
-                $this->_quote->getReservedOrderId()
+            $vendorname = $this->config->getVendorname();
+            $this->transactionVendorTxCode = $this->suiteHelper->generateVendorTxCode(
+                $this->quote->getReservedOrderId()
             );
 
             //set payment info for save order
-            $payment = $this->_quote->getPayment();
+            $payment = $this->quote->getPayment();
             $payment->setMethod(Config::METHOD_FORM);
 
             //save order with pending payment
@@ -126,27 +135,27 @@ class FormRequestManagement implements FormManagementInterface
             $order = $this->checkoutHelper->placeOrder();
             if ($order->getEntityId()) {
                 //set pre-saved order flag in checkout session
-                $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", $order->getId());
+                $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", $order->getId());
 
                 //set payment data
                 $payment = $order->getPayment();
                 $payment->setAdditionalInformation('vendorTxCode', $this->transactionVendorTxCode);
                 $payment->setAdditionalInformation('vendorname', $vendorname);
-                $payment->setAdditionalInformation('mode', $this->_config->getMode());
-                $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
+                $payment->setAdditionalInformation('mode', $this->config->getMode());
+                $payment->setAdditionalInformation('paymentAction', $this->config->getSagepayPaymentAction());
                 $payment->save();
 
                 $this->result->setSuccess(true);
                 $this->result->setRedirectUrl($this->getFormRedirectUrl());
-                $this->result->setVpsProtocol($this->_config->getVPSProtocol());
-                $this->result->setTxType($this->_config->getSagepayPaymentAction());
+                $this->result->setVpsProtocol($this->config->getVPSProtocol());
+                $this->result->setTxType($this->config->getSagepayPaymentAction());
                 $this->result->setVendor($vendorname);
                 $this->result->setCrypt($this->generateFormCrypt());
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
             }
         } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
+            $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
             $this->result->setSuccess(false);
             $this->result->setErrorMessage(__('Something went wrong: ' . $e->getMessage()));
@@ -162,7 +171,7 @@ class FormRequestManagement implements FormManagementInterface
     {
         $url = Config::URL_FORM_REDIRECT_LIVE;
 
-        if ($this->_config->getMode()== Config::MODE_TEST) {
+        if ($this->config->getMode()== Config::MODE_TEST) {
             $url = Config::URL_FORM_REDIRECT_TEST;
         }
 
@@ -172,7 +181,7 @@ class FormRequestManagement implements FormManagementInterface
     private function generateFormCrypt()
     {
 
-        $encryptedPassword = $this->_config->getFormEncryptedPassword();
+        $encryptedPassword = $this->config->getFormEncryptedPassword();
 
         if (empty($encryptedPassword)) {
             throw new \Magento\Framework\Exception\LocalizedException(__('Invalid FORM encrypted password.'));
@@ -180,52 +189,52 @@ class FormRequestManagement implements FormManagementInterface
 
         $data = [];
         $data['VendorTxCode'] = $this->transactionVendorTxCode;
-        $data['Description']  = $this->_requestHelper->getOrderDescription();
+        $data['Description']  = $this->requestHelper->getOrderDescription();
 
         //referrer id
-        $data["ReferrerID"] = $this->_requestHelper->getReferrerId();
+        $data["ReferrerID"] = $this->requestHelper->getReferrerId();
 
-        if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_DISABLED) {
-            $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
+        if ($this->config->getBasketFormat() != Config::BASKETFORMAT_DISABLED) {
+            $data = array_merge($data, $this->requestHelper->populateBasketInformation($this->quote));
         }
 
         $data['SuccessURL'] = $this->url->getUrl('sagepaysuite/form/success', [
             '_secure' => true,
-            '_store'  => $this->_quote->getStoreId(),
-            'quoteid' => $this->_quote->getId()
+            '_store'  => $this->quote->getStoreId(),
+            'quoteid' => $this->quote->getId()
         ]);
         $data['FailureURL'] = $this->url->getUrl('sagepaysuite/form/failure', [
             '_secure' => true,
-            '_store'  => $this->_quote->getStoreId(),
-            'quoteid' => $this->_quote->getId()
+            '_store'  => $this->quote->getStoreId(),
+            'quoteid' => $this->quote->getId()
         ]);
 
         //email details
-        $data['VendorEMail']  = $this->_config->getFormVendorEmail();
-        $data['SendEMail']    = $this->_config->getFormSendEmail();
-        $data['EmailMessage'] = substr($this->_config->getFormEmailMessage(), 0, 7500);
+        $data['VendorEMail']  = $this->config->getFormVendorEmail();
+        $data['SendEMail']    = $this->config->getFormSendEmail();
+        $data['EmailMessage'] = substr($this->config->getFormEmailMessage(), 0, 7500);
 
         //populate payment amount information
-        $data = array_merge($data, $this->_requestHelper->populatePaymentAmountAndCurrency($this->_quote));
+        $data = array_merge($data, $this->requestHelper->populatePaymentAmountAndCurrency($this->quote));
 
-        $data = $this->_requestHelper->unsetBasketXMLIfAmountsDontMatch($data);
+        $data = $this->requestHelper->unsetBasketXMLIfAmountsDontMatch($data);
 
         //populate address information
-        $data = array_merge($data, $this->_requestHelper->populateAddressInformation($this->_quote));
+        $data = array_merge($data, $this->requestHelper->populateAddressInformation($this->quote));
 
         $data["CardHolder"]    = $data['BillingFirstnames'] . ' ' . $data['BillingSurname'];
 
         //3D rules
-        $data["Apply3DSecure"] = $this->_config->get3Dsecure();
+        $data["Apply3DSecure"] = $this->config->get3Dsecure();
 
         //Avs/Cvc rules
-        $data["ApplyAVSCV2"]   = $this->_config->getAvsCvc();
+        $data["ApplyAVSCV2"]   = $this->config->getAvsCvc();
 
         //gif aid
-        $data["AllowGiftAid"]  = (int)$this->_config->isGiftAidEnabled();
+        $data["AllowGiftAid"]  = (int)$this->config->isGiftAidEnabled();
 
         //log request
-        $this->_suiteLogger->sageLog(Logger\Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
+        $this->suiteLogger->sageLog(Logger\Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
 
         $preCryptString = '';
         foreach ($data as $field => $value) {

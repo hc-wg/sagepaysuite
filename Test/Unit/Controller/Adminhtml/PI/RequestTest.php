@@ -350,30 +350,6 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $requesterMock->expects($this->once())->method('setQuote');
         $requesterMock->expects($this->once())->method('placeOrder')->willReturn($piResultInterfaceMock);
 
-//        $this->paymentMock->expects($this->once())->method('setCcLast4');
-//        $this->paymentMock->expects($this->once())->method('setCcExpMonth');
-//        $this->paymentMock->expects($this->once())->method('setCcExpYear');
-//        $this->paymentMock->expects($this->once())->method('setCcType');
-//        $this->paymentMock->expects($this->exactly(8))->method('setAdditionalInformation');
-//
-//        $this->pirestapiMock
-//            ->expects($this->once())
-//            ->method('capture')
-//            ->willReturn($captureData);
-//
-//        $this->requestMock
-//            ->expects($this->exactly(2))
-//            ->method('getPost')
-//            ->willReturn($postData);
-//
-//        $this->adminOrder->method('createOrder')->willReturn($this->orderMock);
-//
-//        $this->quoteManagementMock->expects($this->any())
-//            ->method('submit')
-//            ->willreturn($this->orderMock);
-//
-//        $this->_expectResultJson($expectedResponse);
-
         $objectManagerHelper       = new ObjectManagerHelper($this);
         $this->piRequestController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\PI\Request',
@@ -432,16 +408,5 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->piRequestController->execute();
-    }
-
-    /**
-     * @param $result
-     */
-    private function _expectResultJson($result)
-    {
-        $this->resultJson
-            ->expects($this->once())
-            ->method('setData')
-            ->with($result);
     }
 }

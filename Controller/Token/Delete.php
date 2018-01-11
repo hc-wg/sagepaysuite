@@ -6,58 +6,63 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Token;
 
+use Ebizmarts\SagePaySuite\Model\Token;
+use Magento\Customer\Model\Session;
+use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Psr\Log\LoggerInterface;
 
-class Delete extends \Magento\Framework\App\Action\Action
+class Delete extends Action
 {
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
-    private $_logger;
+    private $logger;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Token
+     * @var Token
      */
-    private $_tokenModel;
+    private $tokenModel;
 
-    private $_tokenId;
-    private $_isCustomerArea;
+    private $tokenId;
+    private $isCustomerArea;
 
     /**
-     * @var \Magento\Customer\Model\Session
+     * @var Session
      */
-    private $_customerSession;
+    private $customerSession;
 
     /**
      * Delete constructor.
-     * @param \Magento\Framework\App\Action\Context $context
+     * @param Context $context
      * @param Logger $suiteLogger
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Ebizmarts\SagePaySuite\Model\Token $tokenModel
-     * @param \Magento\Customer\Model\Session $customerSession
+     * @param LoggerInterface $logger
+     * @param Token $tokenModel
+     * @param Session $customerSession
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
+        Context $context,
         Logger $suiteLogger,
-        \Psr\Log\LoggerInterface $logger,
-        \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
-        \Magento\Customer\Model\Session $customerSession
+        LoggerInterface $logger,
+        Token $tokenModel,
+        Session $customerSession
     ) {
     
         parent::__construct($context);
-        $this->_suiteLogger     = $suiteLogger;
-        $this->_logger          = $logger;
-        $this->_tokenModel      = $tokenModel;
-        $this->_customerSession = $customerSession;
-        $this->_isCustomerArea  = true;
+        $this->suiteLogger     = $suiteLogger;
+        $this->logger          = $logger;
+        $this->tokenModel      = $tokenModel;
+        $this->customerSession = $customerSession;
+        $this->isCustomerArea  = true;
     }
 
     /**
@@ -68,18 +73,18 @@ class Delete extends \Magento\Framework\App\Action\Action
         try {
             //get token id
             if (!empty($this->getRequest()->getParam("token_id"))) {
-                $this->_tokenId = $this->getRequest()->getParam("token_id");
+                $this->tokenId = $this->getRequest()->getParam("token_id");
                 if (!empty($this->getRequest()->getParam("checkout"))) {
-                    $this->_isCustomerArea = false;
+                    $this->isCustomerArea = false;
                 }
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to delete token: Invalid token id.'));
             }
 
-            $token = $this->_tokenModel->loadToken($this->_tokenId);
+            $token = $this->tokenModel->loadToken($this->tokenId);
 
             //validate ownership
-            if ($token->isOwnedByCustomer($this->_customerSession->getCustomerId())) {
+            if ($token->isOwnedByCustomer($this->customerSession->getCustomerId())) {
                 //delete
                 $token->deleteToken();
             } else {
@@ -94,7 +99,7 @@ class Delete extends \Magento\Framework\App\Action\Action
                 'response' => true
             ];
         } catch (\Exception $e) {
-            $this->_logger->critical($e);
+            $this->logger->critical($e);
 
             $responseContent = [
                 'success' => false,
@@ -102,7 +107,7 @@ class Delete extends \Magento\Framework\App\Action\Action
             ];
         }
 
-        if ($this->_isCustomerArea == true) {
+        if ($this->isCustomerArea == true) {
             if ($responseContent["success"] == true) {
                 $this->messageManager->addSuccess(__('Token deleted successfully.'));
                 $this->_redirect('sagepaysuite/customer/tokens');

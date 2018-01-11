@@ -6,9 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
-use Ebizmarts\SagePaySuite\Model\Config;
-
 class SharedTest extends \PHPUnit_Framework_TestCase
 {
     /**

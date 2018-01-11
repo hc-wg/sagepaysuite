@@ -15,7 +15,7 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
     /**
      * @var \Magento\Sales\Model\OrderFactory
      */
-    private $_orderFactory;
+    private $orderFactory;
 
     /**
      * @param \Magento\Backend\Block\Context $context
@@ -27,7 +27,7 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
         array $data = []
     ) {
         parent::__construct($context, $data);
-        $this->_orderFactory = $orderFactory;
+        $this->orderFactory = $orderFactory;
     }
 
     /**
@@ -41,7 +41,7 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
         $orderId = parent::render($row);
 
         //find order with quote id
-        $order = $this->_orderFactory->create()->load($orderId);
+        $order = $this->orderFactory->create()->load($orderId);
 
         $link = $this->getUrl('sales/order/view/', ['order_id'=>$order->getEntityId()]);
 

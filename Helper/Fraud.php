@@ -6,7 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Helper;
 
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Store\Model\Store;
 use Magento\Sales\Model\Order;
 
@@ -133,7 +132,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
                      */
                     $this->saveFraudInformation($response, $payment);
 
-                    $logData = array_merge($logData, $this->getFraudInformationToLog($response, $payment));
+                    $logData = array_merge($logData, $this->getFraudInformationToLog($response));
                 } else {
                     $recommendation = $this->getFraudScreenRecommendation($response);
 
@@ -208,7 +207,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
             $fraudid                   = $fraudData->getFraudId();
             $fraudcode                 = $fraudData->getFraudCode();
             $fraudcodedetail           = $fraudData->getFraudCodeDetail();
-        } else if ($fraudprovidername == 'T3M') {
+        } elseif ($fraudprovidername == 'T3M') {
             $fraudscreenrecommendation = $fraudData->getThirdmanAction();
             $fraudid                   = $fraudData->getThirdmanId();
             $fraudcode                 = $fraudData->getThirdmanScore();
@@ -328,7 +327,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
      * @return bool|string
      * @codeCoverageIgnore
      */
-    private function _notification(
+    private function notification(
         \Magento\Sales\Model\Order\Payment\Transaction $transaction,
         \Magento\Sales\Model\Order\Payment $payment,
         $fraudscreenrecommendation,
