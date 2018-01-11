@@ -6,16 +6,31 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Server;
 
+use Ebizmarts\SagePaySuite\Helper\Data;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
+use Magento\Sales\Model\Order;
 
 class NotifyTest extends \PHPUnit_Framework_TestCase
 {
+    /** @var  \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject */
     private $configMock;
+
+    /** @var \Magento\Sales\Model\Order\Payment\TransactionFactory|\PHPUnit_Framework_MockObject_MockObject */
     private $transactionFactoryMock;
+
+    /** @var \Magento\Sales\Model\OrderFactory|\PHPUnit_Framework_MockObject_MockObject */
     private $orderFactoryMock;
+
+    /** @var \Magento\Framework\App\Action\Context|\PHPUnit_Framework_MockObject_MockObject */
     private $contextMock;
+
+    /** @var \Magento\Checkout\Model\Session|\PHPUnit_Framework_MockObject_MockObject */
     private $checkoutSessionMock;
+
+    /** @var \Magento\Quote\Model\Quote|\PHPUnit_Framework_MockObject_MockObject */
     private $quoteMock;
+
+    /** @var ObjectManagerHelper */
     private $objectManagerHelper;
 
     /**
@@ -23,9 +38,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
      */
     const TEST_VPSTXID = 'F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F';
 
-    /**
-     * @var Delete
-     */
+    /** @var \Ebizmarts\SagePaySuite\Controller\Server\Notify */
     private $serverNotifyController;
 
     /**
@@ -43,6 +56,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
      */
     private $urlBuilderMock;
 
+    /** @var \Magento\Sales\Model\Order|\PHPUnit_Framework_MockObject_MockObject */
     private $orderMock;
 
     // @codingStandardsIgnoreStart
@@ -193,13 +207,16 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             'RedirectURL=?quoteid=1' . "\r\n"
         );
 
+        $helperMock = $this->makeHelperMockCalledOnce();
+
         $this->controllerInstantiate(
             $this->contextMock,
             $this->configMock,
             $this->checkoutSessionMock,
             $this->orderFactoryMock,
             $this->transactionFactoryMock,
-            $this->quoteMock
+            $this->quoteMock,
+            $helperMock
         );
 
         $this->serverNotifyController->execute();
@@ -291,8 +308,11 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('getId')
             ->will($this->returnValue(1));
         $this->orderMock->expects($this->never())
-            ->method('cancel')
-            ->willReturnSelf();
+            ->method('cancel');
+        $this->orderMock
+            ->expects($this->once())
+            ->method('getStatus')
+            ->willReturn(Order::STATE_PENDING_PAYMENT);
 
         $this->orderFactoryMock = $this
             ->getMockBuilder('Magento\Sales\Model\OrderFactory')
@@ -352,6 +372,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             'RedirectURL=?quoteid=1' . "\r\n"
         );
 
+        $helperMock = $this->makeHelperMockCalledOnce();
+
         $this->controllerInstantiate(
             $this->contextMock,
             $this->configMock,
@@ -359,6 +381,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             $this->orderFactoryMock,
             $this->transactionFactoryMock,
             $this->quoteMock,
+            $helperMock,
             $orderSenderMock
         );
 
@@ -447,6 +470,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->orderMock->expects($this->once())
             ->method('cancel')
             ->willReturnSelf();
+        $this->orderMock
+            ->expects($this->once())
+            ->method('getStatus')
+            ->willReturn(Order::STATE_PENDING_PAYMENT);
 
         $this->orderFactoryMock = $this
             ->getMockBuilder('Magento\Sales\Model\OrderFactory')
@@ -496,13 +523,16 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             'RedirectURL=?quote=1&message=Transaction cancelled by customer' . "\r\n"
         );
 
+        $helperMock = $this->makeHelperMockCalledOnce();
+
         $this->controllerInstantiate(
             $this->contextMock,
             $this->configMock,
             $this->checkoutSessionMock,
             $this->orderFactoryMock,
             $this->transactionFactoryMock,
-            $this->quoteMock
+            $this->quoteMock,
+            $helperMock
         );
 
         $this->serverNotifyController->execute();
@@ -595,6 +625,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('save')
             ->willReturnSelf();
+        $this->orderMock
+            ->expects($this->once())
+            ->method('getStatus')
+            ->willReturn(Order::STATE_PENDING_PAYMENT);
 
         $this->orderFactoryMock = $this
             ->getMockBuilder('Magento\Sales\Model\OrderFactory')
@@ -644,13 +678,16 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             'RedirectURL=?message=Payment was not accepted, please try another payment method' . "\r\n"
         );
 
+        $helperMock = $this->makeHelperMockCalledOnce();
+
         $this->controllerInstantiate(
             $this->contextMock,
             $this->configMock,
             $this->checkoutSessionMock,
             $this->orderFactoryMock,
             $this->transactionFactoryMock,
-            $this->quoteMock
+            $this->quoteMock,
+            $helperMock
         );
 
         $this->serverNotifyController->execute();
@@ -735,6 +772,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->orderMock->expects($this->any())
             ->method('getId')
             ->will($this->returnValue(1));
+        $this->orderMock
+            ->expects($this->once())
+            ->method('getStatus')
+            ->willReturn(Order::STATE_PENDING_PAYMENT);
         $this->orderMock->expects($this->any())
             ->method('cancel')
             ->willReturnSelf();
@@ -788,13 +829,16 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             'RedirectURL=?message=Something went wrong: Invalid transaction id' . "\r\n"
         );
 
+        $helperMock = $this->makeHelperMockCalledNever();
+
         $this->controllerInstantiate(
             $this->contextMock,
             $this->configMock,
             $this->checkoutSessionMock,
             $this->orderFactoryMock,
             $this->transactionFactoryMock,
-            $this->quoteMock
+            $this->quoteMock,
+            $helperMock
         );
 
         $this->serverNotifyController->execute();
@@ -916,13 +960,16 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $helperMock = $this->makeHelperMockCalledNever();
+
         $this->controllerInstantiate(
             $this->contextMock,
             $this->configMock,
             $this->checkoutSessionMock,
             $this->orderFactoryMock,
             $this->transactionFactoryMock,
-            $this->quoteMock
+            $this->quoteMock,
+            $helperMock
         );
 
         $this->expectSetBody(
@@ -1103,6 +1150,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             'RedirectURL=?quoteid=1' . "\r\n"
         );
 
+        $helperMock = $this->makeHelperMockCalledOnce();
+
         $this->serverNotifyController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Server\Notify',
             [
@@ -1112,7 +1161,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 'orderFactory'       => $this->orderFactoryMock,
                 'transactionFactory' => $this->transactionFactoryMock,
                 'quote'              => $this->quoteMock,
-                'tokenModel'         => $tokenMock
+                'tokenModel'         => $tokenMock,
+                'suiteHelper'        => $helperMock
             ]
         );
 
@@ -1201,6 +1251,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->orderMock->expects($this->any())
             ->method('cancel')
             ->willReturnSelf();
+        $this->orderMock
+            ->expects($this->once())
+            ->method('getStatus')
+            ->willReturn(Order::STATE_PENDING_PAYMENT);
 
         $this->orderFactoryMock = $this
             ->getMockBuilder('Magento\Sales\Model\OrderFactory')
@@ -1251,26 +1305,30 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             'RedirectURL=?message=Something went wrong: Invalid VPS Signature' . "\r\n"
         );
 
+        $helperMock = $this->makeHelperMockCalledOnce();
+
         $this->controllerInstantiate(
             $this->contextMock,
             $this->configMock,
             $this->checkoutSessionMock,
             $this->orderFactoryMock,
             $this->transactionFactoryMock,
-            $this->quoteMock
+            $this->quoteMock,
+            $helperMock
         );
 
         $this->serverNotifyController->execute();
     }
 
     /**
-     * @param $contextMock
-     * @param $configMock
-     * @param $checkoutSessionMock
-     * @param $orderFactoryMock
-     * @param $transactionFactoryMock
-     * @param $quoteMock
-     * @param null|\Magento\Sales\Model\Order\Email\Sender\OrderSender
+     * @param \Magento\Framework\App\Action\Context $contextMock
+     * @param \Ebizmarts\SagePaySuite\Model\Config $configMock
+     * @param \Magento\Checkout\Model\Session $checkoutSessionMock
+     * @param \Magento\Sales\Model\OrderFactory $orderFactoryMock
+     * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactoryMock
+     * @param \Magento\Quote\Model\Quote $quoteMock
+     * @param \Ebizmarts\SagePaySuite\Helper\Data $helperMock
+     * @param \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender
      */
     private function controllerInstantiate(
         $contextMock,
@@ -1279,6 +1337,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $orderFactoryMock,
         $transactionFactoryMock,
         $quoteMock,
+        $helperMock,
         $orderSender = null
     ) {
         $args = [
@@ -1287,7 +1346,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             'checkoutSession'    => $checkoutSessionMock,
             'orderFactory'       => $orderFactoryMock,
             'transactionFactory' => $transactionFactoryMock,
-            'quote'              => $quoteMock
+            'quote'              => $quoteMock,
+            'suiteHelper'        => $helperMock
         ];
 
         if ($orderSender !== null) {
@@ -1298,5 +1358,37 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             'Ebizmarts\SagePaySuite\Controller\Server\Notify',
             $args
         );
+    }
+
+    /**
+     * @return \Ebizmarts\SagePaySuite\Helper\Data|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeHelperMockCalledNever()
+    {
+        $helperMock = $this->makeSuiteHelperMock();
+        $helperMock->expects($this->never())->method("removeCurlyBraces");
+
+        return $helperMock;
+    }
+
+    /**
+     * @return \Ebizmarts\SagePaySuite\Helper\Data|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeHelperMockCalledOnce()
+    {
+        $helperMock = $this->makeSuiteHelperMock();
+        $helperMock->expects($this->once())->method("removeCurlyBraces")->willReturn(self::TEST_VPSTXID);
+
+        return $helperMock;
+    }
+
+    /**
+     * @return \Ebizmarts\SagePaySuite\Helper\Data|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeSuiteHelperMock()
+    {
+        $helperMock = $this->getMockBuilder(Data::class)->disableOriginalConstructor()->getMock();
+
+        return $helperMock;
     }
 }

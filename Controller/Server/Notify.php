@@ -19,6 +19,8 @@ use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderFactory;
+use \Magento\Sales\Model\Order;
+use \Ebizmarts\SagePaySuite\Helper\Data;
 
 class Notify extends Action
 {
@@ -77,6 +79,10 @@ class Notify extends Action
      */
     private $quoteIdMaskFactory;
 
+    /** @var Data */
+    private $suiteHelper;
+
+
     /**
      * Notify constructor.
      * @param Context $context
@@ -89,6 +95,7 @@ class Notify extends Action
      * @param Quote $quote
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param QuoteIdMaskFactory $quoteIdMaskFactory
+     * @param Data $suiteHelper
      */
     public function __construct(
         Context $context,
@@ -100,7 +107,8 @@ class Notify extends Action
         Token $tokenModel,
         Quote $quote,
         OrderUpdateOnCallback $updateOrderCallback,
-        QuoteIdMaskFactory $quoteIdMaskFactory
+        QuoteIdMaskFactory $quoteIdMaskFactory,
+        Data $suiteHelper
     ) {
     
         parent::__construct($context);
@@ -114,6 +122,7 @@ class Notify extends Action
         $this->tokenModel          = $tokenModel;
         $this->quote               = $quote;
         $this->quoteIdMaskFactory  = $quoteIdMaskFactory;
+        $this->suiteHelper         = $suiteHelper;
         $this->config->setMethodCode(Config::METHOD_SERVER);
     }
 
@@ -137,16 +146,17 @@ class Notify extends Action
             if ($order === null || $order->getId() === null) {
                 return $this->returnInvalid("Order was not found");
             }
+
             $this->order = $order;
             $payment     = $order->getPayment();
 
-//            if ($this->order->getStatus() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
-//                return $this->returnOk();
-//            }
+            if ($this->order->getStatus() !== Order::STATE_PENDING_PAYMENT) {
+                return $this->returnOk();
+            }
 
             //get some vars from POST
             $status = $this->postData->Status;
-            $transactionId = str_replace("{", "", str_replace("}", "", $this->postData->VPSTxId)); //strip brackets
+            $transactionId = $this->suiteHelper->removeCurlyBraces($this->postData->VPSTxId);
 
             //validate hash
             $this->validateSignature($payment);
