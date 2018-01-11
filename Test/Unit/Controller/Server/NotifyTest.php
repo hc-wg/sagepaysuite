@@ -187,7 +187,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "VPSSignature" => '301680A8BBDB771C67918A6599703B10'
             ]));
 
-        $this->_expectSetBody(
+        $this->expectSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
             'RedirectURL=?quoteid=1' . "\r\n"
@@ -346,7 +346,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "VPSSignature"   => 'F2575F3DD8762F709DC8BB18A136DCEE'
             ]);
 
-        $this->_expectSetBody(
+        $this->expectSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
             'RedirectURL=?quoteid=1' . "\r\n"
@@ -490,7 +490,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "VPSSignature" => '5D0EB35B92419D489E8BC3224A17C9E3'
             ]));
 
-        $this->_expectSetBody(
+        $this->expectSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction ABORTED successfully' . "\r\n" .
             'RedirectURL=?quote=1&message=Transaction cancelled by customer' . "\r\n"
@@ -638,7 +638,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "VPSSignature" => 'A230EF0384C9B66C8AE7B322E3A7C9A9'
             ]));
 
-        $this->_expectSetBody(
+        $this->expectSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Payment was not accepted, please try another payment method' . "\r\n" .
             'RedirectURL=?message=Payment was not accepted, please try another payment method' . "\r\n"
@@ -782,7 +782,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "VPSSignature" => '97EC6F77218792D1C09BEB89E7A5F0A2'
             ]));
 
-        $this->_expectSetBody(
+        $this->expectSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Something went wrong: Invalid transaction id' . "\r\n" .
             'RedirectURL=?message=Something went wrong: Invalid transaction id' . "\r\n"
@@ -925,7 +925,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             $this->quoteMock
         );
 
-        $this->_expectSetBody(
+        $this->expectSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Order was not found' . "\r\n" .
             'RedirectURL=?message=Order was not found' . "\r\n"
@@ -937,7 +937,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
     /**
      * @param $body
      */
-    private function _expectSetBody($body)
+    private function expectSetBody($body)
     {
         $this->responseMock->expects($this->atLeastOnce())
             ->method('setBody')
@@ -1097,7 +1097,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "VPSSignature" => '301680A8BBDB771C67918A6599703B10'
             ]));
 
-        $this->_expectSetBody(
+        $this->expectSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
             'RedirectURL=?quoteid=1' . "\r\n"
@@ -1245,7 +1245,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "VPSSignature" => '123123123ads123'
             ]));
 
-        $this->_expectSetBody(
+        $this->expectSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Something went wrong: Invalid VPS Signature' . "\r\n" .
             'RedirectURL=?message=Something went wrong: Invalid VPS Signature' . "\r\n"
