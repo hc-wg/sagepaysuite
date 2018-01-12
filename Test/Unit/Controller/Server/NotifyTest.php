@@ -309,10 +309,6 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(1));
         $this->orderMock->expects($this->never())
             ->method('cancel');
-        $this->orderMock
-            ->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(Order::STATE_PENDING_PAYMENT);
 
         $this->orderFactoryMock = $this
             ->getMockBuilder('Magento\Sales\Model\OrderFactory')
@@ -470,10 +466,6 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->orderMock->expects($this->once())
             ->method('cancel')
             ->willReturnSelf();
-        $this->orderMock
-            ->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(Order::STATE_PENDING_PAYMENT);
 
         $this->orderFactoryMock = $this
             ->getMockBuilder('Magento\Sales\Model\OrderFactory')
@@ -625,10 +617,6 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('save')
             ->willReturnSelf();
-        $this->orderMock
-            ->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(Order::STATE_PENDING_PAYMENT);
 
         $this->orderFactoryMock = $this
             ->getMockBuilder('Magento\Sales\Model\OrderFactory')
@@ -772,10 +760,6 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->orderMock->expects($this->any())
             ->method('getId')
             ->will($this->returnValue(1));
-        $this->orderMock
-            ->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(Order::STATE_PENDING_PAYMENT);
         $this->orderMock->expects($this->any())
             ->method('cancel')
             ->willReturnSelf();
@@ -1251,10 +1235,6 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->orderMock->expects($this->any())
             ->method('cancel')
             ->willReturnSelf();
-        $this->orderMock
-            ->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(Order::STATE_PENDING_PAYMENT);
 
         $this->orderFactoryMock = $this
             ->getMockBuilder('Magento\Sales\Model\OrderFactory')

@@ -336,7 +336,7 @@ class Notify extends Action
     {
         $localMd5Hash = hash('md5', $this->getVPSSignatureString($payment));
 
-        if (strtoupper($localMd5Hash) != $this->postData->VPSSignature) {
+        if (strtoupper($localMd5Hash) !== $this->postData->VPSSignature) {
             $this->suiteLogger->sageLog(
                 Logger::LOG_REQUEST,
                 "INVALID SIGNATURE: " . $this->getVPSSignatureString($payment),
