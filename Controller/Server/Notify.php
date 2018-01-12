@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Controller\Server;
 
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\InvalidSignatureException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Ebizmarts\SagePaySuite\Model\Token;
@@ -150,16 +151,15 @@ class Notify extends Action
             $this->order = $order;
             $payment     = $order->getPayment();
 
-            if ($this->order->getStatus() !== Order::STATE_PENDING_PAYMENT) {
-                return $this->returnOk();
-            }
-
             //get some vars from POST
             $status = $this->postData->Status;
             $transactionId = $this->suiteHelper->removeCurlyBraces($this->postData->VPSTxId);
 
-            //validate hash
-            $this->validateSignature($payment);
+            try {
+                $this->validateSignature($payment);
+            } catch (InvalidSignatureException $signatureException) {
+                return $this->returnInvalid("Something went wrong: " . $signatureException->getMessage());
+            }
 
             //update payment details
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
@@ -330,7 +330,7 @@ class Notify extends Action
 
     /**
      * @param $payment
-     * @throws Exception
+     * @throws InvalidSignatureException
      */
     private function validateSignature($payment)
     {
@@ -342,7 +342,7 @@ class Notify extends Action
                 "INVALID SIGNATURE: " . $this->getVPSSignatureString($payment),
                 [__METHOD__, __LINE__]
             );
-            throw new Exception(__('Invalid VPS Signature'));
+            throw new InvalidSignatureException(__('Invalid VPS Signature'));
         }
     }
 
