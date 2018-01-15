@@ -6,7 +6,9 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Logger;
 
-class Cron extends \Magento\Framework\Logger\Handler\Base
+use Magento\Framework\Logger\Handler\Base;
+
+class Cron extends Base
 {
 
     /**
@@ -17,6 +19,6 @@ class Cron extends \Magento\Framework\Logger\Handler\Base
 
     public function isHandling(array $record)
     {
-        return $record['level'] == \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_CRON;
+        return $record['level'] == Logger::LOG_CRON;
     }
 }

@@ -9,7 +9,10 @@
  */
 namespace Ebizmarts\SagePaySuite\Model\ResourceModel\TokenReport;
 
-class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
+use Magento\Framework\DB\Select;
+use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
+
+class Collection extends AbstractCollection
 {
 
     /**
@@ -53,7 +56,7 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
         $this->getSelect()->join(
             ['customers' => $this->getTable('customer_entity')],
             'customers.entity_id = main_table.customer_id'
-        )->order('customer_id ' . \Magento\Framework\DB\Select::SQL_DESC);
+        )->order('customer_id ' . Select::SQL_DESC);
         return $this;
     }
     // @codingStandardsIgnoreEnd

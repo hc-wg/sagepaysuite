@@ -15,7 +15,7 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
     /**
      * @var string
      */
-    protected $_code = \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL;  // @codingStandardsIgnoreLine
+    protected $_code = Config::METHOD_PAYPAL;  // @codingStandardsIgnoreLine
 
     /**
      * @var string
@@ -109,17 +109,17 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    private $_suiteHelper;
+    private $suiteHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    private $_config;
+    private $config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Shared
      */
-    private $_sharedApi;
+    private $sharedApi;
 
     /** @var bool */
     private $isInitializeNeeded = true;
@@ -173,11 +173,11 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
             $data
         );
 
-        $this->_suiteHelper = $suiteHelper;
-        $this->_config      = $config;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
-        $this->paymentOps   = $paymentOps;
-        $this->_sharedApi   = $sharedApi;
+        $this->suiteHelper = $suiteHelper;
+        $this->config      = $config;
+        $this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL);
+        $this->paymentOps = $paymentOps;
+        $this->sharedApi  = $sharedApi;
     }
 
     /**
@@ -236,7 +236,7 @@ class Paypal extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function getConfigPaymentAction()
     {
-        return $this->_config->getPaymentAction();
+        return $this->config->getPaymentAction();
     }
 
     /**

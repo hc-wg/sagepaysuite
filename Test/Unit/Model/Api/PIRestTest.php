@@ -247,10 +247,9 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider dataproviderCapture
-     * @param $responseCode
+     * @param int $responseCode
      */
-    public function testCapture($responseCode)
+    public function testCapture()
     {
         $threedResultMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD::class)
@@ -305,8 +304,10 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $piTransactionResult->expects($this->once())->method('setStatusCode')->with("0000");
-        $piTransactionResult->expects($this->once())->method('setStatusDetail')->with("The Authorisation was Successful.");
-        $piTransactionResult->expects($this->once())->method('setTransactionId')->with("T6569400-1516-0A3F-E3FA-7F222CC79221");
+        $piTransactionResult->expects($this->once())->method('setStatusDetail')
+            ->with("The Authorisation was Successful.");
+        $piTransactionResult->expects($this->once())->method('setTransactionId')
+            ->with("T6569400-1516-0A3F-E3FA-7F222CC79221");
         $piTransactionResult->expects($this->once())->method('setStatus')->with("Ok");
         $piTransactionResult->expects($this->once())->method('setTransactionType')->with("Payment");
         $piTransactionResult->expects($this->once())->method('setRetrievalReference')->with("8636128");
@@ -410,13 +411,6 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         $resultObject = $this->pirestApiModel->capture($requestArray);
 
         $this->assertInstanceOf('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult', $resultObject);
-    }
-
-    public function dataproviderCapture()
-    {
-        return [
-            [201], [202]
-        ];
     }
 
     /**

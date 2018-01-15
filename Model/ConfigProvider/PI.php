@@ -68,7 +68,7 @@ class PI extends CcGenericConfigProvider
     }
 
     /**
-     * @return array|void
+     * @return array
      */
     public function getConfig()
     {

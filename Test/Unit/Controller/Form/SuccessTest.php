@@ -430,10 +430,6 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->method('getQuote')
             ->will($this->returnValue($quoteMock));
 
-        $invoiceCollectionMock = $this
-            ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
-            ->disableOriginalConstructor()
-            ->getMock();
         $this->orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
             ->disableOriginalConstructor()

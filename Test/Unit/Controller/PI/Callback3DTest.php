@@ -33,11 +33,6 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
     private $responseMock;
 
     /**
-     * @var CheckoutSession|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $checkoutSessionMock;
-
-    /**
      * @var \Magento\Framework\App\Response\RedirectInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $redirectMock;

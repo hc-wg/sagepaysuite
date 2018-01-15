@@ -2,7 +2,9 @@
 
 namespace Ebizmarts\SagePaySuite\Api\SagePayData;
 
-class PiRefundRequest extends \Magento\Framework\Api\AbstractExtensibleObject implements \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestInterface
+use Magento\Framework\Api\AbstractExtensibleObject;
+
+class PiRefundRequest extends AbstractExtensibleObject implements PiRefundRequestInterface
 {
     /**
      * @inheritDoc

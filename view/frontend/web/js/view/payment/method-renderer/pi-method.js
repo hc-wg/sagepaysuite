@@ -59,6 +59,11 @@ define(
             isActive: function () {
                 return true;
             },
+            sagepaySetForm: function () {
+                var self = this;
+                this.selectPaymentMethod();
+                self.defaultStateForm();
+            },
             getRemoteJsName: function () {
                 var self = this;
                 var jsName = 'sagepayjs_';
@@ -100,6 +105,9 @@ define(
             },
             preparePayment: function () {
                 var self = this;
+
+                self.destroyInstanceSagePay();
+
                 self.resetPaymentErrors();
 
                 //validations
@@ -136,11 +144,30 @@ define(
             tokenisationAuthenticationFailed: function (tokenisationResult) {
                 return tokenisationResult.error.errorCode === 1002;
             },
-            tokenise: function() {
+            tokenise: function () {
                 var self = this;
-                if(self.dropInInstance !== null) {
+                if (self.dropInInstance !== null) {
                     self.dropInInstance.tokenise();
                 }
+            },
+            destroyInstanceSagePay: function () {
+                var self = this;
+                if (!self.dropInEnabled()) {
+                    return;
+                }
+
+                if (self.dropInInstance !== null) {
+                    self.dropInInstance.destroy();
+                }
+
+                self.isPlaceOrderActionAllowed(true);
+                $("#submit_dropin_payment").css("display", "none");
+            },
+            defaultStateForm: function () {
+                $("#payment-iframe").css("display", "none");
+                $("#sp-container").css("display", "none");
+                $("#load-dropin-form-button").css("display", "block");
+                $("#submit_dropin_payment").css("display", "none");
             },
             sagepayTokeniseCard: function (merchant_session_key) {
 
@@ -168,10 +195,7 @@ define(
                                     } else {
                                         //Check if it is "Authentication failed"
                                         if (self.tokenisationAuthenticationFailed(tokenisationResult)) {
-                                            self.dropInInstance.destroy();
-                                            self.isPlaceOrderActionAllowed(true);
-                                            document.getElementById('submit_dropin_payment').style.display = "none";
-                                            document.getElementById('submit_dropin_payment').onclick = "alert('h'); return false";
+                                            self.destroyInstanceSagePay();
                                             self.resetPaymentErrors();
                                         } else {
                                             self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
@@ -182,7 +206,10 @@ define(
                         self.dropInInstance.form();
                         fullScreenLoader.stopLoader();
 
-                        document.getElementById('submit_dropin_payment').style.display = "block";
+                        $("#payment-iframe").css("display", "block");
+                        $("#sp-container").css("display", "block");
+                        $("#submit_dropin_payment").css("display", "block");
+                        $("#load-dropin-form-button").css("display", "none");
                     }
                 } else {
                     if (merchant_session_key) {
@@ -213,11 +240,9 @@ define(
                                         self.placeTransaction();
                                     } catch (err) {
                                         self.showPaymentError("Unable to initialize Sage Pay payment method, please use another payment method.");
-                                        console.log(err);
                                     }
                                 } else {
                                     var errorMessage = "Unable to initialize Sage Pay payment method, please use another payment method.";
-                                    console.log(response);
                                     if (response.responseJSON) {
                                         response = response.responseJSON;
                                     }
@@ -230,8 +255,6 @@ define(
                                 }
                             });
                         } catch (err) {
-                            console.log(err);
-                            //errorProcessor.process(err);
                             alert("Unable to initialize Sage Pay payment method, please use another payment method.");
                         }
                     }
@@ -328,9 +351,7 @@ define(
                         } else {
                             self.showPaymentError(response.error_message);
                             if (self.dropInEnabled()) {
-                                self.dropInInstance.destroy();
-                                self.isPlaceOrderActionAllowed(true);
-                                document.getElementById('submit_dropin_payment').style.display = "none";
+                                self.destroyInstanceSagePay();
                             }
                         }
                     }

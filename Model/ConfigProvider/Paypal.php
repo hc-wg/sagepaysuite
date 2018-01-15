@@ -9,7 +9,6 @@ namespace Ebizmarts\SagePaySuite\Model\ConfigProvider;
 use Magento\Checkout\Model\ConfigProviderInterface;
 use \Ebizmarts\SagePaySuite\Model\Config as Config;
 use Magento\Payment\Helper\Data as PaymentHelper;
-use Magento\Framework\Escaper;
 
 class Paypal implements ConfigProviderInterface
 {
@@ -26,7 +25,7 @@ class Paypal implements ConfigProviderInterface
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    private $_suiteHelper;
+    private $suiteHelper;
 
     /**
      * @param PaymentHelper $paymentHelper
@@ -36,8 +35,8 @@ class Paypal implements ConfigProviderInterface
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
     ) {
     
-        $this->method = $paymentHelper->getMethodInstance($this->methodCode);
-        $this->_suiteHelper = $suiteHelper;
+        $this->method      = $paymentHelper->getMethodInstance($this->methodCode);
+        $this->suiteHelper = $suiteHelper;
     }
 
     public function getConfig()
@@ -49,8 +48,8 @@ class Paypal implements ConfigProviderInterface
         return [
             'payment' => [
                 'ebizmarts_sagepaysuitepaypal' => [
-                    'licensed' => $this->_suiteHelper->verify(),
-                    'mode' => $this->_suiteHelper->getSagePayConfig()->getMode()
+                    'licensed' => $this->suiteHelper->verify(),
+                    'mode' => $this->suiteHelper->getSagePayConfig()->getMode()
                 ],
             ]
         ];

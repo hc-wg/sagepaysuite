@@ -3,7 +3,6 @@
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite;
-use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Validator\Exception as InputException;
 
 class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManagementInterface

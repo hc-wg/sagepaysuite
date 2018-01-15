@@ -6,7 +6,10 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Logger;
 
-class Exception extends \Magento\Framework\Logger\Handler\Base
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\Logger\Handler\Base;
+
+class Exception extends Base
 {
 
     /**
@@ -18,6 +21,6 @@ class Exception extends \Magento\Framework\Logger\Handler\Base
 
     public function isHandling(array $record)
     {
-        return $record['level'] == \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_EXCEPTION;
+        return $record['level'] == Logger::LOG_EXCEPTION;
     }
 }

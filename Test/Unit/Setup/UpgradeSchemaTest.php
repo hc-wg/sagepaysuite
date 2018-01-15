@@ -6,31 +6,18 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Setup;
 
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+use Ebizmarts\SagePaySuite\Setup\SplitDatabaseConnectionProvider;
+
 class UpgradeSchemaTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @var \Ebizmarts\SagePaySuite\Setup\UpgradeSchema
-     */
-    private $upgradeSchema;
-
-    // @codingStandardsIgnoreStart
-    protected function setUp()
-    {
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->upgradeSchema = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Setup\UpgradeSchema',
-            []
-        );
-    }
-    // @codingStandardsIgnoreEnd
-
     public function testUpgrade()
     {
         $tableMock = $this
             ->getMockBuilder('Magento\Framework\DB\Ddl\Table')
             ->disableOriginalConstructor()
             ->getMock();
-        $tableMock->expects($this->atLeastOnce())
+        $tableMock->expects($this->exactly(10))
             ->method('addColumn')
             ->willReturnSelf();
         $tableMock->expects($this->once())
@@ -70,6 +57,21 @@ class UpgradeSchemaTest extends \PHPUnit_Framework_TestCase
             ->method('1.1.0')
             ->willReturn($connectionMock);
 
-        $this->upgradeSchema->upgrade($schemaSetupMock, $moduleContextMock);
+        $connectionProviderMock = $this->getMockBuilder(SplitDatabaseConnectionProvider::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $connectionProviderMock
+            ->expects($this->once())
+            ->method("getSalesConnection")
+            ->with($schemaSetupMock)
+            ->willReturn($connectionMock);
+        $objectManagerHelper = new ObjectManager($this);
+        $upgradeSchema = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Setup\UpgradeSchema',
+            [
+                "connectionProvider" => $connectionProviderMock
+            ]
+        );
+        $upgradeSchema->upgrade($schemaSetupMock, $moduleContextMock);
     }
 }
