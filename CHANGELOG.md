@@ -1,4 +1,4 @@
-1.1.16 (08/01/2018)
+1.1.16 (15/01/2018)
 =============
 **This release requires Magento 2.1.x.**
 - Bug fixes
