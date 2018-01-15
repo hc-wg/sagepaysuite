@@ -19,17 +19,17 @@ class Info extends \Magento\Backend\Block\Template
     /**
      * @var \Magento\Sales\Model\Order
      */
-    private $_order;
+    private $order;
 
     /**
      * @var Config
      */
-    private $_config;
+    private $config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    private $_suiteHelper;
+    private $suiteHelper;
 
     /**
      * @param \Magento\Backend\Block\Template\Context $context
@@ -44,9 +44,9 @@ class Info extends \Magento\Backend\Block\Template
         array $data = []
     ) {
     
-        $this->_order       = $registry->registry('current_order');
-        $this->_config      = $config;
-        $this->_suiteHelper = $suiteHelper;
+        $this->order       = $registry->registry('current_order');
+        $this->config      = $config;
+        $this->suiteHelper = $suiteHelper;
         parent::__construct($context, $data);
     }
 
@@ -55,14 +55,14 @@ class Info extends \Magento\Backend\Block\Template
      */
     public function getPayment()
     {
-        return $this->_order->getPayment();
+        return $this->order->getPayment();
     }
 
     public function getTemplate()
     {
         $template = parent::getTemplate();
 
-        $isSagePayMethod = $this->_config->isSagePaySuiteMethod($this->getPayment()->getMethod());
+        $isSagePayMethod = $this->config->isSagePaySuiteMethod($this->getPayment()->getMethod());
 
         if ($isSagePayMethod === false) {
             $template = '';
@@ -73,7 +73,7 @@ class Info extends \Magento\Backend\Block\Template
 
     public function getSyncFromApiUrl()
     {
-        $url =  $this->getUrl('sagepaysuite/order/syncFromApi', ['order_id'=>$this->_order->getId()]);
+        $url =  $this->getUrl('sagepaysuite/order/syncFromApi', ['order_id'=>$this->order->getId()]);
         return $url;
     }
 
@@ -82,6 +82,6 @@ class Info extends \Magento\Backend\Block\Template
      */
     public function getSuiteHelper()
     {
-        return $this->_suiteHelper;
+        return $this->suiteHelper;
     }
 }

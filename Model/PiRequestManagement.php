@@ -3,11 +3,12 @@
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite;
+use Ebizmarts\SagePaySuite\Api\Data\PiRequest;
 
 class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInterface
 {
     /** @var Config */
-    private $_config;
+    private $config;
 
     /** @var \Magento\Quote\Api\CartRepositoryInterface */
     private $quoteRepository;
@@ -28,8 +29,8 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
         \Ebizmarts\SagePaySuite\Model\PiRequestManagement\EcommerceManagement $requester,
         \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory
     ) {
-        $this->_config                     = $config;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
+        $this->config = $config;
+        $this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
 
         $this->requester                   = $requester;
         $this->quoteRepository             = $quoteRepository;
@@ -40,13 +41,13 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
     /**
      * @inheritdoc
      */
-    public function savePaymentInformationAndPlaceOrder($cartId, \Ebizmarts\SagePaySuite\Api\Data\PiRequest $requestData)
+    public function savePaymentInformationAndPlaceOrder($cartId, PiRequest $requestData)
     {
         /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
         $data = $this->piRequestManagerDataFactory->create();
-        $data->setMode($this->_config->getMode());
-        $data->setVendorName($this->_config->getVendorname());
-        $data->setPaymentAction($this->_config->getSagepayPaymentAction());
+        $data->setMode($this->config->getMode());
+        $data->setVendorName($this->config->getVendorname());
+        $data->setPaymentAction($this->config->getSagepayPaymentAction());
         $data->setMerchantSessionKey($requestData->getMerchantSessionKey());
         $data->setCardIdentifier($requestData->getCardIdentifier());
         $data->setCcExpMonth($requestData->getCcExpMonth());

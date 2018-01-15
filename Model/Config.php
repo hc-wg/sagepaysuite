@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Payment\Model\Method\AbstractMethod;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
@@ -151,7 +152,7 @@ class Config
      *
      * @var string
      */
-    private $_methodCode;
+    private $methodCode;
 
     /**
      * Current store id
@@ -207,7 +208,7 @@ class Config
      */
     public function setMethodCode($methodCode)
     {
-        $this->_methodCode = $methodCode;
+        $this->methodCode = $methodCode;
         return $this;
     }
 
@@ -218,27 +219,45 @@ class Config
      */
     public function getMethodCode()
     {
-        return $this->_methodCode;
+        return $this->methodCode;
     }
 
     /**
      * Returns payment configuration value
      *
      * @param string $key
-     * @param null $storeId
+     * @param null $configurationScopeId
      * @return null|string
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function getValue($key, $configurationScopeId = null)
     {
-        if ($configurationScopeId === null) {
-            $configurationScopeId = $this->configurationScopeId;
-        }
+        $resolvedConfigurationScopeId = $this->resolveConfigurationScopeId($configurationScopeId);
 
-        $path = $this->_getSpecificConfigPath($key);
+        $path = $this->getSpecificConfigPath($key);
 
-        return $this->scopeConfig->getValue($path, $this->configurationScope, $configurationScopeId);
+        return $this->scopeConfig->getValue($path, $this->configurationScope, $resolvedConfigurationScopeId);
+    }
+
+    public function getGlobalValue($key, $configurationScopeId = null)
+    {
+        $resolvedConfigurationScopeId = $this->resolveConfigurationScopeId($configurationScopeId);
+
+        $path = $this->getGlobalConfigPath($key);
+
+        return $this->scopeConfig->getValue($path, $this->configurationScope, $resolvedConfigurationScopeId);
+    }
+
+    /**
+     * @return int
+     */
+    private function getCurrentStoreId()
+    {
+        /** @var \Magento\Store\Model\Store $store */
+        $store = $this->storeManager->getStore();
+
+        return $store->getId();
     }
 
     /**
@@ -266,17 +285,17 @@ class Config
      * @param string $fieldName
      * @return string|null
      */
-    private function _getSpecificConfigPath($fieldName)
+    private function getSpecificConfigPath($fieldName)
     {
-        return "payment/{$this->_methodCode}/{$fieldName}";
+        return "payment/{$this->methodCode}/{$fieldName}";
     }
 
-    private function _getGlobalConfigPath($fieldName)
+    private function getGlobalConfigPath($fieldName)
     {
         return "sagepaysuite/global/{$fieldName}";
     }
 
-    private function _getAdvancedConfigPath($fieldName)
+    private function getAdvancedConfigPath($fieldName)
     {
         return "sagepaysuite/advanced/{$fieldName}";
     }
@@ -307,7 +326,7 @@ class Config
 
     public function getSagepayPaymentAction()
     {
-        if ($this->_methodCode == self::METHOD_PI) {
+        if ($this->methodCode == self::METHOD_PI) {
             return self::ACTION_PAYMENT_PI;
         } else {
             return $this->getValue("payment_action");
@@ -323,15 +342,15 @@ class Config
         switch ($action) {
             case self::ACTION_PAYMENT:
             case self::ACTION_REPEAT:
-                $magentoAction = \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
+                $magentoAction = AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
                 break;
             case self::ACTION_DEFER:
             case self::ACTION_AUTHENTICATE:
             case self::ACTION_REPEAT_DEFERRED:
-                $magentoAction = \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE;
+                $magentoAction = AbstractMethod::ACTION_AUTHORIZE;
                 break;
             default:
-                $magentoAction = \Magento\Payment\Model\Method\AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
+                $magentoAction = AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
                 break;
         }
 
@@ -340,30 +359,21 @@ class Config
 
     public function getVendorname()
     {
-        return $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("vendorname"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        return $this->getGlobalValue("vendorname");
     }
 
     public function getLicense()
     {
-        $licenseKey = $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("license"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
-
-        return $licenseKey;
+        return $this->getGlobalValue("license");
     }
 
     public function getStoreDomain()
     {
+        $resolvedConfigurationScopeId = $this->resolveConfigurationScopeId($this->configurationScopeId);
         return $this->scopeConfig->getValue(
-            Store::XML_PATH_UNSECURE_BASE_URL,
+            Store::XML_PATH_SECURE_BASE_URL,
             $this->configurationScope,
-            $this->configurationScopeId
+            $resolvedConfigurationScopeId
         );
     }
 
@@ -392,38 +402,22 @@ class Config
 
     public function getMode()
     {
-        return $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("mode"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        return $this->getGlobalValue("mode");
     }
 
     public function isTokenEnabled()
     {
-        return $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("token"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        return $this->getGlobalValue("token");
     }
 
     public function getReportingApiUser()
     {
-        return $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("reporting_user"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        return $this->getGlobalValue("reporting_user");
     }
 
     public function getReportingApiPassword()
     {
-        return $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("reporting_password"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        return $this->getGlobalValue("reporting_password");
     }
 
     public function getPIPassword()
@@ -444,7 +438,7 @@ class Config
     public function get3Dsecure($forceDisable = false)
     {
         $config_value = $this->scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("threedsecure"),
+            $this->getAdvancedConfigPath("threedsecure"),
             $this->configurationScope,
             $this->configurationScopeId
         );
@@ -453,7 +447,7 @@ class Config
             $config_value = self::MODE_3D_DISABLE;
         }
 
-        if ($this->_methodCode != self::METHOD_PI) {
+        if ($this->methodCode != self::METHOD_PI) {
             $config_value = $this->getThreeDSecureLegacyIntegrations($config_value);
         }
 
@@ -467,12 +461,12 @@ class Config
     public function getAvsCvc()
     {
         $configValue = $this->scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("avscvc"),
+            $this->getAdvancedConfigPath("avscvc"),
             $this->configurationScope,
             $this->configurationScopeId
         );
 
-        if ($this->_methodCode != self::METHOD_PI) {
+        if ($this->methodCode != self::METHOD_PI) {
             $configValue = $this->getAvsCvcLegacyIntegrations($configValue);
         }
 
@@ -482,7 +476,7 @@ class Config
     public function getAutoInvoiceFraudPassed()
     {
         $config_value = $this->scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("fraud_autoinvoice"),
+            $this->getAdvancedConfigPath("fraud_autoinvoice"),
             $this->configurationScope,
             $this->configurationScopeId
         );
@@ -492,7 +486,7 @@ class Config
     public function getNotifyFraudResult()
     {
         $config_value = $this->scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("fraud_notify"),
+            $this->getAdvancedConfigPath("fraud_notify"),
             $this->configurationScope,
             $this->configurationScopeId
         );
@@ -575,17 +569,13 @@ class Config
 
     public function getCurrencyConfig()
     {
-        return $this->scopeConfig->getValue(
-            $this->_getGlobalConfigPath("currency"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        return $this->getGlobalValue("currency");
     }
 
     public function getBasketFormat()
     {
         $config_value = $this->scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("basket_format"),
+            $this->getAdvancedConfigPath("basket_format"),
             $this->configurationScope,
             $this->configurationScopeId
         );
@@ -600,7 +590,7 @@ class Config
     public function isGiftAidEnabled()
     {
         $config_value = $this->scopeConfig->getValue(
-            $this->_getAdvancedConfigPath("giftaid"),
+            $this->getAdvancedConfigPath("giftaid"),
             $this->configurationScope,
             $this->configurationScopeId
         );
@@ -685,5 +675,21 @@ class Config
         }
 
         return $return;
+    }
+
+    /**
+     * @param $configurationScopeId
+     * @return int|null
+     */
+    private function resolveConfigurationScopeId($configurationScopeId)
+    {
+        if ($configurationScopeId === null) {
+            $configurationScopeId = $this->configurationScopeId;
+            if ($configurationScopeId === null) {
+                $configurationScopeId = $this->getCurrentStoreId();
+            }
+        }
+
+        return $configurationScopeId;
     }
 }

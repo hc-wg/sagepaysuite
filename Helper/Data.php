@@ -7,11 +7,15 @@
 namespace Ebizmarts\SagePaySuite\Helper;
 
 use \Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Module\ModuleList\Loader;
+use Magento\Framework\Stdlib\DateTime\DateTime;
 
-class Data extends \Magento\Framework\App\Helper\AbstractHelper
+class Data extends AbstractHelper
 {
     /**
-     * @var \Magento\Framework\Module\ModuleList\Loader
+     * @var Loader
      */
     private $moduleLoader;
 
@@ -21,22 +25,22 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     private $sagePaySuiteConfig;
 
     /**
-     * @var \Magento\Framework\Stdlib\DateTime\DateTime
+     * @var DateTime
      */
     private $dateTime;
 
     /**
      * Data constructor.
-     * @param \Magento\Framework\Module\ModuleList\Loader $loader
-     * @param \Magento\Framework\App\Helper\Context $context
+     * @param Loader $loader
+     * @param Context $context
      * @param Config $config
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
+     * @param DateTime $dateTime
      */
     public function __construct(
-        \Magento\Framework\Module\ModuleList\Loader $loader,
-        \Magento\Framework\App\Helper\Context $context,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
+        Loader $loader,
+        Context $context,
+        Config $config,
+        DateTime $dateTime
     ) {
         parent::__construct($context);
         $this->moduleLoader       = $loader;

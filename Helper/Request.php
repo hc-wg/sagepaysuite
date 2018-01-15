@@ -23,7 +23,7 @@ class Request extends AbstractHelper
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
      * @var ObjectManager
@@ -39,14 +39,20 @@ class Request extends AbstractHelper
     public function __construct(Config $config, Logger $suiteLogger, ObjectManager $objectManager)
     {
         $this->sagepaySuiteConfig = $config;
-        $this->_suiteLogger       = $suiteLogger;
+        $this->suiteLogger        = $suiteLogger;
         $this->objectManager      = $objectManager;
     }
 
+    /**
+     * @param \Magento\Quote\Model\Quote $quote
+     * @return array
+     */
     public function populateAddressInformation($quote)
     {
-
+        /** @var \Magento\Quote\Model\Quote\Address $billing_address */
         $billing_address = $quote->getBillingAddress();
+
+        /** @var \Magento\Quote\Model\Quote\Address $shipping_address */
         $shipping_address = $quote->isVirtual() ? $billing_address : $quote->getShippingAddress();
 
         $data = [];
@@ -164,12 +170,12 @@ class Request extends AbstractHelper
         $basketFormat = $this->sagepaySuiteConfig->getBasketFormat();
 
         if ($basketFormat == Config::BASKETFORMAT_XML || $force_xml == true) {
-            $_basket = $this->_getBasketXml($quote);
-            if ($this->_validateBasketXml($_basket)) {
+            $_basket = $this->getBasketXml($quote);
+            if ($this->validateBasketXml($_basket)) {
                 $data['BasketXML'] = $_basket;
             }
         } elseif ($basketFormat == Config::BASKETFORMAT_SAGE50) {
-            $data['Basket'] = $this->_getBasketSage50($quote);
+            $data['Basket'] = $this->getBasketSage50($quote);
         }
 
         return $data;
@@ -179,7 +185,7 @@ class Request extends AbstractHelper
      * @param $quote \Magento\Quote\Model\Quote
      * @return string
      */
-    private function _getBasketSage50($quote)
+    private function getBasketSage50($quote)
     {
         $BASKET_SEP = ':';
         $BASKET_SEP_ESCAPE = '-';
@@ -189,7 +195,7 @@ class Request extends AbstractHelper
         $itemsCollection = $quote->getItemsCollection();
 
         foreach ($itemsCollection as $item) {
-            //Avoid configurables
+            //Avoid configurable products.
             if ($item->getParentItem()) {
                 continue;
             }
@@ -252,7 +258,7 @@ class Request extends AbstractHelper
 
         //delivery item
         $deliveryItem = [
-            "item"=>str_replace($BASKET_SEP, $BASKET_SEP_ESCAPE, $this->_cleanSage50BasketString($deliveryName)),
+            "item"=>str_replace($BASKET_SEP, $BASKET_SEP_ESCAPE, $this->cleanSage50BasketString($deliveryName)),
             "qty"=>1,
             "item_value"=>$deliveryValue,
             "item_tax"=>$deliveryTax,
@@ -277,7 +283,7 @@ class Request extends AbstractHelper
      * @param $quote \Magento\Quote\Model\Quote
      * @return string
      */
-    private function _getBasketXml($quote)
+    private function getBasketXml($quote)
     {
         /** @var \SimpleXMLElement $basket */
         $basket = $this->objectManager
@@ -372,7 +378,7 @@ class Request extends AbstractHelper
                 $_postCode = $shippingAdd->getPostcode();
             }
             $node->addChild('recipientPostCode', $this->stringToSafeXMLChar(
-                $this->_sanitizePostcode(substr(trim($_postCode), 0, 9))
+                $this->sanitizePostcode(substr(trim($_postCode), 0, 9))
             ));
         }
 
@@ -416,13 +422,17 @@ class Request extends AbstractHelper
         return number_format($value, 2, '.', '');
     }
 
-    private function _cleanSage50BasketString($text)
+    private function cleanSage50BasketString($text)
     {
         $pattern = '|[^a-zA-Z0-9\-\._]+|';
         $text = preg_replace($pattern, '', $text);
         return $text;
     }
 
+    /**
+     * @param $string
+     * @return string
+     */
     private function stringToSafeXMLChar($string)
     {
 
@@ -441,7 +451,11 @@ class Request extends AbstractHelper
         return $safe_string;
     }
 
-    private function _sanitizePostcode($text)
+    /**
+     * @param string $text
+     * @return mixed
+     */
+    private function sanitizePostcode($text)
     {
         return preg_replace("/[^a-zA-Z0-9-\s]/", "", $text);
     }
@@ -452,7 +466,7 @@ class Request extends AbstractHelper
      * @param string $basket
      * @return boolean
      */
-    private function _validateBasketXml($basket)
+    private function validateBasketXml($basket)
     {
         //Validate max length
         $validLength  = $this->validateBasketXmlLength($basket);
@@ -462,9 +476,13 @@ class Request extends AbstractHelper
         return $validLength && $validAmounts;
     }
 
-    public function getOrderDescription($isMOTO = false)
+    /**
+     * @param bool $isMailOrderTelephoneOrder
+     * @return \Magento\Framework\Phrase
+     */
+    public function getOrderDescription($isMailOrderTelephoneOrder = false)
     {
-        return $isMOTO ? __("Online MOTO transaction.") : __("Online transaction.");
+        return $isMailOrderTelephoneOrder ? __("Online MOTO transaction.") : __("Online transaction.");
     }
 
     public function getReferrerId()
@@ -513,6 +531,11 @@ class Request extends AbstractHelper
         return $valid;
     }
 
+    /**
+     * @param $f1
+     * @param $f2
+     * @return bool
+     */
     public function floatsEqual($f1, $f2)
     {
         return abs(($f1-$f2)/$f2) < 0.00001;
@@ -532,8 +555,8 @@ class Request extends AbstractHelper
     }
 
     /**
-     * @param $shippingAdd
-     * @param $node
+     * @param \Magento\Quote\Model\Quote\Address $shippingAdd
+     * @param \SimpleXMLElement $node
      */
     private function basketXmlRecipientFName($shippingAdd, $node)
     {
@@ -544,8 +567,8 @@ class Request extends AbstractHelper
     }
 
     /**
-     * @param $shippingAdd
-     * @param $node
+     * @param \Magento\Quote\Model\Quote\Address $shippingAdd
+     * @param \SimpleXMLElement $node
      */
     private function basketXmlRecipientLName($shippingAdd, $node)
     {
@@ -556,8 +579,8 @@ class Request extends AbstractHelper
     }
 
     /**
-     * @param $shippingAdd
-     * @param $node
+     * @param \Magento\Quote\Model\Quote\Address $shippingAdd
+     * @param \SimpleXMLElement $node
      */
     private function basketXmlMiddleName($shippingAdd, $node)
     {
@@ -571,7 +594,7 @@ class Request extends AbstractHelper
 
     /**
      * @param $item
-     * @param $node
+     * @param \SimpleXMLElement $node
      */
     private function basketXmlProductSku($item, $node)
     {
@@ -583,8 +606,8 @@ class Request extends AbstractHelper
     }
 
     /**
-     * @param $shippingAdd
-     * @param $basket
+     * @param \Magento\Quote\Model\Quote\Address $shippingAdd
+     * @param \SimpleXMLElement $basket
      */
     private function basketXmlFaxNumber($shippingAdd, $basket)
     {
@@ -633,13 +656,13 @@ class Request extends AbstractHelper
      */
     private function productDescSage50Basket($item, $_options)
     {
-        $nameAdd = $this->_cleanSage50BasketString($item->getName()) . $this->_cleanSage50BasketString($_options);
-        return '[' . $this->_cleanSage50BasketString($item->getSku()) . '] ' . $nameAdd;
+        $nameAdd = $this->cleanSage50BasketString($item->getName()) . $this->cleanSage50BasketString($_options);
+        return '[' . $this->cleanSage50BasketString($item->getSku()) . '] ' . $nameAdd;
     }
 
     /**
      * @param $item
-     * @param $node
+     * @param \SimpleXMLElement $node
      */
     private function basketXmlProductDescription($item, $node)
     {
@@ -655,8 +678,8 @@ class Request extends AbstractHelper
     }
 
     /**
-     * @param $shippingAdd
-     * @param $node
+     * @param \Magento\Quote\Model\Quote\Address $shippingAdd
+     * @param \SimpleXMLElement $node
      */
     private function basketXmlRecipientSalutation($shippingAdd, $node)
     {
@@ -669,8 +692,8 @@ class Request extends AbstractHelper
     }
 
     /**
-     * @param $shippingAdd
-     * @param $node
+     * @param \Magento\Quote\Model\Quote\Address $shippingAdd
+     * @param \SimpleXMLElement $node
      */
     private function basketXmlRecipientEmail($shippingAdd, $node)
     {
@@ -683,8 +706,8 @@ class Request extends AbstractHelper
     }
 
     /**
-     * @param $shippingAdd
-     * @param $node
+     * @param \Magento\Quote\Model\Quote\Address $shippingAdd
+     * @param \SimpleXMLElement $node
      */
     private function basketXmlRecipientPhone($shippingAdd, $node)
     {
@@ -696,8 +719,8 @@ class Request extends AbstractHelper
 
     /**
      * @param $quote
-     * @param $shippingAdd
-     * @param $node
+     * @param \Magento\Quote\Model\Quote\Address $shippingAdd
+     * @param \SimpleXMLElement $node
      * @param $billingAdd
      */
     private function basketXmlRecipientState($quote, $shippingAdd, $node, $billingAdd)

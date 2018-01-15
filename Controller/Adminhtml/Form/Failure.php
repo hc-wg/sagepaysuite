@@ -14,12 +14,12 @@ class Failure extends \Magento\Backend\App\AbstractAction
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Form
      */
-    private $_formModel;
+    private $formModel;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -33,8 +33,8 @@ class Failure extends \Magento\Backend\App\AbstractAction
     ) {
     
         parent::__construct($context);
-        $this->_suiteLogger = $suiteLogger;
-        $this->_formModel = $formModel;
+        $this->suiteLogger = $suiteLogger;
+        $this->formModel   = $formModel;
     }
 
     /**
@@ -44,13 +44,13 @@ class Failure extends \Magento\Backend\App\AbstractAction
     {
         try {
             //decode response
-            $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
+            $response = $this->formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
             if (!array_key_exists("Status", $response) || !array_key_exists("StatusDetail", $response)) {
                 throw new \Magento\Framework\Exception\LocalizedException('Invalid response from Sage Pay');
             }
 
             //log response
-            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
+            $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
 
             $statusDetail = $response["StatusDetail"];
             $statusDetail = explode(" : ", $statusDetail);
@@ -62,7 +62,7 @@ class Failure extends \Magento\Backend\App\AbstractAction
             return;
         } catch (\Exception $e) {
             $this->messageManager->addError($e->getMessage());
-            $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
+            $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
         }
     }
 }

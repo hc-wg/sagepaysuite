@@ -4,13 +4,12 @@
  * See LICENSE.txt for license details.
  */
 -->
-
 <div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
     <div class="payment-method-title field choice">
         <input type="radio"
                name="payment[method]"
                class="radio"
-               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
+               data-bind="attr: {'id': getCode()}, value: getCode(), click: sagepaySetForm(), visible: isRadioButtonVisible(), checked: isChecked"/>
         <label data-bind="attr: {'for': getCode()}" class="label">
             <img class="payment-icon sagepaysuite-payment-icon" src="https://www.sagepay.co.uk/files/logo_0.png"/>
             <span data-bind="text: getTitle()"></span>
@@ -56,7 +55,7 @@
             </div>
             <div class="actions-toolbar">
                 <div class="primary">
-                    <button class="action primary checkout"
+                    <button id="load-dropin-form-button" class="action primary checkout"
                             type="submit"
                             data-bind="
                             click: preparePayment,

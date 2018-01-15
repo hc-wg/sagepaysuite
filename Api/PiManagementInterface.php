@@ -2,6 +2,8 @@
 
 namespace Ebizmarts\SagePaySuite\Api;
 
+use Ebizmarts\SagePaySuite\Api\Data\PiRequest;
+
 /**
  *
  * @api
@@ -12,11 +14,11 @@ interface PiManagementInterface
      * Set payment information and place order for a specified cart.
      *
      * @param mixed $cartId
-     * @param \Ebizmarts\SagePaySuite\Api\Data\PiRequest $requestData
+     * @param PiRequest $requestData
      * @throws \Magento\Framework\Exception\CouldNotSaveException
      * @return \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface
      */
-    public function savePaymentInformationAndPlaceOrder($cartId, \Ebizmarts\SagePaySuite\Api\Data\PiRequest $requestData);
+    public function savePaymentInformationAndPlaceOrder($cartId, PiRequest $requestData);
 
     /**
      * @param mixed $cartId

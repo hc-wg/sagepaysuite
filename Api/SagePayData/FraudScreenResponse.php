@@ -2,7 +2,9 @@
 
 namespace Ebizmarts\SagePaySuite\Api\SagePayData;
 
-class FraudScreenResponse extends \Magento\Framework\Api\AbstractExtensibleObject implements FraudScreenResponseInterface
+use Magento\Framework\Api\AbstractExtensibleObject;
+
+class FraudScreenResponse extends AbstractExtensibleObject implements FraudScreenResponseInterface
 {
     /**
      * @inheritDoc
