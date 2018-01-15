@@ -50,12 +50,6 @@ class UpgradeSchemaTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder('Magento\Framework\Setup\ModuleContextInterface')
             ->disableOriginalConstructor()
             ->getMock();
-        $schemaSetupMock->expects($this->at(0))
-            ->method('1.0.0')
-            ->willReturn($connectionMock);
-        $schemaSetupMock->expects($this->at(0))
-            ->method('1.1.0')
-            ->willReturn($connectionMock);
 
         $connectionProviderMock = $this->getMockBuilder(SplitDatabaseConnectionProvider::class)
             ->disableOriginalConstructor()
@@ -66,6 +60,8 @@ class UpgradeSchemaTest extends \PHPUnit\Framework\TestCase
             ->with($schemaSetupMock)
             ->willReturn($connectionMock);
         $objectManagerHelper = new ObjectManager($this);
+
+        /** @var \Ebizmarts\SagePaySuite\Setup\UpgradeSchema $upgradeSchema */
         $upgradeSchema = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Setup\UpgradeSchema',
             [
