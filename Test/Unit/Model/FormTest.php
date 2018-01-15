@@ -193,7 +193,7 @@ class FormTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $configMock->expects($this->any())->method('setMethodCode')->with('sagepaysuiteform')->willReturnSelf();
-        $configMock->expects($this->never())->method('isMethodActiveMoto')->willReturn(1);
+        $configMock->expects($this->once())->method('isMethodActiveMoto')->willReturn(1);
 
         $form = $this->objectManagerHelper->getObject(
             '\Ebizmarts\SagePaySuite\Model\Form',
@@ -202,7 +202,7 @@ class FormTest extends \PHPUnit\Framework\TestCase
             ]
         );
 
-        $this->assertFalse($form->canUseInternal());
+        $this->assertTrue($form->canUseInternal());
     }
 
     public function testIsActive()
@@ -216,7 +216,7 @@ class FormTest extends \PHPUnit\Framework\TestCase
 
         $appStateMock = $this->getMockBuilder(\Magento\Framework\App\State::class)
             ->disableOriginalConstructor()->getMock();
-        $appStateMock->expects($this->never())->method('getAreaCode');
+        $appStateMock->expects($this->once())->method('getAreaCode')->willReturn('frontend');
 
         $contextMock = $this->getMockBuilder(\Magento\Framework\Model\Context::class)
             ->disableOriginalConstructor()
@@ -240,12 +240,12 @@ class FormTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $scopeConfigMock->expects($this->any())->method('getValue')
-            ->with('payment/sagepaysuiteform/active')
+            ->with('payment/sagepaysuiteform/active_moto')
             ->willReturn(1);
 
         $appStateMock = $this->getMockBuilder(\Magento\Framework\App\State::class)
             ->disableOriginalConstructor()->getMock();
-        $appStateMock->expects($this->never())->method('getAreaCode');
+        $appStateMock->expects($this->once())->method('getAreaCode')->willReturn('adminhtml');
 
         $contextMock = $this->getMockBuilder(\Magento\Framework\Model\Context::class)
             ->disableOriginalConstructor()

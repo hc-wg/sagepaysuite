@@ -24,6 +24,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     protected $_code = Config::METHOD_PI; // @codingStandardsIgnoreLine
 
+    protected $_formBlockType = \Ebizmarts\SagePaySuite\Block\Form\Pi::class;
+
     /**
      * @var string
      */
