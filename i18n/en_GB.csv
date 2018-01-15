@@ -7,7 +7,6 @@ Delete,Delete
 "Can not create order","Can not create order"
 "Unable to sync from API: Invalid order id.","Unable to sync from API: Invalid order id."
 "Successfully synced from Sage Pay's API","Successfully synced from Sage Pay's API"
-"Something went wrongs: %1","Something went wrongs: %1"
 "Unable to save Sage Pay order.","Unable to save Sage Pay order."
 Reports,Reports
 "Sage Pay","Sage Pay"
@@ -29,6 +28,8 @@ Fraud,Fraud
 "Unable to find payment data.","Unable to find payment data."
 "Invalid order.","Invalid order."
 "Invalid transaction id","Invalid transaction id"
+"Unable to find quote","Unable to find quote"
+"Order was not found","Order was not found"
 "Invalid VPS Signature","Invalid VPS Signature"
 "An error ocurred.","An error ocurred."
 "Unable to delete token: Token is not owned by you","Unable to delete token: Token is not owned by you"
@@ -77,7 +78,6 @@ Live,Live
 "The user does not have permission to view this transaction.","The user does not have permission to view this transaction."
 "Invalid transaction.","Invalid transaction."
 INVALID,INVALID
-"Something went wrong: Unable to save Sage Pay order.","Something went wrong: Unable to save Sage Pay order."
 "Can not cancel order.","Can not cancel order."
 message,message
 "Missing mandatory field: vendorName","Missing mandatory field: vendorName"
