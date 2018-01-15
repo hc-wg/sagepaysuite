@@ -33,7 +33,7 @@ class GenerateMerchantKey extends \Magento\Backend\App\AbstractAction
         $result = $this->piMsk->getSessionKey($quote);
 
         if ($result->getSuccess() === false) {
-            $this->messageManager->addError(__('Something went wrong: ' . $result->getErrorMessage()));
+            $this->messageManager->addError(__('Something went wrong: %1', $result->getErrorMessage()));
         }
 
         $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);

@@ -99,7 +99,7 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
             $this->messageManager->addError(__($apiException->getUserMessage()));
         } catch (\Exception $e) {
             $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
-            $this->messageManager->addError(__('Something went wrong: ' . $e->getMessage()));
+            $this->messageManager->addError(__('Something went wrong: %1', $e->getMessage()));
         }
 
         if (!empty($order)) {

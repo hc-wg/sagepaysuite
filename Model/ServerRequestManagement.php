@@ -181,14 +181,14 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
 
             $this->result->setSuccess(false);
             $this->result->setErrorMessage(
-                __('Something went wrong while generating the Sage Pay request: '. $apiException->getUserMessage())
+                __('Something went wrong while generating the Sage Pay request: %1', $apiException->getUserMessage())
             );
         } catch (\Exception $e) {
             $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
             $this->result->setSuccess(false);
             $this->result->setErrorMessage(
-                __('Something went wrong while generating the Sage Pay request: ' . $e->getMessage())
+                __('Something went wrong while generating the Sage Pay request: %1', $e->getMessage())
             );
         }
 

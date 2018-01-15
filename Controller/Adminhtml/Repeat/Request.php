@@ -9,6 +9,7 @@ namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\Repeat;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use function throwException;
 
 class Request extends \Magento\Backend\App\AbstractAction
 {
@@ -177,13 +178,13 @@ class Request extends \Magento\Backend\App\AbstractAction
             $this->_suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
             $responseContent = [
                 'success' => false,
-                'error_message' => __('Something went wrong: ' . $apiException->getUserMessage()),
+                'error_message' => __('Something went wrong: %1', $apiException->getUserMessage()),
             ];
         } catch (\Exception $e) {
             $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
             $responseContent = [
                 'success' => false,
-                'error_message' => __('Something went wrong: ' . $e->getMessage()),
+                'error_message' => __('Something went wrong: %1', $e->getMessage()),
             ];
         }
 

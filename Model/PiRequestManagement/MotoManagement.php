@@ -118,11 +118,11 @@ class MotoManagement extends RequestManagement
         } catch (ApiException $apiException) {
             $this->logger->logException($apiException, [__METHOD__, __LINE__]);
             $this->getResult()->setSuccess(false);
-            $this->getResult()->setErrorMessage(__('Something went wrong: ' . $apiException->getUserMessage()));
+            $this->getResult()->setErrorMessage(__("Something went wrong: %1", $apiException->getUserMessage()));
         } catch (\Exception $e) {
             $this->logger->logException($e, [__METHOD__, __LINE__]);
             $this->getResult()->setSuccess(false);
-            $this->getResult()->setErrorMessage(__('Something went wrong: ' . $e->getMessage()));
+            $this->getResult()->setErrorMessage(__("Something went wrong: %1", $e->getMessage()));
         }
 
         return $this->getResult();
