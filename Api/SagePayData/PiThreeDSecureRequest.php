@@ -8,7 +8,9 @@
 
 namespace Ebizmarts\SagePaySuite\Api\SagePayData;
 
-class PiThreeDSecureRequest extends \Magento\Framework\Api\AbstractExtensibleObject implements PiThreeDSecureRequestInterface
+use Magento\Framework\Api\AbstractExtensibleObject;
+
+class PiThreeDSecureRequest extends AbstractExtensibleObject implements PiThreeDSecureRequestInterface
 {
     /**
      * @inheritDoc

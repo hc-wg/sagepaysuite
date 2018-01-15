@@ -2,7 +2,9 @@
 
 namespace Ebizmarts\SagePaySuite\Api\SagePayData;
 
-class PiInstructionResponse extends \Magento\Framework\Api\AbstractExtensibleObject implements PiInstructionResponseInterface
+use Magento\Framework\Api\AbstractExtensibleObject;
+
+class PiInstructionResponse extends AbstractExtensibleObject implements PiInstructionResponseInterface
 {
     /**
      * @inheritDoc

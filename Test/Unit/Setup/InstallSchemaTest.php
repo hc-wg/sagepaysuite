@@ -6,44 +6,39 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Setup;
 
+use Ebizmarts\SagePaySuite\Setup\SplitDatabaseConnectionProvider;
+use Magento\Framework\DB\Ddl\Table;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+
 class InstallSchemaTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @var \Ebizmarts\SagePaySuite\Setup\InstallSchema
-     */
-    private $installSchema;
-
-    // @codingStandardsIgnoreStart
-    protected function setUp()
-    {
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->installSchema = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Setup\InstallSchema',
-            []
-        );
-    }
-    // @codingStandardsIgnoreEnd
-
     public function testInstall()
     {
+        $objectManagerHelper = new ObjectManager($this);
+
+        $connectionProviderMock = $this->getMockBuilder(SplitDatabaseConnectionProvider::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $connectionMock = $this
             ->getMockBuilder('Magento\Framework\DB\Adapter\AdapterInterface')
             ->disableOriginalConstructor()
             ->getMock();
-        $connectionMock->expects($this->once())
+        $connectionMock
+            ->expects($this->once())
             ->method('modifyColumn')
             ->with(
                 'sales_order_payment',
                 "last_trans_id",
                 [
-                    'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                    'type' => Table::TYPE_TEXT,
                     'length' => 100,
                     'nullable' => false
                 ]
             );
 
         $schemaSetupMock = $this
-            ->getMockBuilder('Magento\Framework\Setup\SchemaSetupInterface')
+            ->getMockBuilder(\Magento\Setup\Module\Setup::class)
             ->disableOriginalConstructor()
             ->getMock();
         $schemaSetupMock->expects($this->once())
@@ -54,8 +49,11 @@ class InstallSchemaTest extends \PHPUnit\Framework\TestCase
             ->method('getTable')
             ->with('sales_order_payment')
             ->willReturn('sales_order_payment');
-        $schemaSetupMock->expects($this->once())
-            ->method('getConnection')
+
+        $connectionProviderMock
+            ->expects($this->once())
+            ->method("getSalesConnection")
+            ->with($schemaSetupMock)
             ->willReturn($connectionMock);
 
         $moduleContextMock = $this
@@ -63,6 +61,13 @@ class InstallSchemaTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->installSchema->install($schemaSetupMock, $moduleContextMock);
+        $installSchema = $objectManagerHelper->getObject(
+            "Ebizmarts\SagePaySuite\Setup\InstallSchema",
+            [
+                "connectionProvider" => $connectionProviderMock
+            ]
+        );
+
+        $installSchema->install($schemaSetupMock, $moduleContextMock);
     }
 }

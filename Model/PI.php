@@ -24,6 +24,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     protected $_code = Config::METHOD_PI; // @codingStandardsIgnoreLine
 
+    protected $_formBlockType = \Ebizmarts\SagePaySuite\Block\Form\Pi::class;
+
     /**
      * @var string
      */
@@ -92,24 +94,25 @@ class PI extends \Magento\Payment\Model\Method\Cc
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
      */
-    private $_pirestapi;
+    private $pirestapi;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Shared
      */
-    private $_sharedApi;
+    private $sharedApi;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    private $_suiteHelper;
+    private $suiteHelper;
 
     /**
      * @var Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
-    private $_context;
+    /** @var \Magento\Framework\Model\Context */
+    private $context;
 
     /**
      * @param \Magento\Framework\Model\Context $context
@@ -163,13 +166,13 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $data
         );
 
-        $this->_context     = $context;
-        $this->config       = $config;
+        $this->context = $context;
+        $this->config  = $config;
         $this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
-        $this->_pirestapi   = $pirestapi;
-        $this->_sharedApi   = $sharedApi;
-        $this->_suiteHelper = $suiteHelper;
-        $this->_suiteLogger = $suiteLogger;
+        $this->pirestapi   = $pirestapi;
+        $this->sharedApi   = $sharedApi;
+        $this->suiteHelper = $suiteHelper;
+        $this->suiteLogger = $suiteLogger;
     }
 
     public function assignData(DataObject $data)
@@ -203,12 +206,12 @@ class PI extends \Magento\Payment\Model\Method\Cc
         try {
             /** @var \Magento\Sales\Model\Order $order */
             $order        = $payment->getOrder();
-            $vpsTxId      = $this->_suiteHelper->clearTransactionId($payment->getParentTransactionId());
-            $vendorTxCode = $this->_suiteHelper->generateVendorTxCode($order->getIncrementId(), Config::ACTION_REFUND);
+            $vpsTxId      = $this->suiteHelper->clearTransactionId($payment->getParentTransactionId());
+            $vendorTxCode = $this->suiteHelper->generateVendorTxCode($order->getIncrementId(), Config::ACTION_REFUND);
             $description  = 'Magento backend refund.';
 
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $refundResult */
-            $refundResult = $this->_pirestapi->refund(
+            $refundResult = $this->pirestapi->refund(
                 $vendorTxCode,
                 $vpsTxId,
                 $amount * 100,
@@ -251,7 +254,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $transactionId = $payment->getLastTransId();
 
         try {
-            $this->_pirestapi->void($transactionId);
+            $this->pirestapi->void($transactionId);
         } catch (ApiException $apiException) {
             if ($this->exceptionCodeIsInvalidTransactionState($apiException)) {
                 //unable to void transaction
@@ -375,7 +378,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function isActive($storeId = null)
     {
-        $areaCode = $this->_context->getAppState()->getAreaCode();
+        $areaCode = $this->context->getAppState()->getAreaCode();
 
         $moto = '';
         if ($areaCode == 'adminhtml') {

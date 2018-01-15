@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Config\Source;
 
+use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Option\ArrayInterface;
 
 /**
@@ -21,19 +22,19 @@ class AvsCvc implements ArrayInterface
     {
         return [
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::MODE_AVSCVC_DEFAULT,
+                'value' => Config::MODE_AVSCVC_DEFAULT,
                 'label' => __('Default: Use default MySagePay settings'),
             ],
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::MODE_AVSCVC_DISABLE,
+                'value' => Config::MODE_AVSCVC_DISABLE,
                 'label' => __('Disable: Disable authentication and rules')
             ],
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::MODE_AVSCVC_FORCE,
+                'value' => Config::MODE_AVSCVC_FORCE,
                 'label' => __('Force: Apply authentication even if turned off')
             ],
             [
-                'value' => \Ebizmarts\SagePaySuite\Model\Config::MODE_AVSCVC_IGNORE,
+                'value' => Config::MODE_AVSCVC_IGNORE,
                 'label' => __('Force & Ignore: Apply authentication but ignore rules')
             ]
         ];

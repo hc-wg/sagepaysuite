@@ -8,7 +8,9 @@
 
 namespace Ebizmarts\SagePaySuite\Api\SagePayData;
 
-class PiTransactionResultThreeD extends \Magento\Framework\Api\AbstractExtensibleObject implements \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDInterface
+use Magento\Framework\Api\AbstractExtensibleObject;
+
+class PiTransactionResultThreeD extends AbstractExtensibleObject implements PiTransactionResultThreeDInterface
 {
     /**
      * @inheritDoc

@@ -8,7 +8,9 @@
 
 namespace Ebizmarts\SagePaySuite\Api\SagePayData;
 
-class PiTransactionResultAmount extends \Magento\Framework\Api\AbstractExtensibleObject implements \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountInterface
+use Magento\Framework\Api\AbstractExtensibleObject;
+
+class PiTransactionResultAmount extends AbstractExtensibleObject implements PiTransactionResultAmountInterface
 {
 
     /**

@@ -115,22 +115,22 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    private $_suiteHelper;
+    private $suiteHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    private $_config;
+    private $config;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Shared
      */
-    private $_sharedApi;
+    private $sharedApi;
 
     /**
      * @var Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /** @var \Ebizmarts\SagePaySuite\Model\Payment */
     private $paymentOps;
@@ -184,12 +184,12 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
             $data
         );
 
-        $this->_config      = $config;
-        $this->_sharedApi   = $sharedApi;
-        $this->paymentOps   = $paymentOps;
-        $this->_suiteLogger = $suiteLogger;
-        $this->_suiteHelper = $suiteHelper;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_REPEAT);
+        $this->config      = $config;
+        $this->sharedApi   = $sharedApi;
+        $this->paymentOps  = $paymentOps;
+        $this->suiteLogger = $suiteLogger;
+        $this->suiteHelper = $suiteHelper;
+        $this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_REPEAT);
     }
 
     /**
@@ -227,7 +227,7 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function getConfigPaymentAction()
     {
-        return $this->_config->getPaymentAction();
+        return $this->config->getPaymentAction();
     }
 
     /**

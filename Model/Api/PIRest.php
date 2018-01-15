@@ -6,7 +6,21 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory;
+use Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory;
+use Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Store\Model\ScopeInterface;
 
 /**
  * Sage Pay PI REST API
@@ -22,10 +36,10 @@ class PIRest
     const ACTION_TRANSACTION_DETAILS      = 'transaction_details';
 
     /** @var Config */
-    private $_config;
+    private $config;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory */
-    private $_apiExceptionFactory;
+    /** @var ApiExceptionFactory */
+    private $apiExceptionFactory;
 
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface */
     private $piCaptureResultFactory;
@@ -39,28 +53,28 @@ class PIRest
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDInterface */
     private $threedStatusResultFactory;
 
-    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory */
+    /** @var PiTransactionResultAmountFactory */
     private $amountResultFactory;
 
-    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory */
+    /** @var PiMerchantSessionKeyResponseFactory */
     private $mskResponse;
 
-    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory */
+    /** @var PiMerchantSessionKeyRequestFactory */
     private $mskRequest;
 
-    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory */
+    /** @var PiThreeDSecureRequestFactory */
     private $threedRequest;
 
-    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory */
+    /** @var PiRefundRequestFactory */
     private $refundRequest;
 
-    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory */
+    /** @var PiInstructionRequestFactory */
     private $instructionRequest;
 
-    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory */
+    /** @var PiInstructionResponseFactory */
     private $instructionResponse;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory */
+    /** @var HttpRestFactory */
     private $httpRestFactory;
 
     /**
@@ -68,38 +82,38 @@ class PIRest
      * @param HttpRestFactory $httpRestFactory
      * @param Config $config
      * @param ApiExceptionFactory $apiExceptionFactory
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $piCaptureResultFactory
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory $paymentMethodResultFactory
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory $cardResultFactory
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory $threedResultFactory
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory $amountResultFactory
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory $mskResponse
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory $mskRequest
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory $threeDRequest
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory $refundRequest
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory $instructionRequest
-     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory $instructionResponse
+     * @param PiTransactionResultFactory $piCaptureResultFactory
+     * @param PiTransactionResultPaymentMethodFactory $paymentMethodResultFactory
+     * @param PiTransactionResultCardFactory $cardResultFactory
+     * @param PiTransactionResultThreeDFactory $threedResultFactory
+     * @param PiTransactionResultAmountFactory $amountResultFactory
+     * @param PiMerchantSessionKeyResponseFactory $mskResponse
+     * @param PiMerchantSessionKeyRequestFactory $mskRequest
+     * @param PiThreeDSecureRequestFactory $threeDRequest
+     * @param PiRefundRequestFactory $refundRequest
+     * @param PiInstructionRequestFactory $instructionRequest
+     * @param PiInstructionResponseFactory $instructionResponse
      */
     public function __construct(
-        \Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory $httpRestFactory,
+        HttpRestFactory $httpRestFactory,
         Config $config,
-        \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory $apiExceptionFactory,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $piCaptureResultFactory,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory $paymentMethodResultFactory,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory $cardResultFactory,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory $threedResultFactory,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory $amountResultFactory,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory $mskResponse,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory $mskRequest,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory $threeDRequest,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory $refundRequest,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory $instructionRequest,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory $instructionResponse
+        ApiExceptionFactory $apiExceptionFactory,
+        PiTransactionResultFactory $piCaptureResultFactory,
+        PiTransactionResultPaymentMethodFactory $paymentMethodResultFactory,
+        PiTransactionResultCardFactory $cardResultFactory,
+        PiTransactionResultThreeDFactory $threedResultFactory,
+        PiTransactionResultAmountFactory $amountResultFactory,
+        PiMerchantSessionKeyResponseFactory $mskResponse,
+        PiMerchantSessionKeyRequestFactory $mskRequest,
+        PiThreeDSecureRequestFactory $threeDRequest,
+        PiRefundRequestFactory $refundRequest,
+        PiInstructionRequestFactory $instructionRequest,
+        PiInstructionResponseFactory $instructionResponse
     ) {
 
-        $this->_config = $config;
-        $this->_config->setMethodCode(Config::METHOD_PI);
-        $this->_apiExceptionFactory       = $apiExceptionFactory;
+        $this->config = $config;
+        $this->config->setMethodCode(Config::METHOD_PI);
+        $this->apiExceptionFactory        = $apiExceptionFactory;
         $this->piCaptureResultFactory     = $piCaptureResultFactory;
         $this->paymentMethodResultFactory = $paymentMethodResultFactory;
         $this->cardResultFactory          = $cardResultFactory;
@@ -125,7 +139,7 @@ class PIRest
     {
         /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpRest $rest */
         $rest = $this->httpRestFactory->create();
-        $rest->setBasicAuth($this->_config->getPIKey(), $this->_config->getPIPassword());
+        $rest->setBasicAuth($this->config->getPIKey(), $this->config->getPIPassword());
         $rest->setUrl($url);
         $response = $rest->executePost($body);
         return $response;
@@ -141,7 +155,7 @@ class PIRest
     {
         /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpRest $rest */
         $rest = $this->httpRestFactory->create();
-        $rest->setBasicAuth($this->_config->getPIKey(), $this->_config->getPIPassword());
+        $rest->setBasicAuth($this->config->getPIKey(), $this->config->getPIPassword());
         $rest->setUrl($url);
         $response = $rest->executeGet();
         return $response;
@@ -170,7 +184,7 @@ class PIRest
                 break;
         }
 
-        if ($this->_config->getMode() == Config::MODE_LIVE) {
+        if ($this->config->getMode() == Config::MODE_LIVE) {
             return Config::URL_PI_API_LIVE . $endpoint;
         } else {
             return Config::URL_PI_API_TEST . $endpoint;
@@ -180,14 +194,19 @@ class PIRest
     /**
      * Make POST request to ask for merchant key
      *
+     * @param \Magento\Quote\Model\Quote $quote
      * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseInterface
      * @throws
      */
-    public function generateMerchantKey()
+    public function generateMerchantKey(\Magento\Quote\Model\Quote $quote)
     {
+        $this->config->setConfigurationScopeId($quote->getStoreId());
+        $this->config->setConfigurationScope(ScopeInterface::SCOPE_STORE);
+
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequest $request */
         $request = $this->mskRequest->create();
-        $request->setVendorName($this->_config->getVendorname());
+
+        $request->setVendorName($this->config->getVendorname());
 
         $jsonBody = json_encode($request->__toArray());
         $url      = $this->_getServiceUrl(self::ACTION_GENERATE_MERCHANT_KEY);
@@ -311,7 +330,7 @@ class PIRest
             $error_code = $result->getResponseData()->code;
             $error_msg  = $result->getResponseData()->description;
 
-            $exception = $this->_apiExceptionFactory->create([
+            $exception = $this->apiExceptionFactory->create([
                 'phrase' => __($error_msg),
                 'code' => $error_code
             ]);
@@ -356,7 +375,7 @@ class PIRest
                 $errorMessage = $errors->statusDetail;
             }
 
-            $exception = $this->_apiExceptionFactory->create(['phrase' => __($errorMessage), 'code' => $errorCode]);
+            $exception = $this->apiExceptionFactory->create(['phrase' => __($errorMessage), 'code' => $errorCode]);
 
             throw $exception;
         }

@@ -9,7 +9,6 @@ namespace Ebizmarts\SagePaySuite\Model\ConfigProvider;
 use Magento\Checkout\Model\ConfigProviderInterface;
 use \Ebizmarts\SagePaySuite\Model\Config as Config;
 use Magento\Payment\Helper\Data as PaymentHelper;
-use Magento\Framework\Escaper;
 
 class Form implements ConfigProviderInterface
 {

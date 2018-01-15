@@ -13,6 +13,7 @@ use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Validator\Exception as ValidatorException;
@@ -20,50 +21,50 @@ use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\OrderFactory;
 
-class Callback extends \Magento\Framework\App\Action\Action
+class Callback extends Action
 {
 
     /**
      * @var Config
      */
-    private $_config;
+    private $config;
 
     /**
      * @var Quote
      */
-    private $_quote;
+    private $quote;
 
     /**
      * @var Session
      */
-    private $_checkoutSession;
+    private $checkoutSession;
 
     /**
      * @var Checkout
      */
-    private $_checkoutHelper;
+    private $checkoutHelper;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
-    private $_postData;
+    private $postData;
 
     /** @var OrderFactory */
-    private $_orderFactory;
+    private $orderFactory;
 
     /** @var Post */
-    private $_postApi;
+    private $postApi;
 
     /** @var \Magento\Sales\Model\Order */
-    private $_order;
+    private $order;
 
     /**
      * @var QuoteFactory
      */
-    private $_quoteFactory;
+    private $quoteFactory;
 
     /** @var OrderUpdateOnCallback */
     private $updateOrderCallback;
@@ -100,18 +101,18 @@ class Callback extends \Magento\Framework\App\Action\Action
     ) {
     
         parent::__construct($context);
-        $this->_config             = $config;
-        $this->_checkoutSession    = $checkoutSession;
-        $this->_checkoutHelper     = $checkoutHelper;
-        $this->_suiteLogger        = $suiteLogger;
-        $this->_postApi            = $postApi;
-        $this->_quote              = $quote;
-        $this->_orderFactory       = $orderFactory;
-        $this->_quoteFactory       = $quoteFactory;
+        $this->config              = $config;
+        $this->checkoutSession     = $checkoutSession;
+        $this->checkoutHelper      = $checkoutHelper;
+        $this->suiteLogger         = $suiteLogger;
+        $this->postApi             = $postApi;
+        $this->quote               = $quote;
+        $this->orderFactory        = $orderFactory;
+        $this->quoteFactory        = $quoteFactory;
         $this->updateOrderCallback = $updateOrderCallback;
         $this->suiteHelper         = $suiteHelper;
 
-        $this->_config->setMethodCode(Config::METHOD_PAYPAL);
+        $this->config->setMethodCode(Config::METHOD_PAYPAL);
     }
 
     /**
@@ -123,10 +124,10 @@ class Callback extends \Magento\Framework\App\Action\Action
     {
         try {
             //get POST data
-            $this->_postData = $this->getRequest()->getPost();
+            $this->postData = $this->getRequest()->getPost();
 
             //log response
-            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $this->_postData, [__METHOD__, __LINE__]);
+            $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->postData, [__METHOD__, __LINE__]);
 
             $this->validatePostDataStatusAndStatusDetail();
 
@@ -134,7 +135,7 @@ class Callback extends \Magento\Framework\App\Action\Action
 
             $order = $this->loadOrderFromDataSource();
 
-            $completionResponse = $this->_sendCompletionPost()["data"];
+            $completionResponse = $this->sendCompletionPost()["data"];
 
             $transactionId = $completionResponse["VPSTxId"];
             $transactionId = $this->suiteHelper->removeCurlyBraces($transactionId);
@@ -143,40 +144,40 @@ class Callback extends \Magento\Framework\App\Action\Action
 
             $this->updatePaymentInformation($transactionId, $payment, $completionResponse);
 
-            $this->updateOrderCallback->setOrder($this->_order);
+            $this->updateOrderCallback->setOrder($this->order);
             $this->updateOrderCallback->confirmPayment($transactionId);
 
             //prepare session to success or cancellation page
-            $this->_checkoutSession->clearHelperData();
-            $this->_checkoutSession->setLastQuoteId($this->_quote->getId());
-            $this->_checkoutSession->setLastSuccessQuoteId($this->_quote->getId());
-            $this->_checkoutSession->setLastOrderId($order->getId());
-            $this->_checkoutSession->setLastRealOrderId($order->getIncrementId());
-            $this->_checkoutSession->setLastOrderStatus($order->getStatus());
-            $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
+            $this->checkoutSession->clearHelperData();
+            $this->checkoutSession->setLastQuoteId($this->quote->getId());
+            $this->checkoutSession->setLastSuccessQuoteId($this->quote->getId());
+            $this->checkoutSession->setLastOrderId($order->getId());
+            $this->checkoutSession->setLastRealOrderId($order->getIncrementId());
+            $this->checkoutSession->setLastOrderStatus($order->getStatus());
+            $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
 
             $this->_redirect('checkout/onepage/success');
 
             return;
         } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e);
-            $this->_redirectToCartAndShowError('We can\'t place the order: ' . $e->getMessage());
+            $this->suiteLogger->logException($e);
+            $this->redirectToCartAndShowError('We can\'t place the order: ' . $e->getMessage());
         }
     }
 
-    private function _sendCompletionPost()
+    private function sendCompletionPost()
     {
         $request = [
-            "VPSProtocol" => $this->_config->getVPSProtocol(),
+            "VPSProtocol" => $this->config->getVPSProtocol(),
             "TxType"      => "COMPLETE",
-            "VPSTxId"     => $this->_postData->VPSTxId,
+            "VPSTxId"     => $this->postData->VPSTxId,
             "Amount"      => $this->getAuthorisedAmount(),
             "Accept"      => "YES"
         ];
 
-        return $this->_postApi->sendPost(
+        return $this->postApi->sendPost(
             $request,
-            $this->_getServiceURL(),
+            $this->getServiceURL(),
             ["OK", 'REGISTERED', 'AUTHENTICATED'],
             'Invalid response from PayPal'
         );
@@ -184,7 +185,7 @@ class Callback extends \Magento\Framework\App\Action\Action
 
     private function getAuthorisedAmount()
     {
-        $quoteAmount = $this->_config->getQuoteAmount($this->_quote);
+        $quoteAmount = $this->config->getQuoteAmount($this->quote);
         $amount = number_format($quoteAmount, 2, '.', '');
         return $amount;
     }
@@ -195,15 +196,15 @@ class Callback extends \Magento\Framework\App\Action\Action
      * @param string $errorMessage
      * @return void
      */
-    private function _redirectToCartAndShowError($errorMessage)
+    private function redirectToCartAndShowError($errorMessage)
     {
         $this->messageManager->addError($errorMessage);
         $this->_redirect('checkout/cart');
     }
 
-    private function _getServiceURL()
+    private function getServiceURL()
     {
-        if ($this->_config->getMode() == Config::MODE_LIVE) {
+        if ($this->config->getMode() == Config::MODE_LIVE) {
             return Config::URL_PAYPAL_COMPLETION_LIVE;
         } else {
             return Config::URL_PAYPAL_COMPLETION_TEST;
@@ -212,9 +213,9 @@ class Callback extends \Magento\Framework\App\Action\Action
 
     private function validatePostDataStatusAndStatusDetail()
     {
-        if (empty($this->_postData) || !isset($this->_postData->Status) || $this->_postData->Status != "PAYPALOK") {
-            if (!empty($this->_postData) && isset($this->_postData->StatusDetail)) {
-                throw new LocalizedException(__("Can not place PayPal order: " . $this->_postData->StatusDetail));
+        if (empty($this->postData) || !isset($this->postData->Status) || $this->postData->Status != "PAYPALOK") {
+            if (!empty($this->postData) && isset($this->postData->StatusDetail)) {
+                throw new LocalizedException(__("Can not place PayPal order: " . $this->postData->StatusDetail));
             } else {
                 throw new LocalizedException(__("Can not place PayPal order, please try another payment method"));
             }
@@ -223,8 +224,8 @@ class Callback extends \Magento\Framework\App\Action\Action
 
     private function loadQuoteFromDataSource()
     {
-        $this->_quote = $this->_quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
-        if (empty($this->_quote->getId())) {
+        $this->quote = $this->quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
+        if (empty($this->quote->getId())) {
             throw new LocalizedException(__("Unable to find payment data."));
         }
     }
@@ -235,7 +236,7 @@ class Callback extends \Magento\Framework\App\Action\Action
      */
     private function loadOrderFromDataSource()
     {
-        $order = $this->_order = $this->_orderFactory->create()->loadByIncrementId($this->_quote->getReservedOrderId());
+        $order = $this->order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
         if ($order === null || $order->getId() === null) {
             throw new LocalizedException(__("Invalid order."));
         }

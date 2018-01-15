@@ -2,24 +2,32 @@
 
 namespace Ebizmarts\SagePaySuite\Commands;
 
+use Ebizmarts\SagePaySuite\Model\Cron;
+use Magento\Framework\App\State;
+use Magento\Framework\ObjectManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
 
 class CheckFraudCommand extends Command
 {
-    /** @var \Ebizmarts\SagePaySuite\Model\Cron $posOrder*/
+    /** @var Cron $posOrder*/
     private $cron;
-    /** @var \Magento\Framework\ObjectManagerInterface */
+    /** @var ObjectManagerInterface */
     private $objectManager;
-    /** @var \Magento\Framework\App\State  */
+    /** @var State  */
     protected $appState;
 
+    /**
+     * CheckFraudCommand constructor.
+     * @param Cron $cron
+     * @param State $appState
+     * @param ObjectManagerInterface $objectManager
+     */
     public function __construct(
-        \Ebizmarts\SagePaySuite\Model\Cron $cron,
-        \Magento\Framework\App\State $appState,
-        \Magento\Framework\ObjectManagerInterface $objectManager
+        Cron $cron,
+        State $appState,
+        ObjectManagerInterface $objectManager
     ) {
         $this->appState = $appState;
         $this->cron         = $cron;
