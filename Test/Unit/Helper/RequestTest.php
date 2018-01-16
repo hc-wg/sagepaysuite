@@ -648,6 +648,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
+            ->setMethods(["getPayment", "getIsMultiShipping", "getItemsCollection", "getShippingAddress", "getBillingAddress", "getAllAddresses"])
             ->disableOriginalConstructor()
             ->getMock();
         $quoteMock->expects($this->any())

@@ -44,6 +44,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit_Framework_TestCase
         $piRestApiMock->expects($this->once())->method("void");
 
         $checkoutSessionMock = $this->getMockBuilder("Magento\Checkout\Model\Session")
+            ->setMethods(["setData"])
             ->disableOriginalConstructor()->getMock();
         $checkoutSessionMock->expects($this->never())->method("setData");
 

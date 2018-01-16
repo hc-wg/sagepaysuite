@@ -129,7 +129,10 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
      */
     private function makeResponseMock()
     {
-        $responseMock = $this->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+        $responseMock = $this
+            ->getMockBuilder('Magento\Framework\App\Response\Http')
+            ->disableOriginalConstructor()
+            ->getMock();
 
         return $responseMock;
     }

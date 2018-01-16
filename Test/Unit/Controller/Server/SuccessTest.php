@@ -42,7 +42,9 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->getMockForAbstractClass();
 
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->urlBuilderMock = $this
             ->getMockBuilder('Magento\Framework\UrlInterface')
@@ -129,7 +131,9 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
         $contextMock->expects($this->any())
             ->method('getResponse')
             ->willReturn($this
-                ->getMock('Magento\Framework\App\Response\Http', [], [], '', false));
+                ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock());
         $contextMock->expects($this->any())
             ->method('getMessageManager')
             ->willReturn($messageManagerMock);
