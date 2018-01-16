@@ -75,7 +75,7 @@ class Callback3D extends Action
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
             $this->logger->critical($e);
-            $this->messageManager->addError("Something went wrong: " . $e->getMessage());
+            $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
         }
     }

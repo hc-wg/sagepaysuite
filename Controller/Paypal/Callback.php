@@ -215,7 +215,7 @@ class Callback extends Action
     {
         if (empty($this->postData) || !isset($this->postData->Status) || $this->postData->Status != "PAYPALOK") {
             if (!empty($this->postData) && isset($this->postData->StatusDetail)) {
-                throw new LocalizedException(__("Can not place PayPal order: " . $this->postData->StatusDetail));
+                throw new LocalizedException(__("Can not place PayPal orders: %1", $this->postData->StatusDetail));
             } else {
                 throw new LocalizedException(__("Can not place PayPal order, please try another payment method"));
             }
