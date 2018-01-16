@@ -88,7 +88,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($quoteMock));
 
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->resultJson = $this->getMockBuilder('Magento\Framework\Controller\Result\Json')
             ->disableOriginalConstructor()
@@ -233,7 +235,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $this->_expectResultJson([
             "success" => false,
-            'error_message' => __("Something went wrong: Unable to save Sage Pay order.")
+            'error_message' => __("Something went wrong: %1", "Unable to save Sage Pay order.")
         ]);
 
         $this->repeatRequestController->execute();

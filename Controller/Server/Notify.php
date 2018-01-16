@@ -139,13 +139,13 @@ class Notify extends Action
         try {
             //find quote with GET param
             if (empty($this->quote->getId())) {
-                return $this->returnInvalid("Unable to find quote");
+                return $this->returnInvalid(__("Unable to find quote"));
             }
 
             //find order with quote id
             $order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
             if ($order === null || $order->getId() === null) {
-                return $this->returnInvalid("Order was not found");
+                return $this->returnInvalid(__("Order was not found"));
             }
 
             $this->order = $order;
@@ -158,7 +158,7 @@ class Notify extends Action
             try {
                 $this->validateSignature($payment);
             } catch (InvalidSignatureException $signatureException) {
-                return $this->returnInvalid("Something went wrong: " . $signatureException->getMessage());
+                return $this->returnInvalid(__("Something went wrong: %1", $signatureException->getMessage()));
             }
 
             //update payment details
@@ -207,14 +207,14 @@ class Notify extends Action
             //cancel pending payment order
             $this->cancelOrder($order);
 
-            return $this->returnInvalid("Something went wrong: " . $apiException->getUserMessage());
+            return $this->returnInvalid(__("Something went wrong: %1", $apiException->getUserMessage()));
         } catch (\Exception $e) {
             $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
             //cancel pending payment order
             $this->cancelOrder($order);
 
-            return $this->returnInvalid("Something went wrong: " . $e->getMessage());
+            return $this->returnInvalid(__("Something went wrong: %1", $e->getMessage()));
         }
     }
 
