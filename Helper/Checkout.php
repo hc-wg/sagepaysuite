@@ -7,22 +7,32 @@
 namespace Ebizmarts\SagePaySuite\Helper;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Checkout\Helper\Data as CheckoutHelper;
 use Magento\Checkout\Model\Type\Onepage;
+use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\GroupInterface;
+use Magento\Customer\Model\Session;
+use Magento\Framework\Api\DataObjectHelper;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\DataObject\Copy;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Quote\Model\QuoteManagement;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use \Magento\Checkout\Model\Session as CheckoutSession;
 
-class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
+class Checkout extends AbstractHelper
 {
 
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    private $_quote;
+    private $quote;
 
     /**
-     * @var \Magento\Quote\Model\QuoteManagement
+     * @var QuoteManagement
      */
-    private $_quoteManagement;
+    private $quoteManagement;
 
     /**
      * @var OrderSender
@@ -30,78 +40,78 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
     private $orderSender;
 
     /**
-     * @var \Magento\Customer\Model\Session
+     * @var Session
      */
-    private $_customerSession;
+    private $customerSession;
 
     /**
      * Checkout data
-     * @var \Magento\Checkout\Helper\Data
+     * @var Data
      */
-    private $_checkoutData;
+    private $checkoutData;
 
     /**
-     * @var \Magento\Framework\DataObject\Copy
+     * @var Copy
      */
-    private $_objectCopyService;
+    private $objectCopyService;
 
     /**
-     * @var \Magento\Customer\Api\CustomerRepositoryInterface
+     * @var CustomerRepositoryInterface
      */
-    private $_customerRepository;
+    private $customerRepository;
 
     /**
-     * @var \Magento\Framework\Api\DataObjectHelper
+     * @var DataObjectHelper
      */
-    private $_dataObjectHelper;
+    private $dataObjectHelper;
 
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    private $_checkoutSession;
+    private $checkoutSession;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Quote\Model\QuoteManagement $quoteManagement
+     * @param Context $context
+     * @param QuoteManagement $quoteManagement
      * @param OrderSender $orderSender
-     * @param \Magento\Customer\Model\Session $customerSession
-     * @param \Magento\Checkout\Helper\Data $checkoutData
-     * @param \Magento\Framework\Api\DataObjectHelper $dataObjectHelper
-     * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
-     * @param \Magento\Framework\DataObject\Copy $objectCopyService
+     * @param Session $customerSession
+     * @param Data $checkoutData
+     * @param DataObjectHelper $dataObjectHelper
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param Copy $objectCopyService
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param Logger $suiteLogger
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Magento\Quote\Model\QuoteManagement $quoteManagement,
+        Context $context,
+        QuoteManagement $quoteManagement,
         OrderSender $orderSender,
-        \Magento\Customer\Model\Session $customerSession,
-        \Magento\Checkout\Helper\Data $checkoutData,
-        \Magento\Framework\Api\DataObjectHelper $dataObjectHelper,
-        \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
-        \Magento\Framework\DataObject\Copy $objectCopyService,
-        \Magento\Checkout\Model\Session $checkoutSession,
+        Session $customerSession,
+        CheckoutHelper $checkoutData,
+        DataObjectHelper $dataObjectHelper,
+        CustomerRepositoryInterface $customerRepository,
+        Copy $objectCopyService,
+        CheckoutSession $checkoutSession,
         Logger $suiteLogger
     ) {
     
         parent::__construct($context);
-        $this->_quoteManagement    = $quoteManagement;
-        $this->orderSender         = $orderSender;
-        $this->_customerSession    = $customerSession;
-        $this->_checkoutData       = $checkoutData;
-        $this->_objectCopyService  = $objectCopyService;
-        $this->_customerRepository = $customerRepository;
-        $this->_dataObjectHelper   = $dataObjectHelper;
-        $this->_checkoutSession    = $checkoutSession;
-        $this->_suiteLogger        = $suiteLogger;
-        $this->_quote              = $this->_checkoutSession->getQuote();
+        $this->quoteManagement    = $quoteManagement;
+        $this->orderSender        = $orderSender;
+        $this->customerSession    = $customerSession;
+        $this->checkoutData       = $checkoutData;
+        $this->objectCopyService  = $objectCopyService;
+        $this->customerRepository = $customerRepository;
+        $this->dataObjectHelper   = $dataObjectHelper;
+        $this->checkoutSession    = $checkoutSession;
+        $this->suiteLogger        = $suiteLogger;
+        $this->quote              = $this->checkoutSession->getQuote();
     }
 
     /**
@@ -109,28 +119,28 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
      *
      * @return \Magento\Sales\Model\Order
      * @param $quote \Magento\Quote\Api\Data\CartInterface
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function placeOrder($quote = null)
     {
 
-        switch ($this->_getCheckoutMethod()) {
+        switch ($this->getCheckoutMethod()) {
             case Onepage::METHOD_GUEST:
-                $this->_prepareGuestQuote();
+                $this->prepareGuestQuote();
                 break;
             case Onepage::METHOD_REGISTER:
-                $this->_prepareNewCustomerQuote();
+                $this->prepareNewCustomerQuote();
                 break;
             default:
                 break;
         }
 
-        $this->_quote->collectTotals();
+        $this->quote->collectTotals();
 
-        $order = $this->_quoteManagement->submit( (null === $quote ? $this->_quote : $quote) );
+        $order = $this->quoteManagement->submit((null === $quote ? $this->quote : $quote));
 
         if (!$order) {
-            throw new \Magento\Framework\Exception\LocalizedException(
+            throw new LocalizedException(
                 __('Can not save order. Please try another payment option.')
             );
         }
@@ -143,19 +153,19 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
      *
      * @return string
      */
-    private function _getCheckoutMethod()
+    private function getCheckoutMethod()
     {
-        if ($this->_customerSession->isLoggedIn()) {
+        if ($this->customerSession->isLoggedIn()) {
             return Onepage::METHOD_CUSTOMER;
         }
-        if (!$this->_quote->getCheckoutMethod()) {
-            if ($this->_checkoutData->isAllowedGuestCheckout($this->_quote)) {
-                $this->_quote->setCheckoutMethod(Onepage::METHOD_GUEST);
+        if (!$this->quote->getCheckoutMethod()) {
+            if ($this->checkoutData->isAllowedGuestCheckout($this->quote)) {
+                $this->quote->setCheckoutMethod(Onepage::METHOD_GUEST);
             } else {
-                $this->_quote->setCheckoutMethod(Onepage::METHOD_REGISTER);
+                $this->quote->setCheckoutMethod(Onepage::METHOD_REGISTER);
             }
         }
-        return $this->_quote->getCheckoutMethod();
+        return $this->quote->getCheckoutMethod();
     }
 
     /**
@@ -163,9 +173,9 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
      *
      * @return $this
      */
-    private function _prepareGuestQuote()
+    private function prepareGuestQuote()
     {
-        $quote = $this->_quote;
+        $quote = $this->quote;
 
         $quote->setCustomerId(null);
         $quote->setCustomerEmail($quote->getBillingAddress()->getEmail());
@@ -180,16 +190,16 @@ class Checkout extends \Magento\Framework\App\Helper\AbstractHelper
      *
      * @return void
      */
-    private function _prepareNewCustomerQuote()
+    private function prepareNewCustomerQuote()
     {
-        $quote = $this->_quote;
+        $quote = $this->quote;
         $billing = $quote->getBillingAddress();
         $shipping = $quote->isVirtual() ? null : $quote->getShippingAddress();
 
         $customer = $quote->getCustomer();
         $customerBillingData = $billing->exportCustomerAddress();
-        $dataArray = $this->_objectCopyService->getDataFromFieldset('checkout_onepage_quote', 'to_customer', $quote);
-        $this->_dataObjectHelper->populateWithArray(
+        $dataArray = $this->objectCopyService->getDataFromFieldset('checkout_onepage_quote', 'to_customer', $quote);
+        $this->dataObjectHelper->populateWithArray(
             $customer,
             $dataArray,
             '\Magento\Customer\Api\Data\CustomerInterface'

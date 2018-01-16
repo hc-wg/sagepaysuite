@@ -22,17 +22,17 @@ class Reporting
     /**
      * @var ApiExceptionFactory
      */
-    private $_apiExceptionFactory;
+    private $apiExceptionFactory;
 
     /**
      * @var Config
      */
-    private $_config;
+    private $config;
 
     /**
      * @var Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
      * @var ObjectManager
@@ -67,13 +67,13 @@ class Reporting
         FraudScreenRuleInterfaceFactory $fraudScreenRule
     ) {
 
-        $this->_config              = $config;
-        $this->httpTextFactory      = $httpTextFactory;
-        $this->_apiExceptionFactory = $apiExceptionFactory;
-        $this->_suiteLogger         = $suiteLogger;
-        $this->objectManager        = $objectManager;
-        $this->fraudResponse        = $fraudResponse;
-        $this->fraudScreenRule      = $fraudScreenRule;
+        $this->config              = $config;
+        $this->httpTextFactory     = $httpTextFactory;
+        $this->apiExceptionFactory = $apiExceptionFactory;
+        $this->suiteLogger         = $suiteLogger;
+        $this->objectManager       = $objectManager;
+        $this->fraudResponse       = $fraudResponse;
+        $this->fraudScreenRule     = $fraudScreenRule;
     }
 
     /**
@@ -81,7 +81,7 @@ class Reporting
      */
     private function _getServiceUrl()
     {
-        if ($this->_config->getMode() == Config::MODE_LIVE) {
+        if ($this->config->getMode() == Config::MODE_LIVE) {
             return Config::URL_REPORTING_API_LIVE;
         } else {
             return Config::URL_REPORTING_API_TEST;
@@ -98,10 +98,10 @@ class Reporting
     private function _getXmlSignature($command, $params)
     {
         $xml = '<command>' . $command . '</command>';
-        $xml .= '<vendor>' . $this->_config->getVendorname() . '</vendor>';
-        $xml .= '<user>' . $this->_config->getReportingApiUser() . '</user>';
+        $xml .= '<vendor>' . $this->config->getVendorname() . '</vendor>';
+        $xml .= '<user>' . $this->config->getReportingApiUser() . '</user>';
         $xml .= $params;
-        $xml .= '<password>' . $this->_config->getReportingApiPassword() . '</password>';
+        $xml .= '<password>' . $this->config->getReportingApiPassword() . '</password>';
 
         return hash('md5', $xml);
     }
@@ -118,8 +118,8 @@ class Reporting
         $xml = '';
         $xml .= '<vspaccess>';
         $xml .= '<command>' . $command . '</command>';
-        $xml .= '<vendor>' . $this->_config->getVendorname() . '</vendor>';
-        $xml .= '<user>' . $this->_config->getReportingApiUser() . '</user>';
+        $xml .= '<vendor>' . $this->config->getVendorname() . '</vendor>';
+        $xml .= '<user>' . $this->config->getReportingApiUser() . '</user>';
 
         if ($params !== null) {
             $xml .= $params;
@@ -160,10 +160,10 @@ class Reporting
         }
 
         if (!$validResponse) {
-            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
+            $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
         }
 
-        $exception = $this->_apiExceptionFactory->create([
+        $exception = $this->apiExceptionFactory->create([
             'phrase' => __($exceptionPhrase),
             'code' => $exceptionCode
         ]);

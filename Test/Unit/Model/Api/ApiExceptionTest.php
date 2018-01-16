@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 class ApiExceptionTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -18,7 +19,7 @@ class ApiExceptionTest extends \PHPUnit\Framework\TestCase
      */
     public function testGetUserMessage($data)
     {
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $objectManagerHelper = new ObjectManager($this);
         $this->apiExceptionModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Api\ApiException',
             [

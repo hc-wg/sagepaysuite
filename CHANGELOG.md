@@ -1,3 +1,16 @@
+1.2.1 (16/01/2018)
+=============
+**This release requires Magento 2.2.x.**
+- Bug fixes
+  - Parent page already initialised Direct Drop-in.
+  - Failed MOTO orders send confirmation email.
+  - There was an error with Sage Pay transaction : Notice: Undefined variable: result.
+  - Quote id repeated if order is canceled by customer SERVER.
+  - Money taken for auto cancelled order.
+- Improvements
+  - Split database support out of the box.
+  - Updated en_GB.csv translation file.
+
 1.2.0 (28/09/2017)
 =============
 **This release requires Magento 2.2.0.**

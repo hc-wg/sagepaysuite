@@ -242,7 +242,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
 
         $this->_expectResultJson([
             "success" => false,
-            'error_message' => __("Something went wrong: Unable to save Sage Pay order.")
+            'error_message' => __("Something went wrong: %1", "Unable to save Sage Pay order.")
         ]);
 
         $this->repeatRequestController->execute();

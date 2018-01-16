@@ -42,6 +42,9 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
         $storerMock->expects($this->any())
             ->method("getCurrentCurrencyCode")
             ->willReturn("GBP");
+        $storerMock->expects($this->any())
+            ->method("getId")
+            ->willReturn(1);
 
         $storeManagerMock = $this
             ->getMockBuilder('Magento\Store\Model\StoreManagerInterface')
@@ -77,7 +80,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/sagepaysuiteform/active_moto',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn(true);
 
@@ -96,7 +99,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM . '/active',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn(true);
 
@@ -123,7 +126,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/sagepaysuiteform/send_email',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn(1);
 
@@ -139,7 +142,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/sagepaysuitepaypal/force_xml',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn(1);
 
@@ -155,7 +158,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/sagepaysuiteform/vendor_email',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn("me@example.com:me+1@example.com");
 
@@ -171,7 +174,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/sagepaysuiteform/email_message',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.");
 
@@ -193,7 +196,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/' . $data["code"] . '/payment_action',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn($data["payment_action"]);
 
@@ -235,7 +238,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/' . $data["code"] . '/payment_action',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn($data["payment_action"]);
 
@@ -274,12 +277,12 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
 
     public function testGetVendorname()
     {
-        $this->scopeConfigMock->expects($this->any())
+        $this->scopeConfigMock->expects($this->once())
             ->method('getValue')
             ->with(
                 'sagepaysuite/global/vendorname',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn('testebizmarts');
 
@@ -296,7 +299,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'sagepaysuite/global/license',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn('f678dfs786fds786dfs876dfs');
 
@@ -311,9 +314,9 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
             ->with(
-                \Magento\Store\Model\Store::XML_PATH_UNSECURE_BASE_URL,
+                \Magento\Store\Model\Store::XML_PATH_SECURE_BASE_URL,
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn('http://example.com');
 
@@ -330,7 +333,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'sagepaysuite/global/mode',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn('live');
 
@@ -347,7 +350,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'sagepaysuite/global/token',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn(true);
 
@@ -389,7 +392,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM . '/encrypted_password',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn('345jh345hj45');
 
@@ -406,7 +409,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'sagepaysuite/global/reporting_user',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn('ebizmarts');
 
@@ -423,7 +426,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'sagepaysuite/global/reporting_password',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn('fds678dsf68ds');
 
@@ -437,12 +440,13 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
     {
         $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
 
-        $this->scopeConfigMock->expects($this->any())
+        $this->scopeConfigMock
+            ->expects($this->once())
             ->method('getValue')
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI . '/password',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn('fd67sf8ds6f78ds6f78ds');
 
@@ -461,7 +465,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI . '/key',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn('fd7s6f87ds6f78ds6f78dsf8ds76f7ds8f687dsf8');
 
@@ -706,7 +710,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/billing_agreement',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn(false);
 
@@ -759,7 +763,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/cctypes',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn("VI,MC");
 
@@ -778,7 +782,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/allowspecific',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn(0);
 
@@ -797,7 +801,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->with(
                 'payment/' . \Ebizmarts\SagePaySuite\Model\Config::METHOD_PAYPAL . '/specificcountry',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn("UY,US");
 
@@ -856,14 +860,14 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    public function testCetCurrencyConfig()
+    public function testGetCurrencyConfig()
     {
         $this->scopeConfigMock->expects($this->any())
             ->method('getValue')
             ->with(
                 'sagepaysuite/global/currency',
                 ScopeInterface::SCOPE_STORE,
-                null
+                1
             )
             ->willReturn(Config::CURRENCY_BASE);
 

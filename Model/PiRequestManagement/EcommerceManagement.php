@@ -8,24 +8,32 @@
 
 namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 
+use Ebizmarts\SagePaySuite\Api\Data\PiResultInterface;
+use Ebizmarts\SagePaySuite\Helper\Checkout;
+use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
+use Ebizmarts\SagePaySuite\Model\Api\PIRest;
+use Ebizmarts\SagePaySuite\Model\Config\SagePayCardType;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\PiRequest;
+use Magento\Checkout\Model\Session;
 
 class EcommerceManagement extends RequestManagement
 {
-    /** @var \Magento\Checkout\Model\Session */
+    /** @var Session */
     private $checkoutSession;
 
     private $sagePaySuiteLogger;
 
     public function __construct(
-        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Ebizmarts\SagePaySuite\Model\Api\PIRest $piRestApi,
-        \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConvert,
-        \Ebizmarts\SagePaySuite\Model\PiRequest $piRequest,
-        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
-        \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface $result,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Ebizmarts\SagePaySuite\Model\Logger\Logger $sagePaySuiteLogger
+        Checkout $checkoutHelper,
+        PIRest $piRestApi,
+        SagePayCardType $ccConvert,
+        PiRequest $piRequest,
+        Data $suiteHelper,
+        PiResultInterface $result,
+        Session $checkoutSession,
+        Logger $sagePaySuiteLogger
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -129,7 +137,7 @@ class EcommerceManagement extends RequestManagement
     {
         $this->sagePaySuiteLogger->logException($exceptionObject);
         $this->getResult()->setSuccess(false);
-        $this->getResult()->setErrorMessage(__('Something went wrong: ' . $exceptionObject->getMessage()));
+        $this->getResult()->setErrorMessage(__("Something went wrong: %1", $exceptionObject->getMessage()));
 
         if ($this->getPayResult() !== null && $this->getPayResult()->getStatusCode() == "0000") {
             $this->getPiRestApi()->void($this->getPayResult()->getTransactionId());

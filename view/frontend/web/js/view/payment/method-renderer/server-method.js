@@ -146,6 +146,7 @@ define(
                                      function (response) {
 
                                          if (response.success) {
+
                                              customerData.invalidate(['cart']);
 
                                              var sagePayResponse = $.parseJSON(response.response[1]);

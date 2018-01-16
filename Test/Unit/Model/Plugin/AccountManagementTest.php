@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Plugin;
 
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 class ConfigTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -46,7 +47,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             ->method('getQuoteId')
             ->will($this->returnValue(1));
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $objectManagerHelper = new ObjectManager($this);
         $this->pluginAccountManagementModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Plugin\AccountManagement',
             [

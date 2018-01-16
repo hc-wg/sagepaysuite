@@ -21,6 +21,7 @@ use Magento\Backend\Model\UrlInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Validator\Exception;
+use Magento\Sales\Model\AdminOrder\EmailSender;
 
 class MotoManagement extends RequestManagement
 {
@@ -37,6 +38,9 @@ class MotoManagement extends RequestManagement
     /** @var \Magento\Sales\Model\Order */
     private $order;
 
+    /** @var EmailSender */
+    private $emailSender;
+
     public function __construct(
         Checkout $checkoutHelper,
         PIRest $piRestApi,
@@ -47,7 +51,8 @@ class MotoManagement extends RequestManagement
         ObjectManagerInterface $objectManager,
         RequestInterface $httpRequest,
         UrlInterface $backendUrl,
-        Logger $suiteLogger
+        Logger $suiteLogger,
+        EmailSender $emailSender
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -61,6 +66,7 @@ class MotoManagement extends RequestManagement
         $this->httpRequest   = $httpRequest;
         $this->backendUrl    = $backendUrl;
         $this->logger = $suiteLogger;
+        $this->emailSender = $emailSender;
     }
 
     /**
@@ -87,6 +93,7 @@ class MotoManagement extends RequestManagement
                 $this->getOrderCreateModel()->getQuote()->getPayment()->addData($paymentData);
             }
 
+            $order->setSendConfirmation(0);
             $order = $order->createOrder();
 
             if ($order) {
@@ -97,6 +104,8 @@ class MotoManagement extends RequestManagement
                 $this->processPayment();
 
                 $this->_confirmPayment($order);
+
+                $this->emailSender->send($order);
 
                 //add success url to response
                 $url = $this->backendUrl->getUrl('sales/order/view', ['order_id' => $order->getId()]);
@@ -109,11 +118,11 @@ class MotoManagement extends RequestManagement
         } catch (ApiException $apiException) {
             $this->logger->logException($apiException, [__METHOD__, __LINE__]);
             $this->getResult()->setSuccess(false);
-            $this->getResult()->setErrorMessage(__('Something went wrong: ' . $apiException->getUserMessage()));
+            $this->getResult()->setErrorMessage(__("Something went wrong: %1", $apiException->getUserMessage()));
         } catch (\Exception $e) {
             $this->logger->logException($e, [__METHOD__, __LINE__]);
             $this->getResult()->setSuccess(false);
-            $this->getResult()->setErrorMessage(__('Something went wrong: ' . $e->getMessage()));
+            $this->getResult()->setErrorMessage(__("Something went wrong: %1", $e->getMessage()));
         }
 
         return $this->getResult();
@@ -149,9 +158,6 @@ class MotoManagement extends RequestManagement
 
         $payment->getMethodInstance()->markAsInitialized();
         $order->place()->save();
-
-        //send email
-        $this->getCheckoutHelper()->sendOrderEmail($order);
     }
 
     /**

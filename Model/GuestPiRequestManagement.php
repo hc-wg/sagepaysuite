@@ -4,7 +4,7 @@ namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite;
 
-class GuestPiRequestManagement extends PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInterface
+class GuestPiRequestManagement extends PiRequestManagement
 {
 
     /**
