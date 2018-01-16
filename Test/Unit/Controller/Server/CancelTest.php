@@ -51,7 +51,9 @@ class CancelTest extends \PHPUnit_Framework_TestCase
             ->willReturnOnConsecutiveCalls("Error Message", self::QUOTE_ID);
 
         $this->responseMock = $this
-            ->getMock('Magento\Framework\App\Response\Http', [], [], '', false);
+            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
             ->disableOriginalConstructor()

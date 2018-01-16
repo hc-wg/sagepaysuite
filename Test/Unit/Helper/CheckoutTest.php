@@ -41,6 +41,7 @@ class CheckoutTest extends \PHPUnit_Framework_TestCase
     {
         $customerMock = $this
             ->getMockBuilder('Magento\Customer\Model\Customer')
+            ->setMethods(["getDefaultBilling"])
             ->disableOriginalConstructor()
             ->getMock();
         $customerMock->expects($this->any())
