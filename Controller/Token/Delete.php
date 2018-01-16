@@ -103,7 +103,7 @@ class Delete extends Action
 
             $responseContent = [
                 'success' => false,
-                'error_message' => __('Something went wrong: ' . $e->getMessage()),
+                'error_message' => __("Something went wrong: %1", $e->getMessage()),
             ];
         }
 

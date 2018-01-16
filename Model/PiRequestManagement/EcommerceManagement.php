@@ -137,7 +137,7 @@ class EcommerceManagement extends RequestManagement
     {
         $this->sagePaySuiteLogger->logException($exceptionObject);
         $this->getResult()->setSuccess(false);
-        $this->getResult()->setErrorMessage(__('Something went wrong: ' . $exceptionObject->getMessage()));
+        $this->getResult()->setErrorMessage(__("Something went wrong: %1", $exceptionObject->getMessage()));
 
         if ($this->getPayResult() !== null && $this->getPayResult()->getStatusCode() == "0000") {
             $this->getPiRestApi()->void($this->getPayResult()->getTransactionId());

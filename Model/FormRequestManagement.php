@@ -158,7 +158,7 @@ class FormRequestManagement implements FormManagementInterface
             $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
             $this->result->setSuccess(false);
-            $this->result->setErrorMessage(__('Something went wrong: ' . $e->getMessage()));
+            $this->result->setErrorMessage(__("Something went wrong: %1", $e->getMessage()));
         }
 
         return $this->result;
