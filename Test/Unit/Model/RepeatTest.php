@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+
 class RepeatTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -28,6 +30,9 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
      */
     private $configMock;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Payment|\PHPUnit_Framework_MockObject_MockObject */
+    private $paymentsOpsMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -49,13 +54,18 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
             ->method('clearTransactionId')
             ->will($this->returnValue(self::TEST_VPSTXID));
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->paymentsOpsMock = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $objectManagerHelper = new ObjectManager($this);
         $this->repeatModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Repeat',
             [
-                "config" => $this->configMock,
-                "sharedApi" => $this->sharedApiMock,
-                'suiteHelper' => $suiteHelperMock
+                'config'      => $this->configMock,
+                'sharedApi'   => $this->sharedApiMock,
+                'suiteHelper' => $suiteHelperMock,
+                'paymentOps'  => $this->paymentsOpsMock
             ]
         );
     }
@@ -63,7 +73,6 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
 
     public function testCapture()
     {
-        $this->markTestSkipped();
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
@@ -76,9 +85,7 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
             ->with('paymentAction')
             ->will($this->returnValue(\Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED));
 
-        $this->sharedApiMock->expects($this->once())
-            ->method('releaseTransaction')
-            ->with(1, 100);
+        $this->paymentsOpsMock->expects($this->once())->method('capture')->with($paymentMock, 100);
 
         $this->repeatModel->capture($paymentMock, 100);
     }
