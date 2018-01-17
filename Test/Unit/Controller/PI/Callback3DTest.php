@@ -80,6 +80,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
 
         $piRequestManagerDataFactoryMock = $this
             ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory')
+            ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
         $piRequestManagerDataFactoryMock->expects($this->once())->method('create')->willReturn($piRequestManagerMock);
@@ -141,6 +142,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
 
         $piRequestManagerDataFactoryMock = $this
             ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory')
+            ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
         $piRequestManagerDataFactoryMock->expects($this->once())->method('create')->willReturn($piRequestManagerMock);
@@ -222,6 +224,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
 
         $piRequestManagerDataFactoryMock = $this
             ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory')
+            ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
         $piRequestManagerDataFactoryMock
