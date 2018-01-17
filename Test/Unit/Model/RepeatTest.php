@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 
 class RepeatTest extends \PHPUnit\Framework\TestCase
@@ -26,7 +27,7 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
     private $sharedApiMock;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
+     * @var Config|\PHPUnit_Framework_MockObject_MockObject
      */
     private $configMock;
 
@@ -83,7 +84,7 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
         $paymentMock->expects($this->any())
             ->method('getAdditionalInformation')
             ->with('paymentAction')
-            ->will($this->returnValue(\Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED));
+            ->will($this->returnValue(Config::ACTION_REPEAT_DEFERRED));
 
         $this->paymentsOpsMock->expects($this->once())->method('capture')->with($paymentMock, 100);
 
@@ -103,7 +104,7 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
         $paymentMock->expects($this->any())
             ->method('getAdditionalInformation')
             ->with('paymentAction')
-            ->will($this->returnValue(\Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED));
+            ->will($this->returnValue(Config::ACTION_REPEAT_DEFERRED));
 
         $exception = new \Exception("Error in Releasing");
         $this->sharedApiMock->expects($this->once())
