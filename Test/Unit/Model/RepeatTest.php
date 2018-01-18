@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
 use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 
 class RepeatTest extends \PHPUnit\Framework\TestCase
@@ -91,6 +92,9 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
         $this->repeatModel->capture($paymentMock, 100);
     }
 
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     */
     public function testCaptureERROR()
     {
         $paymentMock = $this
@@ -105,17 +109,15 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
             ->with('paymentAction')
             ->will($this->returnValue(Config::ACTION_REPEAT_DEFERRED));
 
-        $exception = new \Exception("Error in Releasing");
-        $this->sharedApiMock->expects($this->once())
-            ->method('releaseTransaction')
-            ->with(2, 100)
-            ->willThrowException($exception);
+        $exceptionMock = $this->getMockBuilder('\Magento\Framework\Exception\LocalizedException')
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->paymentsOpsMock
             ->expects($this->once())
             ->method('capture')
             ->with($paymentMock, 100)
-            ->willThrowException();
+            ->willThrowException($exceptionMock);
 
         $this->repeatModel->capture($paymentMock, 100);
     }
