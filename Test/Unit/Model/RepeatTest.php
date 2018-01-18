@@ -93,7 +93,6 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
 
     public function testCaptureERROR()
     {
-        $this->markTestSkipped();
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
@@ -112,17 +111,13 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
             ->with(2, 100)
             ->willThrowException($exception);
 
-        $response = "";
-        try {
-            $this->repeatModel->capture($paymentMock, 100);
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
-            $response = $e->getMessage();
-        }
+        $this->paymentsOpsMock
+            ->expects($this->once())
+            ->method('capture')
+            ->with($paymentMock, 100)
+            ->willThrowException();
 
-        $this->assertEquals(
-            'There was an error releasing Sage Pay transaction 2: Error in Releasing',
-            $response
-        );
+        $this->repeatModel->capture($paymentMock, 100);
     }
 
     public function testRefund()
