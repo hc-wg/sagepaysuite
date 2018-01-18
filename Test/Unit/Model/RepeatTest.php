@@ -10,7 +10,7 @@ use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 
-class RepeatTest extends \PHPUnit\Framework\TestCase
+class RepeatTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * Sage Pay Transaction ID
