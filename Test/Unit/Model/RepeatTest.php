@@ -137,42 +137,27 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
         $this->repeatModel->refund($paymentMock, 100);
     }
 
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     */
     public function testRefundERROR()
     {
-        $this->markTestSkipped();
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('getIncrementId')
-            ->will($this->returnValue(1000001));
-
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
 
-        $exception = new \Exception("Error in Refunding");
-        $this->sharedApiMock->expects($this->once())
-            ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID, 100, 1000001)
-            ->willThrowException($exception);
+        $exceptionMock = $this->getMockBuilder('\Magento\Framework\Exception\LocalizedException')
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $response = "";
-        try {
-            $this->repeatModel->refund($paymentMock, 100);
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
-            $response = $e->getMessage();
-        }
+        $this->paymentsOpsMock
+            ->expects($this->once())
+            ->method('refund')
+            ->with($paymentMock, 100)
+            ->willThrowException($exceptionMock);;
 
-        $this->assertEquals(
-            'There was an error refunding Sage Pay transaction ' . self::TEST_VPSTXID . ': Error in Refunding',
-            $response
-        );
+        $this->repeatModel->refund($paymentMock, 100);
     }
 
     public function testGetConfigPaymentAction()
