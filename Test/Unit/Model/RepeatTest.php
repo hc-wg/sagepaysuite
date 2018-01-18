@@ -6,7 +6,11 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
-class RepeatTest extends \PHPUnit_Framework_TestCase
+use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+
+class RepeatTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * Sage Pay Transaction ID
@@ -24,9 +28,12 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
     private $sharedApiMock;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
+     * @var Config|\PHPUnit_Framework_MockObject_MockObject
      */
     private $configMock;
+
+    /** @var \Ebizmarts\SagePaySuite\Model\Payment|\PHPUnit_Framework_MockObject_MockObject */
+    private $paymentsOpsMock;
 
     // @codingStandardsIgnoreStart
     protected function setUp()
@@ -49,13 +56,18 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
             ->method('clearTransactionId')
             ->will($this->returnValue(self::TEST_VPSTXID));
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->paymentsOpsMock = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $objectManagerHelper = new ObjectManager($this);
         $this->repeatModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Repeat',
             [
-                "config" => $this->configMock,
-                "sharedApi" => $this->sharedApiMock,
-                'suiteHelper' => $suiteHelperMock
+                'config'      => $this->configMock,
+                'sharedApi'   => $this->sharedApiMock,
+                'suiteHelper' => $suiteHelperMock,
+                'paymentOps'  => $this->paymentsOpsMock
             ]
         );
     }
@@ -63,7 +75,6 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
 
     public function testCapture()
     {
-        $this->markTestSkipped();
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
@@ -74,18 +85,18 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
         $paymentMock->expects($this->any())
             ->method('getAdditionalInformation')
             ->with('paymentAction')
-            ->will($this->returnValue(\Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED));
+            ->will($this->returnValue(Config::ACTION_REPEAT_DEFERRED));
 
-        $this->sharedApiMock->expects($this->once())
-            ->method('releaseTransaction')
-            ->with(1, 100);
+        $this->paymentsOpsMock->expects($this->once())->method('capture')->with($paymentMock, 100);
 
         $this->repeatModel->capture($paymentMock, 100);
     }
 
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     */
     public function testCaptureERROR()
     {
-        $this->markTestSkipped();
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
@@ -96,95 +107,57 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
         $paymentMock->expects($this->any())
             ->method('getAdditionalInformation')
             ->with('paymentAction')
-            ->will($this->returnValue(\Ebizmarts\SagePaySuite\Model\Config::ACTION_REPEAT_DEFERRED));
+            ->will($this->returnValue(Config::ACTION_REPEAT_DEFERRED));
 
-        $exception = new \Exception("Error in Releasing");
-        $this->sharedApiMock->expects($this->once())
-            ->method('releaseTransaction')
-            ->with(2, 100)
-            ->willThrowException($exception);
+        $exceptionMock = $this->getMockBuilder('\Magento\Framework\Exception\LocalizedException')
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $response = "";
-        try {
-            $this->repeatModel->capture($paymentMock, 100);
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
-            $response = $e->getMessage();
-        }
+        $this->paymentsOpsMock
+            ->expects($this->once())
+            ->method('capture')
+            ->with($paymentMock, 100)
+            ->willThrowException($exceptionMock);
 
-        $this->assertEquals(
-            'There was an error releasing Sage Pay transaction 2: Error in Releasing',
-            $response
-        );
+        $this->repeatModel->capture($paymentMock, 100);
     }
 
     public function testRefund()
     {
-        $this->markTestSkipped();
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('getIncrementId')
-            ->will($this->returnValue(1000001));
-
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
-        $paymentMock->expects($this->once())
-            ->method('setIsTransactionClosed')
-            ->with(1);
-        $paymentMock->expects($this->once())
-            ->method('setShouldCloseParentTransaction')
-            ->with(1);
 
-        $this->sharedApiMock->expects($this->once())
-            ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID, 100, 1000001);
+        $this->paymentsOpsMock
+            ->expects($this->once())
+            ->method('refund')
+            ->with($paymentMock, 100);
 
         $this->repeatModel->refund($paymentMock, 100);
     }
 
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     */
     public function testRefundERROR()
     {
-        $this->markTestSkipped();
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('getIncrementId')
-            ->will($this->returnValue(1000001));
-
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
 
-        $exception = new \Exception("Error in Refunding");
-        $this->sharedApiMock->expects($this->once())
-            ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID, 100, 1000001)
-            ->willThrowException($exception);
+        $exceptionMock = $this->getMockBuilder('\Magento\Framework\Exception\LocalizedException')
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $response = "";
-        try {
-            $this->repeatModel->refund($paymentMock, 100);
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
-            $response = $e->getMessage();
-        }
+        $this->paymentsOpsMock
+            ->expects($this->once())
+            ->method('refund')
+            ->with($paymentMock, 100)
+            ->willThrowException($exceptionMock);;
 
-        $this->assertEquals(
-            'There was an error refunding Sage Pay transaction ' . self::TEST_VPSTXID . ': Error in Refunding',
-            $response
-        );
+        $this->repeatModel->refund($paymentMock, 100);
     }
 
     public function testGetConfigPaymentAction()
