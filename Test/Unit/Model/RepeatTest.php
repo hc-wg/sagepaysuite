@@ -124,32 +124,15 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
 
     public function testRefund()
     {
-        $this->markTestSkipped();
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('getIncrementId')
-            ->will($this->returnValue(1000001));
-
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
-        $paymentMock->expects($this->once())
-            ->method('setIsTransactionClosed')
-            ->with(1);
-        $paymentMock->expects($this->once())
-            ->method('setShouldCloseParentTransaction')
-            ->with(1);
 
-        $this->sharedApiMock->expects($this->once())
-            ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID, 100, 1000001);
+        $this->paymentsOpsMock
+            ->expects($this->once())
+            ->method('refund')
+            ->with($paymentMock, 100);
 
         $this->repeatModel->refund($paymentMock, 100);
     }
