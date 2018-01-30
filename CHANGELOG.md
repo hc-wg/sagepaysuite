@@ -1,3 +1,9 @@
+1.1.17 (30/01/2018)
+=============
+**This release requires Magento 2.1.x.**
+- Bug fixes
+  - Fix bad class import on PiRequestManagement.
+
 1.1.16 (15/01/2018)
 =============
 **This release requires Magento 2.1.x.**
