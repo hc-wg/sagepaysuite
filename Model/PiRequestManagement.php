@@ -2,8 +2,7 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-use Ebizmarts\SagePaySuite;
-use Ebizmarts\SagePaySuite\Api\Data\PiRequest;
+use Ebizmarts\SagePaySuite\Api\Data\PiRequest as PiDataRequest;
 
 class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInterface
 {
@@ -41,7 +40,7 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
     /**
      * @inheritdoc
      */
-    public function savePaymentInformationAndPlaceOrder($cartId, PiRequest $requestData)
+    public function savePaymentInformationAndPlaceOrder($cartId, PiDataRequest $requestData)
     {
         /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
         $data = $this->piRequestManagerDataFactory->create();

@@ -20,6 +20,9 @@ class Helper
     /** @var \Ebizmarts\SagePaySuite\Helper\Data  */
     private $suiteHelper;
 
+    /** @var \Magento\Config\Model\Config\Backend\Encrypted */
+    private $configEcrypted;
+
     public function __construct()
     {
         $this->objectManager = Bootstrap::getObjectManager();
