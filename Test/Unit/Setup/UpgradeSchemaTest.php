@@ -11,51 +11,19 @@ use Ebizmarts\SagePaySuite\Setup\SplitDatabaseConnectionProvider;
 
 class UpgradeSchemaTest extends \PHPUnit\Framework\TestCase
 {
-    public function testUpgrade()
+    public function testUpgradeRunOnModuleInstall()
     {
-        $tokenTableMock = $this->makeTokenTableMock();
+        $connectionMock = $this->makeConnectionMock();
 
-        $connectionMock = $this
-            ->getMockBuilder('Magento\Framework\DB\Adapter\AdapterInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $connectionMock->expects($this->once())
-            ->method('newTable')
-            ->willReturn($tokenTableMock);
-        $connectionMock->expects($this->once())
-            ->method('createTable')
-            ->with($tokenTableMock);
+        $schemaSetupMock = $this->createSchemaSetupMock($connectionMock);
 
-        $schemaSetupMock = $this
-            ->getMockBuilder('Magento\Framework\Setup\SchemaSetupInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $schemaSetupMock->expects($this->once())
-            ->method('startSetup');
-        $schemaSetupMock->expects($this->once())
-            ->method('endSetup');
-        $schemaSetupMock->expects($this->exactly(2))
-            ->method('getConnection')
-            ->willReturn($connectionMock);
-        $schemaSetupMock->expects($this->once())
-            ->method('getIdxName')
-            ->willReturn('SAGEPAYSUITE_TOKEN_CUSTOMER_ID');
-
-        $connectionProviderMock = $this->getMockBuilder(SplitDatabaseConnectionProvider::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $connectionProviderMock
-            ->expects($this->once())
-            ->method("getSalesConnection")
-            ->with($schemaSetupMock)
-            ->willReturn($connectionMock);
         $objectManagerHelper = new ObjectManager($this);
 
         /** @var \Ebizmarts\SagePaySuite\Setup\UpgradeSchema $upgradeSchema */
         $upgradeSchema = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Setup\UpgradeSchema',
             [
-                "connectionProvider" => $connectionProviderMock
+                "connectionProvider" => $this->makeConnectionProviderMock($connectionMock, $schemaSetupMock)
             ]
         );
         $upgradeSchema->upgrade($schemaSetupMock, $this->createContext());
@@ -126,5 +94,83 @@ class UpgradeSchemaTest extends \PHPUnit\Framework\TestCase
             ->willReturnSelf();
 
         return $tableMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function createSchemaSetupMock($connectionMock)
+    {
+        $schemaSetupMock = $this->getMockBuilder('Magento\Framework\Setup\SchemaSetupInterface')->disableOriginalConstructor()->getMock();
+
+        $schemaSetupMock->expects($this->exactly(2))
+            ->method('getTable')
+            ->withConsecutive(
+                ['sagepaysuite_token'],
+                ['sales_payment_transaction']
+            )
+            ->willReturnOnConsecutiveCalls(
+                'sagepaysuite_token',
+                'sales_payment_transaction'
+            );
+        $schemaSetupMock->expects($this->once())
+            ->method('startSetup');
+        $schemaSetupMock->expects($this->once())
+            ->method('endSetup');
+        $schemaSetupMock->expects($this->exactly(2))
+            ->method('getConnection')
+            ->willReturn($connectionMock);
+        $schemaSetupMock->expects($this->once())
+            ->method('getIdxName')
+            ->willReturn('SAGEPAYSUITE_TOKEN_CUSTOMER_ID');
+
+        return $schemaSetupMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeConnectionMock()
+    {
+        $tokenTableMock = $this->makeTokenTableMock();
+
+        $connectionMock = $this->getMockBuilder('Magento\Framework\DB\Adapter\AdapterInterface')->disableOriginalConstructor()->getMock();
+
+        $connectionMock->expects($this->once())
+            ->method('addColumn')
+            ->with(
+                'sales_payment_transaction',
+                'sagepaysuite_fraud_check',
+                [
+                    'type' => 'boolean',
+                    'nullable' => false,
+                    'comment' => 'Sage Pay Fraud Check Flag'
+                ]
+            )
+            ->willReturnSelf();
+        $connectionMock->expects($this->once())
+            ->method('newTable')
+            ->willReturn($tokenTableMock);
+        $connectionMock->expects($this->once())
+            ->method('createTable')
+            ->with($tokenTableMock);
+
+        return $connectionMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeConnectionProviderMock($connectionMock, $schemaSetupMock)
+    {
+        $connectionProviderMock = $this->getMockBuilder(SplitDatabaseConnectionProvider::class)->disableOriginalConstructor()->getMock();
+
+        $connectionProviderMock
+            ->expects($this->once())
+            ->method("getSalesConnection")
+            ->with($schemaSetupMock)
+            ->willReturn($connectionMock);
+
+        return $connectionProviderMock;
     }
 }
