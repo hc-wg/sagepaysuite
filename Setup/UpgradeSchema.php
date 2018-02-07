@@ -4,6 +4,8 @@
  * See LICENSE.txt for license details.
  */
 
+declare(strict_types=1);
+
 namespace Ebizmarts\SagePaySuite\Setup;
 
 use Magento\Framework\DB\Ddl\Table;
