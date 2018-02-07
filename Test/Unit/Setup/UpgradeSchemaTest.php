@@ -17,10 +17,44 @@ class UpgradeSchemaTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder('Magento\Framework\DB\Ddl\Table')
             ->disableOriginalConstructor()
             ->getMock();
-        $tableMock->expects($this->exactly(10))
+        $tableMock
+            ->expects($this->exactly(10))
             ->method('addColumn')
+            ->withConsecutive(
+                [
+                    'id', 'integer', null, ['nullable' => false, 'primary' => true, 'auto_increment' => true], 'Token Id'
+                ],
+                [
+                    'customer_id', 'integer', null, ['unsigned' => true, 'nullable' => false], 'Customer Id'
+                ],
+                [
+                    'token', 'text', 150, ['nullable' => false], 'Token'
+                ],
+                [
+                    'cc_last_4', 'text', 100, [], 'Cc Last 4'
+                ],
+                [
+                    'cc_exp_month', 'text', 12, [], 'Cc Exp Month'
+                ],
+                [
+                    'cc_type', 'text', 32, [], 'Cc Type'
+                ],
+                [
+                    'cc_exp_year', 'text', 4, [], 'Cc Exp Year'
+                ],
+                [
+                    'vendorname', 'text', 100, [], 'Vendorname'
+                ],
+                [
+                    'created_at', 'timestamp', null, ['nullable' => false, 'default' => 'TIMESTAMP_INIT'], 'Created At'
+                ],
+                [
+                    'store_id', 'smallint', null, ['unsigned' => true], 'Store Id'
+                ]
+            )
             ->willReturnSelf();
-        $tableMock->expects($this->once())
+        $tableMock
+            ->expects($this->once())
             ->method('addIndex')
 
             ->willReturnSelf();
