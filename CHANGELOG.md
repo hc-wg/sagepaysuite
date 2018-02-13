@@ -1,3 +1,10 @@
+1.2.3 (13/02/2018)
+=============
+**This release requires Magento 2.2.x.**
+- Bug fixes
+  - Concrete class parameter breaks SOAP API.
+  - Upgrade schema vendorname column not defined.
+
 1.2.2 (30/01/2018)
 =============
 **This release requires Magento 2.2.x.**
