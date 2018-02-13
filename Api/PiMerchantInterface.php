@@ -11,8 +11,8 @@ interface PiMerchantInterface
     /**
      * Creates a merchant session key (MSK).
      *
-     * @param \Magento\Quote\Model\Quote $quote $quote
+     * @param \Magento\Quote\Api\Data\CartInterface $quote
      * @return \Ebizmarts\SagePaySuite\Api\Data\ResultInterface
      */
-    public function getSessionKey(\Magento\Quote\Model\Quote $quote = null);
+    public function getSessionKey(\Magento\Quote\Api\Data\CartInterface $quote = null);
 }
