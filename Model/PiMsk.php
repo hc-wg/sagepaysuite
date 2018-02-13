@@ -40,7 +40,7 @@ class PiMsk implements \Ebizmarts\SagePaySuite\Api\PiMerchantInterface
     /**
      * @inheritdoc
      */
-    public function getSessionKey(\Magento\Quote\Model\Quote $quote = null)
+    public function getSessionKey(\Magento\Quote\Api\Data\CartInterface $quote = null)
     {
         try {
 
