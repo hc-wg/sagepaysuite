@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 
-use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountJapaneseYen;
-
 class TransactionAmount
 {
     /** @var array */
@@ -17,7 +15,7 @@ class TransactionAmount
     {
         $this->commands['JPY'] = new TransactionAmountJapaneseYen($amount);
         $this->commands['KRW'] = new TransactionAmountSouthKoreanWon($amount);
-        $this->commands['DEFAULT'] = new TransactionAmountDefault($amount);
+        $this->commands['DEFAULT'] = new TransactionAmountDefaultPi($amount);
     }
 
     /**

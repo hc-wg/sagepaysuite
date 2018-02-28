@@ -28,6 +28,9 @@ class Request extends AbstractHelper
     /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount */
     private $transactionAmountFactory;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPost */
+    private $transactionAmountPostFactory;
+
     /**
      * Request constructor.
      * @param Config $config
@@ -36,11 +39,14 @@ class Request extends AbstractHelper
     public function __construct(
         Config $config,
         ObjectManager $objectManager,
-        \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory $transactionAmountFactory)
+        \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory $transactionAmountFactory,
+        \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPostFactory $transactionAmountPostFactory
+    )
     {
         $this->sagepaySuiteConfig = $config;
         $this->objectManager      = $objectManager;
         $this->transactionAmountFactory  = $transactionAmountFactory;
+        $this->transactionAmountPostFactory  = $transactionAmountPostFactory;
     }
 
     /**
@@ -158,7 +164,9 @@ class Request extends AbstractHelper
             $data["amount"]   = $transactionAmount->getCommand($storeCurrencyCode)->execute();
             $data["currency"] = $storeCurrencyCode;
         } else {
-            $data["Amount"]   = $this->formatPrice($amount);
+            /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPost  $transactionAmount */
+            $transactionAmountPost = $this->transactionAmountPostFactory->create(['amount' => $amount]);
+            $data["Amount"]   = $transactionAmountPost->getCommand($storeCurrencyCode)->execute();
             $data["Currency"] = $storeCurrencyCode;
         }
 
