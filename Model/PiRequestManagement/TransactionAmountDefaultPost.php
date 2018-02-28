@@ -16,6 +16,6 @@ class TransactionAmountDefaultPost implements TransactionAmountPostCommandInterf
 
     public function execute(): string
     {
-        return number_format($value, 2, '.', '');
+        return number_format($this->amount, 2, '.', '');
     }
 }
