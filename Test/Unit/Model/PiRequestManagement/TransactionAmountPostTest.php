@@ -7,7 +7,7 @@ use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountDefaultPos
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPostSouthKoreanWon;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPostJapaneseYen;
 
-class TransactionAmountPostTest extends \PHPUnit\Framework\TestCase
+class TransactionAmountPostTest extends \PHPUnit_Framework_TestCase
 {
 
     public function testCommandsExist()
