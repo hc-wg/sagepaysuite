@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount;
+use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPost;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Symfony\Component\DependencyInjection\SimpleXMLElement;
 
@@ -195,8 +196,14 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         $transactionAmountFactory = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory')
             ->disableOriginalConstructor()
             ->getMock();
+        $transactionAmountPostFactory = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPostFactory')
+            ->disableOriginalConstructor()
+            ->getMock();
+
         if ($data["isRestRequest"]) {
             $transactionAmountFactory->expects($this->once())->method('create')->willReturn(new TransactionAmount($amount));
+        } else {
+            $transactionAmountPostFactory->expects($this->once())->method('create')->willReturn(new TransactionAmountPost($amount));
         }
 
         $this->requestHelper = $this->objectManagerHelper->getObject(
@@ -204,7 +211,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             [
                 'config'        => $configMock,
                 'objectManager' => $this->objectManagerMock,
-                'transactionAmountFactory' => $transactionAmountFactory
+                'transactionAmountFactory' => $transactionAmountFactory,
+                'transactionAmountPostFactory' => $transactionAmountPostFactory
             ]
         );
 
