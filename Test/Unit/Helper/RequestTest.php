@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Symfony\Component\DependencyInjection\SimpleXMLElement;
 
@@ -185,19 +186,32 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         $configMock->expects($this->exactly(2))->method('getCurrencyConfig')->willReturn($data['currency_setting']);
         $configMock->expects($this->exactly(3))->method('setConfigurationScopeId')->with(1234);
 
+
+        $amount = $data["base_grand_total"];
+        if ($data['currency_setting'] !== Config::CURRENCY_BASE) {
+            $amount = $data['grand_total'];
+        }
+
+        $transactionAmountFactory = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory')
+            ->disableOriginalConstructor()
+            ->getMock();
+        if ($data["isRestRequest"]) {
+            $transactionAmountFactory->expects($this->once())->method('create')->willReturn(new TransactionAmount($amount));
+        }
+
         $this->requestHelper = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Request',
             [
                 'config'        => $configMock,
-                'objectManager' => $this->objectManagerMock
+                'objectManager' => $this->objectManagerMock,
+                'transactionAmountFactory' => $transactionAmountFactory
             ]
         );
 
         $quoteMock = $this->makeQuoteMockWithMethods(["getStoreId", "getBaseGrandTotal", "getGrandTotal", "getQuoteCurrencyCode"]);
         $quoteMock->expects($this->exactly(3))->method('getStoreId')->willReturn(1234);
-        $quoteMock->expects($this->any())->method('getBaseGrandTotal')->willReturn(100);
-        $quoteMock->expects($this->any())->method('getGrandTotal')->willReturn(200);
-
+        $quoteMock->expects($this->any())->method('getBaseGrandTotal')->willReturn($data["base_grand_total"]);
+        $quoteMock->expects($this->any())->method('getGrandTotal')->willReturn($data["grand_total"]);
 
         $result = $data["result"];
         $actual = $this->requestHelper->populatePaymentAmountAndCurrency($quoteMock, $data['isRestRequest']);
@@ -211,6 +225,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                 [
                     'currency_setting' => Config::CURRENCY_BASE,
                     'isRestRequest' => true,
+                    'base_grand_total' => 100,
+                    'grand_total' => 200,
                     'result' => [
                         'amount' => 10000,
                         'currency' => 'GBP'
@@ -221,6 +237,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                 [
                     'currency_setting' => Config::CURRENCY_BASE,
                     'isRestRequest' => true,
+                    'base_grand_total' => 100,
+                    'grand_total' => 200,
                     'result' => [
                         'amount' => 10000,
                         'currency' => 'GBP'
@@ -231,6 +249,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                 [
                     'currency_setting' => Config::CURRENCY_SWITCHER,
                     'isRestRequest' => true,
+                    'base_grand_total' => 100,
+                    'grand_total' => 200,
                     'result' => [
                         'amount' => 20000,
                         'currency' => 'EUR'
@@ -241,6 +261,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                 [
                     'currency_setting' => Config::CURRENCY_BASE,
                     'isRestRequest' => false,
+                    'base_grand_total' => 100,
+                    'grand_total' => 200,
                     'result' => [
                         'Amount' => 100.00,
                         'Currency' => 'GBP'
@@ -251,9 +273,35 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                 [
                     'currency_setting' => Config::CURRENCY_BASE,
                     'isRestRequest' => false,
+                    'base_grand_total' => 100,
+                    'grand_total' => 200,
                     'result' => [
                         'Amount' => '100.00',
                         'Currency' => 'GBP'
+                    ]
+                ]
+            ],
+            'test PI Japanese Yen JPY' => [
+                [
+                    'currency_setting' => Config::CURRENCY_SWITCHER,
+                    'isRestRequest' => true,
+                    'base_grand_total' => 43.40,
+                    'grand_total' => 9539.84,
+                    'result' => [
+                        'amount' => 9540,
+                        'currency' => 'JPY'
+                    ]
+                ]
+            ],
+            'test PI South korean KRW' => [
+                [
+                    'currency_setting' => Config::CURRENCY_SWITCHER,
+                    'isRestRequest' => true,
+                    'base_grand_total' => 43.40,
+                    'grand_total' => 64731.10,
+                    'result' => [
+                        'amount' => 64731,
+                        'currency' => 'KRW'
                     ]
                 ]
             ]
@@ -1737,7 +1785,11 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         }
 
         if ($data["currency_setting"] == "switcher_currency") {
-            $storeMock->expects($this->once())->method("getCurrentCurrencyCode")->willReturn("EUR");
+            if ($data["isRestRequest"] === false) {
+                $storeMock->expects($this->once())->method("getCurrentCurrencyCode")->willReturn($data["result"]);
+            } else {
+                $storeMock->expects($this->once())->method("getCurrentCurrencyCode")->willReturn($data["result"]["currency"]);
+            }
         }
 
         return $storeMock;
