@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Helper;
 
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\ObjectManager\ObjectManager;
 
@@ -20,27 +21,32 @@ class Request extends AbstractHelper
     private $sagepaySuiteConfig;
 
     /**
-     * Logging instance
-     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
-     */
-    private $suiteLogger;
-
-    /**
      * @var ObjectManager
      */
     private $objectManager;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount */
+    private $transactionAmountFactory;
+
+    /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPost */
+    private $transactionAmountPostFactory;
+
     /**
      * Request constructor.
      * @param Config $config
-     * @param Logger $suiteLogger
      * @param ObjectManager $objectManager
      */
-    public function __construct(Config $config, Logger $suiteLogger, ObjectManager $objectManager)
+    public function __construct(
+        Config $config,
+        ObjectManager $objectManager,
+        \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory $transactionAmountFactory,
+        \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPostFactory $transactionAmountPostFactory
+    )
     {
         $this->sagepaySuiteConfig = $config;
-        $this->suiteLogger        = $suiteLogger;
         $this->objectManager      = $objectManager;
+        $this->transactionAmountFactory  = $transactionAmountFactory;
+        $this->transactionAmountPostFactory  = $transactionAmountPostFactory;
     }
 
     /**
@@ -153,10 +159,14 @@ class Request extends AbstractHelper
 
         $data = [];
         if ($isRestRequest) {
-            $data["amount"]   = $amount * 100;
+            /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount  $transactionAmount */
+            $transactionAmount = $this->transactionAmountFactory->create(['amount' => $amount]);
+            $data["amount"]   = $transactionAmount->getCommand($storeCurrencyCode)->execute();
             $data["currency"] = $storeCurrencyCode;
         } else {
-            $data["Amount"]   = $this->formatPrice($amount);
+            /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPost  $transactionAmount */
+            $transactionAmountPost = $this->transactionAmountPostFactory->create(['amount' => $amount]);
+            $data["Amount"]   = $transactionAmountPost->getCommand($storeCurrencyCode)->execute();
             $data["Currency"] = $storeCurrencyCode;
         }
 
