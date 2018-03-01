@@ -1,3 +1,13 @@
+1.2.4 (01/03/2018)
+=============
+**This release requires Magento 2.2.x.**
+- Fixed bugs
+  - Swagger generation failing because of missing parameter "quote" on webapi.xml.
+  - Non-decimal currencies (eg: JPY) sending wrong amount to Sage Pay Pi and failing on Server/Form.
+- Implemented enhancements
+  - Improve admin message error when Reporting API signature fails.
+  - Update Sage Pay Direct label to Sage Pay Pi on admin config page.
+
 1.2.3 (13/02/2018)
 =============
 **This release requires Magento 2.2.x.**
