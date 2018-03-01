@@ -86,7 +86,7 @@ class ApiExceptionTest extends \PHPUnit\Framework\TestCase
                 [
                     'message'  => "INVALID",
                     'code'     => \Ebizmarts\SagePaySuite\Model\Api\ApiException::INVALID_SIGNATURE,
-                    'expected' => 'Cannot validate the <signature> value.'
+                    'expected' => "Invalid signature. Please check Reporting API User and Password."
                 ]
             ],
             'test default' => [
