@@ -45,7 +45,7 @@ class ApiException extends LocalizedException
                 $message = __('Information received from an invalid IP address.');
                 break;
             case self::INVALID_SIGNATURE:
-                $message = __('Cannot validate the <signature> value.');
+                $message = __('Invalid signature. Please check Reporting API User and Password.');
                 break;
             case self::VALID_VALUE_REQUIRED:
                 if (strpos($this->getMessage(), "vpstxid") !== false) {
