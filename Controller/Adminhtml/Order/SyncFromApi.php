@@ -88,7 +88,7 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
             if (!empty($payment->getLastTransId())) {
                 $transaction = $this->_transactionRepository
                                 ->getByTransactionId($payment->getLastTransId(), $payment->getId(), $order->getId());
-                if ((bool)$transaction->getSagepaysuiteFraudCheck() === false) {
+                if ($transaction !== false && $this->isFraudNotChecked($transaction)) {
                     $this->_fraudHelper->processFraudInformation($transaction, $payment);
                 }
             }
@@ -107,5 +107,14 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
         } else {
             $this->_redirect($this->_backendUrl->getUrl('sales/order/index/', []));
         }
+    }
+
+    /**
+     * @param $transaction
+     * @return bool
+     */
+    private function isFraudNotChecked($transaction)
+    {
+        return (bool)$transaction->getSagepaysuiteFraudCheck() === false;
     }
 }
