@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Ren
 
 use Magento\Backend\Block\Widget\Grid\Column\Renderer\Text;
 use Magento\Framework\DataObject;
+use Ebizmarts\SagePaySuite\Helper\AdditionalInformation;
 
 /**
  * grid block action item renderer
@@ -23,10 +24,9 @@ class Detail extends Text
      */
     public function render(DataObject $row)
     {
-        $additionalInfo = $row->getData("additional_information");
-        if (!empty($additionalInfo)) {
-            $additionalInfo = unserialize($additionalInfo); //@codingStandardsIgnoreLine
-        }
+        /** @var $serializer AdditionalInformation */
+        $serializer = \Magento\Framework\App\ObjectManager::getInstance()->get(AdditionalInformation::class);
+        $additionalInfo = $serializer->getUnserializedData($row->getData("additional_information"));
 
         return array_key_exists("fraudcodedetail", $additionalInfo) ? $additionalInfo["fraudcodedetail"] : "";
     }
