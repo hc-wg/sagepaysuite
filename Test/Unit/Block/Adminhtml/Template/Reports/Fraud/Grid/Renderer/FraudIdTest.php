@@ -6,44 +6,77 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer;
 
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+
 class FraudIdTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @var \Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer\FraudId
-     */
-    private $fraudIdRendererBlock;
-
-    // @codingStandardsIgnoreStart
-    protected function setUp()
-    {
-        $columnMock = $this
-            ->getMockBuilder('Magento\Backend\Block\Widget\Grid\Column')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->fraudIdRendererBlock = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer\FraudId',
-            []
-        );
-
-        $this->fraudIdRendererBlock->setColumn($columnMock);
-    }
-    // @codingStandardsIgnoreEnd
-
     public function testRender()
     {
+        $objectManagerHelper = new ObjectManager($this);
+        $fraudIdRendererBlock = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer\FraudId',
+            [
+                'context' => $this->makeContextMock(),
+                'information' => $this->makeAdditionalInformation(),
+                []
+            ]
+        );
+
+        $fraudIdRendererBlock->setColumn($this->makeColumnMock());
+
         $rowMock = $this
             ->getMockBuilder('Magento\Framework\DataObject')
             ->disableOriginalConstructor()
             ->getMock();
         $rowMock->expects($this->once())
             ->method('getData')
-            ->will($this->returnValue('a:1:{s:7:"fraudid";s:5:"12345";}'));
+            ->willReturn('{"fraudid":"12345"}');
 
         $this->assertEquals(
             '12345',
-            $this->fraudIdRendererBlock->render($rowMock)
+            $fraudIdRendererBlock->render($rowMock)
         );
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeColumnMock()
+    {
+        $columnMock = $this->getMockBuilder('Magento\Backend\Block\Widget\Grid\Column')->disableOriginalConstructor()->getMock();
+
+        return $columnMock;
+    }
+
+    private function makeAdditionalInformation()
+    {
+        $objectManagerHelper = new ObjectManager($this);
+
+        $serializerMock = $this->getMockBuilder(\Magento\Framework\Serialize\Serializer\Json::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['serialize'])
+            ->getMock();
+
+        $loggerMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        return $objectManagerHelper
+            ->getObject(\Ebizmarts\SagePaySuite\Helper\AdditionalInformation::class,
+                [
+                    'serializer' => $serializerMock,
+                    'logger' => $loggerMock
+                ]
+            );
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeContextMock()
+    {
+        $contextMock = $this->getMockBuilder('\Magento\Backend\Block\Context')->disableOriginalConstructor()->getMock();
+
+        return $contextMock;
     }
 }

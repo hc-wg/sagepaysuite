@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer;
 
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+
 class RecommendationTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -24,7 +26,11 @@ class RecommendationTest extends \PHPUnit\Framework\TestCase
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $recommendationRendererBlock = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer\Recommendation',
-            []
+            [
+                'context' => $this->makeContextMock(),
+                'information' => $this->makeAdditionalInformation(),
+                []
+            ]
         );
 
         $recommendationRendererBlock->setColumn($columnMock);
@@ -48,25 +54,57 @@ class RecommendationTest extends \PHPUnit\Framework\TestCase
     {
         return [
             [
-                'data'  => 'a:1:{s:25:"fraudscreenrecommendation";s:6:"REJECT";}',
+                'data'  => '{"fraudscreenrecommendation":"REJECT"}',
                 'color' => 'red',
                 'recommendation' => 'REJECT',
             ],
             [
-                'data'  => 'a:1:{s:25:"fraudscreenrecommendation";s:4:"DENY";}',
+                'data'  => '{"fraudscreenrecommendation":"DENY"}',
                 'color' => 'red',
                 'recommendation' => 'DENY',
             ],
             [
-                'data'  => 'a:1:{s:25:"fraudscreenrecommendation";s:9:"CHALLENGE";}',
+                'data'  => '{"fraudscreenrecommendation":"CHALLENGE"}',
                 'color' => 'orange',
                 'recommendation' => 'CHALLENGE',
             ],
             [
-                'data'  => 'a:1:{s:25:"fraudscreenrecommendation";s:4:"HOLD";}',
+                'data'  => '{"fraudscreenrecommendation":"HOLD"}',
                 'color' => 'orange',
                 'recommendation' => 'HOLD',
             ]
         ];
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeContextMock()
+    {
+        $contextMock = $this->getMockBuilder('\Magento\Backend\Block\Context')->disableOriginalConstructor()->getMock();
+
+        return $contextMock;
+    }
+
+    private function makeAdditionalInformation()
+    {
+        $objectManagerHelper = new ObjectManager($this);
+
+        $serializerMock = $this->getMockBuilder(\Magento\Framework\Serialize\Serializer\Json::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['serialize'])
+            ->getMock();
+
+        $loggerMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        return $objectManagerHelper
+            ->getObject(\Ebizmarts\SagePaySuite\Helper\AdditionalInformation::class,
+                [
+                    'serializer' => $serializerMock,
+                    'logger' => $loggerMock
+                ]
+            );
     }
 }
