@@ -6,11 +6,29 @@
 
 namespace Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer;
 
+use Ebizmarts\SagePaySuite\Helper\AdditionalInformation;
+
 /**
  * grid block action item renderer
  */
 class Provider extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
 {
+    /** @var AdditionalInformation */
+    private $information;
+
+    /**
+     * @param \Magento\Backend\Block\Context $context
+     * @param \Ebizmarts\SagePaySuite\Helper\AdditionalInformation $information
+     * @param array $data
+     */
+    public function __construct(
+        \Magento\Backend\Block\Context $context,
+        AdditionalInformation $information,
+        array $data = []
+    ) {
+        $this->information = $information;
+        parent::__construct($context, $data);
+    }
 
     /**
      * Render grid column
@@ -20,14 +38,11 @@ class Provider extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
      */
     public function render(\Magento\Framework\DataObject $row)
     {
-        $additionalInfo = $row->getData("additional_information");
-        if (!empty($additionalInfo)) {
-            $additionalInfo = unserialize($additionalInfo); //@codingStandardsIgnoreLine
-        }
+        $additionalInfo = $this->information->getUnserializedData($row->getData("additional_information"));
 
         $provider = array_key_exists("fraudprovidername", $additionalInfo) ? $additionalInfo["fraudprovidername"] : "";
 
-        if ($provider == "ReD") {
+        if ($provider === "ReD") {
             $html = '<img style="height: 20px;" src="';
             $html .= $this->getFraudProviderLogo('red') . '">';
         } else {

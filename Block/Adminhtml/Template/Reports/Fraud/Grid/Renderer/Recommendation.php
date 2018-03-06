@@ -6,11 +6,30 @@
 
 namespace Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer;
 
+use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Helper\AdditionalInformation;
+
 /**
  * grid block action item renderer
  */
 class Recommendation extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
 {
+    /** @var AdditionalInformation */
+    private $information;
+
+    /**
+     * @param \Magento\Backend\Block\Context $context
+     * @param \Ebizmarts\SagePaySuite\Helper\AdditionalInformation $information
+     * @param array $data
+     */
+    public function __construct(
+        \Magento\Backend\Block\Context $context,
+        AdditionalInformation $information,
+        array $data = []
+    ) {
+        $this->information = $information;
+        parent::__construct($context, $data);
+    }
 
     /**
      * Render grid column
@@ -20,10 +39,7 @@ class Recommendation extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\
      */
     public function render(\Magento\Framework\DataObject $row)
     {
-        $additionalInfo = $row->getData("additional_information");
-        if (!empty($additionalInfo)) {
-            $additionalInfo = unserialize($additionalInfo); //@codingStandardsIgnoreLine
-        }
+        $additionalInfo = $this->information->getUnserializedData($row->getData("additional_information"));
 
         $html = "";
 
@@ -32,12 +48,12 @@ class Recommendation extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\
         }
 
         switch ($html) {
-            case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_CHALLENGE:
-            case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD:
+            case Config::REDSTATUS_CHALLENGE:
+            case Config::T3STATUS_HOLD:
                 $html = '<span style="color:orange;">' . $html . '</span>';
                 break;
-            case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY:
-            case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT:
+            case Config::REDSTATUS_DENY:
+            case Config::T3STATUS_REJECT:
                 $html = '<span style="color:red;">' . $html . '</span>';
                 break;
         }
