@@ -13,6 +13,22 @@ use Ebizmarts\SagePaySuite\Helper\AdditionalInformation;
  */
 class Provider extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
 {
+    /** @var AdditionalInformation */
+    private $information;
+
+    /**
+     * @param \Magento\Backend\Block\Context $context
+     * @param \Ebizmarts\SagePaySuite\Helper\AdditionalInformation $information
+     * @param array $data
+     */
+    public function __construct(
+        \Magento\Backend\Block\Context $context,
+        AdditionalInformation $information,
+        array $data = []
+    ) {
+        $this->information = $information;
+        parent::__construct($context, $data);
+    }
 
     /**
      * Render grid column
@@ -22,9 +38,7 @@ class Provider extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
      */
     public function render(\Magento\Framework\DataObject $row)
     {
-        /** @var $serializer AdditionalInformation */
-        $serializer = \Magento\Framework\App\ObjectManager::getInstance()->get(AdditionalInformation::class);
-        $additionalInfo = $serializer->getUnserializedData($row->getData("additional_information"));
+        $additionalInfo = $this->information->getUnserializedData($row->getData("additional_information"));
 
         $provider = array_key_exists("fraudprovidername", $additionalInfo) ? $additionalInfo["fraudprovidername"] : "";
 
