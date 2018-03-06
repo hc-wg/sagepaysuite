@@ -42,7 +42,7 @@ class Provider extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
 
         $provider = array_key_exists("fraudprovidername", $additionalInfo) ? $additionalInfo["fraudprovidername"] : "";
 
-        if ($provider == "ReD") {
+        if ($provider === "ReD") {
             $html = '<img style="height: 20px;" src="';
             $html .= $this->getFraudProviderLogo('red') . '">';
         } else {
