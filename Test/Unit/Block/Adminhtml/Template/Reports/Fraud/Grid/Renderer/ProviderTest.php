@@ -98,7 +98,7 @@ class ProviderTest extends \PHPUnit\Framework\TestCase
         return $rowMock;
     }
 
-    public function makeAdditionalInformation()
+    private function makeAdditionalInformation()
     {
         $objectManagerHelper = new ObjectManager($this);
 
