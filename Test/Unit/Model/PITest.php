@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+
 class PITest extends \PHPUnit\Framework\TestCase
 {
     private $objectManagerHelper;
@@ -33,7 +35,7 @@ class PITest extends \PHPUnit\Framework\TestCase
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
-        $this->objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->objectManagerHelper = new ObjectManager($this);
 
         $this->configMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
@@ -549,12 +551,8 @@ class PITest extends \PHPUnit\Framework\TestCase
         $this->configMock->expects($this->once())
             ->method('getAllowedCcTypes')
             ->willReturn("MC,MI");
-        $this->configMock->expects($this->once())
-            ->method('getAreSpecificCountriesAllowed')
-            ->willReturn(1);
-        $this->configMock->expects($this->once())
-            ->method('getSpecificCountries')
-            ->willReturn('US,UY,UK');
+        $this->configMock->expects($this->never())->method('getAreSpecificCountriesAllowed');
+        $this->configMock->expects($this->never())->method('getSpecificCountries');
 
         $this->piModel->setInfoInstance($paymentMock);
 
@@ -577,22 +575,17 @@ class PITest extends \PHPUnit\Framework\TestCase
             )
             ->willReturnOnConsecutiveCalls([], '0006', 'some_key', 'card_id_string');
 
-        $infoMock = $this->getMockBuilder(\Magento\Payment\Model\InfoInterface::class)
-            ->setMethods(
-                [
-                    'getInfoInstance',
-                    'encrypt',
-                    'decrypt',
-                    'setAdditionalInformation',
-                    'hasAdditionalInformation',
-                    'getAdditionalInformation',
-                    'getMethodInstance',
-                    'unsAdditionalInformation',
-                    'addData'
-                ]
-            )
-            ->disableOriginalConstructor()
-            ->getMock();
+        $infoMock = $this->getMockBuilder(\Magento\Payment\Model\InfoInterface::class)->setMethods([
+            'getInfoInstance',
+            'encrypt',
+            'decrypt',
+            'setAdditionalInformation',
+            'hasAdditionalInformation',
+            'getAdditionalInformation',
+            'getMethodInstance',
+            'unsAdditionalInformation',
+            'addData',
+        ])->disableOriginalConstructor()->getMock();
         $infoMock->expects($this->exactly(3))
             ->method('setAdditionalInformation')
             ->withConsecutive(
@@ -665,7 +658,7 @@ class PITest extends \PHPUnit\Framework\TestCase
      * @expectedException \Magento\Framework\Exception\LocalizedException
      * @expectedExceptionMessage You can't use the payment type you selected to make payments to the billing country.
      */
-    public function testValidateException()
+    public function testValidateSpecificCountriesFailValidation()
     {
         $addressMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote\Address')
@@ -675,46 +668,39 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->method('getCountryId')
             ->willReturn("US");
 
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
+        $quoteMock = $this
+            ->getMockBuilder(\Magento\Quote\Model\Quote::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $orderMock->expects($this->once())
+        $quoteMock->expects($this->once())
             ->method('getBillingAddress')
             ->willReturn($addressMock);
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+        $infoMock = $this->getMockBuilder(\Magento\Payment\Model\InfoInterface::class)->setMethods([
+            'getInfoInstance',
+            'encrypt',
+            'decrypt',
+            'setAdditionalInformation',
+            'hasAdditionalInformation',
+            'getAdditionalInformation',
+            'getMethodInstance',
+            'unsAdditionalInformation',
+            'addData',
+            'getQuote'
+        ])->disableOriginalConstructor()->getMock();
+
+        $infoMock->expects($this->once())
+            ->method('getQuote')
+            ->willReturn($quoteMock);
+
+        $piModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PI::class)
             ->disableOriginalConstructor()
+            ->setMethodsExcept(['validate'])
             ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getCcType')
-            ->will($this->returnValue("MI"));
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
 
-        $this->configMock
-            ->expects($this->once())
-            ->method('dropInEnabled')
-            ->willReturn(false);
-        $this->configMock
-            ->expects($this->once())
-            ->method('setMethodCode')
-            ->willReturnSelf();
-        $this->configMock->expects($this->once())
-            ->method('getAllowedCcTypes')
-            ->willReturn("MC,MI");
-        $this->configMock->expects($this->once())
-            ->method('getAreSpecificCountriesAllowed')
-            ->willReturn(1);
-        $this->configMock->expects($this->once())
-            ->method('getSpecificCountries')
-            ->willReturn('UY,UK');
+        $piModelMock->expects($this->once())->method('getInfoInstance')->willReturn($infoMock);
 
-        $this->piModel->setInfoInstance($paymentMock);
-
-        $this->piModel->validate();
+        $piModelMock->validate();
     }
 
     public function testValidateOk()
@@ -757,17 +743,34 @@ class PITest extends \PHPUnit\Framework\TestCase
         $this->configMock->expects($this->once())
             ->method('getAllowedCcTypes')
             ->willReturn("MC,MI");
-        $this->configMock->expects($this->once())
-            ->method('getAreSpecificCountriesAllowed')
-            ->willReturn(1);
-        $this->configMock->expects($this->once())
-            ->method('getSpecificCountries')
-            ->willReturn('UY,GB');
+        $this->configMock->expects($this->never())->method('getAreSpecificCountriesAllowed');
+        $this->configMock->expects($this->never())->method('getSpecificCountries');
 
         $this->piModel->setInfoInstance($paymentMock);
 
         $return = $this->piModel->validate();
 
         $this->assertInstanceOf('\Ebizmarts\SagePaySuite\Model\PI', $return);
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makePaymentInfoMock()
+    {
+        $infoMock = $this->getMockBuilder(\Magento\Payment\Model\InfoInterface::class)->setMethods([
+                    'getInfoInstance',
+                    'encrypt',
+                    'decrypt',
+                    'setAdditionalInformation',
+                    'hasAdditionalInformation',
+                    'getAdditionalInformation',
+                    'getMethodInstance',
+                    'unsAdditionalInformation',
+                    'addData',
+                    'getQuote'
+                ])->disableOriginalConstructor()->getMock();
+
+        return $infoMock;
     }
 }
