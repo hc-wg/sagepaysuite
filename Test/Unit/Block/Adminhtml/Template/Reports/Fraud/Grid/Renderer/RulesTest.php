@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer;
 
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+
 class RulesTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -16,7 +18,7 @@ class RulesTest extends \PHPUnit\Framework\TestCase
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $objectManagerHelper = new ObjectManager($this);
 
         $columnMock = $this
             ->getMockBuilder('Magento\Backend\Block\Widget\Grid\Column')
