@@ -112,8 +112,4 @@ class Fraud extends Column
         return $dataSource;
     }
 
-    public function setT3MShields($status){
-
-    }
-
 }
