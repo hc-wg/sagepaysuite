@@ -9,6 +9,7 @@ use \Magento\Sales\Api\OrderRepositoryInterface;
 use \Magento\Framework\View\Element\UiComponent\ContextInterface;
 use \Magento\Framework\View\Element\UiComponentFactory;
 use \Magento\Ui\Component\Listing\Columns\Column;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 class Fraud extends Column
 {
@@ -29,8 +30,14 @@ class Fraud extends Column
      * @var Data
      */
     private $_helper;
+    /**
+     * Logging instance
+     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     */
+    private $_suiteLogger;
 
     public function __construct(
+        Logger $suiteLogger,
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
         OrderRepositoryInterface $orderRepository,
@@ -41,7 +48,7 @@ class Fraud extends Column
         array $data = []
     )
     {
-
+        $this->suiteLogger   = $suiteLogger;
         $this->orderRepository = $orderRepository;
         $this->assetRepository = $assetRepository;
         $this->requestInterface = $requestInterface;
@@ -52,61 +59,64 @@ class Fraud extends Column
     public function prepareDataSource(array $dataSource)
     {
         if (isset($dataSource['data']['items'])) {
-            foreach ($dataSource['data']['items'] as & $item) {
+            foreach ($dataSource['data']['items'] as &$item) {
                 $fieldName = $this->getData('name');
                 $orderId = $item['entity_id'];
-                $order = $this->orderRepository->get($orderId);
-                $additional = $order->getPayment();
-                if ($additional != null) {
-                    $additional = $additional->getAdditionalInformation();
-                    $params = ['_secure' => $this->requestInterface->isSecure()];
-
-                    if (isset($additional['fraudrules'], $additional['fraudcode'])) {
-                        $image = $this->getImageNameT3M($additional['fraudcode']);
-                        $url = $this->assetRepository->getUrlWithParams($image, $params);
-                        $item[$fieldName . '_src'] = $url;
-                    } elseif (isset($additional['fraudcode'])) {
-                        $image = $this->getImageNameRED(strtoupper($additional['fraudcode']));
+                try{
+                    $order = $this->orderRepository->get($orderId);
+                    $additional = $order->getPayment();
+                    if ($additional !== null) {
+                        $additional = $additional->getAdditionalInformation();
+                        $params = ['_secure' => $this->requestInterface->isSecure()];
+                        $image= '';
+                        if (isset($additional['fraudrules'], $additional['fraudcode'])) {
+                            $image = $this->getImageNameThirdman($additional['fraudcode']);
+                        } elseif (isset($additional['fraudcode'])) {
+                            $image = $this->getImageNameRed($additional['fraudcode']);
+                        }
                         $url = $this->assetRepository->getUrlWithParams($image, $params);
                         $item[$fieldName . '_src'] = $url;
                     }
+                }
+                catch (\Exception $e){
+                    $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
                 }
             }
         }
         return $dataSource;
     }
 
-    public function getImageNameT3M($score)
+    public function getImageNameThirdman($score)
     {
-        $image = '';
         if ($score < 30) {
-            $image = 'Ebizmarts_SagePaySuite::images/icon-shield-check.png';
+            $image = 'check.png';
         } else if ($score >= 30 && $score <= 49) {
-            $image= 'Ebizmarts_SagePaySuite::images/icon-shield-zebra.png';
+            $image= 'zebra.png';
         } else {
-            $image= 'Ebizmarts_SagePaySuite::images/icon-shield-cross.png';
+            $image= 'cross.png';
         }
-        return $image;
+        return 'Ebizmarts_SagePaySuite::images/icon-shield-'.$image;
     }
 
-    public function getImageNameRED($status)
+    public function getImageNameRed($status)
     {
+        $status = strtoupper($status);
         $image = '';
         switch ($status) {
             case 'ACCEPT':
-                $image = 'Ebizmarts_SagePaySuite::images/icon-shield-check.png';
+                $image = 'check.png';
                 break;
             case 'DENY':
-                $image = 'Ebizmarts_SagePaySuite::images/icon-shield-cross.png';
+                $image = 'cross.png';
                 break;
             case 'CHALLENGE':
-                $image = 'Ebizmarts_SagePaySuite::images/icon-shield-zebra.png';
+                $image = 'zebra.png';
                 break;
             case 'NOTCHECKED':
-                $image = 'Ebizmarts_SagePaySuite::images/icon-shield-outline.png';
+                $image = 'outline.png';
                 break;
         }
-        return $image;
+        return 'Ebizmarts_SagePaySuite::images/icon-shield-'.$image;
     }
 
 
