@@ -39,12 +39,13 @@ class Fraud extends Column
         Data $helper,
         array $components = [],
         array $data = []
-    ) {
+    )
+    {
 
         $this->orderRepository = $orderRepository;
         $this->assetRepository = $assetRepository;
-        $this->requestInterface= $requestInterface;
-        $this->_helper          = $helper;
+        $this->requestInterface = $requestInterface;
+        $this->_helper = $helper;
         parent::__construct($context, $uiComponentFactory, $components, $data);
     }
 
@@ -53,63 +54,60 @@ class Fraud extends Column
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as & $item) {
                 $fieldName = $this->getData('name');
-
                 $orderId = $item['entity_id'];
-                $order= $this->orderRepository->get($orderId);
+                $order = $this->orderRepository->get($orderId);
                 $additional = $order->getPayment();
-                if($additional != null){
+                if ($additional != null) {
                     $additional = $additional->getAdditionalInformation();
+                    $params = ['_secure' => $this->requestInterface->isSecure()];
 
-                    if(isset($additional['fraudrules']) && isset($additional['fraudcode'])){
-                        $score = $additional['fraudcode'];
-                        if ($score < 30) {
-                            $params = ['_secure' => $this->requestInterface->isSecure()];
-                            $url = $this->assetRepository->getUrlWithParams('Ebizmarts_SagePaySuite::images/icon-shield-check.png', $params);
-                            $item[$fieldName . '_src'] = $url;
-                        } else if ($score >= 30 && $score <= 49) {
-                            $params = ['_secure' => $this->requestInterface->isSecure()];
-                            $url = $this->assetRepository->getUrlWithParams('Ebizmarts_SagePaySuite::images/icon-shield-zebra.png', $params);
-                            $item[$fieldName . '_src'] = $url;
-                        } else {
-                            $params = ['_secure' => $this->requestInterface->isSecure()];
-                            $url = $this->assetRepository->getUrlWithParams('Ebizmarts_SagePaySuite::images/icon-shield-cross.png', $params);
-                            $item[$fieldName . '_src'] = $url;
-                        }
+                    if (isset($additional['fraudrules'], $additional['fraudcode'])) {
+                        $image = $this->getImageNameT3M($additional['fraudcode']);
+                        $url = $this->assetRepository->getUrlWithParams($image, $params);
+                        $item[$fieldName . '_src'] = $url;
+                    } elseif (isset($additional['fraudcode'])) {
+                        $image = $this->getImageNameRED(strtoupper($additional['fraudcode']));
+                        $url = $this->assetRepository->getUrlWithParams($image, $params);
+                        $item[$fieldName . '_src'] = $url;
                     }
-
-                    elseif(isset($additional['fraudcode'])){
-                        $status = $additional['fraudcode'];
-                        switch (strtoupper($status)) {
-                            case 'ACCEPT':
-                                $params = ['_secure' => $this->requestInterface->isSecure()];
-                                $url = $this->assetRepository->getUrlWithParams('Ebizmarts_SagePaySuite::images/icon-shield-check.png', $params);
-                                $item[$fieldName . '_src'] = $url;
-                                break;
-                            case 'DENY':
-                                $params = ['_secure' => $this->requestInterface->isSecure()];
-                                $url = $this->assetRepository->getUrlWithParams('Ebizmarts_SagePaySuite::images/icon-shield-cross.png', $params);
-                                $item[$fieldName . '_src'] = $url;
-                                break;
-                            case 'CHALLENGE':
-                                $params = ['_secure' => $this->requestInterface->isSecure()];
-                                $url = $this->assetRepository->getUrlWithParams('Ebizmarts_SagePaySuite::images/icon-shield-zebra.png', $params);
-                                $item[$fieldName . '_src'] = $url;
-                                break;
-                            case 'NOTCHECKED':
-                                $params = ['_secure' => $this->requestInterface->isSecure()];
-                                $url = $this->assetRepository->getUrlWithParams('Ebizmarts_SagePaySuite::images/icon-shield-outline.png', $params);
-                                $item[$fieldName . '_src'] = $url;
-                                break;
-                        }
-                    }
-
-
                 }
             }
-
         }
-
         return $dataSource;
     }
+
+    public function getImageNameT3M($score)
+    {
+        $image = '';
+        if ($score < 30) {
+            $image = 'Ebizmarts_SagePaySuite::images/icon-shield-check.png';
+        } else if ($score >= 30 && $score <= 49) {
+            $image= 'Ebizmarts_SagePaySuite::images/icon-shield-zebra.png';
+        } else {
+            $image= 'Ebizmarts_SagePaySuite::images/icon-shield-cross.png';
+        }
+        return $image;
+    }
+
+    public function getImageNameRED($status)
+    {
+        $image = '';
+        switch ($status) {
+            case 'ACCEPT':
+                $image = 'Ebizmarts_SagePaySuite::images/icon-shield-check.png';
+                break;
+            case 'DENY':
+                $image = 'Ebizmarts_SagePaySuite::images/icon-shield-cross.png';
+                break;
+            case 'CHALLENGE':
+                $image = 'Ebizmarts_SagePaySuite::images/icon-shield-zebra.png';
+                break;
+            case 'NOTCHECKED':
+                $image = 'Ebizmarts_SagePaySuite::images/icon-shield-outline.png';
+                break;
+        }
+        return $image;
+    }
+
 
 }
