@@ -109,37 +109,16 @@ class PaypalTest extends \PHPUnit\Framework\TestCase
 
     public function testRefund()
     {
-        $this->markTestSkipped();
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('getIncrementId')
-            ->will($this->returnValue(1000001));
+        $paymentMock = $this->createMock('Magento\Sales\Model\Order\Payment');
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
-        $paymentMock->expects($this->once())
-            ->method('setIsTransactionClosed')
-            ->with(1);
-        $paymentMock->expects($this->once())
-            ->method('setShouldCloseParentTransaction')
-            ->with(1);
+        $this->paymentOpsMock->expects($this->once())->method('refund')->with($paymentMock, 100);
 
-        $this->sharedApiMock->expects($this->once())
-            ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID, 100, 1000001);
-
-        $this->paypalModel->refund($paymentMock, 100);
+        $this->assertInstanceOf(\Ebizmarts\SagePaySuite\Model\Paypal::class, $this->paypalModel
+            ->setMethodsExcept(['refund'])
+            ->getMock()->refund($paymentMock, 100));
     }
 
-    public function testRefundERROR()
+    public function testRefundError()
     {
         $this->markTestSkipped();
         $orderMock = $this
