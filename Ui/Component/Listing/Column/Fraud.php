@@ -2,8 +2,9 @@
 
 namespace Ebizmarts\SagePaySuite\Ui\Component\Listing\Column;
 
-use Ebizmarts\SagePaySuite\Helper\Data;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Asset\Repository;
 use \Magento\Sales\Api\OrderRepositoryInterface;
 use \Magento\Framework\View\Element\UiComponent\ContextInterface;
@@ -13,11 +14,12 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 class Fraud extends Column
 {
+    const IMAGE_PATH = 'Ebizmarts_SagePaySuite::images/icon-shield-';
+
     /**
      * @var OrderRepositoryInterface
      */
     private $orderRepository;
-
     /**
      * @var Repository
      */
@@ -26,15 +28,12 @@ class Fraud extends Column
      * @var RequestInterface
      */
     protected $requestInterface;
-    /**
-     * @var Data
-     */
-    private $_helper;
+
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     public function __construct(
         Logger $suiteLogger,
@@ -43,16 +42,14 @@ class Fraud extends Column
         OrderRepositoryInterface $orderRepository,
         Repository $assetRepository,
         RequestInterface $requestInterface,
-        Data $helper,
         array $components = [],
         array $data = []
     )
     {
-        $this->suiteLogger   = $suiteLogger;
+        $this->suiteLogger = $suiteLogger;
         $this->orderRepository = $orderRepository;
         $this->assetRepository = $assetRepository;
         $this->requestInterface = $requestInterface;
-        $this->_helper = $helper;
         parent::__construct($context, $uiComponentFactory, $components, $data);
     }
 
@@ -60,26 +57,29 @@ class Fraud extends Column
     {
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as &$item) {
-                $fieldName = $this->getData('name');
+                $fieldName = $this->getFieldName();
                 $orderId = $item['entity_id'];
-                try{
+                $params = ['_secure' => $this->requestInterface->isSecure()];
+                try {
                     $order = $this->orderRepository->get($orderId);
-                    $additional = $order->getPayment();
-                    if ($additional !== null) {
-                        $additional = $additional->getAdditionalInformation();
-                        $params = ['_secure' => $this->requestInterface->isSecure()];
-                        $image= '';
-                        if (isset($additional['fraudrules'], $additional['fraudcode'])) {
-                            $image = $this->getImageNameThirdman($additional['fraudcode']);
-                        } elseif (isset($additional['fraudcode'])) {
-                            $image = $this->getImageNameRed($additional['fraudcode']);
-                        }
-                        $url = $this->assetRepository->getUrlWithParams($image, $params);
-                        $item[$fieldName . '_src'] = $url;
-                    }
-                }
-                catch (\Exception $e){
+                } catch (InputException $e) {
                     $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
+                    continue;
+                } catch (NoSuchEntityException $e) {
+                    $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
+                    continue;
+                }
+                $additional = $order->getPayment();
+                if ($additional !== null) {
+                    $additional = $additional->getAdditionalInformation();
+                    $image = '';
+                    if (isset($additional['fraudrules'], $additional['fraudcode'])) {
+                        $image = $this->getImageNameThirdman($additional['fraudcode']);
+                    } elseif (isset($additional['fraudcode'])) {
+                        $image = $this->getImageNameRed($additional['fraudcode']);
+                    }
+                    $url = $this->assetRepository->getUrlWithParams($image, $params);
+                    $item[$fieldName . '_src'] = $url;
                 }
             }
         }
@@ -91,11 +91,11 @@ class Fraud extends Column
         if ($score < 30) {
             $image = 'check.png';
         } else if ($score >= 30 && $score <= 49) {
-            $image= 'zebra.png';
+            $image = 'zebra.png';
         } else {
-            $image= 'cross.png';
+            $image = 'cross.png';
         }
-        return 'Ebizmarts_SagePaySuite::images/icon-shield-'.$image;
+        return self::IMAGE_PATH . $image;
     }
 
     public function getImageNameRed($status)
@@ -116,7 +116,15 @@ class Fraud extends Column
                 $image = 'outline.png';
                 break;
         }
-        return 'Ebizmarts_SagePaySuite::images/icon-shield-'.$image;
+        return self::IMAGE_PATH . $image;
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getFieldName(): mixed
+    {
+        return $this->getData('name');
     }
 
 
