@@ -70,6 +70,7 @@ class Fraud extends Column
                     continue;
                 }
                 $additional = $order->getPayment();
+
                 if ($additional !== null) {
                     $additional = $additional->getAdditionalInformation();
                     $image = '';
@@ -88,12 +89,15 @@ class Fraud extends Column
 
     public function getImageNameThirdman($score)
     {
-        if ($score < 30) {
-            $image = 'check.png';
-        } else if ($score >= 30 && $score <= 49) {
-            $image = 'zebra.png';
-        } else {
-            $image = 'cross.png';
+        $image = '';
+        if (is_numeric($score)) {
+            if ($score < 30) {
+                $image = 'check.png';
+            } else if ($score >= 30 && $score <= 49) {
+                $image = 'zebra.png';
+            } else if ($score > 49) {
+                $image = 'cross.png';
+            }
         }
         return self::IMAGE_PATH . $image;
     }
@@ -119,10 +123,8 @@ class Fraud extends Column
         return self::IMAGE_PATH . $image;
     }
 
-    /**
-     * @return mixed
-     */
-    private function getFieldName(): mixed
+
+    public function getFieldName()
     {
         return $this->getData('name');
     }
