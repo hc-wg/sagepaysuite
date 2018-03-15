@@ -118,42 +118,23 @@ class PaypalTest extends \PHPUnit\Framework\TestCase
             ->getMock()->refund($paymentMock, 100));
     }
 
+    /**
+     * @expectedExceptionMessage There was an error refunding Sage Pay transaction
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     */
     public function testRefundError()
     {
-        $this->markTestSkipped();
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('getIncrementId')
-            ->will($this->returnValue(1000001));
+        $paymentMock = $this->createMock('Magento\Sales\Model\Order\Payment');
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
+        $this->paymentOpsMock->expects($this->once())->method('refund')->with($paymentMock, 100)
+            ->willThrowException(
+                new LocalizedException(__('There was an error refunding Sage Pay transaction '.self::TEST_VPSTXID))
+            );
 
-        $exception = new \Exception("Error in Refunding");
-        $this->sharedApiMock->expects($this->once())
-            ->method('refundTransaction')
-            ->with(self::TEST_VPSTXID, 100, 1000001)
-            ->willThrowException($exception);
-
-        $response = "";
-        try {
-            $this->paypalModel->refund($paymentMock, 100);
-        } catch (LocalizedException $e) {
-            $response = $e->getMessage();
-        }
-
-        $this->assertEquals(
-            'There was an error refunding Sage Pay transaction ' . self::TEST_VPSTXID . ': Error in Refunding',
-            $response
-        );
+        $this->paypalModel
+            ->setMethodsExcept(['refund'])
+            ->getMock()
+            ->refund($paymentMock, 100);
     }
 
     public function testGetConfigPaymentAction()
