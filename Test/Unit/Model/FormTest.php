@@ -2,6 +2,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use \Magento\Framework\Exception\LocalizedException;
+
 class FormTest extends \PHPUnit\Framework\TestCase
 {
     private $objectManagerHelper;
@@ -425,91 +427,37 @@ class FormTest extends \PHPUnit\Framework\TestCase
      */
     public function testRefundException()
     {
-        $exceptionMock = new \Exception('Sage Pay not available.');
 
-        $loggerMock = $this->getMockBuilder(\Psr\Log\LoggerInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $loggerMock->expects($this->once())->method('critical')->with($exceptionMock);
+        $paymentOpsMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Payment::class)
+        ->disableOriginalConstructor()
+        ->getMock();
 
-        $contextMock = $this->getMockBuilder(\Magento\Framework\Model\Context::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $contextMock->expects($this->once())->method('getLogger')->willReturn($loggerMock);
-
-        $suiteHelperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Data::class)
-            ->setMethods(['clearTransactionId'])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $suiteHelperMock
-            ->expects($this->once())
-            ->method('clearTransactionId')
-            ->with('20CBE649-B3A3-9A95-0A57-4CB9E2EDAC19')
-            ->willReturn('20CBE649-B3A3-9A95-0A57-4CB9E2EDAC19');
-
-        $sharedApiMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Api\Shared::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $sharedApiMock
-            ->expects($this->once())
-            ->method('refundTransaction')
-            ->with('20CBE649-B3A3-9A95-0A57-4CB9E2EDAC19', 48.67, '000000035')
-            ->willThrowException($exceptionMock);
-
-        /** @var \Ebizmarts\SagePaySuite\Model\Form $formModelMock */
-        $formModel = $this
-            ->objectManagerHelper
-            ->getObject(
-                '\Ebizmarts\SagePaySuite\Model\Form',
+        $formModel = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Form::class)
+            ->setConstructorArgs(
                 [
-                    'sharedApi'   => $sharedApiMock,
-                    'suiteHelper' => $suiteHelperMock,
-                    'context'     => $contextMock
-                ]
+                    'context' => $this->createMock(\Magento\Framework\Model\Context::class),
+                    'registry' => $this->createMock(\Magento\Framework\Registry::class),
+                    'extensionFactory' => $this->createMock('\Magento\Framework\Api\ExtensionAttributesFactory'),
+                    'customAttributeFactory' => $this->createMock('\Magento\Framework\Api\AttributeValueFactory'),
+                    'formCrypt' => $this->createMock('\Ebizmarts\SagePaySuite\Model\FormCrypt'),
+                    'paymentOps' => $paymentOpsMock,
+                    'paymentData' => $this->createMock(\Magento\Payment\Helper\Data::class),
+                    'scopeConfig' => $this->createMock('\Magento\Framework\App\Config\ScopeConfigInterface'),
+                    'logger' => $this->createMock(\Magento\Payment\Model\Method\Logger::class),
+                    'config' => $this->createMock(\Ebizmarts\SagePaySuite\Model\Config::class),
+                    'resource' => null,
+                    'resourceCollection' => null,
+                    'data' => [],
+                ])
+            ->setMethodsExcept(['refund'])
+            ->getMock();
+
+        $paymentMock = $this->createMock(\Magento\Payment\Model\InfoInterface::class);
+
+        $paymentOpsMock->expects($this->once())->method('refund')->with($paymentMock, 48.67)
+            ->willThrowException(
+                new LocalizedException(__('There was an error refunding Sage Pay transaction '))
             );
-
-        $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock
-            ->expects($this->once())
-            ->method('getIncrementId')
-            ->willReturn('000000035');
-
-        $paymentMock = $this->getMockBuilder(\Magento\Payment\Model\InfoInterface::class)
-            ->setMethods(
-                [
-                    'getLastTransId',
-                    'encrypt',
-                    'decrypt',
-                    'hasAdditionalInformation',
-                    'unsAdditionalInformation',
-                    'getMethodInstance',
-                    'getAdditionalInformation',
-                    'setAdditionalInformation',
-                    'getOrder',
-                    'setIsTransactionClosed',
-                    'setShouldCloseParentTransaction'
-                ]
-            )
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock
-            ->expects($this->once())
-            ->method('getOrder')
-            ->willReturn($orderMock);
-        $paymentMock
-            ->expects($this->once())
-            ->method('getLastTransId')
-            ->willReturn('20CBE649-B3A3-9A95-0A57-4CB9E2EDAC19');
-        $paymentMock
-            ->expects($this->never())
-            ->method('setIsTransactionClosed')
-            ->with(1);
-        $paymentMock
-            ->expects($this->never())
-            ->method('setShouldCloseParentTransaction')
-            ->with(1);
 
         $formModel->refund($paymentMock, 48.67);
     }
