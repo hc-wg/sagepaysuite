@@ -6,6 +6,9 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Framework\Exception\LocalizedException;
+
 class PaypalTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -19,14 +22,11 @@ class PaypalTest extends \PHPUnit\Framework\TestCase
     private $paypalModel;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\Shared|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $sharedApiMock;
-
-    /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
+     * @var Config|\PHPUnit_Framework_MockObject_MockObject
      */
     private $configMock;
+
+    private $paymentOpsMock;
 
     // @codingStandardsIgnoreStart
     protected function setUp()
@@ -36,96 +36,75 @@ class PaypalTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->sharedApiMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Shared')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->paymentOpsMock = $this->createMock(\Ebizmarts\SagePaySuite\Model\Payment::class);
 
-        $suiteHelperMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Data')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $suiteHelperMock->expects($this->any())
-            ->method('clearTransactionId')
-            ->will($this->returnValue(self::TEST_VPSTXID));
-
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->paypalModel = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Model\Paypal',
-            [
-                "config" => $this->configMock,
-                "sharedApi" => $this->sharedApiMock,
-                'suiteHelper' => $suiteHelperMock
-            ]
-        );
+        $this->paypalModel = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Paypal::class)
+            ->setConstructorArgs(
+                [
+                    'context' => $this->createMock(\Magento\Framework\Model\Context::class),
+                    'registry' => $this->createMock(\Magento\Framework\Registry::class),
+                    'extensionFactory' => $this->createMock('\Magento\Framework\Api\ExtensionAttributesFactory'),
+                    'customAttributeFactory' => $this->createMock('\Magento\Framework\Api\AttributeValueFactory'),
+                    'paymentOps' => $this->paymentOpsMock,
+                    'paymentData' => $this->createMock(\Magento\Payment\Helper\Data::class),
+                    'scopeConfig' => $this->createMock('\Magento\Framework\App\Config\ScopeConfigInterface'),
+                    'logger' => $this->createMock(\Magento\Payment\Model\Method\Logger::class),
+                    'config' => $this->configMock,
+                    'resource' => null,
+                    'resourceCollection' => null,
+                    'data' => [],
+                ]
+            );
     }
     // @codingStandardsIgnoreEnd
 
     public function testCapture()
     {
-        $this->markTestSkipped();
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
         $paymentMock->expects($this->any())
             ->method('getLastTransId')
-            ->will($this->returnValue(1));
+            ->willReturn(1);
         $paymentMock->expects($this->any())
             ->method('getAdditionalInformation')
             ->with('paymentAction')
-            ->will($this->returnValue(\Ebizmarts\SagePaySuite\Model\Config::ACTION_DEFER));
+            ->willReturn(Config::ACTION_DEFER);
 
-        $this->sharedApiMock->expects($this->once())
-            ->method('releaseTransaction')
-            ->with(1, 100);
+        $this->paymentOpsMock->expects($this->once())->method('capture')->with($paymentMock, 100);
 
-        $this->paypalModel->capture($paymentMock, 100);
+        $this->paypalModel
+            ->setMethodsExcept(['capture'])
+            ->getMock()->capture($paymentMock, 100);
     }
 
-    public function testCaptureERROR()
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     * @expectedExceptionMessage There was an error capturing Sage Pay transaction 11: 22
+     */
+    public function testCaptureError()
     {
-        $this->markTestSkipped();
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('getIncrementId')
-            ->will($this->returnValue(1000001));
-
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
         $paymentMock->expects($this->any())
             ->method('getLastTransId')
             ->will($this->returnValue(2));
         $paymentMock->expects($this->any())
             ->method('getAdditionalInformation')
             ->with('paymentAction')
-            ->will($this->returnValue(\Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHENTICATE));
+            ->will($this->returnValue(Config::ACTION_AUTHENTICATE));
 
-        $exception = new \Exception("Error in Authenticating");
-        $this->sharedApiMock->expects($this->once())
-            ->method('authorizeTransaction')
-            ->with(2, 100)
-            ->willThrowException($exception);
-
-        $response = "";
-        try {
-            $this->paypalModel->capture($paymentMock, 100);
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
-            $response = $e->getMessage();
-        }
-
-        $this->assertEquals(
-            'There was an error authorizing Sage Pay transaction 2: Error in Authenticating',
-            $response
+        $this->paymentOpsMock->expects($this->once())->method('capture')->with($paymentMock, 100)
+        ->willThrowException(
+            new LocalizedException(__('There was an error capturing Sage Pay transaction 11: 22'))
         );
+
+        $this->paypalModel
+            ->setMethodsExcept(['capture'])
+            ->getMock()->capture($paymentMock, 100);
     }
 
     public function testRefund()
@@ -188,7 +167,7 @@ class PaypalTest extends \PHPUnit\Framework\TestCase
         $response = "";
         try {
             $this->paypalModel->refund($paymentMock, 100);
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+        } catch (LocalizedException $e) {
             $response = $e->getMessage();
         }
 
@@ -200,8 +179,8 @@ class PaypalTest extends \PHPUnit\Framework\TestCase
 
     public function testGetConfigPaymentAction()
     {
-        $this->configMock->expects($this->once())
-            ->method('getPaymentAction');
-        $this->paypalModel->getConfigPaymentAction();
+        $this->configMock->expects($this->once())->method('getPaymentAction');
+
+        $this->paypalModel->setMethodsExcept(['getConfigPaymentAction'])->getMock()->getConfigPaymentAction();
     }
 }
