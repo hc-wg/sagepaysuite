@@ -7,8 +7,11 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
 use Ebizmarts\SagePaySuite\Api\Data\HttpResponse;
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\HttpText;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Phrase;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use stdClass;
 
@@ -82,43 +85,37 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function testGetTransactionDetailsERROR()
+    /**
+     * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage INVALID STATUS
+     */
+    public function testGetTransactionDetailsError()
     {
-        $this->markTestSkipped();
-        $this->curlMock->expects($this->once())->method('read')->willReturn('Content-Language: en-GB'.PHP_EOL.PHP_EOL.'<vspaccess><errorcode>2015</errorcode><error>INVALID STATUS</error>
-                <timestamp>04/11/2013 11:45:32</timestamp><vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid>
-                <vendortxcode>REF20131029-1-838</vendortxcode></vspaccess>');
+        $responseMock = $this->createMock(HttpResponse::class);
+        $responseMock->expects($this->exactly(2))->method('getResponseData')->willReturn($this->getTransactionDetailsResponseFailed());
 
-        $xmlWrite = 'XML=<vspaccess><command>getTransactionDetail</command><vendor></vendor><user></user>';
-        $xmlWrite .= '<vpstxid>12345</vpstxid><signature>4a0787ba97d65455d24be4d1768133ac</signature></vspaccess>';
+        $httpTextMock = $this->createMock(HttpText::class);
+        $httpTextMock->expects($this->once())->method('setUrl')->with(Config::URL_REPORTING_API_TEST);
+        $httpTextMock->expects($this->once())->method('executePost')->with($this->getTransactionDetailsRequestXML())->willReturn($responseMock);
 
-        $this->curlMock->expects($this->once())->method('write')->with(\Zend_Http_Client::POST,
-                Config::URL_REPORTING_API_TEST, '1.0', [], $xmlWrite);
-
-        $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(new \Magento\Framework\Phrase("INVALID STATUS"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("INVALID STATUS")));
-
-        $this->apiExceptionFactoryMock->expects($this->any())->method('create')->will($this->returnValue($apiException));
-
-        $xmldata        = '<vspaccess><errorcode>2015</errorcode><error>INVALID STATUS</error>
-                <timestamp>04/11/2013 11:45:32</timestamp><vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid>
-                <vendortxcode>REF20131029-1-838</vendortxcode></vspaccess>';
-        $simpleInstance = new \SimpleXMLElement($xmldata);
+        $simpleInstance = new \SimpleXMLElement($this->getTransactionDetailsResponseFailedXml());
         $this->objectManagerMock->method('create')->willReturn($simpleInstance);
 
-        $objectManagerHelper     = new ObjectManager($this);
-        $this->reportingApiModel = $objectManagerHelper->getObject('Ebizmarts\SagePaySuite\Model\Api\Reporting', [
-                "curlFactory"         => $this->curlMockFactory,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
-                'objectManager'       => $this->objectManagerMock
-            ]);
+        $httpTextFactory = $this->createMock('\Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory');
+        $httpTextFactory->expects($this->once())->method('create')->willReturn($httpTextMock);
 
-        try {
-            $this->reportingApiModel->getTransactionDetails("12345");
-            $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->assertEquals("INVALID STATUS", $apiException->getUserMessage());
-        }
+        $apiException = new ApiException(new Phrase("INVALID STATUS"),
+            new LocalizedException(new Phrase("INVALID STATUS")));
+
+        $this->apiExceptionFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->with(['phrase' => new Phrase("INVALID STATUS"), 'code' => 2015])
+            ->willReturn($apiException);
+
+        $reportingApiModel = $this->makeReportingModelGetTransactionDetails($httpTextFactory);
+
+        $result = $reportingApiModel->getTransactionDetails("12345");
     }
 
     public function testGetTokenCount()
@@ -287,7 +284,7 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
         $objectManagerHelper = new ObjectManager($this);
         $reportingApiModel   = $objectManagerHelper->getObject(\Ebizmarts\SagePaySuite\Model\Api\Reporting::class, [
             'httpTextFactory'     => $httpTextFactory,
-            'apiExceptionFactory' => $this->createMock('\Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory'),
+            'apiExceptionFactory' => $this->apiExceptionFactoryMock,
             'config'              => $this->createMock(Config::class),
             'suiteLogger'         => $this->createMock(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class),
             'objectManager'       => $this->objectManagerMock,
@@ -314,10 +311,25 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
         return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getTransactionDetailsResponseXml();
     }
 
+    /**
+     * @return string
+     */
+    private function getTransactionDetailsResponseFailed()
+    {
+        return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getTransactionDetailsResponseFailedXml();
+    }
+
     private function getTransactionDetailsResponseXml()
     {
         return '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
                 <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
                 </vspaccess>';
+    }
+
+    private function getTransactionDetailsResponseFailedXml()
+    {
+        return '<vspaccess><errorcode>2015</errorcode><error>INVALID STATUS</error>
+                <timestamp>04/11/2013 11:45:32</timestamp><vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid>
+                <vendortxcode>REF20131029-1-838</vendortxcode></vspaccess>';
     }
 }
