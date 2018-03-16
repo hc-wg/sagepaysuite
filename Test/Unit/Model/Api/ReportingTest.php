@@ -8,8 +8,10 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
 use Ebizmarts\SagePaySuite\Api\Data\HttpResponse;
 use Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse;
+use Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRule;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\HttpText;
+use Ebizmarts\SagePaySuite\Model\Api\Reporting;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Phrase;
@@ -19,7 +21,7 @@ use stdClass;
 class ReportingTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
+     * @var Reporting
      */
     private $reportingApiModel;
 
@@ -173,31 +175,94 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
 
     public function testGetFraudScreenDetailThirdman()
     {
-        $this->markTestSkipped();
-        $fraudResponseMock = $this->getMockBuilder(FraudScreenResponse::class)->disableOriginalConstructor()->setMethods(['setFraudId'])//This is so all other methods are not mocked.
-        ->getMock();
+        $objectManagerHelper = new ObjectManager($this);
 
-        $fraudResponseFactoryMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterfaceFactory::class)->disableOriginalConstructor()->setMethods(['create'])//This is so all other methods are not mocked.
-        ->getMock();
-        $fraudResponseFactoryMock->expects($this->once())->method('create')->willReturn($fraudResponseMock);
+        $responseMock = $this->createMock(HttpResponse::class);
+        $responseMock->expects($this->exactly(2))->method('getResponseData')->willReturn($this->getFraudScreenDetailThirdmanResponse());
 
-        $fraudResponseRuleMock        = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRule::class)->disableOriginalConstructor()->setMethods(['getCustomAttribute'])//This is so all other methods are not mocked.
-        ->getMock();
-        $fraudResponseRuleFactoryMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterfaceFactory::class)->disableOriginalConstructor()->setMethods(['create'])//This is so all other methods are not mocked.
-        ->getMock();
-        $fraudResponseRuleFactoryMock->expects($this->exactly(2))->method('create')->willReturn($fraudResponseRuleMock);
+        $httpTextMock = $this->createMock(HttpText::class);
+        $httpTextMock->expects($this->once())->method('setUrl')->with(Config::URL_REPORTING_API_TEST);
+        $httpTextMock->expects($this->once())->method('executePost')
+            ->with($this->getGetFraudScreenDetailThirdmanRequextXml())
+            ->willReturn($responseMock);
 
-        $this->curlMock->expects($this->once())->method('read')->willReturn('Content-Language: en-GB'.PHP_EOL.PHP_EOL.'<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
-                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
-                </vspaccess>');
+        $simpleInstance = new \SimpleXMLElement($this->getFraudScreenDetailThirdmanResponseXml());
+        $this->objectManagerMock->method('create')->willReturn($simpleInstance);
 
+        $httpTextFactory = $this->createMock('\Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory');
+        $httpTextFactory->expects($this->once())->method('create')->willReturn($httpTextMock);
+
+        $fraudResponse = $objectManagerHelper->getObject(FraudScreenResponse::class);
+        $this->fraudScreenResponseFactoryMock->expects($this->once())->method('create')->willReturn($fraudResponse);
+
+        $fraudResponseRule = $objectManagerHelper->getObject(FraudScreenRule::class);
+        $this->fraudScreenRuleInterfaceFactoryMock->expects($this->exactly(2))->method('create')
+            ->willReturn($fraudResponseRule);
+
+        $reportingApiModel = $this->makeReportingModelObjectManager($httpTextFactory);
+
+        $response = $reportingApiModel->getFraudScreenDetail("12345");
+
+        $this->assertEquals('0000', $response->getErrorCode());
+        $this->assertEquals('30/11/2016 09:55:01', $response->getTimestamp());
+        $this->assertEquals('T3M', $response->getFraudProviderName());
+        $this->assertEquals('4985075328', $response->getThirdmanId());
+        $this->assertEquals('37', $response->getThirdmanScore());
+        $this->assertEquals('HOLD', $response->getThirdmanAction());
+        $this->assertCount(2, $response->getThirdmanRules());
+
+        $firstRule = current($response->getThirdmanRules());
+        $this->assertEquals('10', $firstRule->getScore());
+        $this->assertEquals(
+            'No Match on Electoral Roll, or Electoral Roll not available at billing address',
+            $firstRule->getDescription()
+        );
+    }
+
+    /**
+     * @param $httpTextFactory
+     * @return Reporting
+     */
+    private function makeReportingModelObjectManager($httpTextFactory): Reporting
+    {
+        $objectManagerHelper = new ObjectManager($this);
+        $reportingApiModel   = $objectManagerHelper->getObject(Reporting::class, [
+            'httpTextFactory'     => $httpTextFactory,
+            'apiExceptionFactory' => $this->apiExceptionFactoryMock,
+            'config'              => $this->createMock(Config::class),
+            'suiteLogger'         => $this->createMock(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class),
+            'objectManager'       => $this->objectManagerMock,
+            'fraudResponse'       => $this->fraudScreenResponseFactoryMock,
+            'fraudScreenRule'     => $this->fraudScreenRuleInterfaceFactoryMock,
+        ]);
+
+        return $reportingApiModel;
+    }
+
+    private function getGetFraudScreenDetailThirdmanRequextXml() : string
+    {
+        $xml = 'XML=<vspaccess><command>getFraudScreenDetail</command><vendor></vendor><user></user>';
+        $xml .= '<vpstxid>12345</vpstxid><signature>85bd7f80aad73ecd5740bd6b58142071</signature></vspaccess>';
+
+        return $xml;
+    }
+
+    private function getGetFraudScreenDetailRedXml() : string
+    {
         $xmlWrite = 'XML=<vspaccess><command>getFraudScreenDetail</command><vendor></vendor><user></user>';
         $xmlWrite .= '<vpstxid>12345</vpstxid><signature>85bd7f80aad73ecd5740bd6b58142071</signature></vspaccess>';
 
-        $this->curlMock->expects($this->once())->method('write')->with(\Zend_Http_Client::POST,
-            Config::URL_REPORTING_API_TEST, '1.0', [], $xmlWrite);
+        return $xmlWrite;
+    }
 
-        $xmldata        = '<vspaccess>
+    private function getFraudScreenDetailThirdmanResponse() : string
+    {
+        return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getFraudScreenDetailThirdmanResponseXml();
+    }
+
+    private function getFraudScreenDetailThirdmanResponseXml() : string
+    {
+        return '<vspaccess>
                         <errorcode>0000</errorcode>
                         <timestamp>30/11/2016 09:55:01</timestamp>
                         <fraudprovidername>T3M</fraudprovidername>
@@ -215,60 +280,6 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
                             </rule>
                         </t3mresults>
                 </vspaccess>';
-        $simpleInstance = new \SimpleXMLElement($xmldata);
-        $this->objectManagerMock->method('create')->willReturn($simpleInstance);
-
-        $objectManagerHelper     = new ObjectManager($this);
-        $this->reportingApiModel = $objectManagerHelper->getObject('Ebizmarts\SagePaySuite\Model\Api\Reporting', [
-            "curlFactory"         => $this->curlMockFactory,
-            "apiExceptionFactory" => $this->apiExceptionFactoryMock,
-            "objectManager"       => $this->objectManagerMock,
-            "fraudResponse"       => $fraudResponseFactoryMock,
-            "fraudScreenRule"     => $fraudResponseRuleFactoryMock
-        ]);
-
-        $response = $this->reportingApiModel->getFraudScreenDetail("12345");
-
-        $this->assertEquals('0000', $response->getErrorCode());
-        $this->assertEquals('30/11/2016 09:55:01', $response->getTimestamp());
-        $this->assertEquals('T3M', $response->getFraudProviderName());
-        $this->assertEquals('4985075328', $response->getThirdmanId());
-        $this->assertEquals('37', $response->getThirdmanScore());
-        $this->assertEquals('HOLD', $response->getThirdmanAction());
-        $this->assertCount(2, $response->getThirdmanRules());
-
-        $firstRule = current($response->getThirdmanRules());
-        $this->assertEquals('10', $firstRule->getScore());
-        $this->assertEquals('No Match on Electoral Roll, or Electoral Roll not available at billing address',
-            $firstRule->getDescription());
-    }
-
-    /**
-     * @param $httpTextFactory
-     * @return \Ebizmarts\SagePaySuite\Model\Api\Reporting
-     */
-    private function makeReportingModelObjectManager($httpTextFactory): \Ebizmarts\SagePaySuite\Model\Api\Reporting
-    {
-        $objectManagerHelper = new ObjectManager($this);
-        $reportingApiModel   = $objectManagerHelper->getObject(\Ebizmarts\SagePaySuite\Model\Api\Reporting::class, [
-            'httpTextFactory'     => $httpTextFactory,
-            'apiExceptionFactory' => $this->apiExceptionFactoryMock,
-            'config'              => $this->createMock(Config::class),
-            'suiteLogger'         => $this->createMock(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class),
-            'objectManager'       => $this->objectManagerMock,
-            'fraudResponse'       => $this->fraudScreenResponseFactoryMock,
-            'fraudScreenRule'     => $this->fraudScreenRuleInterfaceFactoryMock,
-        ]);
-
-        return $reportingApiModel;
-    }
-
-    private function getGetFraudScreenDetailRedXml() : string
-    {
-        $xmlWrite = 'XML=<vspaccess><command>getFraudScreenDetail</command><vendor></vendor><user></user>';
-        $xmlWrite .= '<vpstxid>12345</vpstxid><signature>85bd7f80aad73ecd5740bd6b58142071</signature></vspaccess>';
-
-        return $xmlWrite;
     }
 
     /**
