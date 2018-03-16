@@ -72,7 +72,7 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
         $httpTextFactory = $this->createMock('\Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory');
         $httpTextFactory->expects($this->once())->method('create')->willReturn($httpTextMock);
 
-        $reportingApiModel = $this->makeReportingModelGetTransactionDetails($httpTextFactory);
+        $reportingApiModel = $this->makeReportingModelObjectManager($httpTextFactory);
 
         $result = $reportingApiModel->getTransactionDetails("12345");
 
@@ -113,43 +113,39 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
             ->with(['phrase' => new Phrase("INVALID STATUS"), 'code' => 2015])
             ->willReturn($apiException);
 
-        $reportingApiModel = $this->makeReportingModelGetTransactionDetails($httpTextFactory);
+        $reportingApiModel = $this->makeReportingModelObjectManager($httpTextFactory);
 
         $result = $reportingApiModel->getTransactionDetails("12345");
     }
 
     public function testGetTokenCount()
     {
-        $this->markTestSkipped();
-        $this->curlMock->expects($this->once())->method('read')->willReturn('Content-Language: en-GB'.PHP_EOL.PHP_EOL.'<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
-                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
-                </vspaccess>');
+        $responseMock = $this->createMock(HttpResponse::class);
+        $responseMock->expects($this->exactly(2))->method('getResponseData')
+            ->willReturn($this->getGetTokenCountResponse());
 
-        $xmlWrite = 'XML=<vspaccess><command>getTokenCount</command><vendor></vendor><user></user>';
-        $xmlWrite .= '<signature>eca0a57c18e960a6cba53f685597b6c2</signature></vspaccess>';
+        $httpTextMock = $this->createMock(HttpText::class);
+        $httpTextMock->expects($this->once())->method('setUrl')->with(Config::URL_REPORTING_API_TEST);
+        $httpTextMock->expects($this->once())->method('executePost')->with($this->getGetTokenCountRequestXml())
+            ->willReturn($responseMock);
 
-        $this->curlMock->expects($this->once())->method('write')->with(\Zend_Http_Client::POST,
-                Config::URL_REPORTING_API_TEST, '1.0', [], $xmlWrite);
+        $simpleInstance = new \SimpleXMLElement($this->getGetTokenCountResponseXml());
+        $this->objectManagerMock->method('create')
+            ->willReturn($simpleInstance);
 
-        $xmldata        = '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
-                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
-                </vspaccess>';
-        $simpleInstance = new \SimpleXMLElement($xmldata);
-        $this->objectManagerMock->method('create')->willReturn($simpleInstance);
+        $httpTextFactory = $this->createMock('\Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory');
+        $httpTextFactory->expects($this->once())->method('create')->willReturn($httpTextMock);
 
-        $objectManagerHelper     = new ObjectManager($this);
-        $this->reportingApiModel = $objectManagerHelper->getObject('Ebizmarts\SagePaySuite\Model\Api\Reporting', [
-                "curlFactory"         => $this->curlMockFactory,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
-                'objectManager'       => $this->objectManagerMock
-            ]);
+        $reportingApiModel = $this->makeReportingModelObjectManager($httpTextFactory);
 
-        $this->assertEquals((object)[
-            "errorcode"    => '0000',
-            "timestamp"    => '04/11/2013 11:45:32',
-            "vpstxid"      => 'EE6025C6-7D24-4873-FB92-CD7A66B9494E',
-            "vendortxcode" => 'REF20131029-1-838'
-        ], $this->reportingApiModel->getTokenCount());
+        $result = $reportingApiModel->getTokenCount();
+
+        $expected               = new stdClass;
+        $expected->errorcode    = '0000';
+        $expected->timestamp    = '04/11/2013 11:45:32';
+        $expected->totalnumber  = '255';
+
+        $this->assertEquals($expected, $result);
     }
 
     public function testGetFraudScreenDetailRed()
@@ -279,7 +275,7 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
      * @param $httpTextFactory
      * @return object
      */
-    private function makeReportingModelGetTransactionDetails($httpTextFactory)
+    private function makeReportingModelObjectManager($httpTextFactory)
     {
         $objectManagerHelper = new ObjectManager($this);
         $reportingApiModel   = $objectManagerHelper->getObject(\Ebizmarts\SagePaySuite\Model\Api\Reporting::class, [
@@ -301,6 +297,29 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
     private function getTransactionDetailsRequestXML()
     {
         return 'XML=<vspaccess><command>getTransactionDetail</command><vendor></vendor><user></user><vpstxid>12345</vpstxid><signature>4a0787ba97d65455d24be4d1768133ac</signature></vspaccess>';
+    }
+
+    /**
+     * @return string
+     */
+    private function getGetTokenCountRequestXml()
+    {
+        return 'XML=<vspaccess><command>getTokenCount</command><vendor></vendor><user></user><signature>eca0a57c18e960a6cba53f685597b6c2</signature></vspaccess>';
+    }
+
+    /**
+     * @return string
+     */
+    private function getGetTokenCountResponse()
+    {
+        return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getGetTokenCountResponseXml();
+    }
+
+    private function getGetTokenCountResponseXml()
+    {
+        return '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
+                <totalnumber>255</totalnumber>
+                </vspaccess>';
     }
 
     /**
