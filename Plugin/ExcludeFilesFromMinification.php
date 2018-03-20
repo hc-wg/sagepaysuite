@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 namespace Ebizmarts\SagePaySuite\Plugin;
 
 use Magento\Framework\View\Asset\Minification;
@@ -20,16 +18,17 @@ class ExcludeFilesFromMinification
      * @see \Magento\Framework\View\Asset\Minification::XML_PATH_MINIFICATION_EXCLUDES
      *
      * @param Minification $subject
-     * @param string[] $result
+     * @param callable $proceed
      * @param string $contentType
      * @return string[]
      */
-    public function afterGetExcludes(Minification $subject, array $result, string $contentType) : array
+    public function aroundGetExcludes(Minification $subject, callable $proceed, $contentType)
     {
-        if ($contentType === 'js') {
-            $result[] = 'api/v1/js/sagepay';
+        $result = $proceed($contentType);
+        if ($contentType !== 'js') {
+            return $result;
         }
-
+        $result[] = 'api/v1/js/sagepay';
         return $result;
     }
 }
