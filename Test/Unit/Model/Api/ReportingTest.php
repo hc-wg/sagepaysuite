@@ -224,7 +224,7 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
      * @param $httpTextFactory
      * @return Reporting
      */
-    private function makeReportingModelObjectManager($httpTextFactory): Reporting
+    private function makeReportingModelObjectManager($httpTextFactory)
     {
         $objectManagerHelper = new ObjectManager($this);
         $reportingApiModel   = $objectManagerHelper->getObject(Reporting::class, [
@@ -240,7 +240,7 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
         return $reportingApiModel;
     }
 
-    private function getGetFraudScreenDetailThirdmanRequextXml() : string
+    private function getGetFraudScreenDetailThirdmanRequextXml()
     {
         $xml = 'XML=<vspaccess><command>getFraudScreenDetail</command><vendor></vendor><user></user>';
         $xml .= '<vpstxid>12345</vpstxid><signature>85bd7f80aad73ecd5740bd6b58142071</signature></vspaccess>';
@@ -248,7 +248,7 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
         return $xml;
     }
 
-    private function getGetFraudScreenDetailRedXml() : string
+    private function getGetFraudScreenDetailRedXml()
     {
         $xmlWrite = 'XML=<vspaccess><command>getFraudScreenDetail</command><vendor></vendor><user></user>';
         $xmlWrite .= '<vpstxid>12345</vpstxid><signature>85bd7f80aad73ecd5740bd6b58142071</signature></vspaccess>';
@@ -256,12 +256,12 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
         return $xmlWrite;
     }
 
-    private function getFraudScreenDetailThirdmanResponse() : string
+    private function getFraudScreenDetailThirdmanResponse()
     {
         return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getFraudScreenDetailThirdmanResponseXml();
     }
 
-    private function getFraudScreenDetailThirdmanResponseXml() : string
+    private function getFraudScreenDetailThirdmanResponseXml()
     {
         return '<vspaccess>
                         <errorcode>0000</errorcode>
