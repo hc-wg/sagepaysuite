@@ -1,36 +1,45 @@
 <?php
-declare(strict_types=1);
-
 namespace Ebizmarts\SagePaySuite\Test\Unit\Plugin;
 
+use Ebizmarts\SagePaySuite\Plugin\ExcludeFilesFromMinification;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Framework\View\Asset\Minification;
 
-class ExcludeFilesFromMinificationTest extends \PHPUnit\Framework\TestCase
+class ExcludeFilesFromMinificationTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
      * @dataProvider pluginDataprovider
      */
-    public function testPluginJsEmptyResult(array $result, string $contentType, array $expected)
+    public function testPluginJsEmptyResult($contentType, $expected, $callable)
     {
-        $minificationMock = $this->createMock(Minification::class);
+        $minificationMock = $this->getMockBuilder(Minification::class)
+        ->disableOriginalConstructor()->getMock();
         $objectManager = new ObjectManager($this);
 
-        /** @var \Ebizmarts\SagePaySuite\Plugin\ExcludeFilesFromMinification $excludesPlugin */
-        $excludesPlugin = $objectManager->getObject(\Ebizmarts\SagePaySuite\Plugin\ExcludeFilesFromMinification::class);
+        /** @var ExcludeFilesFromMinification $excludesPlugin */
+        $excludesPlugin = $objectManager->getObject(ExcludeFilesFromMinification::class);
 
-        $pluginResult = $excludesPlugin->afterGetExcludes($minificationMock, $result, $contentType);
+        $pluginResult = $excludesPlugin->aroundGetExcludes($minificationMock, $callable, $contentType);
 
         $this->assertEquals($expected, $pluginResult);
     }
 
-    public function pluginDataprovider() : array
+    public function pluginDataprovider()
     {
         return [
-            [[], 'js', ['api/v1/js/sagepay']],
-            [[], 'css', []],
-            [['/tiny_mce/'], 'js', ['/tiny_mce/', 'api/v1/js/sagepay']],
+            ['js', ['api/v1/js/sagepay'], function($contentType) {
+                $this->assertEquals('js', $contentType);
+                return [];
+            }],
+            ['css', ['test'], function($contentType) {
+                $this->assertEquals('css', $contentType);
+                return ['test'];
+            }],
+            ['js', ['/tiny_mce/', 'api/v1/js/sagepay'], function($contentType) {
+                $this->assertEquals('js', $contentType);
+                return ['/tiny_mce/'];
+            }],
         ];
     }
 
