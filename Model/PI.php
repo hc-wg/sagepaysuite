@@ -331,16 +331,13 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function validate()
     {
+        /*
+         * calling parent validate function
+         */
+        \Magento\Payment\Model\Method\AbstractMethod::validate();
+
         $info = $this->getInfoInstance();
         $errorMsg = false;
-
-        //validate country
-        if ($this->config->getAreSpecificCountriesAllowed() == 1) {
-            $availableCountries = explode(',', $this->config->getSpecificCountries());
-            if (!in_array($info->getOrder()->getBillingAddress()->getCountryId(), $availableCountries)) {
-                $errorMsg = __('You can\'t use the payment type you selected to make payments to the billing country.');
-            }
-        }
 
         //check allowed card types
         if ($this->config->dropInEnabled() === false) {
