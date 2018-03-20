@@ -6,18 +6,25 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
+use Ebizmarts\SagePaySuite\Api\Data\HttpResponse;
+use Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse;
+use Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRule;
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
+use Ebizmarts\SagePaySuite\Model\Api\HttpText;
+use Ebizmarts\SagePaySuite\Model\Api\Reporting;
+use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Phrase;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+use stdClass;
+
 class ReportingTest extends \PHPUnit_Framework_TestCase
 {
-    private $curlMockFactory;
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
+     * @var Reporting
      */
     private $reportingApiModel;
-
-    /**
-     * @var \Magento\Framework\HTTP\Adapter\Curl|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $curlMock;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory|\PHPUnit_Framework_MockObject_MockObject
@@ -26,278 +33,137 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
 
     private $objectManagerMock;
 
+    private $fraudScreenRuleInterfaceFactoryMock;
+
+    private $fraudScreenResponseFactoryMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
-        $this->apiExceptionFactoryMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory')
-            ->setMethods(["create"])
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->apiExceptionFactoryMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory')->setMethods(["create"])->disableOriginalConstructor()->getMock();
 
-        $this->curlMock = $this
-            ->getMockBuilder('Magento\Framework\HTTP\Adapter\Curl')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->curlMockFactory = $this->getMockBuilder('Magento\Framework\HTTP\Adapter\CurlFactory')
-            ->setMethods(["create"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->curlMockFactory->expects($this->any())
-            ->method('create')
-            ->will($this->returnValue($this->curlMock));
+        $this->objectManagerMock = $this->getMockBuilder(\Magento\Framework\ObjectManager\ObjectManager::class)->setMethods(['create'])->disableOriginalConstructor()->getMock();
 
-        $this->objectManagerMock = $this->getMockBuilder(\Magento\Framework\ObjectManager\ObjectManager::class)
-            ->setMethods(['create'])
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->fraudScreenResponseFactoryMock = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterfaceFactory')->setMethods(["create"])->disableOriginalConstructor()->getMock();
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->reportingApiModel = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\Reporting',
-            [
-                "curlFactory" => $this->curlMockFactory,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
-                'objectManager' => $this->objectManagerMock
-            ]
-        );
+        $this->fraudScreenRuleInterfaceFactoryMock = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterfaceFactory')->setMethods(["create"])->disableOriginalConstructor()->getMock();
+
     }
+
     // @codingStandardsIgnoreEnd
 
     public function testGetTransactionDetails()
     {
-        $this->markTestSkipped();
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
-                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
-                </vspaccess>'
-            );
+        $responseMock = $this->getMockBuilder(HttpResponse::class)->disableOriginalConstructor()->getMock();
+        $responseMock->expects($this->exactly(2))->method('getResponseData')->willReturn($this->getTransactionDetailsResponse());
 
-        $xmlWrite = 'XML=<vspaccess><command>getTransactionDetail</command><vendor></vendor><user></user>';
-        $xmlWrite .= '<vpstxid>12345</vpstxid><signature>4a0787ba97d65455d24be4d1768133ac</signature></vspaccess>';
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_TEST,
-                '1.0',
-                [],
-                $xmlWrite
-            );
+        $httpTextMock = $this->getMockBuilder(HttpText::class)->disableOriginalConstructor()->getMock();
+        $httpTextMock->expects($this->once())->method('setUrl')->with(Config::URL_REPORTING_API_TEST);
+        $httpTextMock->expects($this->once())->method('executePost')->with($this->getTransactionDetailsRequestXML())->willReturn($responseMock);
 
-        $xmldata = '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
-                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
-                </vspaccess>';
-        $simpleInstance = new \SimpleXMLElement($xmldata);
-        $this->objectManagerMock
-            ->method('create')
-            ->willReturn($simpleInstance);
+        $simpleInstance = new \SimpleXMLElement($this->getTransactionDetailsResponseXml());
+        $this->objectManagerMock->method('create')->willReturn($simpleInstance);
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->reportingApiModel = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\Reporting',
-            [
-                "curlFactory" => $this->curlMockFactory,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
-                'objectManager' => $this->objectManagerMock
-            ]
-        );
+        $httpTextFactory = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory')->disableOriginalConstructor()->getMock();
+        $httpTextFactory->expects($this->once())->method('create')->willReturn($httpTextMock);
 
-        $this->assertEquals(
-            (object)[
-                "errorcode" => '0000',
-                "timestamp" => '04/11/2013 11:45:32',
-                "vpstxid" => 'EE6025C6-7D24-4873-FB92-CD7A66B9494E',
-                "vendortxcode" => 'REF20131029-1-838'
-            ],
-            $this->reportingApiModel->getTransactionDetails("12345")
-        );
+        $reportingApiModel = $this->makeReportingModelObjectManager($httpTextFactory);
+
+        $result = $reportingApiModel->getTransactionDetails("12345");
+
+        $expected               = new stdClass;
+        $expected->errorcode    = '0000';
+        $expected->timestamp    = '04/11/2013 11:45:32';
+        $expected->vpstxid      = 'EE6025C6-7D24-4873-FB92-CD7A66B9494E';
+        $expected->vendortxcode = 'REF20131029-1-838';
+
+        $this->assertEquals($expected, $result);
     }
 
-    public function testGetTransactionDetailsERROR()
+    /**
+     * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage INVALID STATUS
+     */
+    public function testGetTransactionDetailsError()
     {
-        $this->markTestSkipped();
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '<vspaccess><errorcode>2015</errorcode><error>INVALID STATUS</error>
-                <timestamp>04/11/2013 11:45:32</timestamp><vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid>
-                <vendortxcode>REF20131029-1-838</vendortxcode></vspaccess>'
-            );
+        $responseMock = $this->getMockBuilder(HttpResponse::class)->disableOriginalConstructor()->getMock();
+        $responseMock->expects($this->exactly(2))->method('getResponseData')->willReturn($this->getTransactionDetailsResponseFailed());
 
-        $xmlWrite  = 'XML=<vspaccess><command>getTransactionDetail</command><vendor></vendor><user></user>';
-        $xmlWrite .= '<vpstxid>12345</vpstxid><signature>4a0787ba97d65455d24be4d1768133ac</signature></vspaccess>';
+        $httpTextMock = $this->getMockBuilder(HttpText::class)->disableOriginalConstructor()->getMock();
+        $httpTextMock->expects($this->once())->method('setUrl')->with(Config::URL_REPORTING_API_TEST);
+        $httpTextMock->expects($this->once())->method('executePost')->with($this->getTransactionDetailsRequestXML())->willReturn($responseMock);
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_TEST,
-                '1.0',
-                [],
-                $xmlWrite
-            );
+        $simpleInstance = new \SimpleXMLElement($this->getTransactionDetailsResponseFailedXml());
+        $this->objectManagerMock->method('create')->willReturn($simpleInstance);
 
-        $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
-            new \Magento\Framework\Phrase("INVALID STATUS"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("INVALID STATUS"))
-        );
+        $httpTextFactory = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory')->disableOriginalConstructor()->getMock();
+        $httpTextFactory->expects($this->once())->method('create')->willReturn($httpTextMock);
 
-        $this->apiExceptionFactoryMock->expects($this->any())
-            ->method('create')
-            ->will($this->returnValue($apiException));
+        $apiException = new ApiException(new Phrase("INVALID STATUS"),
+            new LocalizedException(new Phrase("INVALID STATUS")));
 
-        $xmldata = '<vspaccess><errorcode>2015</errorcode><error>INVALID STATUS</error>
-                <timestamp>04/11/2013 11:45:32</timestamp><vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid>
-                <vendortxcode>REF20131029-1-838</vendortxcode></vspaccess>';
-        $simpleInstance = new \SimpleXMLElement($xmldata);
-        $this->objectManagerMock
-            ->method('create')
-            ->willReturn($simpleInstance);
+        $this->apiExceptionFactoryMock->expects($this->once())->method('create')->with([
+                'phrase' => new Phrase("INVALID STATUS"),
+                'code'   => 2015
+            ])->willReturn($apiException);
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->reportingApiModel = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\Reporting',
-            [
-                "curlFactory" => $this->curlMockFactory,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
-                'objectManager' => $this->objectManagerMock
-            ]
-        );
+        $reportingApiModel = $this->makeReportingModelObjectManager($httpTextFactory);
 
-        try {
-            $this->reportingApiModel->getTransactionDetails("12345");
-            $this->assertTrue(false);
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->assertEquals(
-                "INVALID STATUS",
-                $apiException->getUserMessage()
-            );
-        }
+        $result = $reportingApiModel->getTransactionDetails("12345");
     }
 
     public function testGetTokenCount()
     {
-        $this->markTestSkipped();
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
-                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
-                </vspaccess>'
-            );
+        $responseMock = $this->getMockBuilder(HttpResponse::class)->disableOriginalConstructor()->getMock();
+        $responseMock->expects($this->exactly(2))->method('getResponseData')->willReturn($this->getGetTokenCountResponse());
 
-        $xmlWrite = 'XML=<vspaccess><command>getTokenCount</command><vendor></vendor><user></user>';
-        $xmlWrite .= '<signature>eca0a57c18e960a6cba53f685597b6c2</signature></vspaccess>';
+        $httpTextMock = $this->getMockBuilder(HttpText::class)->disableOriginalConstructor()->getMock();
+        $httpTextMock->expects($this->once())->method('setUrl')->with(Config::URL_REPORTING_API_TEST);
+        $httpTextMock->expects($this->once())->method('executePost')->with($this->getGetTokenCountRequestXml())->willReturn($responseMock);
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_TEST,
-                '1.0',
-                [],
-                $xmlWrite
-            );
+        $simpleInstance = new \SimpleXMLElement($this->getGetTokenCountResponseXml());
+        $this->objectManagerMock->method('create')->willReturn($simpleInstance);
 
-        $xmldata = '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
-                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
-                </vspaccess>';
-        $simpleInstance = new \SimpleXMLElement($xmldata);
-        $this->objectManagerMock
-            ->method('create')
-            ->willReturn($simpleInstance);
+        $httpTextFactory = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory')->disableOriginalConstructor()->getMock();
+        $httpTextFactory->expects($this->once())->method('create')->willReturn($httpTextMock);
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->reportingApiModel = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\Reporting',
-            [
-                "curlFactory" => $this->curlMockFactory,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
-                'objectManager' => $this->objectManagerMock
-            ]
-        );
+        $reportingApiModel = $this->makeReportingModelObjectManager($httpTextFactory);
 
-        $this->assertEquals(
-            (object)[
-                "errorcode" => '0000',
-                "timestamp" => '04/11/2013 11:45:32',
-                "vpstxid" => 'EE6025C6-7D24-4873-FB92-CD7A66B9494E',
-                "vendortxcode" => 'REF20131029-1-838'
-            ],
-            $this->reportingApiModel->getTokenCount()
-        );
+        $result = $reportingApiModel->getTokenCount();
+
+        $expected              = new stdClass;
+        $expected->errorcode   = '0000';
+        $expected->timestamp   = '04/11/2013 11:45:32';
+        $expected->totalnumber = '255';
+
+        $this->assertEquals($expected, $result);
     }
 
     public function testGetFraudScreenDetailRed()
     {
-        $this->markTestSkipped();
-        $fraudResponseMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['setThirdmanAction']) //This is so all other methods are not mocked.
-            ->getMock();
+        $responseMock = $this->getMockBuilder(HttpResponse::class)->disableOriginalConstructor()->getMock();
+        $responseMock->expects($this->exactly(2))->method('getResponseData')->willReturn($this->getTransactionDetailsResponse());
 
-        $fraudResponseFactoryMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterfaceFactory::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['create']) //This is so all other methods are not mocked.
-            ->getMock();
-        $fraudResponseFactoryMock->expects($this->once())->method('create')->willReturn($fraudResponseMock);
+        $httpTextMock = $this->getMockBuilder(HttpText::class)->disableOriginalConstructor()->getMock();
+        $httpTextMock->expects($this->once())->method('setUrl')->with(Config::URL_REPORTING_API_TEST);
+        $httpTextMock->expects($this->once())->method('executePost')
+            ->with($this->getGetFraudScreenDetailRedXml())
+            ->willReturn($responseMock);
 
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
-                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
-                </vspaccess>'
-            );
+        $simpleInstance = new \SimpleXMLElement($this->getGetFraudScreenDetailRedResponseXml());
+        $this->objectManagerMock->method('create')->willReturn($simpleInstance);
 
-        $xmlWrite = 'XML=<vspaccess><command>getFraudScreenDetail</command><vendor></vendor><user></user>';
-        $xmlWrite .= '<vpstxid>12345</vpstxid><signature>85bd7f80aad73ecd5740bd6b58142071</signature></vspaccess>';
+        $httpTextFactory = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory')->disableOriginalConstructor()->getMock();
+        $httpTextFactory->expects($this->once())->method('create')->willReturn($httpTextMock);
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_TEST,
-                '1.0',
-                [],
-                $xmlWrite
-            );
+        $objectManagerHelper = new ObjectManager($this);
+        $fraudResponse = $objectManagerHelper->getObject(FraudScreenResponse::class);
 
-        $xmldata = '<vspaccess>
-                        <errorcode>0000</errorcode>
-                        <timestamp/>
-                        <fraudprovidername>ReD</fraudprovidername>
-                        <fraudscreenrecommendation>ACCEPT</fraudscreenrecommendation>
-                        <fraudid/>
-                        <fraudcode>0100</fraudcode>
-                        <fraudcodedetail>Accept</fraudcodedetail>
-                    </vspaccess>';
-        $simpleInstance = new \SimpleXMLElement($xmldata);
-        $this->objectManagerMock
-            ->method('create')
-            ->willReturn($simpleInstance);
+        $this->fraudScreenResponseFactoryMock->expects($this->once())->method('create')->willReturn($fraudResponse);
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->reportingApiModel = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\Reporting',
-            [
-                "curlFactory"         => $this->curlMockFactory,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
-                "objectManager"       => $this->objectManagerMock,
-                "fraudResponse"       => $fraudResponseFactoryMock
-            ]
-        );
+        $reportingApiModel = $this->makeReportingModelObjectManager($httpTextFactory);
 
-        $response = $this->reportingApiModel->getFraudScreenDetail("12345");
+        $response = $reportingApiModel->getFraudScreenDetail("12345");
 
         $this->assertEquals('0000', $response->getErrorCode());
         $this->assertEquals('', $response->getTimestamp());
@@ -310,55 +176,94 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
 
     public function testGetFraudScreenDetailThirdman()
     {
-        $this->markTestSkipped();
-        $fraudResponseMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['setFraudId']) //This is so all other methods are not mocked.
-            ->getMock();
+        $objectManagerHelper = new ObjectManager($this);
 
-        $fraudResponseFactoryMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterfaceFactory::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['create']) //This is so all other methods are not mocked.
-            ->getMock();
-        $fraudResponseFactoryMock->expects($this->once())->method('create')->willReturn($fraudResponseMock);
+        $responseMock = $this->getMockBuilder(HttpResponse::class)->disableOriginalConstructor()->getMock();
+        $responseMock->expects($this->exactly(2))->method('getResponseData')->willReturn($this->getFraudScreenDetailThirdmanResponse());
 
-        $fraudResponseRuleMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRule::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getCustomAttribute']) //This is so all other methods are not mocked.
-            ->getMock();
-        $fraudResponseRuleFactoryMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterfaceFactory::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['create']) //This is so all other methods are not mocked.
-            ->getMock();
-        $fraudResponseRuleFactoryMock->expects($this->exactly(2))->method('create')->willReturn($fraudResponseRuleMock);
+        $httpTextMock = $this->getMockBuilder(HttpText::class)->disableOriginalConstructor()->getMock();
+        $httpTextMock->expects($this->once())->method('setUrl')->with(Config::URL_REPORTING_API_TEST);
+        $httpTextMock->expects($this->once())->method('executePost')
+            ->with($this->getGetFraudScreenDetailThirdmanRequextXml())
+            ->willReturn($responseMock);
 
-        $this->curlMock->expects($this->once())
-            ->method('read')
-            ->willReturn(
-                'Content-Language: en-GB' . PHP_EOL . PHP_EOL .
-                '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
-                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
-                </vspaccess>'
-            );
+        $simpleInstance = new \SimpleXMLElement($this->getFraudScreenDetailThirdmanResponseXml());
+        $this->objectManagerMock->method('create')->willReturn($simpleInstance);
 
+        $httpTextFactory = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory')->disableOriginalConstructor()->getMock();
+        $httpTextFactory->expects($this->once())->method('create')->willReturn($httpTextMock);
+
+        $fraudResponse = $objectManagerHelper->getObject(FraudScreenResponse::class);
+        $this->fraudScreenResponseFactoryMock->expects($this->once())->method('create')->willReturn($fraudResponse);
+
+        $fraudResponseRule = $objectManagerHelper->getObject(FraudScreenRule::class);
+        $this->fraudScreenRuleInterfaceFactoryMock->expects($this->exactly(2))->method('create')
+            ->willReturn($fraudResponseRule);
+
+        $reportingApiModel = $this->makeReportingModelObjectManager($httpTextFactory);
+
+        $response = $reportingApiModel->getFraudScreenDetail("12345");
+
+        $this->assertEquals('0000', $response->getErrorCode());
+        $this->assertEquals('30/11/2016 09:55:01', $response->getTimestamp());
+        $this->assertEquals('T3M', $response->getFraudProviderName());
+        $this->assertEquals('4985075328', $response->getThirdmanId());
+        $this->assertEquals('37', $response->getThirdmanScore());
+        $this->assertEquals('HOLD', $response->getThirdmanAction());
+        $this->assertCount(2, $response->getThirdmanRules());
+
+        $firstRule = current($response->getThirdmanRules());
+        $this->assertEquals('10', $firstRule->getScore());
+        $this->assertEquals(
+            'No Match on Electoral Roll, or Electoral Roll not available at billing address',
+            $firstRule->getDescription()
+        );
+    }
+
+    /**
+     * @param $httpTextFactory
+     * @return Reporting
+     */
+    private function makeReportingModelObjectManager($httpTextFactory)
+    {
+        $objectManagerHelper = new ObjectManager($this);
+        $reportingApiModel   = $objectManagerHelper->getObject(Reporting::class, [
+            'httpTextFactory'     => $httpTextFactory,
+            'apiExceptionFactory' => $this->apiExceptionFactoryMock,
+            'config'              => $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock(),
+            'suiteLogger'         => $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock(),
+            'objectManager'       => $this->objectManagerMock,
+            'fraudResponse'       => $this->fraudScreenResponseFactoryMock,
+            'fraudScreenRule'     => $this->fraudScreenRuleInterfaceFactoryMock,
+        ]);
+
+        return $reportingApiModel;
+    }
+
+    private function getGetFraudScreenDetailThirdmanRequextXml()
+    {
+        $xml = 'XML=<vspaccess><command>getFraudScreenDetail</command><vendor></vendor><user></user>';
+        $xml .= '<vpstxid>12345</vpstxid><signature>85bd7f80aad73ecd5740bd6b58142071</signature></vspaccess>';
+
+        return $xml;
+    }
+
+    private function getGetFraudScreenDetailRedXml()
+    {
         $xmlWrite = 'XML=<vspaccess><command>getFraudScreenDetail</command><vendor></vendor><user></user>';
         $xmlWrite .= '<vpstxid>12345</vpstxid><signature>85bd7f80aad73ecd5740bd6b58142071</signature></vspaccess>';
 
-        $this->curlMock->expects($this->once())
-            ->method('write')
-            ->with(
-                \Zend_Http_Client::POST,
-                \Ebizmarts\SagePaySuite\Model\Config::URL_REPORTING_API_TEST,
-                '1.0',
-                [],
-                $xmlWrite
-            );
+        return $xmlWrite;
+    }
 
-        $xmldata = '<vspaccess>
+    private function getFraudScreenDetailThirdmanResponse()
+    {
+        return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getFraudScreenDetailThirdmanResponseXml();
+    }
+
+    private function getFraudScreenDetailThirdmanResponseXml()
+    {
+        return '<vspaccess>
                         <errorcode>0000</errorcode>
                         <timestamp>30/11/2016 09:55:01</timestamp>
                         <fraudprovidername>T3M</fraudprovidername>
@@ -376,38 +281,81 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
                             </rule>
                         </t3mresults>
                 </vspaccess>';
-        $simpleInstance = new \SimpleXMLElement($xmldata);
-        $this->objectManagerMock
-            ->method('create')
-            ->willReturn($simpleInstance);
+    }
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
-        $this->reportingApiModel = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\Reporting',
-            [
-                "curlFactory"         => $this->curlMockFactory,
-                "apiExceptionFactory" => $this->apiExceptionFactoryMock,
-                "objectManager"       => $this->objectManagerMock,
-                "fraudResponse"       => $fraudResponseFactoryMock,
-                "fraudScreenRule"     => $fraudResponseRuleFactoryMock
-            ]
-        );
+    /**
+     * @return string
+     */
+    private function getTransactionDetailsRequestXML()
+    {
+        return 'XML=<vspaccess><command>getTransactionDetail</command><vendor></vendor><user></user><vpstxid>12345</vpstxid><signature>4a0787ba97d65455d24be4d1768133ac</signature></vspaccess>';
+    }
 
-        $response = $this->reportingApiModel->getFraudScreenDetail("12345");
+    /**
+     * @return string
+     */
+    private function getGetTokenCountRequestXml()
+    {
+        return 'XML=<vspaccess><command>getTokenCount</command><vendor></vendor><user></user><signature>eca0a57c18e960a6cba53f685597b6c2</signature></vspaccess>';
+    }
 
-        $this->assertEquals('0000', $response->getErrorCode());
-        $this->assertEquals('30/11/2016 09:55:01', $response->getTimestamp());
-        $this->assertEquals('T3M', $response->getFraudProviderName());
-        $this->assertEquals('4985075328', $response->getThirdmanId());
-        $this->assertEquals('37', $response->getThirdmanScore());
-        $this->assertEquals('HOLD', $response->getThirdmanAction());
-        $this->assertCount(2, $response->getThirdmanRules());
+    /**
+     * @return string
+     */
+    private function getGetTokenCountResponse()
+    {
+        return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getGetTokenCountResponseXml();
+    }
 
-        $firstRule = current($response->getThirdmanRules());
-        $this->assertEquals('10', $firstRule->getScore());
-        $this->assertEquals(
-            'No Match on Electoral Roll, or Electoral Roll not available at billing address',
-            $firstRule->getDescription()
-        );
+    private function getGetTokenCountResponseXml()
+    {
+        return '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
+                <totalnumber>255</totalnumber>
+                </vspaccess>';
+    }
+
+    private function getTransactionDetailsResponse()
+    {
+        return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getTransactionDetailsResponseXml();
+    }
+
+    private function getFraudRedResponse()
+    {
+        return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getGetFraudScreenDetailRedResponseXml();
+    }
+
+    private function getGetFraudScreenDetailRedResponseXml()
+    {
+        return '<vspaccess>
+                    <errorcode>0000</errorcode>
+                    <timestamp/>
+                    <fraudprovidername>ReD</fraudprovidername>
+                    <fraudscreenrecommendation>ACCEPT</fraudscreenrecommendation>
+                    <fraudid/>
+                    <fraudcode>0100</fraudcode>
+                    <fraudcodedetail>Accept</fraudcodedetail>
+                </vspaccess>';
+    }
+
+    /**
+     * @return string
+     */
+    private function getTransactionDetailsResponseFailed()
+    {
+        return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getTransactionDetailsResponseFailedXml();
+    }
+
+    private function getTransactionDetailsResponseXml()
+    {
+        return '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
+                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
+                </vspaccess>';
+    }
+
+    private function getTransactionDetailsResponseFailedXml()
+    {
+        return '<vspaccess><errorcode>2015</errorcode><error>INVALID STATUS</error>
+                <timestamp>04/11/2013 11:45:32</timestamp><vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid>
+                <vendortxcode>REF20131029-1-838</vendortxcode></vspaccess>';
     }
 }
