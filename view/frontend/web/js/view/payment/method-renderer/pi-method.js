@@ -158,6 +158,7 @@ define(
 
                 if (self.dropInInstance !== null) {
                     self.dropInInstance.destroy();
+                    self.dropInInstance = null;
                 }
 
                 self.isPlaceOrderActionAllowed(true);
@@ -443,6 +444,7 @@ define(
                 span.style.display = "block";
 
                 fullScreenLoader.stopLoader();
+                self.defaultStateForm();
             },
             resetPaymentErrors: function () {
                 var span = document.getElementById('sagepaysuitepi-payment-errors');
