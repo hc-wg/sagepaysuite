@@ -2,7 +2,7 @@ machine:
   services:
     - redis
   php:
-    version: 7.0.7
+    version: 5.6
   environment:
     MAGE_ROOT: /home/ubuntu/
     MAGE_VERSION: 2.1.6
