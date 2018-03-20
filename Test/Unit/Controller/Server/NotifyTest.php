@@ -68,7 +68,6 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteOK()
     {
-        $this->markTestSkipped();
         $serverModelMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Server')
             ->disableOriginalConstructor()
@@ -85,7 +84,9 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('getMethodInstance')
             ->will($this->returnValue($serverModelMock));
 
-        $this->quoteMock = $this->getMockBuilder('Magento\Quote\Model\Quote')->disableOriginalConstructor()->getMock();
+        $this->quoteMock = $this->getMockBuilder('Magento\Quote\Model\Quote')
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->quoteMock->expects($this->any())
             ->method('getId')
             ->will($this->returnValue(1));
@@ -169,15 +170,9 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->transactionFactoryMock->expects($this->any())
             ->method('create')
             ->will($this->returnValue($transactionMock));
-        $invoiceCollectionMock = $this
-            ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $invoiceCollectionMock->expects($this->once())->method('setDataToAll')->willReturnSelf();
         $this->orderMock
-            ->expects($this->once())
-            ->method('getInvoiceCollection')
-            ->willReturn($invoiceCollectionMock);
+            ->expects($this->never())
+            ->method('getInvoiceCollection');
 
         $this->requestMock->expects($this->once())
             ->method('getPost')
@@ -989,7 +984,6 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteWihtToken()
     {
-        $this->markTestSkipped();
         $serverModelMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Server')
             ->disableOriginalConstructor()
@@ -1006,7 +1000,9 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('getMethodInstance')
             ->will($this->returnValue($serverModelMock));
 
-        $this->quoteMock = $this->getMockBuilder('Magento\Quote\Model\Quote')->disableOriginalConstructor()->getMock();
+        $this->quoteMock = $this->getMockBuilder('Magento\Quote\Model\Quote')
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->quoteMock->expects($this->any())
             ->method('getId')
             ->will($this->returnValue(1));
@@ -1097,11 +1093,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $invoiceCollectionMock->expects($this->once())->method('setDataToAll')->willReturnSelf();
+        $invoiceCollectionMock->expects($this->never())->method('setDataToAll')->willReturnSelf();
         $this->orderMock
-            ->expects($this->once())
-            ->method('getInvoiceCollection')
-            ->willReturn($invoiceCollectionMock);
+            ->expects($this->never())
+            ->method('getInvoiceCollection');
 
         $tokenMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Token::class)
             ->disableOriginalConstructor()
