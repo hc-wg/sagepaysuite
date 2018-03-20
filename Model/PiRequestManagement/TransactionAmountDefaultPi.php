@@ -7,12 +7,12 @@ class TransactionAmountDefaultPi implements TransactionAmountCommandInterface
     /** @var float */
     private $amount;
 
-    public function __construct(float $amount)
+    public function __construct($amount)
     {
         $this->amount = $amount;
     }
 
-    public function execute(): int
+    public function execute()
     {
         return (int)($this->amount * 100);
     }

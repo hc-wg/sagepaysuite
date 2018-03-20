@@ -7,12 +7,12 @@ class TransactionAmountPostJapaneseYen implements TransactionAmountPostCommandIn
     /** @var float */
     private $amount;
 
-    public function __construct(float $amount)
+    public function __construct($amount)
     {
         $this->amount = $amount;
     }
 
-    public function execute(): string
+    public function execute()
     {
         return (string)round($this->amount, 0, PHP_ROUND_HALF_EVEN);
     }

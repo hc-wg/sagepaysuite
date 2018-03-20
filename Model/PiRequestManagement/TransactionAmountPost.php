@@ -10,7 +10,7 @@ class TransactionAmountPost
     /**
      * TransactionAmount constructor.
      */
-    public function __construct(float $amount)
+    public function __construct($amount)
     {
         $this->commands['JPY'] = new TransactionAmountPostJapaneseYen($amount);
         $this->commands['KRW'] = new TransactionAmountPostSouthKoreanWon($amount);
@@ -21,7 +21,7 @@ class TransactionAmountPost
      * @param string $condition
      * @return \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountCommandInterface
      */
-    public function getCommand($condition) : TransactionAmountPostCommandInterface
+    public function getCommand($condition)
     {
         if (array_key_exists($condition, $this->commands) === false) {
             return $this->commands['DEFAULT'];

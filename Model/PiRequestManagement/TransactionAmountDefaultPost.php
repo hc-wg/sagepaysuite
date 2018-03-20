@@ -7,12 +7,12 @@ class TransactionAmountDefaultPost implements TransactionAmountPostCommandInterf
     /** @var float */
     private $amount;
 
-    public function __construct(float $amount)
+    public function __construct($amount)
     {
         $this->amount = $amount;
     }
 
-    public function execute(): string
+    public function execute()
     {
         return number_format($this->amount, 2, '.', '');
     }
