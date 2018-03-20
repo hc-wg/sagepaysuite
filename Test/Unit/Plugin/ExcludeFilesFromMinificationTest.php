@@ -38,7 +38,7 @@ class ExcludeFilesFromMinificationTest extends \PHPUnit\Framework\TestCase
     {
         $configFilePath = BP . DIRECTORY_SEPARATOR . 'app/code/Ebizmarts/SagePaySuite/etc/di.xml';
 
-        $xmlData = \file_get_contents($configFilePath);
+        $xmlData = \file_get_contents($configFilePath); //@codingStandardsIgnoreLine
 
         $xml = new \SimpleXMLElement($xmlData);
 
