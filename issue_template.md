@@ -1,11 +1,11 @@
 ### Reference
-> Email, Ticket id
+> Zendesk ticket Url
 
 
 ### Preconditions
 <!--- Provide a more detailed information of environment you use -->
 1. Magento version: 
-2. API version:
+2. Sage Pay module version:
 <!--- Additioanl preconditions, e.g.: PHP & MySQL version, etc.. -->
 
 ### Steps to reproduce
