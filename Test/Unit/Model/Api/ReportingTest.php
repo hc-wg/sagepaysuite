@@ -314,17 +314,17 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
                 </vspaccess>';
     }
 
-    private function getTransactionDetailsResponse() : string
+    private function getTransactionDetailsResponse()
     {
         return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getTransactionDetailsResponseXml();
     }
 
-    private function getFraudRedResponse() : string
+    private function getFraudRedResponse()
     {
         return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getGetFraudScreenDetailRedResponseXml();
     }
 
-    private function getGetFraudScreenDetailRedResponseXml() : string
+    private function getGetFraudScreenDetailRedResponseXml()
     {
         return '<vspaccess>
                     <errorcode>0000</errorcode>
