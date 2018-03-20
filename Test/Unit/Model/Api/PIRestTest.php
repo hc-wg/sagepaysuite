@@ -903,7 +903,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeQuoteMock(): \PHPUnit_Framework_MockObject_MockObject
+    private function makeQuoteMock()
     {
         $quoteMock = $this->getMockBuilder("\Magento\Quote\Model\Quote")->disableOriginalConstructor()->getMock();
         $quoteMock->expects($this->once())->method("getStoreId")->willReturn(1);
