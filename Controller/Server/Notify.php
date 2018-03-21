@@ -12,15 +12,12 @@ use Ebizmarts\SagePaySuite\Model\InvalidSignatureException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Ebizmarts\SagePaySuite\Model\Token;
-use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Validator\Exception;
 use Magento\Quote\Model\Quote;
-use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderFactory;
-use \Magento\Sales\Model\Order;
 use \Ebizmarts\SagePaySuite\Helper\Data;
 
 class Notify extends Action
@@ -48,11 +45,6 @@ class Notify extends Action
     private $config;
 
     /**
-     * @var Session
-     */
-    private $checkoutSession;
-
-    /**
      * @var Quote
      */
     private $quote;
@@ -75,11 +67,6 @@ class Notify extends Action
     /** @var OrderUpdateOnCallback */
     private $updateOrderCallback;
 
-    /**
-     * @var QuoteIdMaskFactory
-     */
-    private $quoteIdMaskFactory;
-
     /** @var Data */
     private $suiteHelper;
 
@@ -91,11 +78,9 @@ class Notify extends Action
      * @param OrderFactory $orderFactory
      * @param OrderSender $orderSender
      * @param Config $config
-     * @param Session $checkoutSession
      * @param Token $tokenModel
      * @param Quote $quote
      * @param OrderUpdateOnCallback $updateOrderCallback
-     * @param QuoteIdMaskFactory $quoteIdMaskFactory
      * @param Data $suiteHelper
      */
     public function __construct(
@@ -104,11 +89,9 @@ class Notify extends Action
         OrderFactory $orderFactory,
         OrderSender $orderSender,
         Config $config,
-        Session $checkoutSession,
         Token $tokenModel,
         Quote $quote,
         OrderUpdateOnCallback $updateOrderCallback,
-        QuoteIdMaskFactory $quoteIdMaskFactory,
         Data $suiteHelper
     ) {
     
@@ -119,10 +102,8 @@ class Notify extends Action
         $this->orderFactory        = $orderFactory;
         $this->orderSender         = $orderSender;
         $this->config              = $config;
-        $this->checkoutSession     = $checkoutSession;
         $this->tokenModel          = $tokenModel;
         $this->quote               = $quote;
-        $this->quoteIdMaskFactory  = $quoteIdMaskFactory;
         $this->suiteHelper         = $suiteHelper;
         $this->config->setMethodCode(Config::METHOD_SERVER);
     }
