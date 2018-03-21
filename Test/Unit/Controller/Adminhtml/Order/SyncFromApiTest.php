@@ -24,73 +24,28 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
     {
         $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
-        $responseMock = $this
-            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $responseMock = $this->makeResponseMock();
 
-        $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $messageManagerMock = $this->makeMessageManagerMock();
         $messageManagerMock->expects($this->any())
             ->method('addSuccess')
             ->with(__('Successfully synced from Sage Pay\'s API'));
 
-        $requestMock = $this
-            ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $requestMock = $this->makeRequestMock();
         $requestMock->expects($this->any())
             ->method('getParam')
             ->will($this->returnValue(1));
 
-        $urlBuilderMock = $this
-            ->getMockBuilder('Magento\Framework\UrlInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $urlBuilderMock = $this->makeUrlBuilderMock();
 
-        $actionFlagMock = $this
-            ->getMockBuilder('Magento\Framework\App\ActionFlag')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $actionFlagMock = $this->makeActionFlagMock();
 
-        $sessionMock = $this
-            ->getMockBuilder('Magento\Backend\Model\Session')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $sessionMock = $this->makeSessionMock();
 
-        $helperMock = $this
-            ->getMockBuilder('Magento\Backend\Helper\Data')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $helperMock = $this->makeHelperMock();
 
-        $contextMock = $this->getMockBuilder('Magento\Backend\App\Action\Context')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $contextMock->expects($this->any())
-            ->method('getResponse')
-            ->will($this->returnValue($responseMock));
-        $contextMock->expects($this->any())
-            ->method('getRedirect')
-            ->will($this->returnValue($redirectMock));
-        $contextMock->expects($this->any())
-            ->method('getMessageManager')
-            ->will($this->returnValue($messageManagerMock));
-        $contextMock->expects($this->any())
-            ->method('getRequest')
-            ->will($this->returnValue($requestMock));
-        $contextMock->expects($this->any())
-            ->method('getBackendUrl')
-            ->will($this->returnValue($urlBuilderMock));
-        $contextMock->expects($this->any())
-            ->method('getActionFlag')
-            ->will($this->returnValue($actionFlagMock));
-        $contextMock->expects($this->any())
-            ->method('getSession')
-            ->will($this->returnValue($sessionMock));
-        $contextMock->expects($this->any())
-            ->method('getHelper')
-            ->will($this->returnValue($helperMock));
+        $contextMock = $this->makeContextMock($responseMock, $redirectMock, $messageManagerMock, $requestMock,
+            $urlBuilderMock, $actionFlagMock, $sessionMock, $helperMock);
 
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
@@ -106,10 +61,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->method('getLastTransId')
             ->willReturn('463B3DE6-443F-585B-E75C-C727476DE98F');
 
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $orderMock = $this->makeOrderMock();
         $orderMock->expects($this->any())
             ->method('load')
             ->willReturnSelf();
@@ -126,10 +78,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($orderMock));
 
-        $reportingApiMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Reporting')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $reportingApiMock = $this->makeReportingApiMock();
         $reportingApiMock->expects($this->once())
             ->method('getTransactionDetails')
             ->will($this->returnValue((object)[
@@ -173,6 +122,105 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $syncFromApiController->execute();
     }
 
+    public function testExecuteNoTransactionFound()
+    {
+        $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
+
+        $responseMock = $this->makeResponseMock();
+
+        $messageManagerMock = $this->makeMessageManagerMock();
+        $messageManagerMock->expects($this->any())
+            ->method('addSuccess')
+            ->with(__('Successfully synced from Sage Pay\'s API'));
+
+        $requestMock = $this->makeRequestMock();
+        $requestMock->expects($this->any())
+            ->method('getParam')
+            ->will($this->returnValue(1));
+
+        $urlBuilderMock = $this->makeUrlBuilderMock();
+
+        $actionFlagMock = $this->makeActionFlagMock();
+
+        $sessionMock = $this->makeSessionMock();
+
+        $helperMock = $this->makeHelperMock();
+
+        $contextMock = $this->makeContextMock($responseMock, $redirectMock, $messageManagerMock, $requestMock,
+            $urlBuilderMock, $actionFlagMock, $sessionMock, $helperMock);
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->setMethods(['getLastTransId', 'setAdditionalInformation', 'save'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock
+            ->expects($this->atLeastOnce())
+            ->method('setAdditionalInformation')
+            ->willReturnSelf();
+        $paymentMock
+            ->expects($this->exactly(3))
+            ->method('getLastTransId')
+            ->willReturn('NOT_TO_BE_FOUND-463B3DE6-443F-585B-E75C-C727476DE98F');
+
+        $orderMock = $this->makeOrderMock();
+        $orderMock->expects($this->any())
+            ->method('load')
+            ->willReturnSelf();
+        $orderMock->expects($this->any())
+            ->method('getPayment')
+            ->will($this->returnValue($paymentMock));
+
+        $orderFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\OrderFactory')
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderFactoryMock->expects($this->once())
+            ->method('create')
+            ->will($this->returnValue($orderMock));
+
+        $reportingApiMock = $this->makeReportingApiMock();
+        $reportingApiMock->expects($this->once())
+            ->method('getTransactionDetails')
+            ->will($this->returnValue((object)[
+                "vendortxcode" => "100000001-2016-12-12-123456",
+                "status" => "OK STATUS",
+                "threedresult" => "CHECKED"
+            ]));
+
+        $trnRepoMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\Order\Payment\Transaction\Repository::class)
+            ->setMethods(['getSagepaysuiteFraudCheck', 'getByTransactionId'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $trnRepoMock->expects($this->never())->method('getSagepaysuiteFraudCheck');
+        $trnRepoMock
+            ->expects($this->once())
+            ->method('getByTransactionId')
+            ->willReturn(false);
+
+        $fraudHelperMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Fraud::class)
+            ->setMethods(['processFraudInformation'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $fraudHelperMock->expects($this->never())->method('processFraudInformation');
+
+        $syncFromApiController = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi',
+            [
+                'context'               => $contextMock,
+                'orderFactory'          => $orderFactoryMock,
+                'reportingApi'          => $reportingApiMock,
+                'transactionRepository' => $trnRepoMock,
+                'fraudHelper'           => $fraudHelperMock
+            ]
+        );
+
+        $syncFromApiController->execute();
+    }
+
     public function testExecuteNoParam()
     {
         $requestMock = $this
@@ -185,33 +233,19 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->with('order_id')
             ->willReturn(null);
 
-        $actionFlagMock = $this
-            ->getMockBuilder('Magento\Framework\App\ActionFlag')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $actionFlagMock = $this->makeActionFlagMock();
 
-        $sessionMock = $this
-            ->getMockBuilder('Magento\Backend\Model\Session')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $sessionMock = $this->makeSessionMock();
 
-        $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $messageManagerMock = $this->makeMessageManagerMock();
         $messageManagerMock->expects($this->once())
             ->method('addError')
             ->with('Something went wrong: Unable to sync from API: Invalid order id.');
 
-        $urlBuilderMock = $this
-            ->getMockBuilder('Magento\Framework\UrlInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $urlBuilderMock = $this->makeUrlBuilderMock();
         $urlBuilderMock->expects($this->once())->method('getUrl')->with('sales/order/index/', []);
 
-        $helperMock = $this
-            ->getMockBuilder('Magento\Backend\Helper\Data')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $helperMock = $this->makeHelperMock();
 
         $contextMock = $this->getMockBuilder('Magento\Backend\App\Action\Context')
             ->disableOriginalConstructor()
@@ -255,77 +289,32 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
     {
         $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
-        $responseMock = $this
-            ->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '', false)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $responseMock = $this->makeResponseMock();
 
-        $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $messageManagerMock = $this->makeMessageManagerMock();
         $messageManagerMock->expects($this->once())
             ->method('addError')
             ->with('The user does not have permission to view this transaction.');
 
-        $requestMock = $this
-            ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $requestMock = $this->makeRequestMock();
         $requestMock->expects($this->any())
             ->method('getParam')
             ->willReturn(5899);
 
-        $urlBuilderMock = $this
-            ->getMockBuilder('Magento\Framework\UrlInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $urlBuilderMock = $this->makeUrlBuilderMock();
         $urlBuilderMock
             ->expects($this->once())
             ->method('getUrl')
             ->with('sales/order/view/', ['order_id' => 5899]);
 
-        $actionFlagMock = $this
-            ->getMockBuilder('Magento\Framework\App\ActionFlag')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $actionFlagMock = $this->makeActionFlagMock();
 
-        $sessionMock = $this
-            ->getMockBuilder('Magento\Backend\Model\Session')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $sessionMock = $this->makeSessionMock();
 
-        $helperMock = $this
-            ->getMockBuilder('Magento\Backend\Helper\Data')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $helperMock = $this->makeHelperMock();
 
-        $contextMock = $this->getMockBuilder('Magento\Backend\App\Action\Context')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $contextMock->expects($this->any())
-            ->method('getResponse')
-            ->will($this->returnValue($responseMock));
-        $contextMock->expects($this->any())
-            ->method('getRedirect')
-            ->will($this->returnValue($redirectMock));
-        $contextMock->expects($this->any())
-            ->method('getMessageManager')
-            ->will($this->returnValue($messageManagerMock));
-        $contextMock->expects($this->any())
-            ->method('getRequest')
-            ->will($this->returnValue($requestMock));
-        $contextMock->expects($this->any())
-            ->method('getBackendUrl')
-            ->will($this->returnValue($urlBuilderMock));
-        $contextMock->expects($this->any())
-            ->method('getActionFlag')
-            ->will($this->returnValue($actionFlagMock));
-        $contextMock->expects($this->any())
-            ->method('getSession')
-            ->will($this->returnValue($sessionMock));
-        $contextMock->expects($this->any())
-            ->method('getHelper')
-            ->will($this->returnValue($helperMock));
+        $contextMock = $this->makeContextMock($responseMock, $redirectMock, $messageManagerMock, $requestMock,
+            $urlBuilderMock, $actionFlagMock, $sessionMock, $helperMock);
 
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
@@ -340,10 +329,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->method('getLastTransId')
             ->willReturn('463B3DE6-443F-585B-E75C-C727476DE98F');
 
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $orderMock = $this->makeOrderMock();
         $orderMock->expects($this->any())
             ->method('load')
             ->willReturnSelf();
@@ -363,10 +349,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($orderMock));
 
-        $reportingApiMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Reporting')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $reportingApiMock = $this->makeReportingApiMock();
 
         $error     = new \Magento\Framework\Phrase("The user does not have permission to view this transaction.");
         $exception = new \Ebizmarts\SagePaySuite\Model\Api\ApiException($error);
@@ -407,5 +390,130 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         );
 
         $syncFromApiController->execute();
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeResponseMock()
+    {
+        $responseMock = $this->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '',
+                false)->disableOriginalConstructor()->getMock();
+
+        return $responseMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeMessageManagerMock()
+    {
+        $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')->disableOriginalConstructor()->getMock();
+
+        return $messageManagerMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeUrlBuilderMock()
+    {
+        $urlBuilderMock = $this->getMockBuilder('Magento\Framework\UrlInterface')->disableOriginalConstructor()->getMock();
+
+        return $urlBuilderMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeRequestMock()
+    {
+        $requestMock = $this->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')->disableOriginalConstructor()->getMock();
+
+        return $requestMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeActionFlagMock()
+    {
+        $actionFlagMock = $this->getMockBuilder('Magento\Framework\App\ActionFlag')->disableOriginalConstructor()->getMock();
+
+        return $actionFlagMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeHelperMock()
+    {
+        $helperMock = $this->getMockBuilder('Magento\Backend\Helper\Data')->disableOriginalConstructor()->getMock();
+
+        return $helperMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeSessionMock()
+    {
+        $sessionMock = $this->getMockBuilder('Magento\Backend\Model\Session')->disableOriginalConstructor()->getMock();
+
+        return $sessionMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeOrderMock()
+    {
+        $orderMock = $this->getMockBuilder('Magento\Sales\Model\Order')->disableOriginalConstructor()->getMock();
+
+        return $orderMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeReportingApiMock()
+    {
+        $reportingApiMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Reporting')->disableOriginalConstructor()->getMock();
+
+        return $reportingApiMock;
+    }
+
+    /**
+     * @param $responseMock
+     * @param $redirectMock
+     * @param $messageManagerMock
+     * @param $requestMock
+     * @param $urlBuilderMock
+     * @param $actionFlagMock
+     * @param $sessionMock
+     * @param $helperMock
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeContextMock(
+        $responseMock,
+        $redirectMock,
+        $messageManagerMock,
+        $requestMock,
+        $urlBuilderMock,
+        $actionFlagMock,
+        $sessionMock,
+        $helperMock
+    ) {
+        $contextMock = $this->getMockBuilder('Magento\Backend\App\Action\Context')->disableOriginalConstructor()->getMock();
+        $contextMock->expects($this->any())->method('getResponse')->will($this->returnValue($responseMock));
+        $contextMock->expects($this->any())->method('getRedirect')->will($this->returnValue($redirectMock));
+        $contextMock->expects($this->any())->method('getMessageManager')->will($this->returnValue($messageManagerMock));
+        $contextMock->expects($this->any())->method('getRequest')->will($this->returnValue($requestMock));
+        $contextMock->expects($this->any())->method('getBackendUrl')->will($this->returnValue($urlBuilderMock));
+        $contextMock->expects($this->any())->method('getActionFlag')->will($this->returnValue($actionFlagMock));
+        $contextMock->expects($this->any())->method('getSession')->will($this->returnValue($sessionMock));
+        $contextMock->expects($this->any())->method('getHelper')->will($this->returnValue($helperMock));
+
+        return $contextMock;
     }
 }
