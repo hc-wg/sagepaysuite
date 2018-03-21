@@ -7,7 +7,7 @@ machine:
     MAGE_ROOT: /home/ubuntu/
     MAGE_VERSION: 2.1.6
     MARKETPLACE_EQP_VERSION: 1.0.5
-    PHPUNIT_VERSION:4.8.27
+    PHPUNIT_VERSION: 4.8.27
     DB_URL: 127.0.0.1
     DB_NAME: circle_test
     DB_USER: ubuntu
