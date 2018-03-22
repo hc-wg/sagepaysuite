@@ -1,3 +1,20 @@
+1.2.5 (22/03/2018)
+=============
+**This release requires Magento 2.2.x.**
+
+**Implemented enhancements:**
+
+- Fraud flags on sales orders grid.
+- Improve error message when reporting password is incorrect.
+- Unserialize use helper objects.
+
+**Fixed bugs:**
+
+- Minify javascript exception via xml causes problem with tinymce, using plugin now.
+- Invalid card on Drop-in, the load secure from button disappears.
+- Call to a member function getSagepaysuiteFraudCheck on boolean. Sync from api on backend.
+- Call to a member function getBillingAddress on null. Specific countries option with Pi.
+
 1.2.4 (01/03/2018)
 =============
 **This release requires Magento 2.2.x.**

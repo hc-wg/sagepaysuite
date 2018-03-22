@@ -48,11 +48,6 @@ class Notify extends Action
     private $config;
 
     /**
-     * @var Session
-     */
-    private $checkoutSession;
-
-    /**
      * @var Quote
      */
     private $quote;
@@ -75,11 +70,6 @@ class Notify extends Action
     /** @var OrderUpdateOnCallback */
     private $updateOrderCallback;
 
-    /**
-     * @var QuoteIdMaskFactory
-     */
-    private $quoteIdMaskFactory;
-
     /** @var Data */
     private $suiteHelper;
 
@@ -91,11 +81,9 @@ class Notify extends Action
      * @param OrderFactory $orderFactory
      * @param OrderSender $orderSender
      * @param Config $config
-     * @param Session $checkoutSession
      * @param Token $tokenModel
      * @param Quote $quote
      * @param OrderUpdateOnCallback $updateOrderCallback
-     * @param QuoteIdMaskFactory $quoteIdMaskFactory
      * @param Data $suiteHelper
      */
     public function __construct(
@@ -104,11 +92,9 @@ class Notify extends Action
         OrderFactory $orderFactory,
         OrderSender $orderSender,
         Config $config,
-        Session $checkoutSession,
         Token $tokenModel,
         Quote $quote,
         OrderUpdateOnCallback $updateOrderCallback,
-        QuoteIdMaskFactory $quoteIdMaskFactory,
         Data $suiteHelper
     ) {
     
@@ -119,10 +105,8 @@ class Notify extends Action
         $this->orderFactory        = $orderFactory;
         $this->orderSender         = $orderSender;
         $this->config              = $config;
-        $this->checkoutSession     = $checkoutSession;
         $this->tokenModel          = $tokenModel;
         $this->quote               = $quote;
-        $this->quoteIdMaskFactory  = $quoteIdMaskFactory;
         $this->suiteHelper         = $suiteHelper;
         $this->config->setMethodCode(Config::METHOD_SERVER);
     }
