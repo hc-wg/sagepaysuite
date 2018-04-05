@@ -6,35 +6,30 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Form;
 
+use Ebizmarts\SagePaySuite\Helper\Checkout;
+use Ebizmarts\SagePaySuite\Model\Form;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
+use Magento\Checkout\Model\Session;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\Exception\AlreadyExistsException;
+use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Quote\Model\QuoteFactory;
+use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Magento\Sales\Model\OrderFactory;
 
 class Success extends \Magento\Framework\App\Action\Action
 {
-
-    /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
-     */
-    private $_config;
-
     /**
      * @var \Magento\Quote\Model\Quote
      */
     private $_quote;
 
     /**
-     * @var \Magento\Customer\Model\Session
-     */
-    private $_customerSession;
-
-    /**
-     * @var \Magento\Checkout\Model\Session
+     * @var Session
      */
     private $_checkoutSession;
-
-    /**
-     * @var \Ebizmarts\SagePaySuite\Helper\Checkout
-     */
-    private $_checkoutHelper;
 
     /**
      * Logging instance
@@ -43,17 +38,17 @@ class Success extends \Magento\Framework\App\Action\Action
     private $_suiteLogger;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Form
+     * @var Form
      */
     private $_formModel;
 
     /**
-     * @var \Magento\Quote\Model\QuoteFactory
+     * @var QuoteFactory
      */
     private $_quoteFactory;
 
     /**
-     * @var \Magento\Sales\Model\OrderFactory
+     * @var OrderFactory
      */
     private $_orderFactory;
 
@@ -62,86 +57,77 @@ class Success extends \Magento\Framework\App\Action\Action
      */
     private $_order;
 
-    /** @var \Magento\Sales\Model\Order\Email\Sender\OrderSender */
+    /** @var OrderSender */
     private $orderSender;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback */
+    /** @var OrderUpdateOnCallback */
     private $updateOrderCallback;
 
     /**
      * Success constructor.
-     * @param \Magento\Framework\App\Action\Context $context
-     * @param \Magento\Customer\Model\Session $customerSession
-     * @param \Magento\Checkout\Model\Session $checkoutSession
-     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @param Context $context
+     * @param Session $checkoutSession
      * @param Logger $suiteLogger
-     * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
-     * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
-     * @param \Ebizmarts\SagePaySuite\Model\Form $formModel
-     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
-     * @param \Magento\Sales\Model\OrderFactory $orderFactory
-     * @param \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender
-     * @param \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback $updateOrderCallback
+     * @param Checkout $checkoutHelper
+     * @param Form $formModel
+     * @param QuoteFactory $quoteFactory
+     * @param OrderFactory $orderFactory
+     * @param OrderSender $orderSender
+     * @param OrderUpdateOnCallback $updateOrderCallback
+     * @param SuiteHelper $suiteHelper
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Customer\Model\Session $customerSession,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
+        Context $context,
+        Session $checkoutSession,
         Logger $suiteLogger,
-        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Ebizmarts\SagePaySuite\Model\Form $formModel,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
-        \Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback $updateOrderCallback
+        Checkout $checkoutHelper,
+        Form $formModel,
+        QuoteFactory $quoteFactory,
+        OrderFactory $orderFactory,
+        OrderSender $orderSender,
+        OrderUpdateOnCallback $updateOrderCallback,
+        SuiteHelper $suiteHelper
     ) {
     
         parent::__construct($context);
-        $this->_config             = $config;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
-        $this->_customerSession    = $customerSession;
         $this->_checkoutSession    = $checkoutSession;
-        $this->_checkoutHelper     = $checkoutHelper;
         $this->_quoteFactory       = $quoteFactory;
         $this->_suiteLogger        = $suiteLogger;
         $this->_formModel          = $formModel;
         $this->_orderFactory       = $orderFactory;
         $this->orderSender         = $orderSender;
         $this->updateOrderCallback = $updateOrderCallback;
+        $this->suiteHelper         = $suiteHelper;
     }
 
     /**
      * FORM success callback
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function execute()
     {
         try {
-            //decode response
             $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
             if (!array_key_exists("VPSTxId", $response)) {
-                throw new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay.'));
+                throw new LocalizedException(__('Invalid response from Sage Pay.'));
             }
 
-            //log response
             $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
 
             $this->_quote = $this->_quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
 
             $this->_order = $this->_orderFactory->create()->loadByIncrementId($this->_quote->getReservedOrderId());
             if ($this->_order === null || $this->_order->getId() === null) {
-                throw new \Magento\Framework\Exception\LocalizedException(__('Order not available.'));
+                throw new LocalizedException(__('Order not available.'));
             }
 
             $transactionId = $response["VPSTxId"];
-            $transactionId = str_replace(["{", "}"], ["", ""], $transactionId); //strip brackets
+            $transactionId = $this->suiteHelper->removeCurlyBraces($transactionId); //strip brackets
 
             $payment = $this->_order->getPayment();
 
             $vendorTxCode = $payment->getAdditionalInformation("vendorTxCode");
 
-            //update payment details
             if (!empty($transactionId) && ($vendorTxCode == $response['VendorTxCode'])) {
 
                 foreach($response as $name => $value) {
@@ -169,7 +155,11 @@ class Success extends \Magento\Framework\App\Action\Action
             $status   = $response['Status'];
             if ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
                 $this->updateOrderCallback->setOrder($this->_order);
-                $this->updateOrderCallback->confirmPayment($transactionId);
+                try {
+                    $this->updateOrderCallback->confirmPayment($transactionId);
+                } catch (AlreadyExistsException $ex) {
+                    $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, "Sage Pay retry. $transactionId", [__METHOD__, __LINE__]);
+                }
                 $redirect = 'checkout/onepage/success';
             } elseif ($status == "PENDING") {
                 //Transaction in PENDING state (this is just for Euro Payments)
