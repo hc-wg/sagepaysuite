@@ -1,50 +1,74 @@
 <?php
+declare(strict_types=1);
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-use Braintree\Exception;
+use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
+use Magento\Framework\Exception\AlreadyExistsException;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Magento\Sales\Model\Order\Payment\Transaction\Repository as TransactionRepository;
+use Magento\Sales\Model\Order\Payment\TransactionFactory;
 
 class OrderUpdateOnCallback
 {
-    /** @var \Magento\Sales\Model\Order */
+    /** @var Order */
     private $order;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\Config */
+    /** @var Config */
     private $config;
 
-    /** @var \Magento\Sales\Model\Order\Email\Sender\OrderSender */
+    /** @var OrderSender */
     private $orderEmailSender;
 
-    /** @var Config\ClosedForActionFactory */
+    /** @var ClosedForActionFactory */
     private $actionFactory;
 
-    /** @var \Magento\Sales\Model\Order\Payment\TransactionFactory */
+    /** @var TransactionFactory */
     private $transactionFactory;
 
+    /** @var TransactionRepository */
+    private $transactionRepository;
+
     public function __construct(
-        \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderEmailSender,
-        \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory $actionFactory,
-        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
+        Config $config,
+        OrderSender $orderEmailSender,
+        ClosedForActionFactory $actionFactory,
+        TransactionFactory $transactionFactory,
+        TransactionRepository $transactionRepository
     ) {
         $this->config = $config;
         $this->orderEmailSender = $orderEmailSender;
         $this->actionFactory = $actionFactory;
         $this->transactionFactory = $transactionFactory;
+        $this->transactionRepository = $transactionRepository;
     }
 
-    public function setOrder(\Magento\Sales\Model\Order $order)
+    public function setOrder(Order $order)
     {
         $this->order = $order;
     }
 
-    public function confirmPayment($transactionId)
+    /**
+     * @param string $transactionId
+     * @throws AlreadyExistsException
+     * @throws \Magento\Framework\Exception\InputException
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function confirmPayment(string $transactionId)
     {
         if ($this->order === null) {
-            throw new Exception("Invalid order. Cant confirm payment.");
+            throw new \Exception("Invalid order. Cant confirm payment.");
         }
 
         $payment = $this->order->getPayment();
+
+        $transactionExists = $this->transactionRepository
+            ->getByTransactionId($transactionId, $payment->getId(), $this->order->getId());
+        if ($transactionExists !== false) {
+            throw new AlreadyExistsException(__('Transaction already exists.'));
+        }
 
         $sagePayPaymentAction = $this->config->getSagepayPaymentAction();
         if ($sagePayPaymentAction != 'DEFERRED' && $sagePayPaymentAction != 'AUTHENTICATE') {
@@ -62,6 +86,7 @@ class OrderUpdateOnCallback
         $actionClosed = $this->actionFactory->create(['paymentAction' => $sagePayPaymentAction]);
         list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
 
+        /** @var \Magento\Sales\Model\Order\Payment\Transaction $transaction */
         $transaction = $this->transactionFactory->create();
         $transaction->setOrderPaymentObject($payment);
         $transaction->setTxnId($transactionId);
