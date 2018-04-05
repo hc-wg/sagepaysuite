@@ -45,7 +45,7 @@ class OrderUpdateOnCallback
         $this->transactionRepository = $transactionRepository;
     }
 
-    public function setOrder(Order $order) : void
+    public function setOrder(Order $order)
     {
         $this->order = $order;
     }
@@ -56,7 +56,7 @@ class OrderUpdateOnCallback
      * @throws \Magento\Framework\Exception\InputException
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function confirmPayment(string $transactionId) : void
+    public function confirmPayment(string $transactionId)
     {
         if ($this->order === null) {
             throw new \Exception("Invalid order. Cant confirm payment.");
