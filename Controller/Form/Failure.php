@@ -11,6 +11,7 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
@@ -82,7 +83,7 @@ class Failure extends Action
     }
 
     /**
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function execute()
     {
@@ -94,7 +95,7 @@ class Failure extends Action
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
 
             if (!array_key_exists("Status", $response) || !array_key_exists("StatusDetail", $response)) {
-                throw new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay'));
+                throw new LocalizedException(__('Invalid response from Sage Pay'));
             }
 
             $this->quote = $this->quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
@@ -103,9 +104,7 @@ class Failure extends Action
             //cancel pending payment order
             $this->cancelOrder();
 
-            $statusDetail = $response["StatusDetail"];
-            $statusDetail = explode(" : ", $statusDetail);
-            $statusDetail = $statusDetail[1];
+            $statusDetail = $this->extractStatusDetail($response);
 
             $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
 
@@ -136,5 +135,22 @@ class Failure extends Action
         } catch (\Exception $e) {
             $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
         }
+    }
+
+    /**
+     * @param array $response
+     * @return string
+     */
+    private function extractStatusDetail(array $response)
+    {
+        $statusDetail = $response["StatusDetail"];
+
+        if (strpos($statusDetail, ':') !== false) {
+            $statusDetail = explode(" : ", $statusDetail);
+            $statusDetail = $statusDetail[1];
+        }
+
+
+        return $statusDetail;
     }
 }
