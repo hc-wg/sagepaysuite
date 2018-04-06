@@ -141,7 +141,7 @@ class Failure extends Action
      * @param array $response
      * @return string
      */
-    private function extractStatusDetail(array $response): string
+    private function extractStatusDetail(array $response)
     {
         $statusDetail = $response["StatusDetail"];
 
