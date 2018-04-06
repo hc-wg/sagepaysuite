@@ -1,3 +1,12 @@
+1.2.6 (06/04/2018)
+=============
+**This release requires Magento 2.2.x.**
+
+**Fixed bugs:**
+
+- Form failure StatusDetail inconsistent causes undefined offset.
+- Unique Constraint Violation cancelling orders on Form and Server integrations.
+
 1.2.5 (22/03/2018)
 =============
 **This release requires Magento 2.2.x.**
