@@ -12,12 +12,16 @@ use Ebizmarts\SagePaySuite\Model\InvalidSignatureException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Ebizmarts\SagePaySuite\Model\Token;
+use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Validator\Exception;
 use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderFactory;
+use \Magento\Sales\Model\Order;
 use \Ebizmarts\SagePaySuite\Helper\Data;
 
 class Notify extends Action
@@ -118,12 +122,10 @@ class Notify extends Action
         $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->postData, [__METHOD__, __LINE__]);
 
         try {
-            //find quote with GET param
             if (empty($this->quote->getId())) {
                 return $this->returnInvalid(__("Unable to find quote"));
             }
 
-            //find order with quote id
             $order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
             if ($order === null || $order->getId() === null) {
                 return $this->returnInvalid(__("Order was not found"));
@@ -132,7 +134,6 @@ class Notify extends Action
             $this->order = $order;
             $payment     = $order->getPayment();
 
-            //get some vars from POST
             $status = $this->postData->Status;
             $transactionId = $this->suiteHelper->removeCurlyBraces($this->postData->VPSTxId);
 
@@ -142,7 +143,6 @@ class Notify extends Action
                 return $this->returnInvalid(__("Something went wrong: %1", $signatureException->getMessage()));
             }
 
-            //update payment details
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
                 $payment->setAdditionalInformation('statusDetail', $this->postData->StatusDetail);
                 $payment->setAdditionalInformation('threeDStatus', $this->postData->{'3DSecureStatus'});
@@ -164,7 +164,13 @@ class Notify extends Action
                 return $this->returnAbort($this->quote->getId());
             } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
                 $this->updateOrderCallback->setOrder($this->order);
-                $this->updateOrderCallback->confirmPayment($transactionId);
+
+                try {
+                    $this->updateOrderCallback->confirmPayment($transactionId);
+                } catch (AlreadyExistsException $ex) {
+                    $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Sage Pay retry. $transactionId", [__METHOD__, __LINE__]);
+                }
+
                 return $this->returnOk();
             } elseif ($status == "PENDING") {
                 //Transaction in PENDING state (this is just for Euro Payments)
