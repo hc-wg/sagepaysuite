@@ -1078,7 +1078,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
     private function makeHttpResponseMock()
     {
-        $this->responseMock = $this->createMock('Magento\Framework\App\Response\Http');
+        $this->responseMock = $this->getMockBuilder('Magento\Framework\App\Response\Http')
+        ->disableOriginalConstructor()->getMock();
     }
 
     private function makeHttpRequestMock()
