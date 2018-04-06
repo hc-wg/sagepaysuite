@@ -219,7 +219,7 @@ class FailureTest extends \PHPUnit_Framework_TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeRequestMock(): \PHPUnit_Framework_MockObject_MockObject
+    private function makeRequestMock()
     {
         $requestMock = $this->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')->disableOriginalConstructor()->getMock();
 
@@ -229,7 +229,7 @@ class FailureTest extends \PHPUnit_Framework_TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeMessageManagerMock(): \PHPUnit_Framework_MockObject_MockObject
+    private function makeMessageManagerMock()
     {
         $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')->disableOriginalConstructor()->getMock();
 
@@ -239,7 +239,7 @@ class FailureTest extends \PHPUnit_Framework_TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeRedirectMock(): \PHPUnit_Framework_MockObject_MockObject
+    private function makeRedirectMock()
     {
         $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
@@ -258,7 +258,7 @@ class FailureTest extends \PHPUnit_Framework_TestCase
         $responseMock,
         $redirectMock,
         $messageManagerMock
-    ): \PHPUnit_Framework_MockObject_MockObject {
+    ) {
         $contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')->disableOriginalConstructor()->getMock();
         $contextMock->expects($this->any())->method('getRequest')->will($this->returnValue($requestMock));
         $contextMock->expects($this->any())->method('getResponse')->will($this->returnValue($responseMock));
@@ -271,7 +271,7 @@ class FailureTest extends \PHPUnit_Framework_TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeFormModelMock(): \PHPUnit_Framework_MockObject_MockObject
+    private function makeFormModelMock()
     {
         $formModelMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Form')->disableOriginalConstructor()->getMock();
 
@@ -281,7 +281,7 @@ class FailureTest extends \PHPUnit_Framework_TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeQuoteMock(): \PHPUnit_Framework_MockObject_MockObject
+    private function makeQuoteMock()
     {
         $quoteMock = $this->getMockBuilder('\Magento\Quote\Model\Quote')->disableOriginalConstructor()->getMock();
         $quoteMock->expects($this->once())->method('load')->willReturnSelf();
@@ -297,7 +297,7 @@ class FailureTest extends \PHPUnit_Framework_TestCase
      * @param $quoteMock
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeQuoteFactoryMock($quoteMock): \PHPUnit_Framework_MockObject_MockObject
+    private function makeQuoteFactoryMock($quoteMock)
     {
         $quoteFactoryMock = $this->getMockBuilder('\Magento\Quote\Model\QuoteFactory')->disableOriginalConstructor()->setMethods(["create"])->getMock();
         $quoteFactoryMock->expects($this->once())->method('create')->willReturn($quoteMock);
@@ -308,7 +308,7 @@ class FailureTest extends \PHPUnit_Framework_TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeOrderMock(): \PHPUnit_Framework_MockObject_MockObject
+    private function makeOrderMock()
     {
         $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)->disableOriginalConstructor()->getMock();
         $orderMock->expects($this->once())->method('loadByIncrementId')->willReturnSelf();
