@@ -83,7 +83,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 Table::TYPE_TEXT, 32, [], 'Cc Type')
             ->addColumn('cc_exp_year', Table::TYPE_TEXT, 4, [],
                 'Cc Exp Year')
-            ->addColumn('cc_exp_year', Table::TYPE_TEXT, 100, [],
+            ->addColumn('vendorname', Table::TYPE_TEXT, 100, [],
                 'Vendorname')
             ->addColumn('created_at', Table::TYPE_TIMESTAMP, null,
                 ['nullable' => false, 'default' => Table::TIMESTAMP_INIT], 'Created At')

@@ -49,6 +49,9 @@
         <resources>
             <resource ref="anonymous" />
         </resources>
+        <data>
+            <parameter name="quote" force="true">null</parameter>
+        </data>
     </route>
 
     <route url="/V1/sagepay/pi" method="POST">

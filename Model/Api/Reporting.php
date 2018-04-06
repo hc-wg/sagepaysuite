@@ -282,7 +282,6 @@ class Reporting
         if ($response->getResponseData() === false) {
             return false;
         }
-
         $data = preg_split('/^\r?$/m', $response->getResponseData(), 2);
         $data = trim($data[1]);
 

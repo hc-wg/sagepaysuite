@@ -2,11 +2,12 @@ machine:
   services:
     - redis
   php:
-    version: 7.0.7
+    version: 5.6.17
   environment:
     MAGE_ROOT: /home/ubuntu/
     MAGE_VERSION: 2.1.6
     MARKETPLACE_EQP_VERSION: 1.0.5
+    PHPUNIT_VERSION: 4.8.27
     DB_URL: 127.0.0.1
     DB_NAME: circle_test
     DB_USER: ubuntu
@@ -16,14 +17,14 @@ machine:
 
 dependencies:
   pre:
-    - echo "memory_limit = 768M" > /opt/circleci/php/7.0.7/etc/conf.d/memory.ini
+    - echo "memory_limit = 1024M" > /opt/circleci/php/5.6.17/etc/conf.d/memory.ini
     - sudo apt-add-repository -y 'deb http://ppa.launchpad.net/ondrej/mysql-experimental/ubuntu precise main'
     - sudo apt-get update; sudo DEBIAN_FRONTEND=noninteractive apt-get install -y php5-curl apache2-mpm-prefork
   override:
     - cd .. && wget http://ebizmartsbackup.s3.amazonaws.com/Magento-EE-$MAGE_VERSION.tar.gz
     - cd .. && mkdir magento2-$MAGE_VERSION && cd magento2-$MAGE_VERSION && tar xzf ../Magento-EE-$MAGE_VERSION.tar.gz
-    - cd ../magento2-$MAGE_VERSION && wget http://ebizmartsbackup.s3.amazonaws.com/phpunit-4.8.27.phar
-    - chmod +x ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar
+    - cd ../magento2-$MAGE_VERSION && wget http://ebizmartsbackup.s3.amazonaws.com/phpunit-$PHPUNIT_VERSION.phar
+    - chmod +x ../magento2-$MAGE_VERSION/phpunit-$PHPUNIT_VERSION.phar
     - cd ../magento2-$MAGE_VERSION && wget https://github.com/squizlabs/PHP_CodeSniffer/releases/download/2.7.1/phpcs.phar
     - cd ../magento2-$MAGE_VERSION && chmod +x phpcs.phar
     - cd ../magento2-$MAGE_VERSION && wget https://github.com/magento-ecg/coding-standard/archive/2.0.tar.gz && tar xzf 2.0.tar.gz
@@ -44,7 +45,7 @@ dependencies:
     - cd ../magento2-$MAGE_VERSION && composer install --prefer-source --no-interaction
     - cd ../magento2-$MAGE_VERSION && bin/magento setup:install --base-url=http://mage2.dev:8080/ --db-host=$DB_URL --db-name=$DB_NAME --db-user=$DB_USER --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1
     - rm ../magento2-$MAGE_VERSION/app/etc/env.php
-    - cd ../magento2-$MAGE_VERSION && wget https://gist.githubusercontent.com/centerax/f1ae700530a0112140011d846014eab9/raw/f5b8e32548b30bd1595671230657195a0b7bedd1/env.php -O app/etc/env.php
+    - cd ../magento2-$MAGE_VERSION && wget https://gist.githubusercontent.com/centerax/3578d8d48f10c4eb8b69187ee1cf1aab/raw/148476be1ae1619fa9edb9570670a782c3ed3a1d/env_noredis.php -O app/etc/env.php
     - cd ../magento2-$MAGE_VERSION && bin/magento setup:upgrade
     - echo " " >> ../magento2-$MAGE_VERSION/.user.ini
     - echo "always_populate_raw_post_data = 1" >> ../magento2-$MAGE_VERSION/.user.ini
@@ -58,10 +59,10 @@ dependencies:
 test:
   override:
     - cat ../magento2-$MAGE_VERSION/.user.ini
-    - cd ../magento2-$MAGE_VERSION && bin/magento setup:di:compile
+    - cd ../magento2-$MAGE_VERSION && bin/magento deploy:mode:set production
     - cd ../magento2-$MAGE_VERSION && ./phpcs.phar --config-set installed_paths coding-standard-2.0/ && ./phpcs.phar -n --standard="EcgM2" app/code/Ebizmarts/SagePaySuite;
     - cd ../magento2-$MAGE_VERSION && ../magento2-$MAGE_VERSION/phpcs.phar --config-set installed_paths $MAGE_ROOT/marketplace-eqp-$MARKETPLACE_EQP_VERSION && ../magento2-$MAGE_VERSION/phpcs.phar -n --standard="MEQP2" ../magento2-$MAGE_VERSION/app/code/Ebizmarts/SagePaySuite;
     - cd ../magento2-$MAGE_VERSION && mkdir var/log/SagePaySuite && touch var/log/SagePaySuite/Request.log && chmod -R 777 var/log
     #- /opt/circleci/php/7.0.7/bin/php ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c $MAGE_ROOT/magento2-$MAGE_VERSION/dev/tests/api-functional/phpunit.xml
-    - ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c ../magento2-$MAGE_VERSION/dev/tests/unit/phpunit_config.xml --coverage-text
+    - ../magento2-$MAGE_VERSION/phpunit-$PHPUNIT_VERSION.phar -c ../magento2-$MAGE_VERSION/dev/tests/unit/phpunit_config.xml --coverage-text
     #- /opt/circleci/php/7.0.7/bin/php ../magento2-$MAGE_VERSION/phpunit-4.8.27.phar -c $MAGE_ROOT/magento2-$MAGE_VERSION/dev/tests/integration/phpunit.xml

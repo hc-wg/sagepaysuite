@@ -71,7 +71,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit_Framework_TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeThreeDMock(): \PHPUnit_Framework_MockObject_MockObject
+    private function makeThreeDMock()
     {
         $model = $this->getMockBuilder("Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement")
             ->disableOriginalConstructor()

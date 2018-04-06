@@ -38,7 +38,7 @@ error_message,error_message
 "Online MOTO transaction.","Online MOTO transaction."
 "Online transaction.","Online transaction."
 "Information received from an invalid IP address.","Information received from an invalid IP address."
-"Cannot validate the <signature> value.","Cannot validate the <signature> value."
+"Invalid signature. Please check Reporting API User and Password.","Invalid signature. Please check Reporting API User and Password."
 "Transaction NOT found / Invalid transaction Id.","Transaction NOT found / Invalid transaction Id."
 "Invalid Sage Pay API credentials.","Invalid Sage Pay API credentials."
 "Invalid merchant authentication.","Invalid merchant authentication."
