@@ -1,3 +1,23 @@
+1.1.18 (06/04/2018)
+=============
+**This release requires Magento 2.1.x.**
+
+- Enhancements
+  - Fraud flags on sales orders grid.
+
+- Bug fixes
+  - Unique Constraint Violation cancelling orders.
+  - Form failure StatusDetail inconsistent causes undefined offset.
+  - Call to a member function getSagepaysuiteFraudCheck() on boolean.
+  - Call to a member function getBillingAddress() on null.
+  - Minify exception via xml causes problem with tinymce.
+  - Invalid card on Drop-in the load secure from button disappears.
+  - Human friendly report api error on admin config.
+  - Invalid parameter type when using SOAP API.
+  - Japanese currency issue.
+  - SagePaySuite breaks Swagger when enabled.
+  - Fix bad column name on sagepaysuite_token table.
+  
 1.1.17 (30/01/2018)
 =============
 **This release requires Magento 2.1.x.**
