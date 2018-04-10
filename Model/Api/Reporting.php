@@ -163,6 +163,7 @@ class Reporting
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
         }
 
+        /** @var $exception \Ebizmarts\SagePaySuite\Model\Api\ApiException */
         $exception = $this->apiExceptionFactory->create([
             'phrase' => __($exceptionPhrase),
             'code' => $exceptionCode
