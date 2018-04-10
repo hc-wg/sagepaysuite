@@ -6,10 +6,15 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult;
+use Ebizmarts\SagePaySuite\Model\Api\PIRest;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Phrase;
+
 class PIRestTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
+     * @var PIRest
      */
     private $pirestApiModel;
 
@@ -221,11 +226,11 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->willReturn($this->httpResponseMock);
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
-            new \Magento\Framework\Phrase("Missing mandatory field: vendorName"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Missing mandatory field: vendorName"))
+            new Phrase("Missing mandatory field: vendorName"),
+            new LocalizedException(new Phrase("Missing mandatory field: vendorName"))
         );
 
-        $phrase = new \Magento\Framework\Phrase("Missing mandatory field: vendorName");
+        $phrase = new Phrase("Missing mandatory field: vendorName");
 
         $this->apiExceptionFactoryMock
             ->expects($this->once())
@@ -300,7 +305,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         $payResult->expects($this->once())->method('setCard')->with($cardResult);
 
         $piTransactionResult = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult::class)
+            ->getMockBuilder(PiTransactionResult::class)
             ->disableOriginalConstructor()
             ->getMock();
         $piTransactionResult->expects($this->once())->method('setStatusCode')->with("0000");
@@ -326,10 +331,14 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->method('create')
             ->willReturn($piTransactionResult);
 
+        $this->configMock
+            ->method('getMode')
+            ->willReturn('live');
+
         $this->httpRestMock
             ->expects($this->once())
             ->method('setUrl')
-            ->with("https://test.sagepay.com/api/v1/transactions");
+            ->with("https://live.sagepay.com/api/v1/transactions");
 
         $this->httpResponseMock
             ->expects($this->once())
@@ -447,9 +456,9 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             );
 
         $apiExceptionObj = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
-            new \Magento\Framework\Phrase("Contains invalid value: paymentMethod.card.merchantSessionKey"),
-            new \Magento\Framework\Exception\LocalizedException(
-                new \Magento\Framework\Phrase("Contains invalid value: paymentMethod.card.merchantSessionKey")
+            new Phrase("Contains invalid value: paymentMethod.card.merchantSessionKey"),
+            new LocalizedException(
+                new Phrase("Contains invalid value: paymentMethod.card.merchantSessionKey")
             )
         );
 
@@ -507,9 +516,9 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             );
 
         $apiExceptionObj = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
-            new \Magento\Framework\Phrase("No card provided."),
-            new \Magento\Framework\Exception\LocalizedException(
-                new \Magento\Framework\Phrase("No card provided.")
+            new Phrase("No card provided."),
+            new LocalizedException(
+                new Phrase("No card provided.")
             )
         );
 
@@ -639,8 +648,8 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->willReturn(json_decode('{"errors": [{"description": "Contains invalid characters","property": "paRes","code": 1005}]}'));
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
-            new \Magento\Framework\Phrase("Contains invalid characters: paRes"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Contains invalid characters: paRes"))
+            new Phrase("Contains invalid characters: paRes"),
+            new LocalizedException(new Phrase("Contains invalid characters: paRes"))
         );
 
         $this->apiExceptionFactoryMock->expects($this->any())
@@ -664,11 +673,59 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         $this->pirestApiModel->submit3D("fsd678dfs786dfs786fds678fds", 12345);
     }
 
+    public function testTransactionDetailsOk()
+    {
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executeGet')
+            ->willReturn($this->httpResponseMock);
+
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getStatus')
+            ->willReturn(200);
+
+        $transactionResponse = new \stdClass;
+        $transactionResponse->statusCode = '2007';
+        $transactionResponse->statusDetail = 'Please redirect your customer to the ACSURL to complete the 3DS Transaction';
+        $transactionResponse->transactionId = '12345';
+        $transactionResponse->acsUrl = 'https://test.sagepay.com/mpitools/accesscontroler?action=pareq';
+        $transactionResponse->paReq = 'VUstuwjAQvPcronxAbMcJJGgxgtK';
+        $transactionResponse->status = '3DAuth';
+
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn($transactionResponse);
+
+
+        $resultFactory = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $transactionResult = $this->objectManager->getObject(PiTransactionResult::class);
+        $resultFactory->expects($this->once())->method('create')->willReturn($transactionResult);
+
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            PIRest::class,
+            [
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "apiExceptionFactory"        => $this->apiExceptionFactoryMock,
+                "piCaptureResultFactory"     => $resultFactory
+            ]
+        );
+
+        $result = $this->pirestApiModel->transactionDetails(12345);
+
+        $this->assertEquals('3DAuth', $result->getStatus());
+    }
+
     /**
      * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
      * @expectedExceptionMessage Invalid Transaction Id
      */
-    public function testTransactionDetailsERROR()
+    public function testTransactionDetailsError()
     {
         $this->httpRestMock
             ->expects($this->once())
@@ -682,11 +739,13 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         $this->httpResponseMock
             ->expects($this->exactly(2))
             ->method('getResponseData')
-            ->willReturn(json_decode('{"description": "Contains invalid characters","property": "paRes","code": 1005}'));
+            ->willReturn(json_decode(
+                '{"description": "Contains invalid characters","property": "paRes","code": 1005}'
+            ));
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
-            new \Magento\Framework\Phrase("Invalid Transaction Id"),
-            new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("Invalid Transaction Id"))
+            new Phrase("Invalid Transaction Id"),
+            new LocalizedException(new Phrase("Invalid Transaction Id"))
         );
         $this->apiExceptionFactoryMock->expects($this->any())
             ->method('create')
@@ -824,7 +883,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->willReturn($this->httpResponseMock);
 
         $piTransactionResult = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult::class)
+            ->getMockBuilder(PiTransactionResult::class)
             ->disableOriginalConstructor()
             ->getMock();
         $piTransactionResult->expects($this->once())->method('setStatusCode')->with("0000");
