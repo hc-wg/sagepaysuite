@@ -44,6 +44,7 @@ class Config
     const ACTION_REFUND          = 'REFUND';
     const ACTION_RELEASE         = 'RELEASE';
     const ACTION_REPEAT          = 'REPEAT';
+    const ACTION_REPEAT_PI       = 'Repeat';
     const ACTION_REPEAT_DEFERRED = 'REPEATDEFERRED';
     const ACTION_AUTHORISE       = 'AUTHORISE';
     const ACTION_POST            = 'post';
