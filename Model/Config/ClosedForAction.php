@@ -16,7 +16,7 @@ class ClosedForAction
     /** @var array */
     private $paymentAction;
 
-    public function __construct(string $paymentAction)
+    public function __construct(string $paymentAction = null)
     {
         $this->paymentAction = $paymentAction;
     }
