@@ -2,12 +2,14 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+
 class HttpText extends Http
 {
     public function __construct(
         \Magento\Framework\HTTP\Adapter\Curl $curl,
         \Ebizmarts\SagePaySuite\Api\Data\HttpResponseInterface $returnData,
-        \Ebizmarts\SagePaySuite\Model\Logger\Logger $logger
+        Logger $logger
     ) {
         parent::__construct($curl, $returnData, $logger);
 
@@ -22,7 +24,7 @@ class HttpText extends Http
     {
         $data = $this->getResponseData();
 
-        $this->getLogger()->sageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
+        $this->getLogger()->sageLog(Logger::LOG_REQUEST, $data, [__METHOD__, __LINE__]);
 
         /** @var \Ebizmarts\SagePaySuite\Api\Data\HttpResponse $return */
         $this->getReturnData()->setStatus($this->getResponseCode());
