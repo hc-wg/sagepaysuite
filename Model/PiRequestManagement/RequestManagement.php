@@ -107,7 +107,6 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
      */
     public function pay()
     {
-        //@TODO: Improve here to support Deferred, Authenticate.
         $this->payResult = $this->getPiRestApi()->capture($this->getRequest());
 
         return $this->payResult;
@@ -137,12 +136,13 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
 
     private function saveAdditionalPaymentInformation()
     {
+        $payResult = $this->getPayResult();
         $this->getPayment()->setMethod(Config::METHOD_PI);
-        $this->getPayment()->setTransactionId($this->getPayResult()->getTransactionId());
-        $this->getPayment()->setAdditionalInformation('statusCode', $this->getPayResult()->getStatusCode());
-        $this->getPayment()->setAdditionalInformation('statusDetail', $this->getPayResult()->getStatusDetail());
-        if ($this->getPayResult()->getThreeDSecure() !== null) {
-            $this->getPayment()->setAdditionalInformation('threeDStatus', $this->getPayResult()->getThreeDSecure()->getStatus());
+        $this->getPayment()->setTransactionId($payResult->getTransactionId());
+        $this->getPayment()->setAdditionalInformation('statusCode', $payResult->getStatusCode());
+        $this->getPayment()->setAdditionalInformation('statusDetail', $payResult->getStatusDetail());
+        if ($payResult->getThreeDSecure() !== null) {
+            $this->getPayment()->setAdditionalInformation('threeDStatus', $payResult->getThreeDSecure()->getStatus());
         }
         $this->getPayment()->setAdditionalInformation('moto', $this->getIsMotoTransaction());
         $this->getPayment()->setAdditionalInformation('vendorname', $this->getRequestData()->getVendorName());
