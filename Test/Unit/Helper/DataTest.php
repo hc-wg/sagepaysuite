@@ -202,6 +202,13 @@ class DataTest extends \PHPUnit\Framework\TestCase
                     'expected' => 'RT100000005687-2016-02-25-08555514564193'
                 ]
             ],
+            'test REPEAT PI' => [
+                [
+                    'order_id' => '100000005688',
+                    'action'   => 'Repeat',
+                    'expected' => 'RT100000005688-2016-02-25-08555514564193'
+                ]
+            ],
             'test REPEATDEFERRED' => [
                 [
                     'order_id' => '000000004',
