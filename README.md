@@ -5,14 +5,9 @@
 ## Installation Instructions
 
 ## Composer installation (preferred method)
-1. Add this to the `composer.json` file located under the Magento's root dir.
+1. Run this command on Magento's root dir.
 ```
-"repositories": [
-         {
-            "type": "composer",
-            "url": "https://packages.ebizmarts.com"
-        }
-   ]
+composer config repositories.ebizmarts composer https://packages.ebizmarts.com
 ```
 2. Run this command on Magento's root dir. Contact us to get your access token.
 
