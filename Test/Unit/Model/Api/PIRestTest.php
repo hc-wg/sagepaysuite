@@ -826,7 +826,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($result->getDate(), "2015-08-11T11:45:16.285+01:00");
     }
 
-    public function testReleaseSucess()
+    public function testReleaseSuccess()
     {
         $piInstructionRequest = $this
             ->getMockBuilder(PiInstructionRequest::class)
