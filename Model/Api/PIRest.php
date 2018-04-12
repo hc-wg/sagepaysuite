@@ -7,10 +7,13 @@
 namespace Ebizmarts\SagePaySuite\Model\Api;
 
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponse;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiRepeatRequest;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiRepeatRequestFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory;
@@ -77,6 +80,9 @@ class PIRest
     /** @var HttpRestFactory */
     private $httpRestFactory;
 
+    /** @var PiRepeatRequest */
+    private $repeatRequestFactory;
+
     /**
      * PIRest constructor.
      * @param HttpRestFactory $httpRestFactory
@@ -108,7 +114,8 @@ class PIRest
         PiThreeDSecureRequestFactory $threeDRequest,
         PiRefundRequestFactory $refundRequest,
         PiInstructionRequestFactory $instructionRequest,
-        PiInstructionResponseFactory $instructionResponse
+        PiInstructionResponseFactory $instructionResponse,
+        PiRepeatRequestFactory $repeatRequest
     ) {
 
         $this->config = $config;
@@ -126,6 +133,7 @@ class PIRest
         $this->instructionRequest         = $instructionRequest;
         $this->instructionResponse        = $instructionResponse;
         $this->httpRestFactory            = $httpRestFactory;
+        $this->repeatRequestFactory       = $repeatRequest;
     }
 
     /**
@@ -135,7 +143,7 @@ class PIRest
      * @param $body
      * @return \Ebizmarts\SagePaySuite\Api\Data\HttpResponseInterface
      */
-    private function _executePostRequest($url, $body)
+    private function executePostRequest($url, $body)
     {
         /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpRest $rest */
         $rest = $this->httpRestFactory->create();
@@ -151,7 +159,7 @@ class PIRest
      * @param $url
      * @return \Ebizmarts\SagePaySuite\Api\Data\HttpResponseInterface
      */
-    private function _executeRequest($url)
+    private function executeRequest($url)
     {
         /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpRest $rest */
         $rest = $this->httpRestFactory->create();
@@ -167,7 +175,7 @@ class PIRest
      * @param null $vpsTxId
      * @return string
      */
-    private function _getServiceUrl($action, $vpsTxId = null)
+    private function getServiceUrl($action, $vpsTxId = null)
     {
         switch ($action) {
             case self::ACTION_TRANSACTION_DETAILS:
@@ -209,8 +217,8 @@ class PIRest
         $request->setVendorName($this->config->getVendorname());
 
         $jsonBody = json_encode($request->__toArray());
-        $url      = $this->_getServiceUrl(self::ACTION_GENERATE_MERCHANT_KEY);
-        $result   = $this->_executePostRequest($url, $jsonBody);
+        $url      = $this->getServiceUrl(self::ACTION_GENERATE_MERCHANT_KEY);
+        $result   = $this->executePostRequest($url, $jsonBody);
 
         $resultData = $this->processResponse($result);
 
@@ -232,7 +240,7 @@ class PIRest
     public function capture($paymentRequest)
     {
         $jsonRequest   = json_encode($paymentRequest);
-        $result        = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
+        $result        = $this->executePostRequest($this->getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
         $captureResult = $this->processResponse($result);
 
         return $this->getTransactionDetailsObject($captureResult);
@@ -253,7 +261,7 @@ class PIRest
         $request->setParEs($paRes);
 
         $jsonBody   = json_encode($request->__toArray());
-        $result     = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
+        $result     = $this->executePostRequest($this->getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
         $resultData = $this->processResponse($result);
 
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $response */
@@ -271,7 +279,7 @@ class PIRest
      * @param $description
      * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
      */
-    public function refund($vendorTxCode, $refTransactionId, $amount, $currency, $description)
+    public function refund($vendorTxCode, $refTransactionId, $amount, $description)
     {
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequest $refundRequest */
         $refundRequest = $this->refundRequest->create();
@@ -282,7 +290,7 @@ class PIRest
         $refundRequest->setDescription($description);
 
         $jsonRequest = json_encode($refundRequest->__toArray());
-        $result      = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
+        $result      = $this->executePostRequest($this->getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
 
         return $this->getTransactionDetailsObject($this->processResponse($result));
     }
@@ -298,19 +306,66 @@ class PIRest
         $request->setInstructionType('void');
 
         $jsonRequest = json_encode($request->__toArray());
-        $result = $this->_executePostRequest(
-            $this->_getServiceUrl(self::ACTION_TRANSACTION_INSTRUCTIONS, $transactionId),
+        $result = $this->executePostRequest(
+            $this->getServiceUrl(self::ACTION_TRANSACTION_INSTRUCTIONS, $transactionId),
             $jsonRequest
         );
 
-        $apiResponse = $this->processResponse($result);
+        return $this->processInstructionsResponse($result);
+    }
 
-        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponse $response */
-        $response = $this->instructionResponse->create();
-        $response->setInstructionType($apiResponse->instructionType);
-        $response->setDate($apiResponse->date);
+    /**
+     * Make release request.
+     *
+     * @param string $transactionId
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     */
+    public function release(string $transactionId, $amount)
+    {
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequest $request */
+        $request = $this->instructionRequest->create();
+        $request->setInstructionType('release');
+        $request->setAmount($amount * 100);
 
-        return $response;
+        $jsonRequest = json_encode($request->__toArray());
+        $result = $this->executePostRequest(
+            $this->getServiceUrl(self::ACTION_TRANSACTION_INSTRUCTIONS, $transactionId),
+            $jsonRequest
+        );
+
+        return $this->processInstructionsResponse($result);
+    }
+
+    /**
+     * @param $vendorTxCode
+     * @param $refTransactionId
+     * @param $amount
+     * @param $currency
+     * @param $description
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
+     */
+    public function repeat
+    (
+        string $vendorTxCode,
+        string $refTransactionId,
+        string $currency,
+        int $amount,
+        string $description
+    ) {
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiRepeatRequest $repeatRequest */
+        $repeatRequest = $this->repeatRequestFactory->create();
+        $repeatRequest->setTransactionType(Config::ACTION_REPEAT_PI);
+        $repeatRequest->setReferenceTransactionId($refTransactionId);
+        $repeatRequest->setVendorTxCode($vendorTxCode);
+        $repeatRequest->setAmount($amount);
+        $repeatRequest->setCurrency($currency);
+        $repeatRequest->setDescription($description);
+
+        $jsonRequest = json_encode($repeatRequest->__toArray());
+        $result      = $this->executePostRequest($this->getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
+
+        return $this->getTransactionDetailsObject($this->processResponse($result));
     }
 
     /**
@@ -322,7 +377,7 @@ class PIRest
      */
     public function transactionDetails($vpsTxId)
     {
-        $result = $this->_executeRequest($this->_getServiceUrl(self::ACTION_TRANSACTION_DETAILS, $vpsTxId));
+        $result = $this->executeRequest($this->getServiceUrl(self::ACTION_TRANSACTION_DETAILS, $vpsTxId));
 
         if ($result->getStatus() == 200) {
             return $this->getTransactionDetailsObject($result->getResponseData());
@@ -330,6 +385,7 @@ class PIRest
             $error_code = $result->getResponseData()->code;
             $error_msg  = $result->getResponseData()->description;
 
+            /** @var $exception \Ebizmarts\SagePaySuite\Model\Api\ApiException */
             $exception = $this->apiExceptionFactory->create([
                 'phrase' => __($error_msg),
                 'code' => $error_code
@@ -375,6 +431,7 @@ class PIRest
                 $errorMessage = $errors->statusDetail;
             }
 
+            /** @var \Ebizmarts\SagePaySuite\Model\Api\ApiException $exception */
             $exception = $this->apiExceptionFactory->create(['phrase' => __($errorMessage), 'code' => $errorCode]);
 
             throw $exception;
@@ -457,5 +514,22 @@ class PIRest
         }
 
         return $transaction;
+    }
+
+    /**
+     * @param $result
+     * @return PiInstructionResponse
+     * @throws ApiException
+     */
+    private function processInstructionsResponse($result): PiInstructionResponse
+    {
+        $apiResponse = $this->processResponse($result);
+
+        /** @var PiInstructionResponse $response */
+        $response = $this->instructionResponse->create();
+        $response->setInstructionType($apiResponse->instructionType);
+        $response->setDate($apiResponse->date);
+
+        return $response;
     }
 }

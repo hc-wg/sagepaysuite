@@ -10,7 +10,11 @@ use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequest;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponse;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiRepeatRequest;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmount;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod;
 use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Phrase;
@@ -44,6 +48,18 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
     const PI_PASSWORD = "o2iHSrFybYMZpmWOQMuhsXP52V4fBtpuSDshrKDSWsBY1OiN6hwd9Kb12z4j5Us5u";
 
     // @codingStandardsIgnoreStart
+    const TRANSACTION_RESULT_CARD_FACTORY = '\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory';
+
+    const REPEAT_REQUEST_FACTORY = '\Ebizmarts\SagePaySuite\Api\SagePayData\PiRepeatRequestFactory';
+
+    const TRANSACTION_RESULT_FACTORY = '\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory';
+
+    const TRANSACTION_RESULT_PAYMENT_METHOD_FACTORY = '\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory';
+
+    const PI_REST = 'Ebizmarts\SagePaySuite\Model\Api\PIRest';
+
+    const TRANSACTION_RESULT_AMOUNT_FACTORY = '\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory';
+
     protected function setUp()
     {
         $this->objectManager = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
@@ -119,10 +135,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->method('setUrl')
             ->with("https://test.sagepay.com/api/v1/merchant-session-keys");
 
-        $this->httpResponseMock
-            ->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(201);
+        $this->verifyResponseCalledOnceReturns201();
         $this->httpResponseMock
             ->expects($this->once())
             ->method('getResponseData')
@@ -166,7 +179,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->with(\Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
         $this->pirestApiModel  = $this->objectManager->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            self::PI_REST,
             [
                 "mskRequest"      => $mskRequestMockFactory,
                 "httpRestFactory" => $this->httpRestFactoryMock,
@@ -243,7 +256,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->willReturn($apiException);
 
         $this->pirestApiModel  = $this->objectManager->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            self::PI_REST,
             [
                 "mskRequest"          => $mskRequestMockFactory,
                 "httpRestFactory"     => $this->httpRestFactoryMock,
@@ -276,21 +289,13 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->willReturn($threedResultMock);
 
         $payResult = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod::class)
+            ->getMockBuilder(PiTransactionResultPaymentMethod::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMethodResultFactory = $this
-            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory')
-            ->disableOriginalConstructor()
-            ->setMethods(['create'])
-            ->getMock();
-        $paymentMethodResultFactory
-            ->expects($this->once())
-            ->method('create')
-            ->willReturn($payResult);
+        $paymentMethodResultFactory = $this->makePaymentMethodResultFactoryMock($payResult);
 
         $cardResult = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard::class)
+            ->getMockBuilder(PiTransactionResultCard::class)
             ->disableOriginalConstructor()
         ->getMock();
         $cardResult->expects($this->never())->method('setCardIdentifier');
@@ -299,12 +304,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         $cardResult->expects($this->once())->method('setLastFourDigits')->with("0006");
         $cardResult->expects($this->once())->method('setExpiryDate')->with("0317");
 
-        $cardResultFactory = $this
-            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory')
-            ->disableOriginalConstructor()
-            ->setMethods(['create'])
-            ->getMock();
-        $cardResultFactory->expects($this->once())->method('create')->willReturn($cardResult);
+        $cardResultFactory = $this->makeCardResultFactoryMock($cardResult);
 
         $payResult->expects($this->once())->method('setCard')->with($cardResult);
 
@@ -325,15 +325,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         $piTransactionResult->expects($this->once())->method('setPaymentMethod')->with($payResult);
         $piTransactionResult->expects($this->once())->method('setThreeDSecure')->with($threedResultMock);
 
-        $piResultFactory = $this
-            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory')
-            ->disableOriginalConstructor()
-            ->setMethods(['create'])
-            ->getMock();
-        $piResultFactory
-            ->expects($this->once())
-            ->method('create')
-            ->willReturn($piTransactionResult);
+        $piResultFactory = $this->makeTransactionResultFactoryMock($piTransactionResult);
 
         $this->configMock
             ->method('getMode')
@@ -344,10 +336,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->method('setUrl')
             ->with("https://live.sagepay.com/api/v1/transactions");
 
-        $this->httpResponseMock
-            ->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(201);
+        $this->verifyResponseCalledOnceReturns201();
         $this->httpResponseMock
             ->expects($this->once())
             ->method('getResponseData')
@@ -409,7 +398,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->willReturn($this->httpResponseMock);
 
         $this->pirestApiModel  = $this->objectManager->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            self::PI_REST,
             [
                 "httpRestFactory"            => $this->httpRestFactoryMock,
                 "config"                     => $this->configMock,
@@ -476,7 +465,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->willReturn($apiExceptionObj);
 
         $this->pirestApiModel  = $this->objectManager->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            self::PI_REST,
             [
                 "httpRestFactory"            => $this->httpRestFactoryMock,
                 "config"                     => $this->configMock,
@@ -536,7 +525,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->willReturn($apiExceptionObj);
 
         $this->pirestApiModel  = $this->objectManager->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            self::PI_REST,
             [
                 "httpRestFactory"            => $this->httpRestFactoryMock,
                 "config"                     => $this->configMock,
@@ -583,17 +572,14 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->with('{"paRes":"fsd678dfs786dfs786fds678fds"}')
             ->willReturn($this->httpResponseMock);
 
-        $this->httpResponseMock
-            ->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(201);
+        $this->verifyResponseCalledOnceReturns201();
         $this->httpResponseMock
             ->expects($this->once())
             ->method('getResponseData')
             ->willReturn(json_decode('{"status": "OK"}'));
 
         $this->pirestApiModel  = $this->objectManager->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            self::PI_REST,
             [
                 "httpRestFactory"            => $this->httpRestFactoryMock,
                 "config"                     => $this->configMock,
@@ -665,7 +651,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->willReturn($apiException);
 
         $this->pirestApiModel  = $this->objectManager->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            self::PI_REST,
             [
                 "httpRestFactory"            => $this->httpRestFactoryMock,
                 "config"                     => $this->configMock,
@@ -703,7 +689,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->willReturn($transactionResponse);
 
 
-        $resultFactory = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory')
+        $resultFactory = $this->getMockBuilder(self::TRANSACTION_RESULT_FACTORY)
             ->disableOriginalConstructor()
             ->setMethods(['create'])
             ->getMock();
@@ -756,7 +742,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->willReturn($apiException);
 
         $this->pirestApiModel  = $this->objectManager->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            self::PI_REST,
             [
                 "httpRestFactory"            => $this->httpRestFactoryMock,
                 "config"                     => $this->configMock,
@@ -802,17 +788,14 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->with('{"instructionType":"void"}')
             ->willReturn($this->httpResponseMock);
 
-        $this->httpResponseMock
-            ->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(201);
+        $this->verifyResponseCalledOnceReturns201();
         $this->httpResponseMock
             ->expects($this->once())
             ->method('getResponseData')
             ->willReturn(json_decode('{"instructionType": "void","date": "2015-08-11T11:45:16.285+01:00"}'));
 
         $this->pirestApiModel  = $this->objectManager->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            self::PI_REST,
             [
                 "httpRestFactory"            => $this->httpRestFactoryMock,
                 "config"                     => $this->configMock,
@@ -864,17 +847,14 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->with('{"instructionType":"release","amount":9738}')
             ->willReturn($this->httpResponseMock);
 
-        $this->httpResponseMock
-            ->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(201);
+        $this->verifyResponseCalledOnceReturns201();
         $this->httpResponseMock
             ->expects($this->once())
             ->method('getResponseData')
             ->willReturn(json_decode('{"instructionType": "release","date": "2015-08-11T11:45:16.285+01:00"}'));
 
         $this->pirestApiModel  = $this->objectManager->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            self::PI_REST,
             [
                 "httpRestFactory"            => $this->httpRestFactoryMock,
                 "config"                     => $this->configMock,
@@ -886,6 +866,79 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         $result = $this->pirestApiModel->release("2B97808F-9A36-6E71-F87F-6714667E8AF4", 97.38);
         $this->assertEquals($result->getInstructionType(), "release");
         $this->assertEquals($result->getDate(), "2015-08-11T11:45:16.285+01:00");
+    }
+
+    public function testRepeatSuccess()
+    {
+        $repeatRequestFactoryMock = $this
+            ->getMockBuilder(self::REPEAT_REQUEST_FACTORY)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $repeatRequestFactoryMock->expects($this->once())->method('create')->willReturn($this->makeRepeatRequestMock());
+
+        $this->verifyRestApiSetUrlCalledOnce();
+
+        $this->verifyResponseCalledOnceReturns201();
+
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn($this->getRepeatOkResponseJson());
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with($this->getRepeatRequestPostJsonString())
+            ->willReturn($this->httpResponseMock);
+
+        $piTransactionResult = $this->makeTransactionResultMockOk();
+        $piTransactionResult->expects($this->once())->method('setTransactionId')
+            ->with("1F910D3F-65EB-9B79-4ABA-D46C182DC78C");
+        $piTransactionResult->expects($this->once())->method('setTransactionType')->with("Repeat");
+
+        $amountResult = $this->getMockBuilder(PiTransactionResultAmount::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $amountResult->expects($this->once())->method('setSaleAmount')->with(3840);
+        $amountResult->expects($this->once())->method('setTotalAmount')->with(3840);
+        $amountResult->expects($this->once())->method('setSurchargeAmount')->with(0);
+
+        $piTransactionResult->expects($this->once())->method('setAmount')->with($amountResult);
+
+        $cardResult = $this->makeCardResultMockMastercard();
+        $cardResult->expects($this->once())->method('setExpiryDate')->with("0219");
+
+        $cardResultFactory = $this->makeCardResultFactoryMock($cardResult);
+
+        $piResultFactory = $this->makeTransactionResultFactoryMock($piTransactionResult);
+
+        $payResult = $this
+            ->getMockBuilder(PiTransactionResultPaymentMethod::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMethodResultFactory = $this->makePaymentMethodResultFactoryMock($payResult);
+
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            self::PI_REST,
+            [
+                'config'                     => $this->configMock,
+                'repeatRequest'              => $repeatRequestFactoryMock,
+                'piCaptureResultFactory'     => $piResultFactory,
+                'httpRestFactory'            => $this->httpRestFactoryMock,
+                'cardResultFactory'          => $cardResultFactory,
+                'paymentMethodResultFactory' => $paymentMethodResultFactory,
+                'amountResultFactory'        => $this->makeAmountResultFactory($amountResult)
+            ]
+        );
+
+        $this->pirestApiModel->repeat(
+            'RT-2018-04-10-1731151523381475',
+            'ABA09B63-6ABA-F04F-45EE-5FCF8935915D',
+            'GBP',
+            3840,
+            'REPEAT deferred transaction from Magento.'
+        );
     }
 
     public function testRefundSucess()
@@ -908,14 +961,9 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('create')
             ->willReturn($refundRequestMock);
-        $this->httpRestMock
-            ->expects($this->once())
-            ->method('setUrl');
+        $this->verifyRestApiSetUrlCalledOnce();
 
-        $this->httpResponseMock
-            ->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(201);
+        $this->verifyResponseCalledOnceReturns201();
         $this->httpResponseMock
             ->expects($this->once())
             ->method('getResponseData')
@@ -960,52 +1008,22 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         $piTransactionResult->expects($this->once())->method('setRetrievalReference')->with("13551640");
         $piTransactionResult->expects($this->once())->method('setBankAuthCode')->with("999778");
         $piTransactionResult->expects($this->never())->method('setBankResponseCode');
-        //$piTransactionResult->expects($this->once())->method('setPaymentMethod')->with($payResult);
-        //$piTransactionResult->expects($this->once())->method('setThreeDSecure')->with($threedResultMock);
 
-        $cardResult = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $cardResult->expects($this->never())->method('setCardIdentifier');
-        $cardResult->expects($this->never())->method('setIsReusable');
-        $cardResult->expects($this->once())->method('setCardType')->with("MasterCard");
-        $cardResult->expects($this->once())->method('setLastFourDigits')->with("0001");
+        $cardResult = $this->makeCardResultMockMastercard();
         $cardResult->expects($this->once())->method('setExpiryDate')->with("0520");
 
-        $cardResultFactory = $this
-            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory')
-            ->disableOriginalConstructor()
-            ->setMethods(['create'])
-            ->getMock();
-        $cardResultFactory->expects($this->once())->method('create')->willReturn($cardResult);
+        $cardResultFactory = $this->makeCardResultFactoryMock($cardResult);
 
-        $piResultFactory = $this
-            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory')
-            ->disableOriginalConstructor()
-            ->setMethods(['create'])
-            ->getMock();
-        $piResultFactory
-            ->expects($this->once())
-            ->method('create')
-            ->willReturn($piTransactionResult);
+        $piResultFactory = $this->makeTransactionResultFactoryMock($piTransactionResult);
 
         $payResult = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod::class)
+            ->getMockBuilder(PiTransactionResultPaymentMethod::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMethodResultFactory = $this
-            ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory')
-            ->disableOriginalConstructor()
-            ->setMethods(['create'])
-            ->getMock();
-        $paymentMethodResultFactory
-            ->expects($this->once())
-            ->method('create')
-            ->willReturn($payResult);
+        $paymentMethodResultFactory = $this->makePaymentMethodResultFactoryMock($payResult);
 
         $this->pirestApiModel  = $this->objectManager->getObject(
-            'Ebizmarts\SagePaySuite\Model\Api\PIRest',
+            self::PI_REST,
             [
                 "config"                     => $this->configMock,
                 "refundRequest"              => $refundRequestFactoryMock,
@@ -1034,5 +1052,167 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         $quoteMock->expects($this->once())->method("getStoreId")->willReturn(1);
 
         return $quoteMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeCardResultMockMastercard()
+    {
+        $cardResult = $this->getMockBuilder(PiTransactionResultCard::class)->disableOriginalConstructor()->getMock();
+        $cardResult->expects($this->never())->method('setCardIdentifier');
+        $cardResult->expects($this->never())->method('setIsReusable');
+        $cardResult->expects($this->once())->method('setCardType')->with("MasterCard");
+        $cardResult->expects($this->once())->method('setLastFourDigits')->with("0001");
+
+        return $cardResult;
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getRepeatOkResponseJson(): \stdClass
+    {
+        return json_decode('
+                    {
+                        "statusCode": "0000",
+                        "statusDetail": "The Authorisation was Successful.",
+                        "transactionId": "1F910D3F-65EB-9B79-4ABA-D46C182DC78C",
+                        "transactionType": "Repeat",
+                        "retrievalReference": 17731745,
+                        "bankAuthorisationCode": "999778",
+                        "paymentMethod": {
+                            "card": {
+                                "cardType": "MasterCard",
+                                "lastFourDigits": "0001",
+                                "expiryDate": "0219"
+                            }
+                        },
+                        "amount": {
+                            "totalAmount": 3840,
+                            "saleAmount": 3840,
+                            "surchargeAmount": 0
+                        },
+                        "currency": "GBP",
+                        "fiRecipient": {},
+                        "status": "Ok"
+                    }
+                    ');
+    }
+
+    /**
+     * @return string
+     */
+    private function getRepeatRequestPostJsonString(): string
+    {
+        return '{"transactionType":"Repeat","referenceTransactionId":"ABA09B63-6ABA-F04F-45EE-5FCF8935915D","vendorTxCode":"RT-2018-04-10-1731151523381475","amount":3840,"currency":"GBP","description":"REPEAT deferred transaction from Magento."}';
+    }
+
+    /**
+     * @return array
+     */
+    private function getRepeatRequestAsArray(): array
+    {
+        return [
+            'transactionType'        => 'Repeat',
+            'referenceTransactionId' => 'ABA09B63-6ABA-F04F-45EE-5FCF8935915D',
+            'vendorTxCode'           => 'RT-2018-04-10-1731151523381475',
+            'amount'                 => 3840,
+            'currency'               => 'GBP',
+            'description'            => 'REPEAT deferred transaction from Magento.',
+        ];
+    }
+
+    /**
+     * @param $amountResult
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeAmountResultFactory($amountResult): \PHPUnit_Framework_MockObject_MockObject
+    {
+        $amountResultFactory = $this->getMockBuilder(self::TRANSACTION_RESULT_AMOUNT_FACTORY)->disableOriginalConstructor()->setMethods(['create'])->getMock();
+        $amountResultFactory->expects($this->once())->method('create')->willReturn($amountResult);
+
+        return $amountResultFactory;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeTransactionResultMockOk()
+    {
+        $piTransactionResult = $this->getMockBuilder(PiTransactionResult::class)
+            ->disableOriginalConstructor()->getMock();
+        $piTransactionResult->expects($this->once())->method('setStatusCode')->with("0000");
+        $piTransactionResult->expects($this->once())->method('setStatusDetail')
+            ->with("The Authorisation was Successful.");
+        $piTransactionResult->expects($this->once())->method('setRetrievalReference')->with("17731745");
+        $piTransactionResult->expects($this->once())->method('setStatus')->with("Ok");
+        $piTransactionResult->expects($this->once())->method('setBankAuthCode')->with("999778");
+        $piTransactionResult->expects($this->never())->method('setBankResponseCode');
+
+        return $piTransactionResult;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeRepeatRequestMock()
+    {
+        $repeatRequestMock = $this->getMockBuilder(PiRepeatRequest::class)->disableOriginalConstructor()->getMock();
+        $repeatRequestMock->expects($this->once())->method('setTransactionType')->with('Repeat');
+        $repeatRequestMock->expects($this->once())->method('setVendorTxCode')->with('RT-2018-04-10-1731151523381475');
+        $repeatRequestMock->expects($this->once())->method('setAmount')->with(3840);
+        $repeatRequestMock->expects($this->once())->method('setCurrency')->with('GBP');
+        $repeatRequestMock->expects($this->once())->method('setDescription')->with('REPEAT deferred transaction from Magento.');
+        $repeatRequestMock->expects($this->once())->method('setReferenceTransactionId')->with('ABA09B63-6ABA-F04F-45EE-5FCF8935915D');
+        $repeatRequestMock->expects($this->once())->method('__toArray')->willReturn($this->getRepeatRequestAsArray());
+
+        return $repeatRequestMock;
+    }
+
+    /**
+     * @param $cardResult
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeCardResultFactoryMock($cardResult)
+    {
+        $cardResultFactory = $this->getMockBuilder(self::TRANSACTION_RESULT_CARD_FACTORY)->disableOriginalConstructor()->setMethods(['create'])->getMock();
+        $cardResultFactory->expects($this->once())->method('create')->willReturn($cardResult);
+
+        return $cardResultFactory;
+    }
+
+    /**
+     * @param $piTransactionResult
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeTransactionResultFactoryMock($piTransactionResult)
+    {
+        $piResultFactory = $this->getMockBuilder(self::TRANSACTION_RESULT_FACTORY)->disableOriginalConstructor()->setMethods(['create'])->getMock();
+        $piResultFactory->expects($this->once())->method('create')->willReturn($piTransactionResult);
+
+        return $piResultFactory;
+    }
+
+    /**
+     * @param $payResult
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makePaymentMethodResultFactoryMock($payResult)
+    {
+        $paymentMethodResultFactory = $this->getMockBuilder(self::TRANSACTION_RESULT_PAYMENT_METHOD_FACTORY)->disableOriginalConstructor()->setMethods(['create'])->getMock();
+        $paymentMethodResultFactory->expects($this->once())->method('create')->willReturn($payResult);
+
+        return $paymentMethodResultFactory;
+    }
+
+    private function verifyResponseCalledOnceReturns201()
+    {
+        $this->httpResponseMock->expects($this->once())->method('getStatus')->willReturn(201);
+    }
+
+    private function verifyRestApiSetUrlCalledOnce()
+    {
+        $this->httpRestMock->expects($this->once())->method('setUrl');
     }
 }
