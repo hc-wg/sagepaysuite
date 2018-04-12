@@ -49,7 +49,7 @@ class Pi implements PaymentOperations
 
         $vpsTxId = $this->suiteHelper->clearTransactionId($vpsTxId);
         $transaction = $this->reportingApi->getTransactionDetails($vpsTxId);
-        //TODO: change this to piRestApi->transactionDetails
+
         $txStateId = (int)$transaction->txstateid;
         if ($txStateId === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
             $result = $this->piRestApi->release($vpsTxId, $amount);
