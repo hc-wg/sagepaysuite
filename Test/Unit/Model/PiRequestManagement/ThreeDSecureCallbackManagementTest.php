@@ -5,6 +5,12 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model\PiRequestManagement;
 class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
 {
 
+    const THREE_D_SECURE_CALLBACK_MANAGEMENT = "Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement";
+
+    const PI_TRANSACTION_RESULT_FACTORY = "Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory";
+
+    const PI_TRANSACTION_RESULT = "Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult";
+
     public function testIsNotMotoTransaction()
     {
         /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement $model */
@@ -23,10 +29,10 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $checkoutHelperMock = $this->getMockBuilder("Ebizmarts\SagePaySuite\Helper\Checkout")
             ->disableOriginalConstructor()->getMock();
 
-        $piTransactionResult = $objectManagerHelper->getObject("Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult");
+        $piTransactionResult = $objectManagerHelper->getObject(self::PI_TRANSACTION_RESULT);
         //$piTransactionResult->setData([]);
 
-        $piTransactionResultFactoryMock = $this->getMockBuilder("Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory")
+        $piTransactionResultFactoryMock = $this->getMockBuilder(self::PI_TRANSACTION_RESULT_FACTORY)
             ->setMethods(["create"])->disableOriginalConstructor()->getMock();
         $piTransactionResultFactoryMock->method("create")->willReturn($piTransactionResult);
 
@@ -50,7 +56,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
 
         /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement $model */
         $model = $objectManagerHelper->getObject(
-            "Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement",
+            self::THREE_D_SECURE_CALLBACK_MANAGEMENT,
             [
                 "checkoutHelper" => $checkoutHelperMock,
                 "payResultFactory" => $piTransactionResultFactoryMock,
@@ -62,7 +68,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $requestData = $objectManagerHelper->getObject("Ebizmarts\SagePaySuite\Api\Data\PiRequestManager");
         $model->setRequestData($requestData);
 
-        $payResult = $objectManagerHelper->getObject("Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult");
+        $payResult = $objectManagerHelper->getObject(self::PI_TRANSACTION_RESULT);
         $model->setPayResult($payResult);
 
         $model->placeOrder();
@@ -71,9 +77,9 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeThreeDMock(): \PHPUnit_Framework_MockObject_MockObject
+    private function makeThreeDMock()
     {
-        $model = $this->getMockBuilder("Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement")
+        $model = $this->getMockBuilder(self::THREE_D_SECURE_CALLBACK_MANAGEMENT)
             ->disableOriginalConstructor()
             ->setMethods(["getPayment"])
             ->getMock();
