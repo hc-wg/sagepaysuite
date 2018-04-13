@@ -196,6 +196,44 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
         $sut->capture($paymentMock, $testAmount);
     }
 
+    public function testRefundTransaction()
+    {
+        $testAmount  = 963.80;
+        $testVpsTxId = 'D55E2CC0-168C-F770-6862-C28D0CAD0755';
+        $testOrderIncrementId = '000000084';
+
+        $sharedApiMock = $this->getMockBuilder(Shared::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sharedApiMock->expects($this->once())->method('refundTransaction')
+            ->with($testVpsTxId, $testAmount, $testOrderIncrementId)
+            ->willReturn($this->makeRefundResponseMock());
+
+        $configMock = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
+
+        /** @var Payment $sut */
+        $sut = $this->makeObjectManager()->getObject(
+            Payment::class,
+            [
+                'config'      => $configMock,
+                'suiteHelper' => $this->makeSagePayHelperDataMock()
+            ]
+        );
+
+        $sut->setApi($sharedApiMock);
+
+        $orderMock = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
+        $orderMock->expects($this->once())->method('getIncrementId')->willReturn($testOrderIncrementId);
+
+        $paymentMock = $this->makePaymentMock($orderMock);
+        $paymentMock->expects($this->once())->method('getParentTransactionId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->once())->method('setIsTransactionClosed')->with(1);
+        $paymentMock->expects($this->once())->method('setShouldCloseParentTransaction')->with(1);
+        $this->checkSetTransactionAdditionalCorrectRefund($paymentMock);
+
+        $sut->refund($paymentMock, $testAmount);
+    }
+
     /**
      * @return ObjectManager
      */
@@ -280,6 +318,26 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array
      */
+    private function makeRefundResponseMock(): array
+    {
+        $authoriseResult = [
+            'status' => 200,
+            'data'   => [
+                'VPSProtocol'    => '3.00',
+                'Status'         => 'OK',
+                'StatusDetail'   => '0000 : The Authorisation was Successful.',
+                'SecurityKey'    => 'IP0Q6DNQMV',
+                'TxAuthNo'       => '17759858',
+                'VPSTxId'        => '{87ACE673-6821-B9BD-41A6-8E8EEFEE7C25}'
+            ]
+        ];
+
+        return $authoriseResult;
+    }
+
+    /**
+     * @return array
+     */
     private function makeAuthoriseResponseMock(): array
     {
         $authoriseResult = [
@@ -303,6 +361,24 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
         ];
 
         return $authoriseResult;
+    }
+
+    /**
+     * @param $paymentMock
+     */
+    private function checkSetTransactionAdditionalCorrectRefund($paymentMock)
+    {
+        $paymentMock
+            ->expects($this->exactly(6))
+            ->method('setTransactionAdditionalInfo')
+            ->withConsecutive(
+                ['VPSProtocol', '3.00'],
+                ['Status', 'OK'],
+                ['StatusDetail', '0000 : The Authorisation was Successful.'],
+                ['SecurityKey', 'IP0Q6DNQMV'],
+                ['TxAuthNo', '17759858'],
+                ['VPSTxId', '{87ACE673-6821-B9BD-41A6-8E8EEFEE7C25}']
+            );
     }
 
     /**
