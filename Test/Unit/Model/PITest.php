@@ -90,13 +90,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->method('getOrderCurrencyCode')
             ->willReturn('GBP');
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
+        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
         $paymentMock->expects($this->once())
             ->method('setIsTransactionClosed')
             ->with(1);
@@ -158,13 +152,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->method('getOrderCurrencyCode')
             ->willReturn('GBP');
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
+        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
 
         $this->suiteHelperMock
             ->expects($this->once())
@@ -227,13 +215,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->method('generateVendorTxCode')
             ->willReturn('R1000001');
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
+        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
 
         $return = new \stdClass();
         $return->transactionId = 'a';
@@ -471,36 +453,47 @@ class PITest extends \PHPUnit\Framework\TestCase
 
     public function testInitialize()
     {
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('setCanSendNewEmailFlag')
-            ->with(false);
+        $orderMock = $this->makeOrderMockNoSendNewEmail();
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
+        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
 
-        $stateMock = $this
-            ->getMockBuilder('Magento\Framework\DataObject')
-            ->setMethods(["offsetExists", "offsetGet", "offsetSet", "offsetUnset", "setStatus", "setIsNotified"])
-            ->disableOriginalConstructor()
-            ->getMock();
+        $stateMock = $this->makeStateObjectMock();
         $stateMock->expects($this->once())
             ->method('setStatus')
+            ->with('pending_payment');
+        $stateMock->expects($this->once())
+            ->method('setState')
             ->with('pending_payment');
         $stateMock->expects($this->once())
             ->method('setIsNotified')
             ->with(false);
 
         $this->piModel->setInfoInstance($paymentMock);
-        $this->piModel->initialize("", $stateMock);
+        $this->piModel->initialize("Payment", $stateMock);
+    }
+
+    public function testInitializeDeferred()
+    {
+        $orderMock   = $this->makeOrderMockNoSendNewEmail();
+
+        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
+        $paymentMock->expects($this->once())
+            ->method('getLastTransId')
+            ->willReturn('937F8F36-2BA5-2928-C0C9-7D1159895344');
+
+        $stateMock = $this->makeStateObjectMock();
+        $stateMock->expects($this->once())
+            ->method('setState')
+            ->with('new');
+        $stateMock->expects($this->once())
+            ->method('setStatus')
+            ->with('pending');
+        $stateMock->expects($this->once())
+            ->method('setIsNotified')
+            ->with(false);
+
+        $this->piModel->setInfoInstance($paymentMock);
+        $this->piModel->initialize('Deferred', $stateMock);
     }
 
     public function testGetConfigPaymentAction()
@@ -800,5 +793,46 @@ class PITest extends \PHPUnit\Framework\TestCase
                 ])->disableOriginalConstructor()->getMock();
 
         return $infoMock;
+    }
+
+    /**
+     * @param $orderMock
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makePaymentMockForInitialize($orderMock)
+    {
+        $paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')->disableOriginalConstructor()->getMock();
+        $paymentMock->expects($this->once())->method('getOrder')->will($this->returnValue($orderMock));
+
+        return $paymentMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeOrderMockNoSendNewEmail()
+    {
+        $orderMock = $this->getMockBuilder('Magento\Sales\Model\Order')->disableOriginalConstructor()->getMock();
+        $orderMock->expects($this->once())->method('setCanSendNewEmailFlag')->with(false);
+
+        return $orderMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeStateObjectMock()
+    {
+        $stateMock = $this->getMockBuilder('Magento\Framework\DataObject')->setMethods([
+                "offsetExists",
+                "offsetGet",
+                "offsetSet",
+                "offsetUnset",
+                "setStatus",
+                "setState",
+                "setIsNotified"
+            ])->disableOriginalConstructor()->getMock();
+
+        return $stateMock;
     }
 }
