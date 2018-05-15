@@ -148,8 +148,8 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
         $this->getPayment()->setAdditionalInformation('vendorname', $this->getRequestData()->getVendorName());
         $this->getPayment()->setAdditionalInformation('mode', $this->getRequestData()->getMode());
         $this->getPayment()->setAdditionalInformation('paymentAction', $this->getRequestData()->getPaymentAction());
-        $this->getPayment()->setAdditionalInformation('BankAuthCode', $this->getPayResult()->getBankAuthCode());
-        $this->getPayment()->setAdditionalInformation('TxAuthNo', $this->getPayResult()->getTxAuthNo());
+        $this->getPayment()->setAdditionalInformation('bankAuthCode', $this->getPayResult()->getBankAuthCode());
+        $this->getPayment()->setAdditionalInformation('txAuthNo', $this->getPayResult()->getTxAuthNo());
 
         if ($this->getQuote() !== null) {
             $this->getPayment()->setAdditionalInformation('vendorTxCode', $this->getVendorTxCode());
