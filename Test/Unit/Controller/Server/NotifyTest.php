@@ -130,6 +130,8 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
                 "StatusDetail" => "OK Status",
                 "3DSecureStatus" => "NOTCHECKED",
+                "BankAuthCode" => "999777",
+                "TxAuthNo" => "17962849",
                 "CardType" => "VISA",
                 "Last4Digits" => "0006",
                 "ExpiryDate" => "0222",
@@ -141,7 +143,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
                 "GiftAid" => "0",
                 "AddressStatus" => "OK",
                 "PayerStatus" => "OK",
-                "VPSSignature" => '301680A8BBDB771C67918A6599703B10'
+                "VPSSignature" => "8E77F29220981737C51C615C3464301F"
             ]));
 
         $this->expectSetBody(
@@ -219,23 +221,25 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->requestMock->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
-                'TxType'         => 'PAYMENT',
-                'Status'         => 'OK',
-                'VPSTxId'        => '{' . self::TEST_VPSTXID . '}',
-                'StatusDetail'   => 'OK Status',
-                '3DSecureStatus' => 'NOTCHECKED',
-                'CardType'       => 'VISA',
-                'Last4Digits'    => '0006',
-                'ExpiryDate'     => '0222',
-                'VendorTxCode'   => '10000000001-2015-12-12-123456',
-                'AVSCV2'         => 'OK',
-                'AddressResult'  => 'OK',
-                'PostCodeResult' => 'OK',
-                'CV2Result'      => 'OK',
-                'GiftAid'        => '0',
-                'AddressStatus'  => 'OK',
-                'PayerStatus'    => 'OK',
-                'VPSSignature' => '301680A8BBDB771C67918A6599703B10'
+                "TxType" => "PAYMENT",
+                "Status" => "OK",
+                "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
+                "StatusDetail" => "OK Status",
+                "3DSecureStatus" => "NOTCHECKED",
+                "BankAuthCode" => "999777",
+                "TxAuthNo" => "17962849",
+                "CardType" => "VISA",
+                "Last4Digits" => "0006",
+                "ExpiryDate" => "0222",
+                "VendorTxCode" => "10000000001-2015-12-12-123456",
+                "AVSCV2" => "OK",
+                "AddressResult" => "OK",
+                "PostCodeResult" => "OK",
+                "CV2Result" => "OK",
+                "GiftAid" => "0",
+                "AddressStatus" => "OK",
+                "PayerStatus" => "OK",
+                "VPSSignature" => "8E77F29220981737C51C615C3464301F"
             ]));
 
         $this->expectSetBody(
@@ -277,7 +281,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $serverModelMock = $this->makeServerModelMock();
 
         $paymentMock = $this->makeOrderPaymentMock($serverModelMock);
-        $paymentMock->expects($this->exactly(3))->method('setAdditionalInformation');
+        $paymentMock->expects($this->exactly(5))->method('setAdditionalInformation');
 
         $this->makeQuoteMock();
 
@@ -336,6 +340,8 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
                 "VPSTxId"        => "{" . self::TEST_VPSTXID . "}",
                 "StatusDetail"   => "OK Status",
                 "3DSecureStatus" => "NOTCHECKED",
+                "BankAuthCode" => "999777",
+                "TxAuthNo" => "17962849",
                 "CardType"       => "VISA",
                 "Last4Digits"    => "0006",
                 "ExpiryDate"     => "0222",
@@ -347,7 +353,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
                 "GiftAid"        => "0",
                 "AddressStatus"  => "OK",
                 "PayerStatus"    => "OK",
-                "VPSSignature"   => 'F2575F3DD8762F709DC8BB18A136DCEE'
+                "VPSSignature"   => '5E3C9B48732834181EBA17ACDE1E55EF'
             ]);
 
         $this->expectSetBody(
@@ -425,6 +431,8 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
                 "StatusDetail" => "ABORT Status",
                 "3DSecureStatus" => "NOTCHECKED",
+                "BankAuthCode" => "999777",
+                "TxAuthNo" => "17962849",
                 "CardType" => "VISA",
                 "Last4Digits" => "0006",
                 "ExpiryDate" => "0222",
@@ -436,7 +444,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
                 "GiftAid" => "0",
                 "AddressStatus" => "OK",
                 "PayerStatus" => "OK",
-                "VPSSignature" => '5D0EB35B92419D489E8BC3224A17C9E3'
+                "VPSSignature" => 'EA6C59BD4DBEDB8B8B59345E64F9A02C'
             ]));
 
         $this->expectSetBody(
@@ -518,6 +526,8 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
                 "StatusDetail" => "ABORT Status",
                 "3DSecureStatus" => "NOTCHECKED",
+                "BankAuthCode" => "999777",
+                "TxAuthNo" => "17962849",
                 "CardType" => "VISA",
                 "Last4Digits" => "0006",
                 "ExpiryDate" => "0222",
@@ -529,7 +539,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
                 "GiftAid" => "0",
                 "AddressStatus" => "OK",
                 "PayerStatus" => "OK",
-                "VPSSignature" => 'A230EF0384C9B66C8AE7B322E3A7C9A9'
+                "VPSSignature" => 'F348327D868D37850E361B75A2B1D885'
             ]));
 
         $this->expectSetBody(
@@ -606,6 +616,8 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
                 "VPSTxId" => "{" . "INVALID_TRANSACTION" . "}",
                 "StatusDetail" => "ABORT Status",
                 "3DSecureStatus" => "NOTCHECKED",
+                "BankAuthCode" => "999777",
+                "TxAuthNo" => "17962849",
                 "CardType" => "VISA",
                 "Last4Digits" => "0006",
                 "ExpiryDate" => "0222",
@@ -618,7 +630,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
                 "GiftAid" => "0",
                 "AddressStatus" => "OK",
                 "PayerStatus" => "OK",
-                "VPSSignature" => '97EC6F77218792D1C09BEB89E7A5F0A2'
+                "VPSSignature" => '01C00A6026B02C534200728C4E85DDA3'
             ]));
 
         $this->expectSetBody(
@@ -832,6 +844,8 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
                 "StatusDetail" => "OK Status",
                 "3DSecureStatus" => "NOTCHECKED",
+                "BankAuthCode" => "999777",
+                "TxAuthNo" => "17962849",
                 "CardType" => "VISA",
                 "Last4Digits" => "0006",
                 "ExpiryDate" => "0222",
@@ -844,7 +858,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
                 "AddressStatus" => "OK",
                 "PayerStatus" => "OK",
                 'Token' => 'DB771C67918A659',
-                "VPSSignature" => '301680A8BBDB771C67918A6599703B10'
+                "VPSSignature" => '8E77F29220981737C51C615C3464301F'
             ]));
 
         $this->expectSetBody(
