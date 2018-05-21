@@ -82,7 +82,7 @@ class PiRequest
         } else {
             if ($data['billingAddress']['country'] == 'IE') {
                 $data['billingAddress']['postalCode'] = "000";
-            }else {
+            } else {
                 if ($data['billingAddress']['country'] == 'HK') {
                     $data['billingAddress']['postalCode'] = "000";
                 } 
@@ -102,7 +102,7 @@ class PiRequest
         } else {
             if ($data['shippingDetails']['shippingCountry'] == 'IE') {
                 $data['shippingDetails']['shippingPostalCode'] = "000";
-            }else {
+            } else {
                 if ($data['shippingDetails']['shippingCountry'] == 'HK') {
                     $data['shippingDetails']['shippingPostalCode'] = "000";
                 } 

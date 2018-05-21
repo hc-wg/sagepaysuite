@@ -233,11 +233,7 @@ class PiRequestTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($returnData, $piRequestMock->getRequestData());
     }
 
-
-
-
-    
-public function testGetRequesDataHK()
+    public function testGetRequesDataHK()
     {
         $billingAddressMock = $this->getMockBuilder(\Magento\Quote\Model\Quote\Address::class)
             ->disableOriginalConstructor()
@@ -346,7 +342,6 @@ public function testGetRequesDataHK()
 
         $this->assertEquals($returnData, $piRequestMock->getRequestData());
     }
-
 
     public function testGetRequesDataUS()
     {
