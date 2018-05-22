@@ -211,6 +211,10 @@ define(
                         $("#sp-container").css("display", "block");
                         $("#submit_dropin_payment").css("display", "block");
                         $("#load-dropin-form-button").css("display", "none");
+                        $("#billing-address-same-as-shipping-sagepaysuitepi").change(function () {
+                            self.defaultStateForm();
+                        });
+
                     }
                 } else {
                     if (merchant_session_key) {
