@@ -146,8 +146,12 @@ class Notify extends Action
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
                 $payment->setAdditionalInformation('statusDetail', $this->postData->StatusDetail);
                 $payment->setAdditionalInformation('threeDStatus', $this->postData->{'3DSecureStatus'});
-                $payment->setAdditionalInformation('bankAuthCode', $this->postData->{'BankAuthCode'});
-                $payment->setAdditionalInformation('txAuthNo', $this->postData->{'TxAuthNo'});
+                if(isset($this->postData->{'BankAuthCode'})){
+                    $payment->setAdditionalInformation('bankAuthCode', $this->postData->{'BankAuthCode'});
+                }
+                if(isset($this->postData->{'TxAuthNo'})){
+                    $payment->setAdditionalInformation('txAuthNo', $this->postData->{'TxAuthNo'});
+                }
                 $payment->setCcType($this->postData->CardType);
                 $payment->setCcLast4($this->postData->Last4Digits);
                 $payment->setCcExpMonth(substr($this->postData->ExpiryDate, 0, 2));
