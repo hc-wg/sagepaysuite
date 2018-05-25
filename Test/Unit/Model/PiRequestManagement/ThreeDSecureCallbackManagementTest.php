@@ -159,7 +159,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $paymentMock->expects($this->once())->method('setMethod');
         $paymentMock->expects($this->once())->method('setTransactionId');
-        $paymentMock->expects($this->exactly(6))->method('setAdditionalInformation');
+        $paymentMock->expects($this->exactly(8))->method('setAdditionalInformation');
         $paymentMock->expects($this->once())->method('save');
         $paymentMock->expects($this->once())->method('getMethodInstance')->willReturn($paymentInstanceMock);
 
@@ -174,7 +174,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $orderMock->expects($this->once())->method('place')->willReturnSelf();
         $orderMock->expects($this->once())->method('save')->willReturnSelf();
         $orderMock->expects($this->once())->method('load')->with(50)->willReturnSelf();
-        $orderMock->expects($this->exactly(13))->method('getPayment')->willReturn($paymentMock);
+        $orderMock->expects($this->exactly(15))->method('getPayment')->willReturn($paymentMock);
         $orderMock->expects($this->once())->method('getInvoiceCollection')->willReturn($invoiceCollectionMock);
 
         $orderFactoryMock = $this->getMockBuilder('\Magento\Sales\Model\OrderFactory')
