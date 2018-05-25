@@ -13,10 +13,12 @@ use Ebizmarts\SagePaySuite\Helper\Checkout;
 use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\PIRest;
+use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Config\SagePayCardType;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\PiRequest;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\Validator\Exception as ValidatorException;
 
 class EcommerceManagement extends RequestManagement
 {
@@ -88,7 +90,7 @@ class EcommerceManagement extends RequestManagement
 
             $this->createInvoiceForSuccessPayment($payment, $order);
         } else {
-            throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
+            throw new ValidatorException(__('Unable to save Sage Pay order'));
         }
 
         $this->getResult()->setSuccess(true);
@@ -99,7 +101,7 @@ class EcommerceManagement extends RequestManagement
         $this->getResult()->setOrderId($order->getId());
         $this->getResult()->setQuoteId($this->getQuote()->getId());
 
-        if ($this->getPayResult()->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS) {
+        if ($this->getPayResult()->getStatusCode() == Config::AUTH3D_REQUIRED_STATUS) {
             $this->getResult()->setParEq($this->getPayResult()->getParEq());
             $this->getResult()->setAcsUrl($this->getPayResult()->getAcsUrl());
         }
@@ -112,11 +114,13 @@ class EcommerceManagement extends RequestManagement
     private function createInvoiceForSuccessPayment($payment, $order)
     {
         //invoice
-        if ($this->getPayResult()->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
-            $payment->getMethodInstance()->markAsInitialized();
+        if ($this->getPayResult()->getStatusCode() === Config::SUCCESS_STATUS) {
+            $request = $this->getRequest();
+            if ($request['transactionType'] === Config::ACTION_PAYMENT_PI) {
+                $payment->getMethodInstance()->markAsInitialized();
+            }
             $order->place()->save();
 
-            //send email
             $this->getCheckoutHelper()->sendOrderEmail($order);
 
             //prepare session to success page

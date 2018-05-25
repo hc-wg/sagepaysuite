@@ -224,7 +224,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
             'test with pi' => [
                 [
                     'code'           => \Ebizmarts\SagePaySuite\Model\Config::METHOD_PI,
-                    'payment_action' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT,
+                    'payment_action' => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT_PI,
                     'expect'         => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT_PI
                 ]
             ],

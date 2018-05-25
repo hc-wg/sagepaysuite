@@ -40,7 +40,7 @@
                 <active>0</active>
                 <active_moto>0</active_moto>
                 <model>Ebizmarts\SagePaySuite\Model\PI</model>
-                <payment_action>PAYMENT</payment_action>
+                <payment_action>Payment</payment_action>
                 <title>Sage Pay Direct</title>
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>
                 <allowspecific>0</allowspecific>
