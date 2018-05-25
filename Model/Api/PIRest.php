@@ -465,6 +465,10 @@ class PIRest
                 $transaction->setBankAuthCode($captureResult->bankAuthorisationCode);
             }
 
+            if (isset($captureResult->retrievalReference)) {
+                $transaction->setTxAuthNo($captureResult->retrievalReference);
+            }
+
             if (isset($captureResult->currency)) {
                 $transaction->setCurrency($captureResult->currency);
             }
