@@ -30,6 +30,7 @@ define(
             }
         });
 
+
         return Component.extend({
             defaults: {
                 template: 'Ebizmarts_SagePaySuite/payment/server-form',
@@ -77,6 +78,19 @@ define(
                         address: quote.billingAddress()
                     };
                 }
+                 if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver) {
+                    if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled &&
+                        window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled == true) {
+                        if(document.getElementById("remembertoken").checked == true){
+                            use_token : true;
+                            save_token : true;
+                        }
+                        else {
+                            self.use_token = false;
+                            self.save_token =  false;
+                        }
+                    }
+                }
 
                 return storage.post(
                     serviceUrl,
@@ -116,9 +130,10 @@ define(
                                 } else {
                                     serviceUrl = urlBuilder.createUrl('/sagepay-guest/server', {});
                                 }
-
                                 var save_token = self.save_token && !self.use_token;
                                 var token = "%token%";
+
+
 
                                 if (self.use_token) {
                                     var tokens = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens;
@@ -133,6 +148,8 @@ define(
                                         return;
                                     }
                                 }
+
+                                
 
                                 //send server post request
                                  return storage.post(
@@ -203,6 +220,7 @@ define(
                 }
 
             },
+
             sagePayIsMobile: function () {
                 return (navigator.userAgent.match(/BlackBerry/i) ||
                 navigator.userAgent.match(/webOS/i) ||
@@ -288,6 +306,14 @@ define(
                         }
                     );
                 }
+            },
+            getTokenizationState: function () {
+                if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver) {
+                    if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled == true) {
+                        return true;
+                    }
+                }
+                return false;
             },
             customerHasTokens: function () {
                 if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver) {
