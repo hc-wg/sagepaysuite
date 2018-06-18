@@ -78,6 +78,20 @@ define(
                     };
                 }
 
+                if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver) {
+                    if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled &&
+                        window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled == true) {
+                        if(document.getElementById("remembertoken").checked == true){
+                            use_token : true;
+                            save_token : true;
+                        }
+                        else {
+                            self.use_token = false;
+                            self.save_token =  false;
+                        }
+                    }
+                }
+
                 return storage.post(
                     serviceUrl,
                     JSON.stringify(payload)
@@ -307,6 +321,14 @@ define(
                         this.save_token = false;
                         this.use_token = false;
                         return false;
+                    }
+                }
+                return false;
+            },
+            getTokenizationState: function () {
+                if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver) {
+                    if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled == true) {
+                        return true;
                     }
                 }
                 return false;
