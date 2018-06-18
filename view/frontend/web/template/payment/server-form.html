@@ -51,7 +51,7 @@
             <!-- ko if: (getTokenizationState()) -->
             <div>
                 <li>
-                    <label>Do you wish to have your credit card details remembered for faster checkout next time?</label>
+                    <!-- ko text: $t(Do you wish to have your credit card details remembered for faster checkout next time?') -->
                     <input checked="checked" type="checkbox" name="payment[remembertoken]" value="1" id="remembertoken"/>
                 </li>
             </div>
