@@ -94,9 +94,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         $quoteMock->expects($this->any())
             ->method('getBillingAddress')
             ->will($this->returnValue($addressMock));
-//        $quoteMock->expects($this->any())
-//            ->method('getEmail')
-//            ->will($this->returnValue($data["CustomerEMail"]));
+
         $result = $data["result"];
 
         $this->assertEquals(
