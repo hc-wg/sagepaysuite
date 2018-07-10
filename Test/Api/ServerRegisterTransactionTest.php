@@ -137,6 +137,7 @@ class ServerRegisterTransactionTest extends WebapiAbstract
     private function checkSagePayResponseDataIsCorrect($response)
     {
         $sagePayResponseData = $response["response"][1];
+        $sagePayResponseData = json_decode($sagePayResponseData, true);
         $this->assertEquals("3.00", $sagePayResponseData["VPSProtocol"]);
         $this->assertEquals("OK", $sagePayResponseData["Status"]);
         $this->assertEquals("2014 : The Transaction was Registered Successfully.",

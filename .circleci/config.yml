@@ -61,12 +61,16 @@ jobs:
           path: ~/magento2/app/code/Ebizmarts/SagePaySuite
       - run: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
       - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
+      - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
+      - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
       - run: bin/magento setup:upgrade
       - run: bin/magento setup:di:compile
 
       # run tests!
       - run: chmod -R 777 ./var
       - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/unit/phpunit.xml --coverage-text
+#      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
+      - run: /home/circleci/magento2/phpunit-6.2.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
 
       # Run code checks
       - run: composer create-project --repository=https://repo.magento.com magento/marketplace-eqp dev-master
