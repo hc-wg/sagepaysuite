@@ -1,0 +1,74 @@
+version: 2
+jobs:
+
+  build:
+    docker:
+      - image: circleci/php:7.1-apache-node
+        environment:
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_DATABASE: circle_test
+          MYSQL_USER: magento
+          MYSQL_PASSWORD: magento
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+          MAGE_VERSION: 2.2.2
+
+      - image: circleci/mysql:5.6
+        environment:
+          MYSQL_USER: magento
+          MYSQL_PASSWORD: magento
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: circle_test
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+
+    working_directory: ~/magento2
+
+    steps:
+      - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
+
+      # Install dependencies
+      - run:
+         name: Install libraries
+         command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+
+      - run:
+         name: Configure PHP extensions
+         command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
+
+      - run:
+         name: Install PHP extensions
+         command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
+
+      - run: sudo apt-get install -y mysql-client
+
+      # Prepare Apache env
+      - run: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
+      - run: wget https://gist.githubusercontent.com/bcerban/25f3a2d93c19dc562020e0197f78685c/raw/70f1f314ad8ba5d302b911fe622a57ccec60a868/magento2.conf
+      - run: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
+      - run: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
+      - run: sudo service apache2 restart
+
+      # Install test runners
+      - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
+
+      # Install Magento
+      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-$MAGE_VERSION_sample_data.tar.gz && tar xzf Magento-EE-$MAGE_VERSION_sample_data.tar.gz
+      - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
+      - run: chmod +x bin/magento
+      - run: composer install --prefer-source --no-interaction
+      - run: bin/magento setup:install --base-url=http://magento2.dev:8080/ --db-host=$MYSQL_HOST --db-name=$MYSQL_DATABASE --db-user=$MYSQL_USER --db-password=$MYSQL_PASSWORD --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1 --cleanup-database --use-sample-data
+
+      # Install API
+      - checkout:
+          path: ~/magento2/app/code/Ebizmarts/SagePaySuite
+      - run: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Integration/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
+      - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
+      - run: bin/magento setup:upgrade
+      - run: bin/magento setup:di:compile
+
+      # run tests!
+      - run: chmod -R 777 ./var
+      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/unit/phpunit.xml --coverage-text
+
+      # Run code checks
+      - run: composer create-project --repository=https://repo.magento.com magento/marketplace-eqp dev-master
+      - run: cd dev-master && vendor/bin/phpcs ../app/code/Ebizmarts/SagePaySuite/* --standard=MEQP2,PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
