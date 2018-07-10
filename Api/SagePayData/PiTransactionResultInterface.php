@@ -17,6 +17,7 @@ interface PiTransactionResultInterface
     const THREED_SECURE       = 'threed_secure';
     const ACS_URL             = 'acs_url';
     const PAR_EQ              = 'par_eq';
+    const TX_AUTH_NO          = 'tx_auth_no';
 
     /**
      * Sage Pay's unique reference for this transaction.
@@ -121,6 +122,17 @@ interface PiTransactionResultInterface
      * @return string
      */
     public function getBankAuthCode();
+
+    /**
+     * The VPS authorisation code.
+     * @return string
+     */
+    public function getTxAuthNo();
+    /**
+     * @param $code
+     * @return void
+     */
+    public function setTxAuthNo($code);
 
     /**
      * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountInterface $amount
