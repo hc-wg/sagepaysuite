@@ -23,7 +23,7 @@
     <filter>
         <whitelist>
             <!-- All CE modules -->
-            <directory suffix=".php">../../app/code/Magento</directory>
+            <directory suffix="Test.php">../../../app/code/Ebizmarts/SagePaySuite/Test/Api</directory>
         </whitelist>
     </filter>
 
@@ -35,7 +35,7 @@
         <!-- WebSerivice Type. Possible values: soap, rest -->
         <const name="TESTS_WEB_API_ADAPTER" value="rest"/>
         <!-- Webserver URL -->
-        <const name="TESTS_BASE_URL" value="http://mage2.dev:8080/index.php"/>
+        <const name="TESTS_BASE_URL" value="http://magento2.dev:8080/index.php"/>
         <!-- Webserver API user -->
         <const name="TESTS_WEBSERVICE_USER" value="admin"/>
         <!-- Webserver API key -->
@@ -49,8 +49,7 @@
 
         <ini name="date.timezone" value="America/Los_Angeles"/>
         <ini name="soap.wsdl_cache_enabled" value="0" />
-        <const name="TESTS_MEM_LEAK_LIMIT" value=""/>
-        <ini name="memory_limit" value="-1"/>
+
         <const name="TESTS_ERROR_LOG_LISTENER_LEVEL" value="-1"/>
         <!-- Semicolon-separated 'glob' patterns, that match global XML configuration files -->
         <const name="TESTS_GLOBAL_CONFIG_DIR" value="../../../app/etc"/>
@@ -59,7 +58,7 @@
         <!--Defines if Magento should be installed before tests execution-->
         <const name="TESTS_MAGENTO_INSTALLATION" value="disabled"/>
         <!-- Magento mode for tests execution. Possible values are "default", "developer" and "production". -->
-        <const name="TESTS_MAGENTO_MODE" value="default"/>
+        <const name="TESTS_MAGENTO_MODE" value="production"/>
     </php>
 
     <!-- Test listeners -->
