@@ -59,7 +59,7 @@ jobs:
       # Install API
       - checkout:
           path: ~/magento2/app/code/Ebizmarts/SagePaySuite
-      - run: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Integration/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
+      - run: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
       - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
       - run: bin/magento setup:upgrade
       - run: bin/magento setup:di:compile
