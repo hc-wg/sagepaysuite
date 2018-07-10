@@ -14,7 +14,7 @@
 >
     <!-- Test suites definition -->
     <testsuites>
-        <testsuite name="Your Project Web API Functional Tests">
+        <testsuite name="Ebizmarts Sage Pay Suite Web API Functional Tests">
             <directory suffix="Test.php">../../../app/code/Ebizmarts/SagePaySuite/Test/Api</directory>
         </testsuite>
     </testsuites>
@@ -23,13 +23,13 @@
     <filter>
         <whitelist>
             <!-- All CE modules -->
-            <directory suffix="Test.php">../../../app/code/Ebizmarts/SagePaySuite/Test/Api</directory>
+            <directory suffix="Test.php">../../../app/code/Ebizmarts/SagePaySuite/</directory>
         </whitelist>
     </filter>
 
     <!-- PHP INI settings and constants definition -->
     <php>
-        <includePath>./testsuite</includePath>
+        <includePath>../../../app/code/Ebizmarts/SagePaySuite/Test/Api</includePath>
         <const name="TESTS_INSTALL_CONFIG_FILE" value="config/install-config-mysql.php"/>
         <const name="TESTS_GLOBAL_CONFIG_FILE" value="config/config-global.php"/>
         <!-- WebSerivice Type. Possible values: soap, rest -->
