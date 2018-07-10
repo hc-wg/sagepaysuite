@@ -11,6 +11,7 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\ObjectManager\ObjectManager;
+use Magento\Framework\Exception\LocalizedException;
 
 class Request extends AbstractHelper
 {
@@ -64,6 +65,11 @@ class Request extends AbstractHelper
         $data = [];
 
         //customer email
+        $emptyEmail = $billing_address->getEmail();
+        if ($emptyEmail == null || $emptyEmail == "") {
+            throw new LocalizedException(__('The email is null or empty.'));
+        }
+
         $data["CustomerEMail"] = $billing_address->getEmail();
 
         $data['BillingSurname']    = substr($billing_address->getLastname(), 0, 20);
