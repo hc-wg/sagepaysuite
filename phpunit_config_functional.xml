@@ -14,7 +14,7 @@
 >
     <!-- Test suites definition -->
     <testsuites>
-        <testsuite name="Your Project Web API Functional Tests">
+        <testsuite name="Ebizmarts Sage Pay Suite Web API Functional Tests">
             <directory suffix="Test.php">../../../app/code/Ebizmarts/SagePaySuite/Test/Api</directory>
         </testsuite>
     </testsuites>
@@ -23,19 +23,19 @@
     <filter>
         <whitelist>
             <!-- All CE modules -->
-            <directory suffix=".php">../../app/code/Magento</directory>
+            <directory suffix="Test.php">../../../app/code/Ebizmarts/SagePaySuite/</directory>
         </whitelist>
     </filter>
 
     <!-- PHP INI settings and constants definition -->
     <php>
-        <includePath>./testsuite</includePath>
+        <includePath>../../../app/code/Ebizmarts/SagePaySuite/Test/Api</includePath>
         <const name="TESTS_INSTALL_CONFIG_FILE" value="config/install-config-mysql.php"/>
         <const name="TESTS_GLOBAL_CONFIG_FILE" value="config/config-global.php"/>
         <!-- WebSerivice Type. Possible values: soap, rest -->
         <const name="TESTS_WEB_API_ADAPTER" value="rest"/>
         <!-- Webserver URL -->
-        <const name="TESTS_BASE_URL" value="http://mage2.dev:8080/index.php"/>
+        <const name="TESTS_BASE_URL" value="http://magento2.dev:8080/index.php"/>
         <!-- Webserver API user -->
         <const name="TESTS_WEBSERVICE_USER" value="admin"/>
         <!-- Webserver API key -->
@@ -59,7 +59,7 @@
         <!--Defines if Magento should be installed before tests execution-->
         <const name="TESTS_MAGENTO_INSTALLATION" value="disabled"/>
         <!-- Magento mode for tests execution. Possible values are "default", "developer" and "production". -->
-        <const name="TESTS_MAGENTO_MODE" value="default"/>
+        <const name="TESTS_MAGENTO_MODE" value="production"/>
     </php>
 
     <!-- Test listeners -->
