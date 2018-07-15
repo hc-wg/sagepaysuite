@@ -25,6 +25,9 @@
             </exclude>
         </whitelist>
     </filter>
+    <listeners>
+        <listener class="Magento\Framework\TestFramework\Unit\Listener\ReplaceObjectManager"/>
+    </listeners>
     <logging>
     </logging>
 </phpunit>
