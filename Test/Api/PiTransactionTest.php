@@ -74,7 +74,7 @@ class PiTransactionTest extends WebapiAbstract
 
         $this->config->saveConfig("sagepaysuite/global/currency", Config::CURRENCY_BASE, ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
         $this->config->saveConfig("currency/options/base", "GBP", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
-        $this->config->saveConfig("currency/options/default", "EUR", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
+        $this->config->saveConfig("currency/options/default", "USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
         $this->config->saveConfig("currency/options/allow", "GBP,EUR,USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
 
         $merchantSessionKey = $this->obtainMerchantSessionKey();
