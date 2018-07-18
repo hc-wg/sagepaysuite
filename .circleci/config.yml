@@ -70,6 +70,8 @@ jobs:
       - run: chmod -R 777 ./var
       - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/unit/phpunit.xml --coverage-text
 #      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
+      - run: bin/magento cache:flush
+      - run: bin/magento cache:disable
       - run: /home/circleci/magento2/phpunit-6.2.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
 
       # Run code checks
