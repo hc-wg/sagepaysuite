@@ -2,6 +2,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Api;
 
+use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Webapi\Rest\Request;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\TestCase\WebapiAbstract;
@@ -19,7 +21,7 @@ class PiTransactionTest extends WebapiAbstract
     /** @var \Magento\Framework\ObjectManagerInterface */
     private $objectManager;
 
-    /** @var \Magento\Config\Model\Config */
+    /** @var \Magento\Config\Model\ResourceModel\Config */
     private $config;
 
     /** @var  \Ebizmarts\SagePaySuite\Test\Api\Helper */
@@ -31,7 +33,7 @@ class PiTransactionTest extends WebapiAbstract
     protected function setUp()
     {
         $this->config = Bootstrap::getObjectManager()->create(
-            'Magento\Config\Model\Config'
+            \Magento\Config\Model\ResourceModel\Config::class
         );
 
         $this->objectManager = Bootstrap::getObjectManager();
@@ -47,6 +49,9 @@ class PiTransactionTest extends WebapiAbstract
     {
         $this->helper->savePiKey();
         $this->helper->savePiPassword();
+
+        $this->config->saveConfig("sagepaysuite/global/currency", Config::CURRENCY_BASE, ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
+        $this->config->saveConfig("currency/options/base", "USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
 
         $merchantSessionKey = $this->obtainMerchantSessionKey();
 
@@ -67,17 +72,10 @@ class PiTransactionTest extends WebapiAbstract
         $this->helper->savePiKey();
         $this->helper->savePiPassword();
 
-        $this->config->setDataByPath("sagepaysuite/global/currency", \Ebizmarts\SagePaySuite\Model\Config::CURRENCY_BASE);
-        $this->config->save();
-
-        $this->config->setDataByPath("currency/options/base", "GBP");
-        $this->config->save();
-
-        $this->config->setDataByPath("currency/options/default", "USD");
-        $this->config->save();
-
-        $this->config->setDataByPath("currency/options/allow", "GBP,EUR,USD");
-        $this->config->save();
+        $this->config->saveConfig("sagepaysuite/global/currency", Config::CURRENCY_BASE, ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
+        $this->config->saveConfig("currency/options/base", "GBP", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
+        $this->config->saveConfig("currency/options/default", "EUR", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
+        $this->config->saveConfig("currency/options/allow", "GBP,EUR,USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
 
         $merchantSessionKey = $this->obtainMerchantSessionKey();
 
