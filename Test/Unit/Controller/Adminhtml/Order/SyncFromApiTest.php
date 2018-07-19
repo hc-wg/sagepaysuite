@@ -12,6 +12,7 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHe
 class SyncFromApiTest extends \PHPUnit_Framework_TestCase
 {
     const TEST_STORE_ID = 1;
+    const TEST_VPS_TX_ID = '463B3DE6-443F-585B-E75C-C727476DE98F';
 
     /** @var \Magento\Framework\TestFramework\Unit\Helper\ObjectManager */
     private $objectManagerHelper;
@@ -62,7 +63,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $paymentMock
             ->expects($this->exactly(3))
             ->method('getLastTransId')
-            ->willReturn('{463B3DE6-443F-585B-E75C-C727476DE98F}');
+            ->willReturn('{' . self::TEST_VPS_TX_ID .'}');
 
         $orderMock = $this->makeOrderMock();
         $orderMock->expects($this->any())
@@ -87,7 +88,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $reportingApiMock = $this->makeReportingApiMock();
         $reportingApiMock->expects($this->once())
             ->method('getTransactionDetails')
-            ->with('463B3DE6-443F-585B-E75C-C727476DE98F', self::TEST_STORE_ID)
+            ->with(self::TEST_VPS_TX_ID, self::TEST_STORE_ID)
             ->will($this->returnValue((object)[
                 "vendortxcode" => "100000001-2016-12-12-123456",
                 "status" => "OK STATUS",
@@ -123,8 +124,8 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $suiteHelperMock
             ->expects($this->once())
             ->method('clearTransactionId')
-            ->with('{463B3DE6-443F-585B-E75C-C727476DE98F}')
-            ->willReturn('463B3DE6-443F-585B-E75C-C727476DE98F');
+            ->with('{' . self::TEST_VPS_TX_ID .'}')
+            ->willReturn(self::TEST_VPS_TX_ID);
 
         $syncFromApiController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi',
