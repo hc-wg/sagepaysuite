@@ -22,6 +22,8 @@ class HttpRest extends Http
      */
     public function processResponse()
     {
+        $this->getLogger()->sageLog(Logger::LOG_REQUEST, $this->getResponseData(), [__METHOD__, __LINE__]);
+
         $data = preg_split('/^\r?$/m', $this->getResponseData(), 2);
         $data = json_decode(trim($data[1]));
 
