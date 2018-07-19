@@ -11,6 +11,7 @@ use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequestFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponse;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiRepeatRequest;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequest;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmount;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard;
@@ -539,7 +540,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
     public function testSubmit3D()
     {
         $pi3dRequestMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequest::class)
+            ->getMockBuilder(PiThreeDSecureRequest::class)
             ->setMethods(['__toArray', 'setParEs'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -594,6 +595,65 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         );
     }
 
+    public function testSubmit3DEmptyResponse()
+    {
+        $pi3dRequestMock = $this
+            ->getMockBuilder(PiThreeDSecureRequest::class)
+            ->setMethods(['__toArray', 'setParEs'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $pi3dRequestMock->expects($this->once())->method('setParEs')->with("fsd678dfs786dfs786fds678fds");
+        $pi3dRequestMock->expects($this->once())->method('__toArray')->willReturn(["paRes" => "fsd678dfs786dfs786fds678fds"]);
+
+        $pi3dRequestFactoryMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory::class)
+            ->setMethods(["create"])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $pi3dRequestFactoryMock->expects($this->once())->method('create')->willReturn($pi3dRequestMock);
+
+        $piTransactionResult3DMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $piTransactionResult3DMock->expects($this->once())->method('setStatus')->with("OK");
+
+        $piTransactionResult3DFactoryMock = $this
+        ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory::class)
+        ->setMethods(["create"])
+        ->disableOriginalConstructor()
+        ->getMock();
+        $piTransactionResult3DFactoryMock->expects($this->once())->method('create')->willReturn($piTransactionResult3DMock);
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"paRes":"fsd678dfs786dfs786fds678fds"}')
+            ->willReturn($this->httpResponseMock);
+
+        $this->verifyResponseCalledOnceReturns201();
+
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(json_decode('{}'));
+
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            self::PI_REST,
+            [
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "threedRequest"              => $pi3dRequestFactoryMock,
+                "threedStatusResultFactory"  => $piTransactionResult3DFactoryMock
+            ]
+        );
+
+        $this->assertInstanceOf(
+            '\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD',
+            $this->pirestApiModel->submit3D("fsd678dfs786dfs786fds678fds", 12345)
+        );
+    }
+
     /**
      * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
      * @expectedExceptionMessage Contains invalid characters: paRes
@@ -601,7 +661,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
     public function testSubmitThreedError()
     {
         $pi3dRequestMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequest::class)
+            ->getMockBuilder(PiThreeDSecureRequest::class)
             ->setMethods(['__toArray', 'setParEs'])
             ->disableOriginalConstructor()
             ->getMock();
