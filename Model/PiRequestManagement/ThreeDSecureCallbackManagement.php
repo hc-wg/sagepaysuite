@@ -99,6 +99,8 @@ class ThreeDSecureCallbackManagement extends RequestManagement
 
     /**
      * @return \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface
+     * @throws ValidatorException
+     * @throws ApiException
      */
     public function placeOrder()
     {
