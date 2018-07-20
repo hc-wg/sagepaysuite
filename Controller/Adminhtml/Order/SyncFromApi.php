@@ -8,7 +8,7 @@ namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\Order;
 
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Magento\Framework\Validator\Exception;
+use Magento\Framework\Validator\Exception as ValidatorException;
 
 class SyncFromApi extends \Magento\Backend\App\AbstractAction
 {
@@ -73,7 +73,7 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
                 $order = $this->_orderFactory->create()->load($this->getRequest()->getParam("order_id"));
                 $payment = $order->getPayment();
             } else {
-                throw new Exception(__('Unable to sync from API: Invalid order id.'));
+                throw new ValidatorException(__('Unable to sync from API: Invalid order id.'));
             }
 
             $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
