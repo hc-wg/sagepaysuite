@@ -19,7 +19,9 @@ use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory;
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory;
 use Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory;
 use Ebizmarts\SagePaySuite\Model\Config;
@@ -235,7 +237,7 @@ class PIRest
      *
      * @param $paymentRequest
      * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
-     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @throws ApiException
      */
     public function capture($paymentRequest)
     {
@@ -249,10 +251,10 @@ class PIRest
     /**
      * Submit 3D result via POST
      *
-     * @param $paRes
-     * @param $vpsTxId
-     * @return mixed
-     * @throws
+     * @param string $paRes
+     * @param string $vpsTxId
+     * @return PiTransactionResultThreeD
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
     public function submit3D($paRes, $vpsTxId)
     {
@@ -264,8 +266,13 @@ class PIRest
         $result     = $this->executePostRequest($this->getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
         $resultData = $this->processResponse($result);
 
-        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $response */
+        /** @var PiTransactionResultThreeD $response */
         $response = $this->threedStatusResultFactory->create();
+
+        if (!property_exists($resultData, 'status')) {
+            throw new ApiException(__('Invalid 3D secure response.'));
+        }
+
         $response->setStatus($resultData->status);
 
         return $response;
@@ -319,7 +326,7 @@ class PIRest
      *
      * @param string $transactionId
      * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
-     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @throws ApiException
      */
     public function release(string $transactionId, $amount)
     {
@@ -373,7 +380,7 @@ class PIRest
      *
      * @param $vpsTxId
      * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
-     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @throws ApiException
      */
     public function transactionDetails($vpsTxId)
     {
@@ -385,7 +392,7 @@ class PIRest
             $error_code = $result->getResponseData()->code;
             $error_msg  = $result->getResponseData()->description;
 
-            /** @var $exception \Ebizmarts\SagePaySuite\Model\Api\ApiException */
+            /** @var $exception ApiException */
             $exception = $this->apiExceptionFactory->create([
                 'phrase' => __($error_msg),
                 'code' => $error_code
@@ -398,7 +405,7 @@ class PIRest
     /**
      * @param \Ebizmarts\SagePaySuite\Api\Data\HttpResponseInterface $result
      * @return string
-     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @throws ApiException
      */
     private function processResponse($result)
     {
@@ -431,7 +438,7 @@ class PIRest
                 $errorMessage = $errors->statusDetail;
             }
 
-            /** @var \Ebizmarts\SagePaySuite\Model\Api\ApiException $exception */
+            /** @var ApiException $exception */
             $exception = $this->apiExceptionFactory->create(['phrase' => __($errorMessage), 'code' => $errorCode]);
 
             throw $exception;
@@ -501,7 +508,7 @@ class PIRest
             $transaction->setPaymentMethod($paymentMethod);
 
             if (isset($captureResult->{'3DSecure'})) {
-                /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $threedstatus */
+                /** @var PiTransactionResultThreeD $threedstatus */
                 $threedstatus = $this->threedStatusResultFactory->create();
                 $threedstatus->setStatus($captureResult->{'3DSecure'}->status);
                 $transaction->setThreeDSecure($threedstatus);
