@@ -175,11 +175,14 @@ class Reporting
      * This command returns all information held in Sage Pay about the specified transaction.
      *
      * @param $vpstxid
+     * @param null $storeId
      * @return mixed
-     * @throws
+     * @throws ApiException
      */
-    public function getTransactionDetails($vpstxid)
+    public function getTransactionDetails($vpstxid, $storeId = null)
     {
+        $this->config->setConfigurationScopeId($storeId);
+
         $params = '<vpstxid>' . $vpstxid . '</vpstxid>';
         $xml = $this->_createXml('getTransactionDetail', $params);
         return $this->_handleApiErrors($this->_executeRequest($xml));
