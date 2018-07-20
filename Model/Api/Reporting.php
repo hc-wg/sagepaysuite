@@ -175,8 +175,8 @@ class Reporting
     /**
      * This command returns all information held in Sage Pay about the specified transaction.
      *
-     * @param $vpstxid
-     * @param null $storeId
+     * @param string $vpstxid
+     * @param null int $storeId
      * @return mixed
      * @throws ApiException
      */
