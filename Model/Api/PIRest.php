@@ -19,6 +19,7 @@ use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory;
@@ -250,9 +251,9 @@ class PIRest
     /**
      * Submit 3D result via POST
      *
-     * @param $paRes
-     * @param $vpsTxId
-     * @return mixed
+     * @param string $paRes
+     * @param string $vpsTxId
+     * @return PiTransactionResultThreeD
      * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
     public function submit3D($paRes, $vpsTxId)
@@ -265,7 +266,7 @@ class PIRest
         $result     = $this->executePostRequest($this->getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
         $resultData = $this->processResponse($result);
 
-        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $response */
+        /** @var PiTransactionResultThreeD $response */
         $response = $this->threedStatusResultFactory->create();
 
         if (!property_exists($resultData, 'status')) {
@@ -507,7 +508,7 @@ class PIRest
             $transaction->setPaymentMethod($paymentMethod);
 
             if (isset($captureResult->{'3DSecure'})) {
-                /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $threedstatus */
+                /** @var PiTransactionResultThreeD $threedstatus */
                 $threedstatus = $this->threedStatusResultFactory->create();
                 $threedstatus->setStatus($captureResult->{'3DSecure'}->status);
                 $transaction->setThreeDSecure($threedstatus);
