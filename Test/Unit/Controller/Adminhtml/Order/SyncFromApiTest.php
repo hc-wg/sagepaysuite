@@ -6,10 +6,14 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Adminhtml\Order;
 
+use Ebizmarts\SagePaySuite\Helper\Data;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
 class SyncFromApiTest extends \PHPUnit\Framework\TestCase
 {
+    const TEST_STORE_ID = 1;
+    const TEST_VPS_TX_ID = '463B3DE6-443F-585B-E75C-C727476DE98F';
+
     /** @var \Magento\Framework\TestFramework\Unit\Helper\ObjectManager */
     private $objectManagerHelper;
 
@@ -53,13 +57,13 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $paymentMock
-            ->expects($this->atLeastOnce())
+            ->expects($this->exactly(3))
             ->method('setAdditionalInformation')
             ->willReturnSelf();
         $paymentMock
             ->expects($this->exactly(3))
             ->method('getLastTransId')
-            ->willReturn('463B3DE6-443F-585B-E75C-C727476DE98F');
+            ->willReturn('{' . self::TEST_VPS_TX_ID .'}');
 
         $orderMock = $this->makeOrderMock();
         $orderMock->expects($this->any())
@@ -68,6 +72,9 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
         $orderMock->expects($this->any())
             ->method('getPayment')
             ->will($this->returnValue($paymentMock));
+        $orderMock->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(self::TEST_STORE_ID);
 
         $orderFactoryMock = $this
             ->getMockBuilder('Magento\Sales\Model\OrderFactory')
@@ -81,6 +88,7 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
         $reportingApiMock = $this->makeReportingApiMock();
         $reportingApiMock->expects($this->once())
             ->method('getTransactionDetails')
+            ->with(self::TEST_VPS_TX_ID, self::TEST_STORE_ID)
             ->will($this->returnValue((object)[
                 "vendortxcode" => "100000001-2016-12-12-123456",
                 "status" => "OK STATUS",
@@ -108,6 +116,17 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $fraudHelperMock->expects($this->once())->method('processFraudInformation');
 
+        $suiteHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->setMethods(['clearTransactionId'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $suiteHelperMock
+            ->expects($this->once())
+            ->method('clearTransactionId')
+            ->with('{' . self::TEST_VPS_TX_ID .'}')
+            ->willReturn(self::TEST_VPS_TX_ID);
+
         $syncFromApiController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi',
             [
@@ -115,7 +134,8 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
                 'orderFactory'          => $orderFactoryMock,
                 'reportingApi'          => $reportingApiMock,
                 'transactionRepository' => $trnRepoMock,
-                'fraudHelper'           => $fraudHelperMock
+                'fraudHelper'           => $fraudHelperMock,
+                'suiteHelper'           => $suiteHelperMock
             ]
         );
 
