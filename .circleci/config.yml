@@ -68,8 +68,8 @@ jobs:
 
       # run tests!
       - run: chmod -R 777 ./var
-      - run: /home/circleci/magento2/phpunit-4.8.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
       - run: /home/circleci/magento2/phpunit-4.8.phar -c dev/tests/unit/phpunit.xml --coverage-text
+      - run: /home/circleci/magento2/phpunit-4.8.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
 
       # Run code checks
       - run: composer create-project --repository=https://repo.magento.com magento/marketplace-eqp dev-master
