@@ -18,11 +18,6 @@ use Magento\Framework\Message\ManagerInterface;
 class SystemConfigEdit implements ObserverInterface
 {
     /**
-     * @var Logger
-     */
-    private $_suiteLogger;
-
-    /**
      * @var Data
      */
     private $_suiteHelper;
@@ -51,8 +46,6 @@ class SystemConfigEdit implements ObserverInterface
         ManagerInterface $messageManager,
         Reporting $reportingApi
     ) {
-    
-        $this->_suiteLogger = $suiteLogger;
         $this->_suiteHelper = $suiteHelper;
         $this->_messageManager = $messageManager;
         $this->_reportingApi = $reportingApi;
