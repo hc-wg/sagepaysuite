@@ -33,8 +33,7 @@ class SystemConfigEdit implements ObserverInterface
     private $_reportingApi;
 
     /**
-     * @param Logger $suiteLogger
-     * @param Config $suiteConfig
+     * SystemConfigEdit constructor.
      * @param Data $suiteHelper
      * @param ManagerInterface $messageManager
      * @param Reporting $reportingApi
