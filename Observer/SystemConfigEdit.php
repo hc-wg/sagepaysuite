@@ -1,16 +1,19 @@
 <?php
 /**
- * Copyright © 2017 ebizmarts. All rights reserved.
+ * Copyright © 2018 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
 namespace Ebizmarts\SagePaySuite\Observer;
 
 use Ebizmarts\SagePaySuite\Helper\Data;
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\Reporting;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\Message\ManagerInterface;
 
 class SystemConfigEdit implements ObserverInterface
 {
@@ -20,17 +23,12 @@ class SystemConfigEdit implements ObserverInterface
     private $_suiteLogger;
 
     /**
-     * @var Config
-     */
-    private $_suiteConfig;
-
-    /**
      * @var Data
      */
     private $_suiteHelper;
 
     /**
-     * @var \Magento\Framework\Message\ManagerInterface
+     * @var ManagerInterface
      */
     private $_messageManager;
 
@@ -43,37 +41,34 @@ class SystemConfigEdit implements ObserverInterface
      * @param Logger $suiteLogger
      * @param Config $suiteConfig
      * @param Data $suiteHelper
-     * @param \Magento\Framework\Message\ManagerInterface $messageManager
+     * @param ManagerInterface $messageManager
      * @param Reporting $reportingApi
      */
     public function __construct(
         Logger $suiteLogger,
         Config $suiteConfig,
         Data $suiteHelper,
-        \Magento\Framework\Message\ManagerInterface $messageManager,
+        ManagerInterface $messageManager,
         Reporting $reportingApi
     ) {
     
         $this->_suiteLogger = $suiteLogger;
-        $this->_suiteConfig = $suiteConfig;
         $this->_suiteHelper = $suiteHelper;
         $this->_messageManager = $messageManager;
         $this->_reportingApi = $reportingApi;
     }
 
     /**
-     * Checkout Cart index observer
+     * Observer payment config section save to validate license and
+     * check reporting api credentials.
      *
-     * @param \Magento\Framework\Event\Observer $observer
+     * @param Observer $observer
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer)
     {
         $section = $observer->getEvent()->getRequest()->getParam('section');
         if ($section == "payment") {
-
-            /**
-             * VALIDATE LICENSE
-             */
             if (!$this->isLicenseKeyValid()) {
                 $this->_messageManager->addError(__('Your Sage Pay Suite license is invalid.'));
             }
@@ -86,7 +81,7 @@ class SystemConfigEdit implements ObserverInterface
     {
         try {
             $this->_reportingApi->getVersion();
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+        } catch (ApiException $apiException) {
             $this->_messageManager->addError($apiException->getUserMessage());
         } catch (\Exception $e) {
             $this->_messageManager->addError(__('Can not establish connection with Sage Pay API.'));
