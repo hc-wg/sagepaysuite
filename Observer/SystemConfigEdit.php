@@ -40,8 +40,6 @@ class SystemConfigEdit implements ObserverInterface
      * @param Reporting $reportingApi
      */
     public function __construct(
-        Logger $suiteLogger,
-        Config $suiteConfig,
         Data $suiteHelper,
         ManagerInterface $messageManager,
         Reporting $reportingApi
