@@ -9,10 +9,8 @@ namespace Ebizmarts\SagePaySuite\Observer;
 use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\Reporting;
-use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\Message\ManagerInterface;
 
 class SystemConfigEdit implements ObserverInterface
