@@ -58,18 +58,13 @@ class SystemConfigEditTest extends \PHPUnit\Framework\TestCase
 
         $observerModel->execute($observerMock);
     }
+
     public function testLicenseAndReportingApiChecks()
     {
         $observerMock = $this->makeObserverMock();
 
         $eventMock = $this->makeEventMock();
-        $eventMock
-            ->expects($this->once())
-            ->method('__call')
-            ->with(
-                $this->equalTo('getRequest')
-            )
-            ->willReturn($this->makeRequestMock('payment'));
+        $this->configSectionPaymentAssert($eventMock);
 
         $observerMock->expects($this->once())->method('getEvent')->willReturn($eventMock);
 
@@ -81,6 +76,37 @@ class SystemConfigEditTest extends \PHPUnit\Framework\TestCase
 
         $reportingApiMock = $this->makeReportingApiMock();
         $reportingApiMock->expects($this->once())->method('getVersion')->willReturnSelf();
+
+        $observerModel = $this->objectManagerHelper->getObject(
+            SystemConfigEdit::class,
+            [
+                'suiteHelper'    => $suiteHelperMock,
+                'messageManager' => $messageManagerMock,
+                'reportingApi'   => $reportingApiMock,
+            ]
+        );
+
+        $observerModel->execute($observerMock);
+    }
+
+    public function testLicenseAndReportingApiChecksFail()
+    {
+        $observerMock = $this->makeObserverMock();
+
+        $eventMock = $this->makeEventMock();
+        $this->configSectionPaymentAssert($eventMock);
+
+        $observerMock->expects($this->once())->method('getEvent')->willReturn($eventMock);
+
+        $suiteHelperMock = $this->makeSuiteHelperMock();
+        $suiteHelperMock->expects($this->once())->method('verify')->willReturn(false);
+
+        $messageManagerMock = $this->makeMessageManagerMock();
+        $messageManagerMock->expects($this->exactly(2))->method('addWarning');
+
+        $reportingApiMock = $this->makeReportingApiMock();
+        $reportingApiMock->expects($this->once())->method('getVersion')
+        ->willThrowException(new \Exception('An error has ocurred.'));
 
         $observerModel = $this->objectManagerHelper->getObject(
             SystemConfigEdit::class,
@@ -147,11 +173,19 @@ class SystemConfigEditTest extends \PHPUnit\Framework\TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeReportingApiMock(): \PHPUnit_Framework_MockObject_MockObject
+    private function makeReportingApiMock()
     {
         $reportingApiMock = $this->getMockBuilder(Reporting::class)->disableOriginalConstructor()->getMock();
 
         return $reportingApiMock;
+    }
+
+    /**
+     * @param $eventMock
+     */
+    private function configSectionPaymentAssert($eventMock)
+    {
+        $eventMock->expects($this->once())->method('__call')->with($this->equalTo('getRequest'))->willReturn($this->makeRequestMock('payment'));
     }
 
 }

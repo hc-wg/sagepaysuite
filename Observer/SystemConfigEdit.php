@@ -58,7 +58,7 @@ class SystemConfigEdit implements ObserverInterface
         $section = $observer->getEvent()->getRequest()->getParam('section');
         if ($section == "payment") {
             if (!$this->isLicenseKeyValid()) {
-                $this->_messageManager->addError(__('Your Sage Pay Suite license is invalid.'));
+                $this->_messageManager->addWarning(__('Your Sage Pay Suite license is invalid.'));
             }
 
             $this->verifyReportingApiCredentialsByCallingVersion();
@@ -70,9 +70,9 @@ class SystemConfigEdit implements ObserverInterface
         try {
             $this->_reportingApi->getVersion();
         } catch (ApiException $apiException) {
-            $this->_messageManager->addError($apiException->getUserMessage());
+            $this->_messageManager->addWarning($apiException->getUserMessage());
         } catch (\Exception $e) {
-            $this->_messageManager->addError(__('Can not establish connection with Sage Pay API.'));
+            $this->_messageManager->addWarning(__('Can not establish connection with Sage Pay API.'));
         }
     }
 
