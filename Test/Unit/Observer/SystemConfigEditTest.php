@@ -102,7 +102,11 @@ class SystemConfigEditTest extends \PHPUnit\Framework\TestCase
         $suiteHelperMock->expects($this->once())->method('verify')->willReturn(false);
 
         $messageManagerMock = $this->makeMessageManagerMock();
-        $messageManagerMock->expects($this->exactly(2))->method('addWarning');
+        $messageManagerMock->expects($this->exactly(2))->method('addWarning')
+            ->withConsecutive(
+                ['Your Sage Pay Suite license is invalid.'],
+                ['Can not establish connection with Sage Pay API.']
+            );
 
         $reportingApiMock = $this->makeReportingApiMock();
         $reportingApiMock->expects($this->once())->method('getVersion')
