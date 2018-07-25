@@ -8,11 +8,13 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Observer;
 
 use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\Api\Reporting;
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Observer\SystemConfigEdit;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Event;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Message\ManagerInterface;
+use Magento\Framework\Phrase;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
 class SystemConfigEditTest extends \PHPUnit_Framework_TestCase
@@ -111,6 +113,44 @@ class SystemConfigEditTest extends \PHPUnit_Framework_TestCase
         $reportingApiMock = $this->makeReportingApiMock();
         $reportingApiMock->expects($this->once())->method('getVersion')
             ->willThrowException(new \Exception('An error has ocurred.'));
+
+        $observerModel = $this->objectManagerHelper->getObject(
+            SystemConfigEdit::class,
+            [
+                'suiteHelper'    => $suiteHelperMock,
+                'messageManager' => $messageManagerMock,
+                'reportingApi'   => $reportingApiMock,
+            ]
+        );
+
+        $observerModel->execute($observerMock);
+    }
+
+    public function testReportingApiApiException()
+    {
+        $observerMock = $this->makeObserverMock();
+
+        $eventMock = $this->makeEventMock();
+        $this->configSectionPaymentAssert($eventMock);
+
+        $observerMock->expects($this->once())->method('getEvent')->willReturn($eventMock);
+
+        $suiteHelperMock = $this->makeSuiteHelperMock();
+        $suiteHelperMock->expects($this->once())->method('verify')->willReturn(true);
+
+        $warningMessage = "Invalid Sage Pay API credentials. <a target='_blank' href='http://wiki.ebizmarts.com/configuration-guide-1'>Configuration guide</a>";
+
+        $messageManagerMock = $this->makeMessageManagerMock();
+        $messageManagerMock
+            ->expects($this->once())
+            ->method('addWarning')
+            ->with($warningMessage);
+
+        $reportingApiMock = $this->makeReportingApiMock();
+        $reportingApiMock->expects($this->once())->method('getVersion')
+            ->willThrowException(new ApiException(
+                new Phrase('Invalid Sage Pay API credentials.')
+            ));
 
         $observerModel = $this->objectManagerHelper->getObject(
             SystemConfigEdit::class,
