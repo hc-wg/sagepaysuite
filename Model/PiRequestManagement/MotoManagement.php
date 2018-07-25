@@ -65,8 +65,8 @@ class MotoManagement extends RequestManagement
         $this->objectManager = $objectManager;
         $this->httpRequest   = $httpRequest;
         $this->backendUrl    = $backendUrl;
-        $this->logger = $suiteLogger;
-        $this->emailSender = $emailSender;
+        $this->logger        = $suiteLogger;
+        $this->emailSender   = $emailSender;
     }
 
     /**
