@@ -65,8 +65,8 @@ class MotoManagement extends RequestManagement
         $this->objectManager = $objectManager;
         $this->httpRequest   = $httpRequest;
         $this->backendUrl    = $backendUrl;
-        $this->logger = $suiteLogger;
-        $this->emailSender = $emailSender;
+        $this->logger        = $suiteLogger;
+        $this->emailSender   = $emailSender;
     }
 
     /**
@@ -92,6 +92,8 @@ class MotoManagement extends RequestManagement
                 $paymentData["cc_type"] = $this->ccConverter->convert($this->getRequestData()->getCcType());
                 $this->getOrderCreateModel()->getQuote()->getPayment()->addData($paymentData);
             }
+
+            $this->getOrderCreateModel()->getQuote()->collectTotals();
 
             $order->setSendConfirmation(0);
             $order = $order->createOrder();
