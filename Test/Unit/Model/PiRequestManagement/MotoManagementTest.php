@@ -36,7 +36,7 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
         $checkoutHelperMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Helper\Checkout::class);
 
         $quoteMock = $this->makeMockDisabledConstructor(\Magento\Quote\Model\Quote::class);
-        $quoteMock->expects($this->once())->method('collectTotals')->willReturnSelf();
+        $quoteMock->expects($this->exactly(2))->method('collectTotals')->willReturnSelf();
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
 
         $requestDataMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerInterface::class);
@@ -107,6 +107,7 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
                     'importPostData',
                     'setSendConfirmation',
                     'createOrder',
+                    'getQuote'
                 ]
             )
             ->disableOriginalConstructor()
@@ -115,9 +116,10 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
         $motoOrderCreateModelMock->expects($this->once())->method('importPostData')->willReturnSelf();
         $motoOrderCreateModelMock->expects($this->any())->method('setSendConfirmation')->with(0)->willReturnSelf();
         $motoOrderCreateModelMock->expects($this->once())->method('createOrder')->willReturn($orderMock);
+        $motoOrderCreateModelMock->expects($this->once())->method('getQuote')->willReturn($quoteMock);
 
         $objectManagerMock = $this->makeMockDisabledConstructor(\Magento\Framework\ObjectManagerInterface::class);
-        $objectManagerMock->expects($this->once())->method('get')->with('Magento\Sales\Model\AdminOrder\Create')
+        $objectManagerMock->expects($this->exactly(2))->method('get')->with('Magento\Sales\Model\AdminOrder\Create')
             ->willReturn($motoOrderCreateModelMock);
 
         $requestMock = $this->makeMockDisabledConstructor(\Magento\Framework\App\Request\Http::class);
