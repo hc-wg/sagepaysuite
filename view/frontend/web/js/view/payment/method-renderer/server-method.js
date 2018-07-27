@@ -81,12 +81,13 @@ define(
                  if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver) {
                     if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled &&
                         window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled == true) {
-                        if(document.getElementById("remembertoken").checked == true){
-                            use_token : true;
+                        if(document.getElementById('remembertoken') &&
+                            document.getElementById('remembertoken').checked == true){
+                            use_token : false;
                             save_token : true;
                         }
                         else {
-                            self.use_token = false;
+                            self.use_token = true;
                             self.save_token =  false;
                         }
                     }
