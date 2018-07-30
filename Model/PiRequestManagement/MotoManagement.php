@@ -158,7 +158,10 @@ class MotoManagement extends RequestManagement
 
         $payment->save();
 
-        $payment->getMethodInstance()->markAsInitialized();
+        if ($this->getRequestData()->getPaymentAction() === Config::ACTION_PAYMENT_PI) {
+            $payment->getMethodInstance()->markAsInitialized();
+        }
+
         $order->place()->save();
     }
 
