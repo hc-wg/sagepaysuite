@@ -216,7 +216,6 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      * @param string $paymentAction
      * @param int $initializedCount
      * @param int $transactionClosedCount
-     * @throws \Magento\Framework\Exception\NotFoundException
      * @dataProvider successProvider
      */
     public function testExecuteSuccess($paymentAction, $initializedCount, $transactionClosedCount)
