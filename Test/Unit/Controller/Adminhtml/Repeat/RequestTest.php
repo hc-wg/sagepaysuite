@@ -42,13 +42,13 @@ class RequestTest extends \PHPUnit\Framework\TestCase
      */
     private $resultJson;
 
-    // @codingStandardsIgnoreStart
     private $repeatModelMock;
 
     private $configMock;
 
     private $paymentMock;
 
+    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $this->repeatModelMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Repeat')->disableOriginalConstructor()->getMock();
