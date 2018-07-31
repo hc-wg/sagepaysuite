@@ -33,7 +33,13 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($sut->getIsMotoTransaction());
     }
 
-    public function testPlaceOrder()
+    /**
+     * @param string $paymentAction @see \Ebizmarts\SagePaySuite\Model\Config
+     * @param integer $expectsMarkInitialized
+     * @param integer $expectsTransactionClosed
+     * @dataProvider placeOrder
+     */
+    public function testPlaceOrder($paymentAction, $expectsMarkInitialized, $expectsTransactionClosed)
     {
         $checkoutHelperMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Helper\Checkout::class);
 
@@ -42,7 +48,7 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
 
         $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManagerInterface::class);
-        $requestDataMock->expects($this->any())->method('getPaymentAction')->willReturn(Config::ACTION_PAYMENT_PI);
+        $requestDataMock->expects($this->any())->method('getPaymentAction')->willReturn($paymentAction);
 
         $payResultMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface::class);
         $payResultMock->expects($this->any())->method('getStatusCode')->willReturn(Config::SUCCESS_STATUS);
@@ -68,7 +74,7 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
         $piResultMock->expects($this->once())->method('setResponse');
 
         $methodInstanceMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Model\PI::class);
-        $methodInstanceMock->expects($this->once())->method('markAsInitialized');
+        $methodInstanceMock->expects($this->exactly($expectsMarkInitialized))->method('markAsInitialized');
 
         $paymentMock = $this->getMockBuilder(\Magento\Quote\Model\Quote\Payment::class)
             ->setMethods(
@@ -94,7 +100,7 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
         $paymentMock->expects($this->any())->method('setCcExpMonth')->willReturnSelf();
         $paymentMock->expects($this->any())->method('setCcExpYear')->willReturnSelf();
         $paymentMock->expects($this->any())->method('setCcType')->willReturnSelf();
-        $paymentMock->expects($this->never())->method('setIsTransactionClosed')->willReturnSelf();
+        $paymentMock->expects($this->exactly($expectsTransactionClosed))->method('setIsTransactionClosed')->willReturnSelf();
         $paymentMock->expects($this->any())->method('save')->willReturnSelf();
         $paymentMock->expects($this->any())->method('getMethodInstance')->willReturn($methodInstanceMock);
 
@@ -160,6 +166,14 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
         $sut->setRequestData($requestDataMock);
 
         $sut->placeOrder();
+    }
+
+    public function placeOrder()
+    {
+        return [
+            [Config::ACTION_PAYMENT_PI, 1, 0],
+            [Config::ACTION_DEFER_PI, 0, 1]
+        ];
     }
 
     /**
