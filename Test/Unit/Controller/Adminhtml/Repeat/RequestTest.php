@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Adminhtml\Request;
 
+use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
 class RequestTest extends \PHPUnit\Framework\TestCase
@@ -42,20 +43,20 @@ class RequestTest extends \PHPUnit\Framework\TestCase
     private $resultJson;
 
     // @codingStandardsIgnoreStart
+    private $repeatModelMock;
+
+    private $configMock;
+
+    private $paymentMock;
+
     protected function setUp()
     {
-        $repeatModelMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Repeat')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->repeatModelMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Repeat')->disableOriginalConstructor()->getMock();
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock->expects($this->any())
+        $this->paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')->disableOriginalConstructor()->getMock();
+        $this->paymentMock->expects($this->any())
             ->method('getMethodInstance')
-            ->will($this->returnValue($repeatModelMock));
+            ->will($this->returnValue($this->repeatModelMock));
 
         $addressMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote\Address')
@@ -81,7 +82,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             ->will($this->returnValue('USD'));
         $quoteMock->expects($this->any())
             ->method('getPayment')
-            ->will($this->returnValue($paymentMock));
+            ->will($this->returnValue($this->paymentMock));
         $quoteMock->expects($this->any())
             ->method('getBillingAddress')
             ->will($this->returnValue($addressMock));
@@ -142,10 +143,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             ->method('getBackendUrl')
             ->will($this->returnValue($urlBuilderMock));
 
-        $configMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->configMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')->disableOriginalConstructor()->getMock();
 
         $suiteHelperMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Data')
@@ -174,7 +172,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $this->orderMock->expects($this->any())
             ->method('getPayment')
-            ->will($this->returnValue($paymentMock));
+            ->will($this->returnValue($this->paymentMock));
         $this->orderMock->expects($this->any())
             ->method('place')
             ->willReturnSelf();
@@ -203,7 +201,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\Repeat\Request',
             [
                 'context' => $contextMock,
-                'config' => $configMock,
+                'config' => $this->configMock,
                 'suiteHelper' => $suiteHelperMock,
                 'sharedApi' => $sharedapiMock,
                 'quoteSession' => $quoteSessionMock,
@@ -214,8 +212,21 @@ class RequestTest extends \PHPUnit\Framework\TestCase
     }
     // @codingStandardsIgnoreEnd
 
-    public function testExecuteSUCCESS()
+    /**
+     * @param string $paymentAction
+     * @param int $initializedCount
+     * @param int $transactionClosedCount
+     * @throws \Magento\Framework\Exception\NotFoundException
+     * @dataProvider successProvider
+     */
+    public function testExecuteSuccess($paymentAction, $initializedCount, $transactionClosedCount)
     {
+        $this->repeatModelMock->expects($this->exactly($initializedCount))->method('markAsInitialized');
+
+        $this->configMock->expects($this->any())->method('getSagepayPaymentAction')->willReturn($paymentAction);
+
+        $this->paymentMock->expects($this->exactly($transactionClosedCount))->method('setIsTransactionClosed')->with(0);
+
         $this->quoteManagementMock->expects($this->any())
             ->method('submit')
             ->will($this->returnValue($this->orderMock));
@@ -232,6 +243,14 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         ]);
 
         $this->repeatRequestController->execute();
+    }
+
+    public function successProvider()
+    {
+        return [
+            [Config::ACTION_REPEAT, 1, 0],
+            [Config::ACTION_REPEAT_DEFERRED, 0, 1]
+        ];
     }
 
     public function testExecuteERROR()
