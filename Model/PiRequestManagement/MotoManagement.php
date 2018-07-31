@@ -152,7 +152,7 @@ class MotoManagement extends RequestManagement
         $payment->setLastTransId($this->getPayResult()->getTransactionId());
 
         //leave transaction open in case defer or authorize
-        if ($this->isPaymentActionDeferredOrAuthenticate()) {
+        if ($this->isPaymentActionDeferred()) {
             $payment->setIsTransactionClosed(0);
         }
 
@@ -168,8 +168,8 @@ class MotoManagement extends RequestManagement
     /**
      * @return bool
      */
-    private function isPaymentActionDeferredOrAuthenticate()
+    private function isPaymentActionDeferred()
     {
-        return $this->getRequestData()->getPaymentAction() == Config::ACTION_AUTHENTICATE || $this->getRequestData()->getPaymentAction() == Config::ACTION_DEFER;
+        return $this->getRequestData()->getPaymentAction() == Config::ACTION_DEFER_PI;
     }
 }
