@@ -185,7 +185,7 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
             ->with(false);
 
         $this->repeatModel->setInfoInstance($paymentMock);
-        $this->repeatModel->initialize("Payment", $stateMock);
+        $this->repeatModel->initialize('REPEAT', $stateMock);
     }
 
     private function makeStateObjectMock()
