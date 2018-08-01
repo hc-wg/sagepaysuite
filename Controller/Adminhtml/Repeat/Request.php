@@ -216,13 +216,19 @@ class Request extends \Magento\Backend\App\AbstractAction
         $payment->setTransactionId($transactionId);
         $payment->setLastTransId($transactionId);
 
+        $paymentAction = $this->_config->getSagepayPaymentAction();
+
         //leave transaction open in case defer
-        if ($this->_config->getSagepayPaymentAction() == Config::ACTION_REPEAT_DEFERRED) {
+        if ($paymentAction === Config::ACTION_REPEAT_DEFERRED) {
             $payment->setIsTransactionClosed(0);
         }
 
         $payment->save();
-        $payment->getMethodInstance()->markAsInitialized();
+
+        if ($paymentAction === Config::ACTION_REPEAT) {
+            $payment->getMethodInstance()->markAsInitialized();
+        }
+
         $order->place()->save();
 
         //send email
