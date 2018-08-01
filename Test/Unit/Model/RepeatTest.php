@@ -168,15 +168,20 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @param string $state State to be set to $stateObject.
      * @param string $status Status to be set to $stateObject.
      * @param $paymentAction REPEAT or REPEATDEFERRED.
+     * @param $lastTransId Last transaction id on payment.
      * @dataProvider initializeProvider
      */
-    public function testInitialize($status, $paymentAction)
+    public function testInitialize($state, $status, $paymentAction, $lastTransId)
     {
         $orderMock = $this->makeOrderMockNoSendNewEmail();
 
         $paymentMock = $this->makePaymentMockForInitialize($orderMock);
+        $paymentMock->expects(($lastTransId === null ? $this->never() : $this->once()))
+            ->method('getLastTransId')
+            ->willReturn($lastTransId);
 
         $stateMock = $this->makeStateObjectMock();
         $stateMock->expects($this->once())
@@ -184,7 +189,7 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
             ->with($status);
         $stateMock->expects($this->once())
             ->method('setState')
-            ->with($status);
+            ->with($state);
         $stateMock->expects($this->once())
             ->method('setIsNotified')
             ->with(false);
@@ -199,7 +204,8 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
     public function initializeProvider()
     {
         return [
-            ['pending_payment', 'REPEAT']
+            ['pending_payment', 'pending_payment', Config::ACTION_REPEAT, null],
+            ['new', 'pending', Config::ACTION_REPEAT_DEFERRED, 'VPS_TX_ID'],
         ];
     }
 
