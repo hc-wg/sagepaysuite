@@ -7,6 +7,7 @@ namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Sales\Model\Order;
 
 /**
  * SagePaySuite REPEAT Module
@@ -245,9 +246,13 @@ class Repeat extends \Magento\Payment\Model\Method\AbstractMethod
         //disable sales email
         $order->setCanSendNewEmailFlag(false);
 
-        //set pending payment state
-        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
-        $stateObject->setStatus('pending_payment');
+        if ($paymentAction === Config::ACTION_REPEAT_DEFERRED && $payment->getLastTransId() !== null) {
+            $stateObject->setState(Order::STATE_NEW);
+            $stateObject->setStatus('pending');
+        } else {
+            $stateObject->setState(Order::STATE_PENDING_PAYMENT);
+            $stateObject->setStatus('pending_payment');
+        }
 
         //notified state
         $stateObject->setIsNotified(false);
