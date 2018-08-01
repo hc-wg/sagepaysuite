@@ -225,4 +225,11 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
 
         return $orderMock;
     }
+
+    public function testMarkAsInitialized()
+    {
+        $this->repeatModel->markAsInitialized();
+
+        $this->assertFalse($this->repeatModel->isInitializeNeeded());
+    }
 }
