@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2017 ebizmarts. All rights reserved.
+ * Copyright © 2018 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
@@ -167,7 +167,12 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
         $this->repeatModel->getConfigPaymentAction();
     }
 
-    public function testInitialize()
+    /**
+     * @param string $status Status to be set to $stateObject.
+     * @param $paymentAction REPEAT or REPEATDEFERRED.
+     * @dataProvider initializeProvider
+     */
+    public function testInitialize($status, $paymentAction)
     {
         $orderMock = $this->makeOrderMockNoSendNewEmail();
 
@@ -176,16 +181,26 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
         $stateMock = $this->makeStateObjectMock();
         $stateMock->expects($this->once())
             ->method('setStatus')
-            ->with('pending_payment');
+            ->with($status);
         $stateMock->expects($this->once())
             ->method('setState')
-            ->with('pending_payment');
+            ->with($status);
         $stateMock->expects($this->once())
             ->method('setIsNotified')
             ->with(false);
 
         $this->repeatModel->setInfoInstance($paymentMock);
-        $this->repeatModel->initialize('REPEAT', $stateMock);
+        $this->repeatModel->initialize($paymentAction, $stateMock);
+    }
+
+    /**
+     * @return array
+     */
+    public function initializeProvider()
+    {
+        return [
+            ['pending_payment', 'REPEAT']
+        ];
     }
 
     private function makeStateObjectMock()
