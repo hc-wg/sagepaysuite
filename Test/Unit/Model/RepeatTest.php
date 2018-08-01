@@ -166,4 +166,63 @@ class RepeatTest extends \PHPUnit_Framework_TestCase
             ->method('getPaymentAction');
         $this->repeatModel->getConfigPaymentAction();
     }
+
+    public function testInitialize()
+    {
+        $orderMock = $this->makeOrderMockNoSendNewEmail();
+
+        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
+
+        $stateMock = $this->makeStateObjectMock();
+        $stateMock->expects($this->once())
+            ->method('setStatus')
+            ->with('pending_payment');
+        $stateMock->expects($this->once())
+            ->method('setState')
+            ->with('pending_payment');
+        $stateMock->expects($this->once())
+            ->method('setIsNotified')
+            ->with(false);
+
+        $this->repeatModel->setInfoInstance($paymentMock);
+        $this->repeatModel->initialize("Payment", $stateMock);
+    }
+
+    private function makeStateObjectMock()
+    {
+        $stateMock = $this->getMockBuilder('Magento\Framework\DataObject')->setMethods([
+            "offsetExists",
+            "offsetGet",
+            "offsetSet",
+            "offsetUnset",
+            "setStatus",
+            "setState",
+            "setIsNotified"
+        ])->disableOriginalConstructor()->getMock();
+
+        return $stateMock;
+    }
+
+    /**
+     * @param $orderMock
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makePaymentMockForInitialize($orderMock)
+    {
+        $paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')->disableOriginalConstructor()->getMock();
+        $paymentMock->expects($this->once())->method('getOrder')->will($this->returnValue($orderMock));
+
+        return $paymentMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeOrderMockNoSendNewEmail()
+    {
+        $orderMock = $this->getMockBuilder('Magento\Sales\Model\Order')->disableOriginalConstructor()->getMock();
+        $orderMock->expects($this->once())->method('setCanSendNewEmailFlag')->with(false);
+
+        return $orderMock;
+    }
 }
