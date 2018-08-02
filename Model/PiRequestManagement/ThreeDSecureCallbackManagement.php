@@ -20,9 +20,6 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     /** @var \Magento\Framework\App\RequestInterface */
     private $httpRequest;
 
-    /** @var \Magento\Sales\Model\OrderFactory */
-    private $orderFactory;
-
     /** @var \Magento\Sales\Model\Order */
     private $order;
 
@@ -45,7 +42,6 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface $result,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Framework\App\RequestInterface $httpRequest,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $payResultFactory,
         ClosedForActionFactory $actionFactory,
@@ -62,7 +58,6 @@ class ThreeDSecureCallbackManagement extends RequestManagement
 
         $this->httpRequest        = $httpRequest;
         $this->checkoutSession    = $checkoutSession;
-        $this->orderFactory       = $orderFactory;
         $this->transactionFactory = $transactionFactory;
         $this->payResultFactory   = $payResultFactory;
         $this->actionFactory      = $actionFactory;
@@ -187,7 +182,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
                 if ($sagePayPaymentAction === Config::ACTION_PAYMENT_PI) {
                     $payment->getMethodInstance()->markAsInitialized();
                 }
-                $this->order->place()/*->save()*/;
+                $this->order->place();
 
                 $this->orderRepository->save($this->order);
 
