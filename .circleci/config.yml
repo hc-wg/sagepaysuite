@@ -50,7 +50,7 @@ jobs:
       - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
 
       # Install Magento
-      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.2.2_sample_data.tar.gz && tar xzf Magento-EE-2.2.2_sample_data.tar.gz
+      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.2.5_sample_data.tar.gz && tar xzf Magento-EE-2.2.5_sample_data.tar.gz
       - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
       - run: chmod +x bin/magento
       - run: composer install --prefer-source --no-interaction
