@@ -10,6 +10,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model\PiRequestManagement;
 
 use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerInterface;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Config\ClosedForAction;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\MotoManagement;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 
@@ -144,6 +145,16 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
         $emailSenderMock = $this->makeMockDisabledConstructor(\Magento\Sales\Model\AdminOrder\EmailSender::class);
         $emailSenderMock->expects($this->once())->method('send');
 
+        $actionFactoryMock = $this->makeMockDisabledConstructor('Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory');
+        $actionFactoryMock->expects($this->any())->method('create')->willReturn(
+            new ClosedForAction($paymentAction)
+        );
+
+        $transactionFactoryMock = $this->makeMockDisabledConstructor('Magento\Sales\Model\Order\Payment\TransactionFactory');
+        $transactionFactoryMock->expects($this->any())->method('create')->willReturn(
+            $this->makeMockDisabledConstructor(\Magento\Sales\Model\Order\Payment\Transaction::class)
+        );
+
         /** @var MotoManagement $sut */
         $sut = $this->objectManagerHelper->getObject(
             MotoManagement::class,
@@ -158,7 +169,9 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
                 'httpRequest' => $requestMock,
                 'backendUrl' => $urlMock,
                 'suiteLogger' => $loggerMock,
-                'emailSender' => $emailSenderMock
+                'emailSender' => $emailSenderMock,
+                'actionFactory' => $actionFactoryMock,
+                'transactionFactory' => $transactionFactoryMock
             ]
         );
 
