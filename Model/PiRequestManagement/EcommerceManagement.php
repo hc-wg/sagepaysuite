@@ -1,9 +1,7 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: pablo
- * Date: 1/27/17
- * Time: 12:18 PM
+ * Copyright © 2018 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
  */
 
 namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
