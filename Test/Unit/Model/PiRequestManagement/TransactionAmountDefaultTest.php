@@ -3,9 +3,6 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model\PiRequestManagement;
 
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountDefaultPi;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountDefaultPost;
-use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountJapaneseYen;
-use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPost;
-use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPostJapaneseYen;
 
 class TransactionAmountDefaultTest extends \PHPUnit_Framework_TestCase
 {
@@ -35,7 +32,8 @@ class TransactionAmountDefaultTest extends \PHPUnit_Framework_TestCase
         return [
             [1, 1],
             [9539.84, 9539.84],
-            [6469.20, 6469.20]
+            [6469.20, 6469.20],
+            [146.20, 146.20]
         ];
     }
 
