@@ -143,7 +143,10 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
         $emailSenderMock = $this->makeMockDisabledConstructor(\Magento\Sales\Model\AdminOrder\EmailSender::class);
         $emailSenderMock->expects($this->once())->method('send');
 
-        $actionFactoryMock = $this->makeMockDisabledConstructor('Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory');
+        $actionFactoryMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
         $actionFactoryMock->expects($this->any())->method('create')->willReturn(
             new ClosedForAction($paymentAction)
         );
@@ -182,8 +185,8 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
     public function placeOrder()
     {
         return [
-            [Config::ACTION_PAYMENT_PI, 1, 0],
-            [Config::ACTION_DEFER_PI, 0, 1]
+            'Payment payment action' => [Config::ACTION_PAYMENT_PI, 1, 0],
+            'Deferred payment action' => [Config::ACTION_DEFER_PI, 0, 1,]
         ];
     }
 
