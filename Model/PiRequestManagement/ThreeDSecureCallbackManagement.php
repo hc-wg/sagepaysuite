@@ -20,9 +20,6 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     /** @var \Magento\Framework\App\RequestInterface */
     private $httpRequest;
 
-    /** @var \Magento\Sales\Model\OrderFactory */
-    private $orderFactory;
-
     /** @var \Magento\Sales\Model\Order */
     private $order;
 
@@ -34,6 +31,8 @@ class ThreeDSecureCallbackManagement extends RequestManagement
 
     private $actionFactory;
 
+    private $orderRepository;
+
     public function __construct(
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Model\Api\PIRest $piRestApi,
@@ -43,10 +42,10 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface $result,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Framework\App\RequestInterface $httpRequest,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $payResultFactory,
-        ClosedForActionFactory $actionFactory
+        ClosedForActionFactory $actionFactory,
+        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -59,10 +58,10 @@ class ThreeDSecureCallbackManagement extends RequestManagement
 
         $this->httpRequest        = $httpRequest;
         $this->checkoutSession    = $checkoutSession;
-        $this->orderFactory       = $orderFactory;
         $this->transactionFactory = $transactionFactory;
         $this->payResultFactory   = $payResultFactory;
-        $this->actionFactory = $actionFactory;
+        $this->actionFactory      = $actionFactory;
+        $this->orderRepository    = $orderRepository;
     }
 
     public function getPayment()
@@ -161,9 +160,9 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         if ($response->getStatusCode() === Config::SUCCESS_STATUS) {
             $orderId = $this->httpRequest->getParam("orderId");
             $quoteId = $this->httpRequest->getParam("quoteId");
-            $this->order   = $this->orderFactory->create()->load($orderId);
+            $this->order   = $this->orderRepository->get($orderId);
 
-            if (!empty($this->order)) {
+            if ($this->order !== null) {
                 $this->getPayResult()->setPaymentMethod($response->getPaymentMethod());
                 $this->getPayResult()->setStatusDetail($response->getStatusDetail());
                 $this->getPayResult()->setStatusCode($response->getStatusCode());
@@ -173,32 +172,38 @@ class ThreeDSecureCallbackManagement extends RequestManagement
                 $this->processPayment();
 
                 $payment = $this->getPayment();
-
+                $payment->setTransactionId($this->getPayResult()->getTransactionId());
+                $payment->setLastTransId($this->getPayResult()->getTransactionId());
                 $payment->save();
 
                 $sagePayPaymentAction = $this->getRequestData()->getPaymentAction();
+
                 //invoice
                 if ($sagePayPaymentAction === Config::ACTION_PAYMENT_PI) {
                     $payment->getMethodInstance()->markAsInitialized();
                 }
-                $this->order->place()->save();
+                $this->order->place();
+
+                $this->orderRepository->save($this->order);
 
                 //send email
                 $this->getCheckoutHelper()->sendOrderEmail($this->order);
 
-                /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
-                $actionClosed = $this->actionFactory->create(['paymentAction' => $sagePayPaymentAction]);
-                list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
+                if ($sagePayPaymentAction === Config::ACTION_DEFER_PI) {
+                    /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
+                    $actionClosed = $this->actionFactory->create(['paymentAction' => $sagePayPaymentAction]);
+                    list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
 
-                /** @var \Magento\Sales\Model\Order\Payment\Transaction $transaction */
-                $transaction = $this->transactionFactory->create();
-                $transaction->setOrderPaymentObject($payment);
-                $transaction->setTxnId($this->getPayResult()->getTransactionId());
-                $transaction->setOrderId($this->order->getEntityId());
-                $transaction->setTxnType($action);
-                $transaction->setPaymentId($payment->getId());
-                $transaction->setIsClosed($closed);
-                $transaction->save();
+                    /** @var \Magento\Sales\Model\Order\Payment\Transaction $transaction */
+                    $transaction = $this->transactionFactory->create();
+                    $transaction->setOrderPaymentObject($payment);
+                    $transaction->setTxnId($this->getPayResult()->getTransactionId());
+                    $transaction->setOrderId($this->order->getEntityId());
+                    $transaction->setTxnType($action);
+                    $transaction->setPaymentId($payment->getId());
+                    $transaction->setIsClosed($closed);
+                    $transaction->save();
+                }
 
                 //update invoice transaction id
                 if ($sagePayPaymentAction === Config::ACTION_PAYMENT_PI) {

@@ -22,6 +22,8 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Validator\Exception;
 use Magento\Sales\Model\AdminOrder\EmailSender;
+use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
+use Magento\Sales\Model\Order\Payment\TransactionFactory;
 
 class MotoManagement extends RequestManagement
 {
@@ -41,6 +43,11 @@ class MotoManagement extends RequestManagement
     /** @var EmailSender */
     private $emailSender;
 
+    private $actionFactory;
+
+    /** @var TransactionFactory */
+    private $transactionFactory;
+
     public function __construct(
         Checkout $checkoutHelper,
         PIRest $piRestApi,
@@ -52,7 +59,9 @@ class MotoManagement extends RequestManagement
         RequestInterface $httpRequest,
         UrlInterface $backendUrl,
         Logger $suiteLogger,
-        EmailSender $emailSender
+        EmailSender $emailSender,
+        ClosedForActionFactory $actionFactory,
+        TransactionFactory $transactionFactory
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -67,6 +76,8 @@ class MotoManagement extends RequestManagement
         $this->backendUrl    = $backendUrl;
         $this->logger        = $suiteLogger;
         $this->emailSender   = $emailSender;
+        $this->actionFactory      = $actionFactory;
+        $this->transactionFactory = $transactionFactory;
     }
 
     /**
@@ -158,11 +169,29 @@ class MotoManagement extends RequestManagement
 
         $payment->save();
 
-        if ($this->getRequestData()->getPaymentAction() === Config::ACTION_PAYMENT_PI) {
+        $paymentAction = $this->getRequestData()->getPaymentAction();
+        if ($paymentAction === Config::ACTION_PAYMENT_PI) {
             $payment->getMethodInstance()->markAsInitialized();
         }
 
         $order->place()->save();
+
+        if ($this->isPaymentActionDeferred()) {
+            /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
+            $actionClosed = $this->actionFactory->create(['paymentAction' => $paymentAction]);
+            list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
+
+            /** @var \Magento\Sales\Model\Order\Payment\Transaction $transaction */
+            $transaction = $this->transactionFactory->create();
+            $transaction->setOrderPaymentObject($payment);
+            $transaction->setTxnId($this->getPayResult()->getTransactionId());
+            $transaction->setOrderId($order->getEntityId());
+            $transaction->setTxnType($action);
+            $transaction->setPaymentId($payment->getId());
+            $transaction->setIsClosed($closed);
+            $transaction->save();
+        }
+
     }
 
     /**

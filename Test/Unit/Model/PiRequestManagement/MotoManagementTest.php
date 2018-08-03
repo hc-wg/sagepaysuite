@@ -1,15 +1,14 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: pablo
- * Date: 4/12/18
- * Time: 2:01 PM
+ * Copyright © 2018 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
  */
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\PiRequestManagement;
 
 use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerInterface;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Config\ClosedForAction;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\MotoManagement;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 
@@ -144,6 +143,19 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
         $emailSenderMock = $this->makeMockDisabledConstructor(\Magento\Sales\Model\AdminOrder\EmailSender::class);
         $emailSenderMock->expects($this->once())->method('send');
 
+        $actionFactoryMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $actionFactoryMock->expects($this->any())->method('create')->willReturn(
+            new ClosedForAction($paymentAction)
+        );
+
+        $transactionFactoryMock = $this->makeMockDisabledConstructor('Magento\Sales\Model\Order\Payment\TransactionFactory');
+        $transactionFactoryMock->expects($this->any())->method('create')->willReturn(
+            $this->makeMockDisabledConstructor(\Magento\Sales\Model\Order\Payment\Transaction::class)
+        );
+
         /** @var MotoManagement $sut */
         $sut = $this->objectManagerHelper->getObject(
             MotoManagement::class,
@@ -158,7 +170,9 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
                 'httpRequest' => $requestMock,
                 'backendUrl' => $urlMock,
                 'suiteLogger' => $loggerMock,
-                'emailSender' => $emailSenderMock
+                'emailSender' => $emailSenderMock,
+                'actionFactory' => $actionFactoryMock,
+                'transactionFactory' => $transactionFactoryMock
             ]
         );
 
@@ -171,8 +185,8 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
     public function placeOrder()
     {
         return [
-            [Config::ACTION_PAYMENT_PI, 1, 0],
-            [Config::ACTION_DEFER_PI, 0, 1]
+            'Payment payment action' => [Config::ACTION_PAYMENT_PI, 1, 0],
+            'Deferred payment action' => [Config::ACTION_DEFER_PI, 0, 1,]
         ];
     }
 
