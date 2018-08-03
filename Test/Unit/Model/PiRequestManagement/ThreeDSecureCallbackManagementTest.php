@@ -36,61 +36,10 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @expectedException \LogicException
+     * @param $paymentAction
+     * @dataProvider testPlaceOrderOkProvider
      */
-    public function testPlaceOrderError()
-    {
-        $objectManagerHelper = new ObjectManager($this);
-
-        $checkoutHelperMock = $this->getMockBuilder("Ebizmarts\SagePaySuite\Helper\Checkout")
-            ->disableOriginalConstructor()->getMock();
-
-        $piTransactionResult = $objectManagerHelper->getObject(self::PI_TRANSACTION_RESULT);
-        //$piTransactionResult->setData([]);
-
-        $piTransactionResultFactoryMock = $this->getMockBuilder(self::PI_TRANSACTION_RESULT_FACTORY)
-            ->setMethods(["create"])->disableOriginalConstructor()->getMock();
-        $piTransactionResultFactoryMock->method("create")->willReturn($piTransactionResult);
-
-        /** @var PiTransactionResultThreeD $threeDResult */
-        $threeDResult = $objectManagerHelper->getObject(PiTransactionResultThreeD::class);
-        $threeDResult->setStatus("Authenticated");
-
-        $piRestApiMock = $this->getMockBuilder("Ebizmarts\SagePaySuite\Model\Api\PIRest")
-            ->disableOriginalConstructor()->getMock();
-        $piRestApiMock->expects($this->once())->method("submit3D")->willReturn($threeDResult);
-
-        $error     = new \Magento\Framework\Phrase("Transaction not found.");
-        $exception = new \Ebizmarts\SagePaySuite\Model\Api\ApiException($error);
-        $piRestApiMock->expects($this->exactly(5))->method("transactionDetails")->willThrowException($exception);
-        $piRestApiMock->expects($this->once())->method("void");
-
-        $checkoutSessionMock = $this->getMockBuilder("Magento\Checkout\Model\Session")
-            ->setMethods(["setData"])
-            ->disableOriginalConstructor()->getMock();
-        $checkoutSessionMock->expects($this->never())->method("setData");
-
-        /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement $model */
-        $model = $objectManagerHelper->getObject(
-            self::THREE_D_SECURE_CALLBACK_MANAGEMENT,
-            [
-                "checkoutHelper" => $checkoutHelperMock,
-                "payResultFactory" => $piTransactionResultFactoryMock,
-                "piRestApi" => $piRestApiMock,
-                "checkoutSession" => $checkoutSessionMock
-            ]
-        );
-
-        $requestData = $objectManagerHelper->getObject("Ebizmarts\SagePaySuite\Api\Data\PiRequestManager");
-        $model->setRequestData($requestData);
-
-        $payResult = $objectManagerHelper->getObject(self::PI_TRANSACTION_RESULT);
-        $model->setPayResult($payResult);
-
-        $model->placeOrder();
-    }
-
-    public function testPlaceOrderOk()
+    public function testPlaceOrderOk($paymentAction)
     {
         $objectManagerHelper = new ObjectManager($this);
 
@@ -99,8 +48,8 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $checkoutHelperMock->expects($this->once())->method('sendOrderEmail');
 
         $piTransactionResult = $this->getMockBuilder(self::PI_TRANSACTION_RESULT)
-        ->disableOriginalConstructor()
-        ->getMock();
+            ->disableOriginalConstructor()
+            ->getMock();
         $piTransactionResult->expects($this->once())->method('getStatus')->willReturn('Authenticated');
         $piTransactionResult->expects($this->exactly(2))->method('getStatusCode')->willReturn('0000');
 
@@ -215,10 +164,72 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         );
 
         $requestDataMock = $this->getMockBuilder(PiRequestManager::class)
-        ->disableOriginalConstructor()
-        ->getMock();
-        $requestDataMock->expects($this->exactly(2))->method('getPaymentAction')->willReturn('Payment');
+            ->disableOriginalConstructor()
+            ->getMock();
+        $requestDataMock->expects($this->exactly(2))->method('getPaymentAction')->willReturn($paymentAction);
         $model->setRequestData($requestDataMock);
+
+        $model->placeOrder();
+    }
+
+    public function testPlaceOrderOkProvider()
+    {
+        return [
+            'Payment payment action' => ['Payment']
+        ];
+    }
+
+    /**
+     * @expectedException \LogicException
+     */
+    public function testPlaceOrderError()
+    {
+        $objectManagerHelper = new ObjectManager($this);
+
+        $checkoutHelperMock = $this->getMockBuilder("Ebizmarts\SagePaySuite\Helper\Checkout")
+            ->disableOriginalConstructor()->getMock();
+
+        $piTransactionResult = $objectManagerHelper->getObject(self::PI_TRANSACTION_RESULT);
+        //$piTransactionResult->setData([]);
+
+        $piTransactionResultFactoryMock = $this->getMockBuilder(self::PI_TRANSACTION_RESULT_FACTORY)
+            ->setMethods(["create"])->disableOriginalConstructor()->getMock();
+        $piTransactionResultFactoryMock->method("create")->willReturn($piTransactionResult);
+
+        /** @var PiTransactionResultThreeD $threeDResult */
+        $threeDResult = $objectManagerHelper->getObject(PiTransactionResultThreeD::class);
+        $threeDResult->setStatus("Authenticated");
+
+        $piRestApiMock = $this->getMockBuilder("Ebizmarts\SagePaySuite\Model\Api\PIRest")
+            ->disableOriginalConstructor()->getMock();
+        $piRestApiMock->expects($this->once())->method("submit3D")->willReturn($threeDResult);
+
+        $error     = new \Magento\Framework\Phrase("Transaction not found.");
+        $exception = new \Ebizmarts\SagePaySuite\Model\Api\ApiException($error);
+        $piRestApiMock->expects($this->exactly(5))->method("transactionDetails")->willThrowException($exception);
+        $piRestApiMock->expects($this->once())->method("void");
+
+        $checkoutSessionMock = $this->getMockBuilder("Magento\Checkout\Model\Session")
+            ->setMethods(["setData"])
+            ->disableOriginalConstructor()->getMock();
+        $checkoutSessionMock->expects($this->never())->method("setData");
+
+        /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement $model */
+        $model = $objectManagerHelper->getObject(
+            self::THREE_D_SECURE_CALLBACK_MANAGEMENT,
+            [
+                "checkoutHelper" => $checkoutHelperMock,
+                "payResultFactory" => $piTransactionResultFactoryMock,
+                "piRestApi" => $piRestApiMock,
+                "checkoutSession" => $checkoutSessionMock
+            ]
+        );
+
+        $requestData = $objectManagerHelper->getObject("Ebizmarts\SagePaySuite\Api\Data\PiRequestManager");
+        $model->setRequestData($requestData);
+
+        $payResult = $objectManagerHelper->getObject(self::PI_TRANSACTION_RESULT);
+        $model->setPayResult($payResult);
 
         $model->placeOrder();
     }
