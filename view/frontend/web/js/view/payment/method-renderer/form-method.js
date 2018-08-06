@@ -16,9 +16,10 @@ define(
         'Magento_Checkout/js/model/quote',
         'Magento_Checkout/js/model/full-screen-loader',
         'Magento_Checkout/js/model/payment/additional-validators',
-        'Magento_Customer/js/customer-data'
+        'Magento_Customer/js/customer-data',
+        'Magento_Checkout/js/action/set-payment-information'
     ],
-    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader, additionalValidators, customerData) {
+    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader, additionalValidators, customerData, setPaymentInformation) {
         'use strict';
 
         $(document).ready(function () {
@@ -40,7 +41,7 @@ define(
                 return $.extend(true, this._super(), {'additional_data': null});
             },
             preparePayment: function () {
-            
+
                 var self = this;
                 self.resetPaymentErrors();
 
@@ -78,34 +79,13 @@ define(
                     JSON.stringify(payload)
                 ).done(
                     function () {
-                    
+
                         var paymentData = {method:self.getCode()};
 
-                        /**
-                         * Set payment method
-                         * Checkout for guest and registered customer.
-                         */
-                        if (!customer.isLoggedIn()) {
-                            serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/selected-payment-method', {
-                                cartId: quote.getQuoteId()
-                            });
-                            payload = {
-                                cartId: quote.getQuoteId(),
-                                method: paymentData
-                            };
-                        } else {
-                            serviceUrl = urlBuilder.createUrl('/carts/mine/selected-payment-method', {});
-                            payload = {
-                                cartId: quote.getQuoteId(),
-                                method: paymentData
-                            };
-                        }
-
-                        return storage.put(
-                            serviceUrl,
-                            JSON.stringify(payload)
-                        ).done(function () {
-
+                        $.when(
+                            setPaymentInformation(this.messageContainer, paymentData)
+                        ).done(
+                            function () {
                                 var serviceUrl = null;
                                 if (customer.isLoggedIn()) {
                                     serviceUrl = urlBuilder.createUrl('/sagepay/form/:cartId', {cartId: quote.getQuoteId()});
@@ -139,11 +119,12 @@ define(
                                         self.showPaymentError("Unable to submit form to Sage Pay.");
                                     }
                                 );
-                            }).fail(
-                                function (response) {
+                            }
+                        ).fail(
+                            function (response) {
                                 self.showPaymentError("Unable to save payment method.");
-                                }
-                            );
+                            }
+                        );
                     }
                 ).fail(
                     function (response) {
