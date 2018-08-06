@@ -93,6 +93,8 @@ class MotoManagement extends RequestManagement
                 $this->getOrderCreateModel()->getQuote()->getPayment()->addData($paymentData);
             }
 
+            $this->getOrderCreateModel()->getQuote()->collectTotals();
+
             $order->setSendConfirmation(0);
             $order = $order->createOrder();
 

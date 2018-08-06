@@ -143,6 +143,21 @@ class PiTransactionResult extends AbstractExtensibleObject implements PiTransact
     /**
      * @inheritDoc
      */
+    public function getTxAuthNo()
+    {
+        return $this->_get(self::TX_AUTH_NO);
+    }
+    /**
+     * @inheritDoc
+     */
+    public function setTxAuthNo($code)
+    {
+        $this->setData(self::TX_AUTH_NO, $code);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function setAmount($amount)
     {
         $this->setData(self::AMOUNT, $amount);

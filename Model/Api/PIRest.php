@@ -17,6 +17,7 @@ use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory;
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory;
 use Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory;
 use Ebizmarts\SagePaySuite\Model\Config;
@@ -244,7 +245,7 @@ class PIRest
      * @param $paRes
      * @param $vpsTxId
      * @return mixed
-     * @throws
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
     public function submit3D($paRes, $vpsTxId)
     {
@@ -258,6 +259,11 @@ class PIRest
 
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $response */
         $response = $this->threedStatusResultFactory->create();
+
+        if (!property_exists($resultData, 'status')) {
+            throw new ApiException(__('Invalid 3D secure response.'));
+        }
+
         $response->setStatus($resultData->status);
 
         return $response;
@@ -406,6 +412,10 @@ class PIRest
 
             if (isset($captureResult->bankAuthorisationCode)) {
                 $transaction->setBankAuthCode($captureResult->bankAuthorisationCode);
+            }
+
+            if (isset($captureResult->retrievalReference)) {
+                $transaction->setTxAuthNo($captureResult->retrievalReference);
             }
 
             if (isset($captureResult->currency)) {

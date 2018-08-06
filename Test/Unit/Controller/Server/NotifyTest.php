@@ -130,6 +130,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
                 "StatusDetail" => "OK Status",
                 "3DSecureStatus" => "NOTCHECKED",
+                "BankAuthCode" => "999777",
+                "TxAuthNo" => "17962849",
                 "CardType" => "VISA",
                 "Last4Digits" => "0006",
                 "ExpiryDate" => "0222",
@@ -141,7 +143,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "GiftAid" => "0",
                 "AddressStatus" => "OK",
                 "PayerStatus" => "OK",
-                "VPSSignature" => '301680A8BBDB771C67918A6599703B10'
+                "VPSSignature" => '8E77F29220981737C51C615C3464301F'
             ]));
 
         $this->expectSetBody(
@@ -224,6 +226,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 'VPSTxId'        => '{' . self::TEST_VPSTXID . '}',
                 'StatusDetail'   => 'OK Status',
                 '3DSecureStatus' => 'NOTCHECKED',
+                "BankAuthCode" => "999777",
+                "TxAuthNo" => "17962849",
                 'CardType'       => 'VISA',
                 'Last4Digits'    => '0006',
                 'ExpiryDate'     => '0222',
@@ -235,7 +239,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 'GiftAid'        => '0',
                 'AddressStatus'  => 'OK',
                 'PayerStatus'    => 'OK',
-                'VPSSignature' => '301680A8BBDB771C67918A6599703B10'
+                'VPSSignature' => '8E77F29220981737C51C615C3464301F'
             ]));
 
         $this->expectSetBody(
@@ -277,7 +281,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $serverModelMock = $this->makeServerModelMock();
 
         $paymentMock = $this->makeOrderPaymentMock($serverModelMock);
-        $paymentMock->expects($this->exactly(3))->method('setAdditionalInformation');
+        $paymentMock->expects($this->exactly(5))->method('setAdditionalInformation');
 
         $this->makeQuoteMock();
 
@@ -336,6 +340,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "VPSTxId"        => "{" . self::TEST_VPSTXID . "}",
                 "StatusDetail"   => "OK Status",
                 "3DSecureStatus" => "NOTCHECKED",
+                "BankAuthCode" => "999777",
+                "TxAuthNo" => "17962849",
                 "CardType"       => "VISA",
                 "Last4Digits"    => "0006",
                 "ExpiryDate"     => "0222",
@@ -347,7 +353,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "GiftAid"        => "0",
                 "AddressStatus"  => "OK",
                 "PayerStatus"    => "OK",
-                "VPSSignature"   => 'F2575F3DD8762F709DC8BB18A136DCEE'
+                "VPSSignature"   => '5E3C9B48732834181EBA17ACDE1E55EF'
             ]);
 
         $this->expectSetBody(
@@ -425,6 +431,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
                 "StatusDetail" => "ABORT Status",
                 "3DSecureStatus" => "NOTCHECKED",
+                "BankAuthCode" => "999777",
+                "TxAuthNo" => "17962849",
                 "CardType" => "VISA",
                 "Last4Digits" => "0006",
                 "ExpiryDate" => "0222",
@@ -436,7 +444,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "GiftAid" => "0",
                 "AddressStatus" => "OK",
                 "PayerStatus" => "OK",
-                "VPSSignature" => '5D0EB35B92419D489E8BC3224A17C9E3'
+                "VPSSignature" => 'EA6C59BD4DBEDB8B8B59345E64F9A02C'
             ]));
 
         $this->expectSetBody(
@@ -518,6 +526,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
                 "StatusDetail" => "ABORT Status",
                 "3DSecureStatus" => "NOTCHECKED",
+                "BankAuthCode" => "999777",
+                "TxAuthNo" => "17962849",
                 "CardType" => "VISA",
                 "Last4Digits" => "0006",
                 "ExpiryDate" => "0222",
@@ -529,7 +539,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "GiftAid" => "0",
                 "AddressStatus" => "OK",
                 "PayerStatus" => "OK",
-                "VPSSignature" => 'A230EF0384C9B66C8AE7B322E3A7C9A9'
+                "VPSSignature" => 'F348327D868D37850E361B75A2B1D885'
             ]));
 
         $this->expectSetBody(
@@ -607,6 +617,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "StatusDetail" => "ABORT Status",
                 "3DSecureStatus" => "NOTCHECKED",
                 "CardType" => "VISA",
+                "BankAuthCode" => "999777",
+                "TxAuthNo" => "17962849",
                 "Last4Digits" => "0006",
                 "ExpiryDate" => "0222",
                 "ExpiryDate" => "0222",
@@ -618,7 +630,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "GiftAid" => "0",
                 "AddressStatus" => "OK",
                 "PayerStatus" => "OK",
-                "VPSSignature" => '97EC6F77218792D1C09BEB89E7A5F0A2'
+                "VPSSignature" => '01C00A6026B02C534200728C4E85DDA3'
             ]));
 
         $this->expectSetBody(
@@ -638,6 +650,247 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             $helperMock
         );
 
+        $this->serverNotifyController->execute();
+    }
+
+    public function testExecuteNoBankAuthCode()
+    {
+        $serverModelMock = $this->makeServerModelMock();
+        $paymentMock = $this->makeOrderPaymentMock($serverModelMock);
+        $paymentMock->expects($this->exactly(3))->method('setAdditionalInformation');
+        $this->makeQuoteMock();
+        $this->makeHttpResponseMock();
+        $this->makeHttpRequestMock();
+        $this->makeUrlBuilderMock();
+        $this->makeContextMock();
+        $this->makeConfigMockPayment();
+        $this->makeOrderMock($paymentMock);
+        $this->orderMock->expects($this->never())
+            ->method('cancel')
+            ->willReturnSelf();
+        $this->orderFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\OrderFactory')
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->orderFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($this->orderMock);
+        $transactionMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->transactionFactoryMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
+            ->setMethods(['create'])->disableOriginalConstructor()->getMock();
+        $this->transactionFactoryMock->expects($this->any())
+            ->method('create')
+            ->will($this->returnValue($transactionMock));
+        $this->orderMock
+            ->expects($this->never())
+            ->method('getInvoiceCollection');
+        $this->requestMock->expects($this->once())
+            ->method('getPost')
+            ->will($this->returnValue((object)[
+                "TxType" => "PAYMENT",
+                "Status" => "OK",
+                "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
+                "StatusDetail" => "OK Status",
+                "3DSecureStatus" => "NOTCHECKED",
+                "TxAuthNo" => "17962849",
+                "CardType" => "VISA",
+                "Last4Digits" => "0006",
+                "ExpiryDate" => "0222",
+                "VendorTxCode" => "10000000001-2015-12-12-123456",
+                "AVSCV2" => "OK",
+                "AddressResult" => "OK",
+                "PostCodeResult" => "OK",
+                "CV2Result" => "OK",
+                "GiftAid" => "0",
+                "AddressStatus" => "OK",
+                "PayerStatus" => "OK",
+                "VPSSignature" => "4B27106C4F30903A434176C5807AE4A3"
+            ]));
+        $this->expectSetBody(
+            'Status=OK' . "\r\n" .
+            'StatusDetail=Transaction completed successfully' . "\r\n" .
+            'RedirectURL=?quoteid=1' . "\r\n"
+        );
+        $helperMock = $this->makeHelperMockCalledOnce();
+        $updateOrderMock = $this->getMockBuilder(OrderUpdateOnCallback::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $updateOrderMock->expects($this->once())->method('setOrder')->with($this->orderMock);
+        $updateOrderMock->expects($this->once())->method('confirmPayment')->with(self::TEST_VPSTXID);
+        $this->controllerInstantiate(
+            $this->contextMock,
+            $this->configMock,
+            $this->orderFactoryMock,
+            $this->transactionFactoryMock,
+            $this->quoteMock,
+            $helperMock,
+            null,
+            $updateOrderMock
+        );
+        $this->serverNotifyController->execute();
+    }
+
+    public function testExecuteNoTxAuthCode()
+    {
+        $serverModelMock = $this->makeServerModelMock();
+        $paymentMock = $this->makeOrderPaymentMock($serverModelMock);
+        $paymentMock->expects($this->exactly(3))->method('setAdditionalInformation');
+        $this->makeQuoteMock();
+        $this->makeHttpResponseMock();
+        $this->makeHttpRequestMock();
+        $this->makeUrlBuilderMock();
+        $this->makeContextMock();
+        $this->makeConfigMockPayment();
+        $this->makeOrderMock($paymentMock);
+        $this->orderMock->expects($this->never())
+            ->method('cancel')
+            ->willReturnSelf();
+        $this->orderFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\OrderFactory')
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->orderFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($this->orderMock);
+        $transactionMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->transactionFactoryMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
+            ->setMethods(['create'])->disableOriginalConstructor()->getMock();
+        $this->transactionFactoryMock->expects($this->any())
+            ->method('create')
+            ->will($this->returnValue($transactionMock));
+        $this->orderMock
+            ->expects($this->never())
+            ->method('getInvoiceCollection');
+        $this->requestMock->expects($this->once())
+            ->method('getPost')
+            ->will($this->returnValue((object)[
+                "TxType" => "PAYMENT",
+                "Status" => "OK",
+                "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
+                "StatusDetail" => "OK Status",
+                "3DSecureStatus" => "NOTCHECKED",
+                "BankAuthCode" => "999777",
+                "CardType" => "VISA",
+                "Last4Digits" => "0006",
+                "ExpiryDate" => "0222",
+                "VendorTxCode" => "10000000001-2015-12-12-123456",
+                "AVSCV2" => "OK",
+                "AddressResult" => "OK",
+                "PostCodeResult" => "OK",
+                "CV2Result" => "OK",
+                "GiftAid" => "0",
+                "AddressStatus" => "OK",
+                "PayerStatus" => "OK",
+                "VPSSignature" => "FF89BBB5FE43019620C21F3E763179BB"
+            ]));
+        $this->expectSetBody(
+            'Status=OK' . "\r\n" .
+            'StatusDetail=Transaction completed successfully' . "\r\n" .
+            'RedirectURL=?quoteid=1' . "\r\n"
+        );
+        $helperMock = $this->makeHelperMockCalledOnce();
+        $updateOrderMock = $this->getMockBuilder(OrderUpdateOnCallback::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $updateOrderMock->expects($this->once())->method('setOrder')->with($this->orderMock);
+        $updateOrderMock->expects($this->once())->method('confirmPayment')->with(self::TEST_VPSTXID);
+        $this->controllerInstantiate(
+            $this->contextMock,
+            $this->configMock,
+            $this->orderFactoryMock,
+            $this->transactionFactoryMock,
+            $this->quoteMock,
+            $helperMock,
+            null,
+            $updateOrderMock
+        );
+        $this->serverNotifyController->execute();
+    }
+    public function testExecuteNoTxAuthCodeOrBankAutCode()
+    {
+        $serverModelMock = $this->makeServerModelMock();
+        $paymentMock = $this->makeOrderPaymentMock($serverModelMock);
+        $paymentMock->expects($this->exactly(2))->method('setAdditionalInformation');
+        $this->makeQuoteMock();
+        $this->makeHttpResponseMock();
+        $this->makeHttpRequestMock();
+        $this->makeUrlBuilderMock();
+        $this->makeContextMock();
+        $this->makeConfigMockPayment();
+        $this->makeOrderMock($paymentMock);
+        $this->orderMock->expects($this->never())
+            ->method('cancel')
+            ->willReturnSelf();
+        $this->orderFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\OrderFactory')
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->orderFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($this->orderMock);
+        $transactionMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->transactionFactoryMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
+            ->setMethods(['create'])->disableOriginalConstructor()->getMock();
+        $this->transactionFactoryMock->expects($this->any())
+            ->method('create')
+            ->will($this->returnValue($transactionMock));
+        $this->orderMock
+            ->expects($this->never())
+            ->method('getInvoiceCollection');
+        $this->requestMock->expects($this->once())
+            ->method('getPost')
+            ->will($this->returnValue((object)[
+                "TxType" => "PAYMENT",
+                "Status" => "OK",
+                "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
+                "StatusDetail" => "OK Status",
+                "3DSecureStatus" => "NOTCHECKED",
+                "CardType" => "VISA",
+                "Last4Digits" => "0006",
+                "ExpiryDate" => "0222",
+                "VendorTxCode" => "10000000001-2015-12-12-123456",
+                "AVSCV2" => "OK",
+                "AddressResult" => "OK",
+                "PostCodeResult" => "OK",
+                "CV2Result" => "OK",
+                "GiftAid" => "0",
+                "AddressStatus" => "OK",
+                "PayerStatus" => "OK",
+                "VPSSignature" => "301680A8BBDB771C67918A6599703B10"
+            ]));
+        $this->expectSetBody(
+            'Status=OK' . "\r\n" .
+            'StatusDetail=Transaction completed successfully' . "\r\n" .
+            'RedirectURL=?quoteid=1' . "\r\n"
+        );
+        $helperMock = $this->makeHelperMockCalledOnce();
+        $updateOrderMock = $this->getMockBuilder(OrderUpdateOnCallback::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $updateOrderMock->expects($this->once())->method('setOrder')->with($this->orderMock);
+        $updateOrderMock->expects($this->once())->method('confirmPayment')->with(self::TEST_VPSTXID);
+        $this->controllerInstantiate(
+            $this->contextMock,
+            $this->configMock,
+            $this->orderFactoryMock,
+            $this->transactionFactoryMock,
+            $this->quoteMock,
+            $helperMock,
+            null,
+            $updateOrderMock
+        );
         $this->serverNotifyController->execute();
     }
 

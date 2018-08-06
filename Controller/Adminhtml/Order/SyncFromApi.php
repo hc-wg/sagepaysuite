@@ -6,7 +6,9 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\Order;
 
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\Validator\Exception as ValidatorException;
 
 class SyncFromApi extends \Magento\Backend\App\AbstractAction
 {
@@ -71,11 +73,11 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
                 $order = $this->_orderFactory->create()->load($this->getRequest()->getParam("order_id"));
                 $payment = $order->getPayment();
             } else {
-                throw new \Magento\Framework\Validator\Exception(__('Unable to sync from API: Invalid order id.'));
+                throw new ValidatorException(__('Unable to sync from API: Invalid order id.'));
             }
 
             $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
-            $transactionDetails = $this->_reportingApi->getTransactionDetails($transactionId);
+            $transactionDetails = $this->_reportingApi->getTransactionDetails($transactionId, $order->getStoreId());
 
             $payment->setAdditionalInformation('vendorTxCode', (string)$transactionDetails->vendortxcode);
             $payment->setAdditionalInformation('statusDetail', (string)$transactionDetails->status);
@@ -94,7 +96,7 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
             }
 
             $this->messageManager->addSuccess(__('Successfully synced from Sage Pay\'s API'));
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+        } catch (ApiException $apiException) {
             $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__($apiException->getUserMessage()));
         } catch (\Exception $e) {
