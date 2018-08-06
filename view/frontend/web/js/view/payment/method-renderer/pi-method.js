@@ -18,9 +18,10 @@ define(
         'Magento_Checkout/js/model/payment/additional-validators',
         'Magento_Checkout/js/model/url-builder',
         'Magento_Checkout/js/model/quote',
-        'Magento_Customer/js/customer-data'
+        'Magento_Customer/js/customer-data',
+        'Magento_Checkout/js/action/set-payment-information'
     ],
-    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal, additionalValidators, urlBuilder, quote, customerData) {
+    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal, additionalValidators, urlBuilder, quote, customerData, setPaymentInformation) {
         'use strict';
 
         $(document).ready(function () {
@@ -103,6 +104,19 @@ define(
                     }
                 );
             },
+            savePaymentInfo: function () {
+                var self = this;
+
+                $.when(
+                    setPaymentInformation(this.messageContainer, self.getData())
+                ).done(
+                    self.createMerchantSessionKey()
+                ).fail(
+                    function (response) {
+                        self.showPaymentError("Unable to save payment info.");
+                    }
+                );
+            },
             preparePayment: function () {
                 var self = this;
 
@@ -130,7 +144,7 @@ define(
                         JSON.stringify(payload)
                     ).done(
                         function () {
-                            self.createMerchantSessionKey();
+                            self.savePaymentInfo();
                         }
                     ).fail(
                         function (response) {
