@@ -16,6 +16,6 @@ class TransactionAmountDefaultPi implements TransactionAmountCommandInterface
 
     public function execute(): int
     {
-        return (int)($this->amount * 100);
+        return (int)(string)($this->amount * 100);
     }
 }

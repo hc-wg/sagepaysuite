@@ -22,6 +22,8 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Validator\Exception;
 use Magento\Sales\Model\AdminOrder\EmailSender;
+use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
+use Magento\Sales\Model\Order\Payment\TransactionFactory;
 
 class MotoManagement extends RequestManagement
 {
@@ -41,6 +43,11 @@ class MotoManagement extends RequestManagement
     /** @var EmailSender */
     private $emailSender;
 
+    private $actionFactory;
+
+    /** @var TransactionFactory */
+    private $transactionFactory;
+
     public function __construct(
         Checkout $checkoutHelper,
         PIRest $piRestApi,
@@ -52,7 +59,9 @@ class MotoManagement extends RequestManagement
         RequestInterface $httpRequest,
         UrlInterface $backendUrl,
         Logger $suiteLogger,
-        EmailSender $emailSender
+        EmailSender $emailSender,
+        ClosedForActionFactory $actionFactory,
+        TransactionFactory $transactionFactory
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -65,8 +74,10 @@ class MotoManagement extends RequestManagement
         $this->objectManager = $objectManager;
         $this->httpRequest   = $httpRequest;
         $this->backendUrl    = $backendUrl;
-        $this->logger = $suiteLogger;
-        $this->emailSender = $emailSender;
+        $this->logger        = $suiteLogger;
+        $this->emailSender   = $emailSender;
+        $this->actionFactory      = $actionFactory;
+        $this->transactionFactory = $transactionFactory;
     }
 
     /**
@@ -92,6 +103,8 @@ class MotoManagement extends RequestManagement
                 $paymentData["cc_type"] = $this->ccConverter->convert($this->getRequestData()->getCcType());
                 $this->getOrderCreateModel()->getQuote()->getPayment()->addData($paymentData);
             }
+
+            $this->getOrderCreateModel()->getQuote()->collectTotals();
 
             $order->setSendConfirmation(0);
             $order = $order->createOrder();
@@ -150,21 +163,42 @@ class MotoManagement extends RequestManagement
         $payment->setLastTransId($this->getPayResult()->getTransactionId());
 
         //leave transaction open in case defer or authorize
-        if ($this->isPaymentActionDeferredOrAuthenticate()) {
+        if ($this->isPaymentActionDeferred()) {
             $payment->setIsTransactionClosed(0);
         }
 
         $payment->save();
 
-        $payment->getMethodInstance()->markAsInitialized();
+        $paymentAction = $this->getRequestData()->getPaymentAction();
+        if ($paymentAction === Config::ACTION_PAYMENT_PI) {
+            $payment->getMethodInstance()->markAsInitialized();
+        }
+
         $order->place()->save();
+
+        if ($this->isPaymentActionDeferred()) {
+            /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
+            $actionClosed = $this->actionFactory->create(['paymentAction' => $paymentAction]);
+            list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
+
+            /** @var \Magento\Sales\Model\Order\Payment\Transaction $transaction */
+            $transaction = $this->transactionFactory->create();
+            $transaction->setOrderPaymentObject($payment);
+            $transaction->setTxnId($this->getPayResult()->getTransactionId());
+            $transaction->setOrderId($order->getEntityId());
+            $transaction->setTxnType($action);
+            $transaction->setPaymentId($payment->getId());
+            $transaction->setIsClosed($closed);
+            $transaction->save();
+        }
+
     }
 
     /**
      * @return bool
      */
-    private function isPaymentActionDeferredOrAuthenticate()
+    private function isPaymentActionDeferred()
     {
-        return $this->getRequestData()->getPaymentAction() == Config::ACTION_AUTHENTICATE || $this->getRequestData()->getPaymentAction() == Config::ACTION_DEFER;
+        return $this->getRequestData()->getPaymentAction() == Config::ACTION_DEFER_PI;
     }
 }

@@ -163,6 +163,7 @@ class Reporting
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
         }
 
+        /** @var $exception \Ebizmarts\SagePaySuite\Model\Api\ApiException */
         $exception = $this->apiExceptionFactory->create([
             'phrase' => __($exceptionPhrase),
             'code' => $exceptionCode
@@ -174,12 +175,15 @@ class Reporting
     /**
      * This command returns all information held in Sage Pay about the specified transaction.
      *
-     * @param $vpstxid
+     * @param string $vpstxid
+     * @param null|int $storeId
      * @return mixed
-     * @throws
+     * @throws ApiException
      */
-    public function getTransactionDetails($vpstxid)
+    public function getTransactionDetails($vpstxid, $storeId = null)
     {
+        $this->config->setConfigurationScopeId($storeId);
+
         $params = '<vpstxid>' . $vpstxid . '</vpstxid>';
         $xml = $this->_createXml('getTransactionDetail', $params);
         return $this->_handleApiErrors($this->_executeRequest($xml));

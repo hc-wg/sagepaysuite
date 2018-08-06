@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2017 ebizmarts. All rights reserved.
+ * Copyright © 2018 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
@@ -165,5 +165,92 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
         $this->configMock->expects($this->once())
             ->method('getPaymentAction');
         $this->repeatModel->getConfigPaymentAction();
+    }
+
+    /**
+     * @param string $state State to be set to $stateObject.
+     * @param string $status Status to be set to $stateObject.
+     * @param $paymentAction REPEAT or REPEATDEFERRED.
+     * @param $lastTransId Last transaction id on payment.
+     * @dataProvider initializeProvider
+     */
+    public function testInitialize($state, $status, $paymentAction, $lastTransId)
+    {
+        $orderMock = $this->makeOrderMockNoSendNewEmail();
+
+        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
+        $paymentMock->expects(($lastTransId === null ? $this->never() : $this->once()))
+            ->method('getLastTransId')
+            ->willReturn($lastTransId);
+
+        $stateMock = $this->makeStateObjectMock();
+        $stateMock->expects($this->once())
+            ->method('setStatus')
+            ->with($status);
+        $stateMock->expects($this->once())
+            ->method('setState')
+            ->with($state);
+        $stateMock->expects($this->once())
+            ->method('setIsNotified')
+            ->with(false);
+
+        $this->repeatModel->setInfoInstance($paymentMock);
+        $this->repeatModel->initialize($paymentAction, $stateMock);
+    }
+
+    /**
+     * @return array
+     */
+    public function initializeProvider()
+    {
+        return [
+            ['pending_payment', 'pending_payment', Config::ACTION_REPEAT, null],
+            ['new', 'pending', Config::ACTION_REPEAT_DEFERRED, 'VPS_TX_ID'],
+        ];
+    }
+
+    private function makeStateObjectMock()
+    {
+        $stateMock = $this->getMockBuilder('Magento\Framework\DataObject')->setMethods([
+            "offsetExists",
+            "offsetGet",
+            "offsetSet",
+            "offsetUnset",
+            "setStatus",
+            "setState",
+            "setIsNotified"
+        ])->disableOriginalConstructor()->getMock();
+
+        return $stateMock;
+    }
+
+    /**
+     * @param $orderMock
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makePaymentMockForInitialize($orderMock)
+    {
+        $paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')->disableOriginalConstructor()->getMock();
+        $paymentMock->expects($this->once())->method('getOrder')->will($this->returnValue($orderMock));
+
+        return $paymentMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeOrderMockNoSendNewEmail()
+    {
+        $orderMock = $this->getMockBuilder('Magento\Sales\Model\Order')->disableOriginalConstructor()->getMock();
+        $orderMock->expects($this->once())->method('setCanSendNewEmailFlag')->with(false);
+
+        return $orderMock;
+    }
+
+    public function testMarkAsInitialized()
+    {
+        $this->repeatModel->markAsInitialized();
+
+        $this->assertFalse($this->repeatModel->isInitializeNeeded());
     }
 }

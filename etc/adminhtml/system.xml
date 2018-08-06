@@ -164,8 +164,7 @@
                     </field>
                     <field id="payment_action" translate="label" type="select" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Payment Action</label>
-                        <comment><![CDATA[WARNING: This integration is still in beta state and only PAYMENT option is currently available.]]></comment>
-                        <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\PaymentAction</source_model>
+                        <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\PiPaymentAction</source_model>
                         <config_path>payment/sagepaysuitepi/payment_action</config_path>
                     </field>
                     <field id="title" translate="label" type="text" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -335,26 +334,26 @@
                     <field id="sort_order" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Sort Order</label>
                         <frontend_class>validate-number</frontend_class>
-                        <config_path>payment/sagepaysuitepaypal/sort_order</config_path>
+                        <config_path>payment/sagepaysuiterepeat/sort_order</config_path>
                     </field>
                     <field id="allowspecific" translate="label" type="allowspecific" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Payment from Applicable Countries</label>
                         <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
-                        <config_path>payment/sagepaysuitepaypal/allowspecific</config_path>
+                        <config_path>payment/sagepaysuiterepeat/allowspecific</config_path>
                     </field>
                     <field id="specificcountry" translate="label" type="multiselect" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Payment from Specific Countries</label>
                         <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
                         <can_be_empty>1</can_be_empty>
-                        <config_path>payment/sagepaysuitepaypal/specificcountry</config_path>
+                        <config_path>payment/sagepaysuiterepeat/specificcountry</config_path>
                     </field>
                     <field id="min_order_total" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Minimum Order Total</label>
-                        <config_path>payment/sagepaysuitepaypal/min_order_total</config_path>
+                        <config_path>payment/sagepaysuiterepeat/min_order_total</config_path>
                     </field>
                     <field id="max_order_total" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Maximum Order Total</label>
-                        <config_path>payment/sagepaysuitepaypal/max_order_total</config_path>
+                        <config_path>payment/sagepaysuiterepeat/max_order_total</config_path>
                     </field>
                     <field id="model"></field>
                 </group>

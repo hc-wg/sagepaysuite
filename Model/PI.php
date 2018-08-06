@@ -12,6 +12,7 @@ use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Model\InfoInterface;
 use Ebizmarts\SagePaySuite\Model\Api\PIRest;
+use Magento\Sales\Model\Order;
 
 /**
  * Class PI
@@ -97,22 +98,15 @@ class PI extends \Magento\Payment\Model\Method\Cc
     private $pirestapi;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\Shared
-     */
-    private $sharedApi;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
     private $suiteHelper;
 
-    /**
-     * @var Logger
-     */
-    private $suiteLogger;
-
     /** @var \Magento\Framework\Model\Context */
     private $context;
+
+    /** @var \Ebizmarts\SagePaySuite\Model\Payment */
+    private $paymentOps;
 
     /**
      * @param \Magento\Framework\Model\Context $context
@@ -144,9 +138,9 @@ class PI extends \Magento\Payment\Model\Method\Cc
         \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate,
         \Ebizmarts\SagePaySuite\Model\Config $config,
         PIRest $pirestapi,
-        \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
+        \Ebizmarts\SagePaySuite\Model\Payment $paymentOps,
+        \Ebizmarts\SagePaySuite\Model\Api\Pi $piApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
-        Logger $suiteLogger,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
@@ -170,9 +164,10 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $this->config  = $config;
         $this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
         $this->pirestapi   = $pirestapi;
-        $this->sharedApi   = $sharedApi;
         $this->suiteHelper = $suiteHelper;
-        $this->suiteLogger = $suiteLogger;
+
+        $this->paymentOps = $paymentOps;
+        $this->paymentOps->setApi($piApi);
     }
 
     public function assignData(DataObject $data)
@@ -194,6 +189,23 @@ class PI extends \Magento\Payment\Model\Method\Cc
     }
 
     /**
+     * Capture payment abstract method
+     *
+     * @param \Magento\Framework\DataObject|InfoInterface $payment
+     * @param float $amount
+     * @return $this
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @api
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @deprecated 100.2.0
+     */
+    public function capture(InfoInterface $payment, $amount)
+    {
+        $this->paymentOps->capture($payment, $amount);
+        return $this;
+    }
+
+    /**
      * Refunds specified amount
      *
      * @param InfoInterface $payment
@@ -204,7 +216,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
     public function refund(InfoInterface $payment, $amount)
     {
         try {
-            /** @var \Magento\Sales\Model\Order $order */
+            /** @var Order $order */
             $order        = $payment->getOrder();
             $vpsTxId      = $this->suiteHelper->clearTransactionId($payment->getParentTransactionId());
             $vendorTxCode = $this->suiteHelper->generateVendorTxCode($order->getIncrementId(), Config::ACTION_REFUND);
@@ -305,9 +317,13 @@ class PI extends \Magento\Payment\Model\Method\Cc
         //disable sales email
         $order->setCanSendNewEmailFlag(false);
 
-        //set pending payment state
-        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
-        $stateObject->setStatus('pending_payment');
+        if ($paymentAction === Config::ACTION_DEFER_PI && $payment->getLastTransId() !== null) {
+            $stateObject->setState(Order::STATE_NEW);
+            $stateObject->setStatus('pending');
+        } else {
+            $stateObject->setState(Order::STATE_PENDING_PAYMENT);
+            $stateObject->setStatus('pending_payment');
+        }
 
         //notified state
         $stateObject->setIsNotified(false);

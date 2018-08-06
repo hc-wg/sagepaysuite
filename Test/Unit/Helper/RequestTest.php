@@ -50,6 +50,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider populateAddressInformationDataProvider
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     * @expectedExceptionMessage The email is null or empty.
      */
     public function testPopulateAddressInformation($data)
     {
@@ -57,6 +59,9 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder('Magento\Quote\Model\Quote\Address')
             ->disableOriginalConstructor()
             ->getMock();
+        $addressMock->expects($this->exactly(1))
+            ->method('getEmail')
+            ->will($this->returnValue(""));
         $addressMock->expects($this->any())
             ->method('getLastname')
             ->will($this->returnValue($data["lastname"]));

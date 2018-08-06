@@ -6,7 +6,10 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use Ebizmarts\SagePaySuite\Model\PI;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+use Magento\Sales\Model\Order\Payment;
+use Ebizmarts\SagePaySuite\Model\Payment as SagePayPayment;
 
 class PITest extends \PHPUnit\Framework\TestCase
 {
@@ -18,7 +21,7 @@ class PITest extends \PHPUnit\Framework\TestCase
     const TEST_VPSTXID = 'F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F';
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\PI
+     * @var PI
      */
     private $piModel;
 
@@ -87,13 +90,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->method('getOrderCurrencyCode')
             ->willReturn('GBP');
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
+        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
         $paymentMock->expects($this->once())
             ->method('setIsTransactionClosed')
             ->with(1);
@@ -155,13 +152,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->method('getOrderCurrencyCode')
             ->willReturn('GBP');
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
+        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
 
         $this->suiteHelperMock
             ->expects($this->once())
@@ -224,13 +215,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->method('generateVendorTxCode')
             ->willReturn('R1000001');
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
+        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
 
         $return = new \stdClass();
         $return->transactionId = 'a';
@@ -283,7 +268,7 @@ class PITest extends \PHPUnit\Framework\TestCase
     public function testVoidInvalidTransactionState()
     {
         $paymentMock = $this
-            ->getMockBuilder(\Magento\Sales\Model\Order\Payment::class)
+            ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
             ->getMock();
         $paymentMock
@@ -308,7 +293,7 @@ class PITest extends \PHPUnit\Framework\TestCase
                 )
             );
 
-        /** @var \Ebizmarts\SagePaySuite\Model\PI $piModel */
+        /** @var PI $piModel */
         $piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
             [
@@ -328,7 +313,7 @@ class PITest extends \PHPUnit\Framework\TestCase
     public function testVoidException()
     {
         $paymentMock = $this
-            ->getMockBuilder(\Magento\Sales\Model\Order\Payment::class)
+            ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
             ->getMock();
         $paymentMock
@@ -348,7 +333,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->with(self::TEST_VPSTXID)
             ->willThrowException($exception);
 
-        /** @var \Ebizmarts\SagePaySuite\Model\PI $piModel */
+        /** @var PI $piModel */
         $piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
             [
@@ -368,7 +353,7 @@ class PITest extends \PHPUnit\Framework\TestCase
     public function testVoidException2()
     {
         $paymentMock = $this
-            ->getMockBuilder(\Magento\Sales\Model\Order\Payment::class)
+            ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
             ->getMock();
         $paymentMock
@@ -389,7 +374,7 @@ class PITest extends \PHPUnit\Framework\TestCase
                 )
             );
 
-        /** @var \Ebizmarts\SagePaySuite\Model\PI $piModel */
+        /** @var PI $piModel */
         $piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
             [
@@ -403,7 +388,7 @@ class PITest extends \PHPUnit\Framework\TestCase
     public function testCancel()
     {
         $paymentMock = $this
-            ->getMockBuilder(\Magento\Sales\Model\Order\Payment::class)
+            ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
             ->getMock();
         $paymentMock
@@ -468,36 +453,47 @@ class PITest extends \PHPUnit\Framework\TestCase
 
     public function testInitialize()
     {
-        $orderMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('setCanSendNewEmailFlag')
-            ->with(false);
+        $orderMock = $this->makeOrderMockNoSendNewEmail();
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paymentMock->expects($this->once())
-            ->method('getOrder')
-            ->will($this->returnValue($orderMock));
+        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
 
-        $stateMock = $this
-            ->getMockBuilder('Magento\Framework\DataObject')
-            ->setMethods(["offsetExists", "offsetGet", "offsetSet", "offsetUnset", "setStatus", "setIsNotified"])
-            ->disableOriginalConstructor()
-            ->getMock();
+        $stateMock = $this->makeStateObjectMock();
         $stateMock->expects($this->once())
             ->method('setStatus')
+            ->with('pending_payment');
+        $stateMock->expects($this->once())
+            ->method('setState')
             ->with('pending_payment');
         $stateMock->expects($this->once())
             ->method('setIsNotified')
             ->with(false);
 
         $this->piModel->setInfoInstance($paymentMock);
-        $this->piModel->initialize("", $stateMock);
+        $this->piModel->initialize("Payment", $stateMock);
+    }
+
+    public function testInitializeDeferred()
+    {
+        $orderMock   = $this->makeOrderMockNoSendNewEmail();
+
+        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
+        $paymentMock->expects($this->once())
+            ->method('getLastTransId')
+            ->willReturn('937F8F36-2BA5-2928-C0C9-7D1159895344');
+
+        $stateMock = $this->makeStateObjectMock();
+        $stateMock->expects($this->once())
+            ->method('setState')
+            ->with('new');
+        $stateMock->expects($this->once())
+            ->method('setStatus')
+            ->with('pending');
+        $stateMock->expects($this->once())
+            ->method('setIsNotified')
+            ->with(false);
+
+        $this->piModel->setInfoInstance($paymentMock);
+        $this->piModel->initialize('Deferred', $stateMock);
     }
 
     public function testGetConfigPaymentAction()
@@ -594,8 +590,8 @@ class PITest extends \PHPUnit\Framework\TestCase
                 ['card_identifier', 'card_id_string']
             );
 
-        /** @var \Ebizmarts\SagePaySuite\Model\PI $piModelMock */
-        $piModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PI::class)
+        /** @var PI $piModelMock */
+        $piModelMock = $this->getMockBuilder(PI::class)
             ->setMethods(['getInfoInstance'])
         ->disableOriginalConstructor()
         ->getMock();
@@ -693,7 +689,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->method('getQuote')
             ->willReturn($quoteMock);
 
-        $piModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PI::class)
+        $piModelMock = $this->getMockBuilder(PI::class)
             ->disableOriginalConstructor()
             ->setMethodsExcept(['validate'])
             ->getMock();
@@ -701,6 +697,31 @@ class PITest extends \PHPUnit\Framework\TestCase
         $piModelMock->expects($this->once())->method('getInfoInstance')->willReturn($infoMock);
 
         $piModelMock->validate();
+    }
+
+    public function testCapture()
+    {
+        $objectManager = new ObjectManager($this);
+
+        $testAmount = 876.99;
+        $paymentMock = $this->getMockBuilder(Payment::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentOpsMock = $this->getMockBuilder(SagePayPayment::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentOpsMock->expects($this->once())->method('capture')->with($paymentMock, $testAmount);
+
+        /** @var PI $sut */
+        $sut = $objectManager->getObject(
+            PI::class,
+            [
+                'paymentOps' => $paymentOpsMock
+            ]
+        );
+
+        $sut->capture($paymentMock, $testAmount);
     }
 
     public function testValidateOk()
@@ -772,5 +793,46 @@ class PITest extends \PHPUnit\Framework\TestCase
                 ])->disableOriginalConstructor()->getMock();
 
         return $infoMock;
+    }
+
+    /**
+     * @param $orderMock
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makePaymentMockForInitialize($orderMock)
+    {
+        $paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')->disableOriginalConstructor()->getMock();
+        $paymentMock->expects($this->once())->method('getOrder')->will($this->returnValue($orderMock));
+
+        return $paymentMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeOrderMockNoSendNewEmail()
+    {
+        $orderMock = $this->getMockBuilder('Magento\Sales\Model\Order')->disableOriginalConstructor()->getMock();
+        $orderMock->expects($this->once())->method('setCanSendNewEmailFlag')->with(false);
+
+        return $orderMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeStateObjectMock()
+    {
+        $stateMock = $this->getMockBuilder('Magento\Framework\DataObject')->setMethods([
+                "offsetExists",
+                "offsetGet",
+                "offsetSet",
+                "offsetUnset",
+                "setStatus",
+                "setState",
+                "setIsNotified"
+            ])->disableOriginalConstructor()->getMock();
+
+        return $stateMock;
     }
 }

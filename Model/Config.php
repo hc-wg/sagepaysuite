@@ -38,11 +38,13 @@ class Config
     const ACTION_PAYMENT         = 'PAYMENT';
     const ACTION_PAYMENT_PI      = 'Payment';
     const ACTION_DEFER           = 'DEFERRED';
+    const ACTION_DEFER_PI        = 'Deferred';
     const ACTION_AUTHENTICATE    = 'AUTHENTICATE';
     const ACTION_VOID            = 'VOID';
     const ACTION_REFUND          = 'REFUND';
     const ACTION_RELEASE         = 'RELEASE';
     const ACTION_REPEAT          = 'REPEAT';
+    const ACTION_REPEAT_PI       = 'Repeat';
     const ACTION_REPEAT_DEFERRED = 'REPEATDEFERRED';
     const ACTION_AUTHORISE       = 'AUTHORISE';
     const ACTION_POST            = 'post';
@@ -326,11 +328,7 @@ class Config
 
     public function getSagepayPaymentAction()
     {
-        if ($this->methodCode == self::METHOD_PI) {
-            return self::ACTION_PAYMENT_PI;
-        } else {
-            return $this->getValue("payment_action");
-        }
+        return $this->getValue("payment_action");
     }
 
     public function getPaymentAction()

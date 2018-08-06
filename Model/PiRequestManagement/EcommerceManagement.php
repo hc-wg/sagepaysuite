@@ -1,9 +1,7 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: pablo
- * Date: 1/27/17
- * Time: 12:18 PM
+ * Copyright © 2018 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
  */
 
 namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
@@ -13,10 +11,14 @@ use Ebizmarts\SagePaySuite\Helper\Checkout;
 use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\PIRest;
+use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Config\SagePayCardType;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\PiRequest;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\Validator\Exception as ValidatorException;
+use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
+use Magento\Sales\Model\Order\Payment\TransactionFactory;
 
 class EcommerceManagement extends RequestManagement
 {
@@ -24,6 +26,11 @@ class EcommerceManagement extends RequestManagement
     private $checkoutSession;
 
     private $sagePaySuiteLogger;
+
+    private $actionFactory;
+
+    /** @var TransactionFactory */
+    private $transactionFactory;
 
     public function __construct(
         Checkout $checkoutHelper,
@@ -33,7 +40,9 @@ class EcommerceManagement extends RequestManagement
         Data $suiteHelper,
         PiResultInterface $result,
         Session $checkoutSession,
-        Logger $sagePaySuiteLogger
+        Logger $sagePaySuiteLogger,
+        ClosedForActionFactory $actionFactory,
+        TransactionFactory $transactionFactory
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -45,6 +54,8 @@ class EcommerceManagement extends RequestManagement
         );
         $this->checkoutSession    = $checkoutSession;
         $this->sagePaySuiteLogger = $sagePaySuiteLogger;
+        $this->actionFactory      = $actionFactory;
+        $this->transactionFactory = $transactionFactory;
     }
 
     /**
@@ -88,7 +99,7 @@ class EcommerceManagement extends RequestManagement
 
             $this->createInvoiceForSuccessPayment($payment, $order);
         } else {
-            throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
+            throw new ValidatorException(__('Unable to save Sage Pay order'));
         }
 
         $this->getResult()->setSuccess(true);
@@ -99,7 +110,7 @@ class EcommerceManagement extends RequestManagement
         $this->getResult()->setOrderId($order->getId());
         $this->getResult()->setQuoteId($this->getQuote()->getId());
 
-        if ($this->getPayResult()->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::AUTH3D_REQUIRED_STATUS) {
+        if ($this->getPayResult()->getStatusCode() == Config::AUTH3D_REQUIRED_STATUS) {
             $this->getResult()->setParEq($this->getPayResult()->getParEq());
             $this->getResult()->setAcsUrl($this->getPayResult()->getAcsUrl());
         }
@@ -112,12 +123,31 @@ class EcommerceManagement extends RequestManagement
     private function createInvoiceForSuccessPayment($payment, $order)
     {
         //invoice
-        if ($this->getPayResult()->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
-            $payment->getMethodInstance()->markAsInitialized();
+        if ($this->getPayResult()->getStatusCode() === Config::SUCCESS_STATUS) {
+            $request = $this->getRequest();
+            $sagePayPaymentAction = $request['transactionType'];
+            if ($sagePayPaymentAction === Config::ACTION_PAYMENT_PI) {
+                $payment->getMethodInstance()->markAsInitialized();
+            }
             $order->place()->save();
 
-            //send email
             $this->getCheckoutHelper()->sendOrderEmail($order);
+
+            if ($sagePayPaymentAction === Config::ACTION_DEFER_PI) {
+                /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
+                $actionClosed = $this->actionFactory->create(['paymentAction' => $sagePayPaymentAction]);
+                list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
+
+                /** @var \Magento\Sales\Model\Order\Payment\Transaction $transaction */
+                $transaction = $this->transactionFactory->create();
+                $transaction->setOrderPaymentObject($payment);
+                $transaction->setTxnId($this->getPayResult()->getTransactionId());
+                $transaction->setOrderId($order->getEntityId());
+                $transaction->setTxnType($action);
+                $transaction->setPaymentId($payment->getId());
+                $transaction->setIsClosed($closed);
+                $transaction->save();
+            }
 
             //prepare session to success page
             $this->checkoutSession->clearHelperData();

@@ -38,9 +38,9 @@
         <const name="TESTS_INSTALL_CONFIG_FILE" value="etc/install-config-mysql.php"/>
         <const name="TESTS_GLOBAL_CONFIG_FILE" value="etc/config-global.php"/>
         <const name="TESTS_GLOBAL_CONFIG_DIR" value="../../../app/etc"/>
-        <const name="TESTS_CLEANUP" value="enabled"/>
+        <const name="TESTS_CLEANUP" value="false"/>
         <const name="TESTS_MEM_LEAK_LIMIT" value=""/>
-        <const name="TESTS_MAGENTO_MODE" value="default"/>
+        <const name="TESTS_MAGENTO_MODE" value="production"/>
         <const name="TESTS_ERROR_LOG_LISTENER_LEVEL" value="-1"/>
     </php>
     <!-- Test listeners -->

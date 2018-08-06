@@ -74,6 +74,7 @@ class Data extends AbstractHelper
                 $prefix = "A";
                 break;
             case Config::ACTION_REPEAT:
+            case Config::ACTION_REPEAT_PI:
             case Config::ACTION_REPEAT_DEFERRED:
                 $prefix = "RT";
                 break;
