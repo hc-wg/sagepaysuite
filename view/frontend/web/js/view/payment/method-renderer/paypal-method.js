@@ -16,9 +16,10 @@ define(
         'Magento_Checkout/js/model/quote',
         'Magento_Checkout/js/model/full-screen-loader',
         'Magento_Checkout/js/model/payment/additional-validators',
-        'Magento_Customer/js/customer-data'
+        'Magento_Customer/js/customer-data',
+        'Magento_Checkout/js/action/set-payment-information'
     ],
-    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader, additionalValidators, customerData) {
+    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader, additionalValidators, customerData, setPaymentInformation) {
         'use strict';
 
         $(document).ready(function () {
@@ -80,28 +81,8 @@ define(
                     function () {
                         var paymentData = {method: self.getCode()};
 
-                        /**
-                         * Set payment method
-                         * Checkout for guest and registered customer.
-                         */
-                        if (!customer.isLoggedIn()) {
-                            serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/selected-payment-method', {
-                                cartId: quote.getQuoteId()
-                            });
-                            payload = {
-                                cartId: quote.getQuoteId(),
-                                method: paymentData
-                            };
-                        } else {
-                            serviceUrl = urlBuilder.createUrl('/carts/mine/selected-payment-method', {});
-                            payload = {
-                                cartId: quote.getQuoteId(),
-                                method: paymentData
-                            };
-                        }
-                        return storage.put(
-                            serviceUrl,
-                            JSON.stringify(payload)
+                        $.when(
+                            setPaymentInformation(this.messageContainer, paymentData)
                         ).done(
                             function () {
 
@@ -134,10 +115,10 @@ define(
                                             }
                                         }
                                     ).fail(
-                                        function (response) {
-                                            self.showPaymentError("Unable to submit form to PayPal.");
-                                        }
-                                    );
+                                    function (response) {
+                                        self.showPaymentError("Unable to submit form to PayPal.");
+                                    }
+                                );
                             }
                         ).fail(
                             function (response) {
