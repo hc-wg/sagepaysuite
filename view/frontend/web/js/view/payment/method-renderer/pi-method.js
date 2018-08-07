@@ -111,7 +111,7 @@ define(
                     setPaymentInformation(this.messageContainer, self.getData())
                 ).done(
                     function (response) {
-                        if (response.success) {
+                        if (response === true) {
                             self.createMerchantSessionKey();
                         } else {
                             self.showPaymentError("Unable to save payment info.");
