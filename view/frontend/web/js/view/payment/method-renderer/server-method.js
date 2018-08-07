@@ -159,7 +159,11 @@ define(
                             }
                         ).fail(
                             function (response) {
-                                self.showPaymentError("Unable to save payment method.");
+                                if (response.responseJSON) {
+                                    self.showPaymentError(response.responseJSON.message);
+                                } else {
+                                    self.showPaymentError("Unable to save payment info.");
+                                }
                             }
                         );
                     }
