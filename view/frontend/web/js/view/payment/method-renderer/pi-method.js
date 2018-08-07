@@ -110,10 +110,20 @@ define(
                 $.when(
                     setPaymentInformation(this.messageContainer, self.getData())
                 ).done(
-                    self.createMerchantSessionKey()
+                    function (response) {
+                        if (response.success) {
+                            self.createMerchantSessionKey();
+                        } else {
+                            self.showPaymentError("Unable to save payment info.");
+                        }
+                    }
                 ).fail(
                     function (response) {
-                        self.showPaymentError("Unable to save payment info.");
+                        if (response.responseJSON) {
+                            self.showPaymentError(response.responseJSON.message);
+                        } else {
+                            self.showPaymentError("Unable to save payment info.");
+                        }
                     }
                 );
             },
