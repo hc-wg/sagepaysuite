@@ -16,9 +16,10 @@ define(
         'Magento_Checkout/js/model/quote',
         'Magento_Checkout/js/model/full-screen-loader',
         'Magento_Checkout/js/model/payment/additional-validators',
-        'Magento_Customer/js/customer-data'
+        'Magento_Customer/js/customer-data',
+        'Magento_Checkout/js/action/set-payment-information'
     ],
-    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader, additionalValidators, customerData) {
+    function ($, Component, storage, url, urlBuilder, customer, quote, fullScreenLoader, additionalValidators, customerData, setPaymentInformation) {
         'use strict';
 
         $(document).ready(function () {
@@ -78,7 +79,7 @@ define(
                         address: quote.billingAddress()
                     };
                 }
-                 if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver) {
+                if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver) {
                     if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled &&
                         window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled == true) {
                         if (document.getElementById('remembertoken') &&
@@ -99,28 +100,8 @@ define(
                     function () {
                         var paymentData = {method: self.getCode()};
 
-                        /**
-                         * Set payment method
-                         * Checkout for guest and registered customer.
-                         */
-                        if (!customer.isLoggedIn()) {
-                            serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/selected-payment-method', {
-                                cartId: quote.getQuoteId()
-                            });
-                            payload = {
-                                cartId: quote.getQuoteId(),
-                                method: paymentData
-                            };
-                        } else {
-                            serviceUrl = urlBuilder.createUrl('/carts/mine/selected-payment-method', {});
-                            payload = {
-                                cartId: quote.getQuoteId(),
-                                method: paymentData
-                            };
-                        }
-                        storage.put(
-                            serviceUrl,
-                            JSON.stringify(payload)
+                        $.when(
+                            setPaymentInformation(this.messageContainer, paymentData)
                         ).done(
                             function () {
 
@@ -149,40 +130,44 @@ define(
                                     }
                                 }
 
-                                
+
 
                                 //send server post request
-                                 return storage.post(
-                                     serviceUrl,
-                                     JSON.stringify({
-                                         "cartId": quote.getQuoteId(),
-                                         "save_token": save_token,
-                                         "token": token
-                                     })
-                                 ).done(
-                                     function (response) {
+                                return storage.post(
+                                    serviceUrl,
+                                    JSON.stringify({
+                                        "cartId": quote.getQuoteId(),
+                                        "save_token": save_token,
+                                        "token": token
+                                    })
+                                ).done(
+                                    function (response) {
 
-                                         if (response.success) {
+                                        if (response.success) {
 
-                                             customerData.invalidate(['cart']);
+                                            customerData.invalidate(['cart']);
 
-                                             var sagePayResponse = $.parseJSON(response.response[1]);
-                                             self.openSERVERModal(sagePayResponse.NextURL);
+                                            var sagePayResponse = $.parseJSON(response.response[1]);
+                                            self.openSERVERModal(sagePayResponse.NextURL);
 
                                             fullScreenLoader.stopLoader();
-                                         } else {
+                                        } else {
                                             self.showPaymentError(response.error_message);
-                                         }
-                                         }
-                                 ).fail(
-                                     function (response) {
-                                         self.showPaymentError("Unable to submit to Sage Pay. Please try another payment option.");
-                                         }
-                                 );
+                                        }
+                                    }
+                                ).fail(
+                                    function (response) {
+                                        self.showPaymentError("Unable to submit to Sage Pay. Please try another payment option.");
+                                    }
+                                );
                             }
                         ).fail(
                             function (response) {
-                                self.showPaymentError("Unable to save payment method.");
+                                if (response.responseJSON) {
+                                    self.showPaymentError(response.responseJSON.message);
+                                } else {
+                                    self.showPaymentError("Unable to save payment info.");
+                                }
                             }
                         );
                     }
