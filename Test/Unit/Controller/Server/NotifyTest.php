@@ -1054,9 +1054,16 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
     }
 
     private function requestExpectsGetParam() {
-        $this->request->expects($this->exactly(2))
+        $this->request->expects($this->any())
             ->method('getParam')
-            ->withConsecutive(['_store'], ['quoteid'])
-            ->willReturnOnConsecutiveCalls(self::STORE_ID, self::QUOTE_ID);
+            ->willReturnCallback(function ($param) {
+                if ($param === '_store')
+                    return self::STORE_ID;
+
+                if ($param === 'quoteid')
+                    return self::QUOTE_ID;
+
+                return '';
+            });
     }
 }
