@@ -294,6 +294,7 @@ class Notify extends Action
     {
         $url = $this->_url->getUrl('*/*/success', [
             '_secure' => true,
+            '_store'  => $this->quote->getStoreId()
         ]);
 
         $url .= "?quoteid=" . $this->quote->getId();
