@@ -282,7 +282,7 @@ class Notify extends Action
     {
         $url = $this->_url->getUrl('*/*/cancel', [
             '_secure' => true,
-            //'_store' => $this->getRequest()->getParam('_store') @codingStandardsIgnoreLine
+            '_store' => $this->getRequest()->getParam('_store')
         ]);
 
         $url .= "?quote={$quoteId}&message=Transaction cancelled by customer";
@@ -306,6 +306,7 @@ class Notify extends Action
     {
         $url = $this->_url->getUrl('*/*/cancel', [
             '_secure' => true,
+            '_store' => $this->getRequest()->getParam('_store')
         ]);
 
         $url .= "?message=" . $message;
