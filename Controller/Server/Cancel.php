@@ -86,19 +86,24 @@ class Cancel extends Action
     {
         $this->saveErrorMessage();
 
-        $quote = $this->quote->load($this->getRequest()->getParam("quote"));
+        $storeId = $this->getRequest()->getParam("_store");
+        $quoteId = $this->getRequest()->getParam("quote");
+
+        $this->quote->setStoreId($storeId);
+        $this->quote->load($quoteId);
+
         if (empty($this->quote->getId())) {
             throw new \Exception("Quote not found.");
         }
 
-        $order = $this->orderFactory->create()->loadByIncrementId($quote->getReservedOrderId());
+        $order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
         if (empty($order->getId())) {
             throw new \Exception("Order not found.");
         }
 
         $this->recoverCart($order);
 
-        $this->inactivateQuote($quote);
+        $this->inactivateQuote($this->quote);
 
         $this
             ->getResponse()
