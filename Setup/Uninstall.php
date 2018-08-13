@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2017 ebizmarts. All rights reserved.
+ * Copyright © 2018 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
@@ -43,7 +43,7 @@ class Uninstall implements UninstallInterface
             ->getSalesConnection($setup)
             ->modifyColumn(
                 $setup->getTable('sales_order_payment'),
-                "last_trans_id",
+                'last_trans_id',
                 ['nullable' => true]
             );
     }
