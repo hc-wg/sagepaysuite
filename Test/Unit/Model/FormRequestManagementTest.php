@@ -170,6 +170,6 @@ class FormRequestManagementTest extends \PHPUnit\Framework\TestCase
         $this->assertStringStartsWith("@", $response->getCrypt());
 
         $decrypted = $cryptObject->decrypt($response->getCrypt());
-        $this->assertFalse(strstr($decrypted, ‘CardHolder’));
+        $this->assertFalse(strstr($decrypted, 'CardHolder'));
     }
 }
