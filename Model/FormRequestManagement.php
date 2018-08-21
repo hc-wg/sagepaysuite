@@ -222,8 +222,6 @@ class FormRequestManagement implements FormManagementInterface
         //populate address information
         $data = array_merge($data, $this->requestHelper->populateAddressInformation($this->quote));
 
-        $data["CardHolder"]    = $data['BillingFirstnames'] . ' ' . $data['BillingSurname'];
-
         //3D rules
         $data["Apply3DSecure"] = $this->config->get3Dsecure();
 
