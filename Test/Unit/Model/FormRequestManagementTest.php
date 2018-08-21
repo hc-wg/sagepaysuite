@@ -168,5 +168,8 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
         );
         $this->assertEquals("3.00", $response->getVpsProtocol());
         $this->assertStringStartsWith("@", $response->getCrypt());
+
+        $decrypted = $cryptObject->decrypt($response->getCrypt());
+        $this->assertFalse(strstr($decrypted, ‘CardHolder’));
     }
 }
