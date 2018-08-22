@@ -66,7 +66,13 @@ class Success extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
-            $quote = $this->_quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
+            $storeId = $this->getRequest()->getParam("_store");
+            $quoteId = $this->getRequest()->getParam("quoteid");
+
+            $quote = $this->_quoteFactory->create();
+            $quote->setStoreId($storeId);
+            $quote->load($quoteId);
+
             $order = $this->_orderFactory->create()->loadByIncrementId($quote->getReservedOrderId());
 
             //prepare session to success page

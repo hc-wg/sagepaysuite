@@ -1,3 +1,38 @@
+1.2.8 (22/08/2018)
+=============
+**This release requires Magento 2.2.x.**
+
+**Implemented enhancements:**
+
+- Uninstall database mechanism
+
+**Fixed bugs:**
+
+- Terms & Condition server side validation
+- Checkout missing request to payment-information
+- Unable to continue checkout if button "Load secure credit card form" button is pressed before editing the billing address
+- Unable to find quote
+- FORM email confirmation adds &CardHolder next to the shipping phone number
+
+1.2.7 (06/08/2018)
+=============
+**This release requires Magento 2.2.x.**
+
+**Fixed bugs:**
+
+- Rounding Issue, order amount mismatch by 1p.
+- Repeat Defered orders with wrong status.
+- Pi Incorrect payment actions.
+- Token breaks checkout.
+- MOTO Tax issue.
+- Sync from API problem with Multi Store setup..
+- Undefined property: stdclass::$status.
+- Token is saved without asking the customer.
+- PayPal sort order not being saved.
+- Hong Kong optional zipcode.
+- 2.2.5 compatibility.
+- BankAuthCode and TxAuthNo is not saved on the DB.
+
 1.2.6 (06/04/2018)
 =============
 **This release requires Magento 2.2.x.**

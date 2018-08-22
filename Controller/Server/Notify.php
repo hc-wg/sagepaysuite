@@ -16,7 +16,9 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\AlreadyExistsException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Validator\Exception;
+use Magento\Quote\Model\QuoteRepository;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
@@ -33,39 +35,25 @@ class Notify extends Action
      */
     private $suiteLogger;
 
-    /**
-     * @var OrderFactory
-     */
+    /** @var OrderFactory */
     private $orderFactory;
 
-    /**
-     * @var OrderSender
-     */
+    /** @var OrderSender */
     private $orderSender;
 
-    /**
-     * @var Config
-     */
+    /** @var Config */
     private $config;
 
-    /**
-     * @var Quote
-     */
+    /** @var Quote */
     private $quote;
 
-    /**
-     * @var \Magento\Sales\Model\Order
-     */
+    /** @var \Magento\Sales\Model\Order */
     private $order;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $postData;
 
-    /**
-     * @var Token
-     */
+    /** @var Token */
     private $tokenModel;
 
     /** @var OrderUpdateOnCallback */
@@ -74,6 +62,8 @@ class Notify extends Action
     /** @var Data */
     private $suiteHelper;
 
+    /** @var QuoteRepository */
+    private $cartRepository;
 
     /**
      * Notify constructor.
@@ -83,9 +73,9 @@ class Notify extends Action
      * @param OrderSender $orderSender
      * @param Config $config
      * @param Token $tokenModel
-     * @param Quote $quote
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param Data $suiteHelper
+     * @param QuoteRepository $cartRepository
      */
     public function __construct(
         Context $context,
@@ -94,11 +84,10 @@ class Notify extends Action
         OrderSender $orderSender,
         Config $config,
         Token $tokenModel,
-        Quote $quote,
         OrderUpdateOnCallback $updateOrderCallback,
-        Data $suiteHelper
+        Data $suiteHelper,
+        QuoteRepository $cartRepository
     ) {
-    
         parent::__construct($context);
 
         $this->suiteLogger         = $suiteLogger;
@@ -107,8 +96,8 @@ class Notify extends Action
         $this->orderSender         = $orderSender;
         $this->config              = $config;
         $this->tokenModel          = $tokenModel;
-        $this->quote               = $quote;
         $this->suiteHelper         = $suiteHelper;
+        $this->cartRepository      = $cartRepository;
         $this->config->setMethodCode(Config::METHOD_SERVER);
     }
 
@@ -116,15 +105,15 @@ class Notify extends Action
     {
         //get data from request
         $this->postData = $this->getRequest()->getPost();
-        $this->quote    = $this->quote->load($this->getRequest()->getParam("quoteid"));
+
+        $storeId = $this->getRequest()->getParam("_store");
+        $quoteId = $this->getRequest()->getParam("quoteid");
 
         //log response
         $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->postData, [__METHOD__, __LINE__]);
 
         try {
-            if (empty($this->quote->getId())) {
-                return $this->returnInvalid(__("Unable to find quote"));
-            }
+            $this->quote = $this->cartRepository->get($quoteId, [$storeId]);
 
             $order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
             if ($order === null || $order->getId() === null) {
@@ -194,6 +183,8 @@ class Notify extends Action
 
                 return $this->returnInvalid("Payment was not accepted, please try another payment method");
             }
+        } catch (NoSuchEntityException $nse) {
+            return $this->returnInvalid(__("Unable to find quote"));
         } catch (ApiException $apiException) {
             $this->suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
 
@@ -291,7 +282,7 @@ class Notify extends Action
     {
         $url = $this->_url->getUrl('*/*/cancel', [
             '_secure' => true,
-            //'_store' => $this->getRequest()->getParam('_store') @codingStandardsIgnoreLine
+            '_store' => $this->getRequest()->getParam('_store')
         ]);
 
         $url .= "?quote={$quoteId}&message=Transaction cancelled by customer";
@@ -303,6 +294,7 @@ class Notify extends Action
     {
         $url = $this->_url->getUrl('*/*/success', [
             '_secure' => true,
+            '_store'  => $this->quote->getStoreId()
         ]);
 
         $url .= "?quoteid=" . $this->quote->getId();
@@ -314,6 +306,7 @@ class Notify extends Action
     {
         $url = $this->_url->getUrl('*/*/cancel', [
             '_secure' => true,
+            '_store' => $this->getRequest()->getParam('_store')
         ]);
 
         $url .= "?message=" . $message;
