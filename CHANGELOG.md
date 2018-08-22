@@ -1,6 +1,6 @@
 1.1.20 (22/08/2018)
 =============
-**This release requires Magento 2.2.x.**
+**This release requires Magento 2.1.x.**
 
 **Implemented enhancements:**
 
@@ -16,7 +16,7 @@
 
 1.1.19 (06/08/2018)
 =============
-**This release requires Magento 2.2.x.**
+**This release requires Magento 2.1.x.**
 
 **Fixed bugs:**
 
