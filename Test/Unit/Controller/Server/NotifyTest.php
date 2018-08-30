@@ -436,7 +436,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Payment was not accepted, please try another payment method' . "\r\n" .
-            'RedirectURL=?message=Payment was not accepted, please try another payment method' . "\r\n"
+            'RedirectURL=?message=Payment was not accepted, please try another payment method&quote=' . self::QUOTE_ID . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -499,7 +499,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Something went wrong: Invalid transaction id' . "\r\n" .
-            'RedirectURL=?message=Something went wrong: Invalid transaction id' . "\r\n"
+            'RedirectURL=?message=Something went wrong: Invalid transaction id&quote=' . self::QUOTE_ID . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -704,7 +704,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('setBody')
             ->with('Status=INVALID' . "\r\n" .
                 'StatusDetail=Unable to find quote' . "\r\n" .
-                'RedirectURL=?message=Unable to find quote' . "\r\n");
+                'RedirectURL=?message=Unable to find quote&quote=' . "\r\n");
 
         $this->controllerInstantiate();
         $this->serverNotifyController->execute();
@@ -723,7 +723,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Order was not found' . "\r\n" .
-            'RedirectURL=?message=Order was not found' . "\r\n"
+            'RedirectURL=?message=Order was not found&quote=' . "\r\n"
         );
 
         $this->serverNotifyController->execute();
@@ -869,7 +869,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Something went wrong: Invalid VPS Signature' . "\r\n" .
-            'RedirectURL=?message=Something went wrong: Invalid VPS Signature' . "\r\n"
+            'RedirectURL=?message=Something went wrong: Invalid VPS Signature&quote=' . self::QUOTE_ID . "\r\n"
         );
 
         $this->controllerInstantiate();
