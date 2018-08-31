@@ -129,7 +129,10 @@ class Notify extends Action
             try {
                 $this->validateSignature($payment);
             } catch (InvalidSignatureException $signatureException) {
-                return $this->returnInvalid(__("Something went wrong: %1", $signatureException->getMessage()));
+                return $this->returnInvalid(
+                    __("Something went wrong: %1", $signatureException->getMessage()),
+                    $this->quote->getId()
+                );
             }
 
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
@@ -181,7 +184,10 @@ class Notify extends Action
                 //cancel pending payment order
                 $this->cancelOrder($order);
 
-                return $this->returnInvalid("Payment was not accepted, please try another payment method");
+                return $this->returnInvalid(
+                    "Payment was not accepted, please try another payment method",
+                    $this->quote->getId()
+                );
             }
         } catch (NoSuchEntityException $nse) {
             return $this->returnInvalid(__("Unable to find quote"));
@@ -198,7 +204,7 @@ class Notify extends Action
             //cancel pending payment order
             $this->cancelOrder($order);
 
-            return $this->returnInvalid(__("Something went wrong: %1", $e->getMessage()));
+            return $this->returnInvalid(__("Something went wrong: %1", $e->getMessage()), $this->quote->getId());
         }
     }
 
@@ -265,11 +271,11 @@ class Notify extends Action
         $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse, [__METHOD__, __LINE__]);
     }
 
-    private function returnInvalid($message = 'Invalid transaction, please try another payment method')
+    private function returnInvalid($message = 'Invalid transaction, please try another payment method', $quoteId = null)
     {
         $strResponse = 'Status=INVALID' . "\r\n";
         $strResponse .= 'StatusDetail=' . $message . "\r\n";
-        $strResponse .= 'RedirectURL=' . $this->getFailedRedirectUrl($message) . "\r\n";
+        $strResponse .= 'RedirectURL=' . $this->getFailedRedirectUrl($message, $quoteId) . "\r\n";
 
         $this->getResponse()->setHeader('Content-type', 'text/plain');
         $this->getResponse()->setBody($strResponse);
@@ -302,14 +308,14 @@ class Notify extends Action
         return $url;
     }
 
-    private function getFailedRedirectUrl($message)
+    private function getFailedRedirectUrl($message, $quoteId = null)
     {
         $url = $this->_url->getUrl('*/*/cancel', [
             '_secure' => true,
             '_store' => $this->getRequest()->getParam('_store')
         ]);
 
-        $url .= "?message=" . $message;
+        $url .= "?message=" . $message . "&quote={$quoteId}";
 
         return $url;
     }
