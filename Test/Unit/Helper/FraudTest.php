@@ -191,13 +191,39 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     "reportingApi" => $this->reportingApiMock
                 ]
             );
+            $invoiceMock = $this
+                ->getMockBuilder(\Magento\Sales\Model\Order\Invoice::class)
+                ->disableOriginalConstructor()
+                ->getMock();
+            $invoiceMock
+                ->expects($this->exactly($data['expectedregister']))
+                ->method('register')
+                ->willReturnSelf();
+            $invoiceMock
+                ->expects($this->exactly($data['expectedcapture']))
+                ->method('capture')
+                ->willReturnSelf();
+            $invoiceMock
+                ->expects($this->exactly($data['expectedsave']))
+                ->method('save')
+                ->willReturnSelf();
 
             $orderMock = $this
                 ->getMockBuilder('Magento\Sales\Model\Order')
                 ->disableOriginalConstructor()
                 ->getMock();
+            $orderMock
+                ->expects($this->exactly($data['expectedinvoice']))
+                ->method('prepareInvoice')
+                ->willReturn($invoiceMock);
+            $orderMock
+                ->expects($this->exactly($data['expectedrelatedobject']))
+                ->method('addRelatedObject')
+                ->with($invoiceMock)
+                ->willReturnSelf();
 
-            $paymentMock->expects($this->any())
+            $paymentMock
+                ->expects($this->exactly($data['expectedorder']))
                 ->method('getOrder')
                 ->willReturn($orderMock);
 
@@ -224,6 +250,12 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
                     'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT,
                     'getAutoInvoiceFraudPassed' => false,
+                    'expectedregister' => 0,
+                    'expectedcapture' => 0,
+                    'expectedsave' => 0,
+                    'expectedorder' => 0,
+                    'expectedinvoice' => 0,
+                    'expectedrelatedobject' => 0,
                     'expects' => [
                         'VPSTxId'     => null,
                         'fraudprovidername' => 'T3M',
@@ -254,6 +286,12 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
                     'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT,
                     'getAutoInvoiceFraudPassed' => false,
+                    'expectedregister' => 0,
+                    'expectedcapture' => 0,
+                    'expectedsave' => 0,
+                    'expectedorder' => 1,
+                    'expectedinvoice' => 0,
+                    'expectedrelatedobject' => 0,
                     'expects' => [
                         'VPSTxId'     => null,
                         'fraudrules' => [],
@@ -271,6 +309,12 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
                     'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_ACCEPT,
                     'getAutoInvoiceFraudPassed' => true,
+                    'expectedregister' => 1,
+                    'expectedcapture' => 1,
+                    'expectedsave' => 1,
+                    'expectedorder' => 2,
+                    'expectedinvoice' => 1,
+                    'expectedrelatedobject' => 1,
                     'expects' => [
                         'VPSTxId' => null,
                         'fraudscreenrecommendation' => 'ACCEPT',
