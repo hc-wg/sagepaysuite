@@ -303,8 +303,8 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
             (bool)$transaction->getIsTransactionClosed() == false
         ) {
             //create invoice
-            $invoice = $payment->getOrder();
-            $invoice->prepareInvoice();
+            $order = $payment->getOrder();
+            $invoice = $order->prepareInvoice();
             $invoice->register();
             $invoice->capture();
             $invoice->save();
