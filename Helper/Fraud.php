@@ -15,7 +15,6 @@ use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Store\Model\Store;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\Service\InvoiceService;
 
 class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 {
@@ -37,7 +36,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * @var InvoiceService
      */
-    private $invoiceService;
+    private $invoiceServiceFactory;
 
     /**
      * TransactionFactory
@@ -52,6 +51,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
      * @param Config $config
      * @param TransportBuilder $mailTransportBuilder
      * @param Reporting $reportingApi
+     * @param \Magento\Framework\DB\TransactionFactory $transactionFactory
      * @param InvoiceService $invoiceService
      */
     public function __construct(
@@ -59,16 +59,16 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         Config $config,
         TransportBuilder $mailTransportBuilder,
         Reporting $reportingApi,
-        InvoiceService $invoiceService,
-        \Magento\Framework\DB\TransactionFactory $transactionFactory
+        \Magento\Framework\DB\TransactionFactory $transactionFactory,
+        \Magento\Sales\Model\Service\InvoiceServiceFactory $invoiceService
     ) {
     
         parent::__construct($context);
         $this->_config               = $config;
         $this->_mailTransportBuilder = $mailTransportBuilder;
         $this->_reportingApi         = $reportingApi;
-        $this->invoiceService        = $invoiceService;
-        $this->transactionFactory = $transactionFactory;
+        $this->invoiceServiceFactory = $invoiceService;
+        $this->transactionFactory    = $transactionFactory;
     }
 
     /**
@@ -324,7 +324,8 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         ) {
 
             $order = $payment->getOrder();
-            $invoice = $this->invoiceService->prepareInvoice($order, []);
+            $invoiceService = $this->invoiceServiceFactory->create();
+            $invoice = $invoiceService->prepareInvoice($order, []);
 
             if (!$invoice) {
                 throw new LocalizedException(__('We can\'t save the invoice right now.'));
