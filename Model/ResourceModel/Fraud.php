@@ -83,7 +83,7 @@ class Fraud extends AbstractDb
             )->where(
                 "created_at >= now() - INTERVAL 2 DAY")
             ->where(
-                "created_at < now() + INTERVAL 2 HOUR"
+                "created_at < now() - INTERVAL 15 MINUTE"
             )->where(
                 "method LIKE '%sagepaysuite%'"
             )->joinLeft(
