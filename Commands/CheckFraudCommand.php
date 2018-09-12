@@ -3,6 +3,7 @@
 namespace Ebizmarts\SagePaySuite\Commands;
 
 use Ebizmarts\SagePaySuite\Model\Cron;
+use Magento\Framework\App\Area as AppArea;
 use Magento\Framework\App\State;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -44,7 +45,7 @@ class CheckFraudCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->appState->setAreaCode('adminhtml');
+        $this->appState->setAreaCode(AppArea::AREA_ADMINHTML);
 
         $output->writeln("<comment>Checking fraud...</comment>");
 
