@@ -125,7 +125,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 ["txn_type='capture' OR txn_type='authorization'"],
                 ["sales_payment_transaction.parent_id IS NULL"],
                 ["created_at >= now() - INTERVAL 2 DAY"],
-                ["created_at < now() + INTERVAL 2 HOUR"],
+                ["created_at < now() - INTERVAL 15 MINUTE"],
                 ["method LIKE '%sagepaysuite%'"]
             )
             ->willReturnSelf();

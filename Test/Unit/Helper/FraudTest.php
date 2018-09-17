@@ -144,7 +144,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder('\Magento\Framework\DB\TransactionFactory')
             ->disableOriginalConstructor()
             ->getMock();
-        
+
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudResponseMock */
         $fraudResponseMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse::class)
