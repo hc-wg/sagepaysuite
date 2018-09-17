@@ -135,6 +135,16 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $invoiceServiceFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Service\InvoiceServiceFactory')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $transactionFactoryMock = $this
+            ->getMockBuilder('\Magento\Framework\DB\TransactionFactory')
+            ->disableOriginalConstructor()
+            ->getMock();
+        
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudResponseMock */
         $fraudResponseMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse::class)
@@ -188,12 +198,15 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'Ebizmarts\SagePaySuite\Helper\Fraud',
                 [
                     "config" => $this->configMock,
-                    "reportingApi" => $this->reportingApiMock
+                    "reportingApi" => $this->reportingApiMock,
+                    "invoiceService" => $invoiceServiceFactoryMock,
+                    "transactionFactory" => $transactionFactoryMock
                 ]
             );
             $invoiceMock = $this
                 ->getMockBuilder(\Magento\Sales\Model\Order\Invoice::class)
                 ->disableOriginalConstructor()
+                ->setMethods(['setRequestedCaptureCase', 'register', 'save', 'getTotalQty', 'getOrder'])
                 ->getMock();
             $invoiceMock
                 ->expects($this->exactly($data['expectedregister']))
@@ -201,26 +214,57 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 ->willReturnSelf();
             $invoiceMock
                 ->expects($this->exactly($data['expectedcapture']))
-                ->method('capture')
+                ->method('setRequestedCaptureCase')
+                ->with(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE)
                 ->willReturnSelf();
             $invoiceMock
-                ->expects($this->exactly($data['expectedsave']))
-                ->method('save')
-                ->willReturnSelf();
+                ->expects($this->exactly($data['expectedqty']))
+                ->method('getTotalQty')
+                ->willReturn(1);
+
+            $invoiceServiceMock = $this
+                ->getMockBuilder('Magento\Sales\Model\Service\InvoiceService')
+                ->disableOriginalConstructor()
+                ->getMock();
+            $invoiceServiceMock
+                ->expects($this->exactly($data['expectedinvoice']))
+                ->method('prepareInvoice')
+                ->willReturn($invoiceMock);
+
+            $invoiceServiceFactoryMock
+                ->expects($this->exactly($data['expectedcreate']))
+                ->method('create')
+                ->willReturn($invoiceServiceMock);
 
             $orderMock = $this
                 ->getMockBuilder('Magento\Sales\Model\Order')
                 ->disableOriginalConstructor()
                 ->getMock();
-            $orderMock
-                ->expects($this->exactly($data['expectedinvoice']))
-                ->method('prepareInvoice')
-                ->willReturn($invoiceMock);
-            $orderMock
-                ->expects($this->exactly($data['expectedrelatedobject']))
-                ->method('addRelatedObject')
-                ->with($invoiceMock)
+
+            $invoiceMock
+                ->expects($this->exactly($data['expectedgetorder']))
+                ->method('getOrder')
+                ->willReturn($orderMock);
+
+            $transactionSaveMock = $this
+                ->getMockBuilder('\Magento\Sales\Model\Order\Payment\Transaction')
+                ->disableOriginalConstructor()
+                ->setMethods(['addObject', 'save'])
+                ->getMock();
+            $transactionSaveMock
+                ->expects($this->exactly($data['expectedaddobject']))
+                ->method('addObject')
+                ->withConsecutive([$invoiceMock],[$orderMock])
                 ->willReturnSelf();
+            $transactionSaveMock
+                ->expects($this->exactly($data['expectedsave']))
+                ->method('save')
+                ->willReturnSelf();
+
+            $transactionFactoryMock
+                ->expects($this->exactly($data['expectedcreate']))
+                ->method('create')
+                ->willReturn($transactionSaveMock);
 
             $paymentMock
                 ->expects($this->exactly($data['expectedorder']))
@@ -256,6 +300,10 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                     'expectedorder' => 0,
                     'expectedinvoice' => 0,
                     'expectedrelatedobject' => 0,
+                    'expectedqty' => 0,
+                    'expectedcreate' => 0,
+                    'expectedgetorder' => 0,
+                    'expectedaddobject' => 0,
                     'expects' => [
                         'VPSTxId'     => null,
                         'fraudprovidername' => 'T3M',
@@ -292,6 +340,10 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                     'expectedorder' => 1,
                     'expectedinvoice' => 0,
                     'expectedrelatedobject' => 0,
+                    'expectedqty' => 0,
+                    'expectedcreate' => 0,
+                    'expectedgetorder' => 0,
+                    'expectedaddobject' => 0,
                     'expects' => [
                         'VPSTxId'     => null,
                         'fraudrules' => [],
@@ -312,9 +364,13 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                     'expectedregister' => 1,
                     'expectedcapture' => 1,
                     'expectedsave' => 1,
-                    'expectedorder' => 2,
+                    'expectedorder' => 1,
                     'expectedinvoice' => 1,
                     'expectedrelatedobject' => 1,
+                    'expectedqty' => 1,
+                    'expectedcreate' => 1,
+                    'expectedgetorder' => 3,
+                    'expectedaddobject' => 2,
                     'expects' => [
                         'VPSTxId' => null,
                         'fraudscreenrecommendation' => 'ACCEPT',

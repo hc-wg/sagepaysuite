@@ -118,13 +118,14 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->with('sales_payment_transaction', 'transaction_id')
             ->willReturnSelf();
         $selectMock
-            ->expects($this->exactly(5))
+            ->expects($this->exactly(6))
             ->method('where')
             ->withConsecutive(
                 ["sagepaysuite_fraud_check = 0"],
                 ["txn_type='capture' OR txn_type='authorization'"],
                 ["sales_payment_transaction.parent_id IS NULL"],
                 ["created_at >= now() - INTERVAL 2 DAY"],
+                ["created_at < now() + INTERVAL 2 HOUR"],
                 ["method LIKE '%sagepaysuite%'"]
             )
             ->willReturnSelf();
