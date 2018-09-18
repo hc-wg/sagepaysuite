@@ -3,8 +3,8 @@
 namespace Ebizmarts\SagePaySuite\Commands;
 
 use Ebizmarts\SagePaySuite\Model\Cron;
+use Magento\Framework\App\Area as AppArea;
 use Magento\Framework\App\State;
-use Magento\Framework\ObjectManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
@@ -13,8 +13,7 @@ class CheckFraudCommand extends Command
 {
     /** @var Cron $posOrder*/
     private $cron;
-    /** @var ObjectManagerInterface */
-    private $objectManager;
+
     /** @var State  */
     protected $appState;
 
@@ -22,16 +21,13 @@ class CheckFraudCommand extends Command
      * CheckFraudCommand constructor.
      * @param Cron $cron
      * @param State $appState
-     * @param ObjectManagerInterface $objectManager
      */
     public function __construct(
         Cron $cron,
-        State $appState,
-        ObjectManagerInterface $objectManager
+        State $appState
     ) {
         $this->appState = $appState;
-        $this->cron         = $cron;
-        $this->objectManager    = $objectManager;
+        $this->cron     = $cron;
         parent::__construct();
     }
     /**
@@ -43,12 +39,13 @@ class CheckFraudCommand extends Command
         $this->setDescription('Sage Pay check fraud on transactions.');
         parent::configure();
     }
+
     /**
      * @inheritdoc
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->appState->setAreaCode('admin');
+        $this->appState->setAreaCode(AppArea::AREA_ADMINHTML);
 
         $output->writeln("<comment>Checking fraud...</comment>");
 
