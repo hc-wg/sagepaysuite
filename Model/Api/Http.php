@@ -110,6 +110,7 @@ abstract class Http
         $this->initialize();
 
         $formattedBody = str_replace("&", "&\r\n", $body);
+        $formattedBody = ($formattedBody[0] === '{') ? json_decode($formattedBody) : $formattedBody;
         $this->getLogger()->sageLog(Logger::LOG_REQUEST, $formattedBody, [__METHOD__, __LINE__]);
 
         $this->curl->write(
