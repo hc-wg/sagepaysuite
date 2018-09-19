@@ -124,6 +124,7 @@ class Notify extends Action
             $payment     = $order->getPayment();
 
             $status = $this->postData->Status;
+            $statusDetail = $this->postData->StatusDetail;
             $transactionId = $this->suiteHelper->removeCurlyBraces($this->postData->VPSTxId);
 
             try {
@@ -136,7 +137,7 @@ class Notify extends Action
             }
 
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
-                $payment->setAdditionalInformation('statusDetail', $this->postData->StatusDetail);
+                $payment->setAdditionalInformation('statusDetail', $statusDetail);
                 $payment->setAdditionalInformation('threeDStatus', $this->postData->{'3DSecureStatus'});
                 if(isset($this->postData->{'BankAuthCode'})){
                     $payment->setAdditionalInformation('bankAuthCode', $this->postData->{'BankAuthCode'});
@@ -185,7 +186,11 @@ class Notify extends Action
                 $this->cancelOrder($order);
 
                 return $this->returnInvalid(
-                    "Payment was not accepted, please try another payment method",
+                    __(
+                        "Payment was not accepted, please try another payment method. Status: %1, %2",
+                        $status,
+                        $statusDetail
+                    ),
                     $this->quote->getId()
                 );
             }
