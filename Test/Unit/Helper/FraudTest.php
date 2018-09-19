@@ -286,6 +286,98 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     */
+    public function testNoInvoiceException()
+    {
+        $transactionMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock->expects($this->atLeastOnce())
+            ->method('getAdditionalInformation')
+            ->willReturn(\Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE);
+
+        $invoiceServiceFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Service\InvoiceServiceFactory')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $transactionFactoryMock = $this
+            ->getMockBuilder('\Magento\Framework\DB\TransactionFactory')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudResponseMock */
+        $fraudResponseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['setTimestamp'])
+            ->getMock();
+        $fraudResponseMock->setErrorCode('0000');
+        $fraudResponseMock->setFraudScreenRecommendation('ACCEPT');
+        $fraudResponseMock->setFraudId('12345');
+        $fraudResponseMock->setFraudCode('765');
+        $fraudResponseMock->setFraudCodeDetail('Fraud card');
+        $fraudResponseMock->setFraudProviderName('ReD');
+
+
+        $this->reportingApiMock->expects($this->once())
+            ->method('getFraudScreenDetail')
+            ->willReturn($fraudResponseMock);
+
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->fraudHelperModel = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Helper\Fraud',
+            [
+                "config" => $this->configMock,
+                "reportingApi" => $this->reportingApiMock,
+                "invoiceService" => $invoiceServiceFactoryMock,
+                "transactionFactory" => $transactionFactoryMock
+            ]
+        );
+
+        $invoiceServiceMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Service\InvoiceService')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $invoiceServiceMock
+            ->expects($this->exactly(1))
+            ->method('prepareInvoice')
+            ->willReturn(null);
+
+        $invoiceServiceFactoryMock
+            ->expects($this->exactly(1))
+            ->method('create')
+            ->willReturn($invoiceServiceMock);
+
+        $orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock
+            ->expects($this->exactly(1))
+            ->method('getOrder')
+            ->willReturn($orderMock);
+
+        $this->configMock->expects($this->any())
+            ->method('getAutoInvoiceFraudPassed')
+            ->willReturn(true);
+
+        $transactionMock->expects($this->any())
+            ->method('getTxnType')
+            ->willReturn(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH);
+
+        $this->fraudHelperModel->processFraudInformation($transactionMock, $paymentMock);
+    }
+
     public function processFraudInformationDataProvider()
     {
         return [
