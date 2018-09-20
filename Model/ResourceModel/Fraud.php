@@ -81,7 +81,9 @@ class Fraud extends AbstractDb
             )->where(
                 "$transactionTableName.parent_id IS NULL"
             )->where(
-                "created_at >= now() - INTERVAL 2 DAY"
+                "created_at >= now() - INTERVAL 2 DAY")
+            ->where(
+                "created_at < now() - INTERVAL 15 MINUTE"
             )->where(
                 "method LIKE '%sagepaysuite%'"
             )->joinLeft(

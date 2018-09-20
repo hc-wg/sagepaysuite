@@ -6,24 +6,25 @@
 
 namespace Ebizmarts\SagePaySuite\Helper;
 
+use Ebizmarts\SagePaySuite\Model\Api\Reporting;
+use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Mail\Template\TransportBuilder;
+use Magento\Sales\Model\Order\Invoice;
+use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Store\Model\Store;
 use Magento\Sales\Model\Order;
 
 class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /**
-     * Logging instance
-     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
-     */
-    private $_suiteLogger;
-
-    /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
+     * @var Config
      */
     private $_config;
 
     /**
-     * @var \Magento\Framework\Mail\Template\TransportBuilder
+     * @var TransportBuilder
      */
     private $_mailTransportBuilder;
 
@@ -33,23 +34,41 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
     private $_reportingApi;
 
     /**
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger
-     * @param \Ebizmarts\SagePaySuite\Model\Config $config
+     * @var InvoiceService
+     */
+    private $invoiceServiceFactory;
+
+    /**
+     * TransactionFactory
+     *
+     * @var \Magento\Framework\DB\TransactionFactory
+     */
+    private $transactionFactory;
+
+    /**
+     * Fraud constructor.
+     * @param Context $context
+     * @param Config $config
+     * @param TransportBuilder $mailTransportBuilder
+     * @param Reporting $reportingApi
+     * @param \Magento\Framework\DB\TransactionFactory $transactionFactory
+     * @param InvoiceService $invoiceService
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Magento\Framework\Mail\Template\TransportBuilder $mailTransportBuilder,
-        \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi
+        Context $context,
+        Config $config,
+        TransportBuilder $mailTransportBuilder,
+        Reporting $reportingApi,
+        \Magento\Framework\DB\TransactionFactory $transactionFactory,
+        \Magento\Sales\Model\Service\InvoiceServiceFactory $invoiceService
     ) {
     
         parent::__construct($context);
-        $this->_suiteLogger          = $suiteLogger;
         $this->_config               = $config;
         $this->_mailTransportBuilder = $mailTransportBuilder;
         $this->_reportingApi         = $reportingApi;
+        $this->invoiceServiceFactory = $invoiceService;
+        $this->transactionFactory    = $transactionFactory;
     }
 
     /**
@@ -65,7 +84,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         //flag test transactions (no actions taken with test orders)
         if ($payment->getAdditionalInformation("mode") &&
-            $payment->getAdditionalInformation("mode") == \Ebizmarts\SagePaySuite\Model\Config::MODE_TEST
+            $payment->getAdditionalInformation("mode") == Config::MODE_TEST
         ) {
             /**
              *  TEST TRANSACTION
@@ -184,9 +203,9 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         $fraudprovidername = $fraudData->getFraudProviderName();
 
         if ($fraudprovidername == 'ReD') {
-            $passed = $fraudData->getFraudScreenRecommendation() == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_ACCEPT;
+            $passed = $fraudData->getFraudScreenRecommendation() == Config::REDSTATUS_ACCEPT;
         } else if ($fraudprovidername == 'T3M') {
-            $passed = $fraudData->getThirdmanAction() == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_OK;
+            $passed = $fraudData->getThirdmanAction() == Config::T3STATUS_OK;
         }
 
         return $passed;
@@ -264,9 +283,9 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         $fraudprovidername = $fraudData->getFraudProviderName();
 
         if ($fraudprovidername == 'ReD') {
-            $isFraud = $fraudData->getFraudScreenRecommendation() == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY;
+            $isFraud = $fraudData->getFraudScreenRecommendation() == Config::REDSTATUS_DENY;
         } else if ($fraudprovidername == 'T3M') {
-            $isFraud = $fraudData->getThirdmanAction() == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT;
+            $isFraud = $fraudData->getThirdmanAction() == Config::T3STATUS_REJECT;
         }
 
         return $isFraud;
@@ -283,41 +302,87 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         $fraudprovidername = $fraudData->getFraudProviderName();
 
         if ($fraudprovidername == 'ReD') {
-            $providerChecked = $fraudData->getFraudScreenRecommendation() != \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_NOTCHECKED;
+            $providerChecked = $fraudData->getFraudScreenRecommendation() != Config::REDSTATUS_NOTCHECKED;
         } else if ($fraudprovidername == 'T3M') {
-            $providerChecked = $fraudData->getThirdmanAction() != \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT;
+            $providerChecked = $fraudData->getThirdmanAction() != Config::T3STATUS_NORESULT;
         }
 
         return $providerChecked;
     }
 
     private function _processAutoInvoice(
-        \Magento\Sales\Model\Order\Payment\Transaction $transaction,
+        Transaction $transaction,
         \Magento\Sales\Model\Order\Payment $payment,
         $passedFraudCheck
     ) {
         //auto-invoice authorized order for full amount if ACCEPT or OK
-        if ($passedFraudCheck &&
-            (bool)$this->_config->getAutoInvoiceFraudPassed() == true &&
-            $transaction->getTxnType() == \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH &&
-            (bool)$transaction->getIsTransactionClosed() == false
+        if (
+            $passedFraudCheck &&
+            $this->configAutoInvoice() &&
+            $this->transactionIsAuth($transaction) &&
+            $this->transactionIsNotClosed($transaction)
         ) {
-            //create invoice
-            $invoice = $payment->getOrder();
-            $invoice->prepareInvoice();
+
+            $order = $payment->getOrder();
+            $invoiceService = $this->invoiceServiceFactory->create();
+            $invoice = $invoiceService->prepareInvoice($order, []);
+
+            if (!$invoice) {
+                throw new LocalizedException(__('We can\'t save the invoice right now.'));
+            }
+
+            if (!$invoice->getTotalQty()) {
+                throw new LocalizedException(
+                    __('You can\'t create an invoice without products.')
+                );
+            }
+
+            $invoice->setRequestedCaptureCase(Invoice::CAPTURE_ONLINE);
+
             $invoice->register();
-            $invoice->capture();
-            $invoice->save();
-            $payment->getOrder()->addRelatedObject($invoice);
-            $payment->save();
-            return "Captured online, invoice #" . $invoice->getId() . " generated.";
+
+            $invoice->getOrder()->setCustomerNoteNotify(false);
+            $invoice->getOrder()->setIsInProcess(true);
+
+            $transactionSave = $this->transactionFactory->create();
+            $transactionSave->addObject($invoice);
+            $transactionSave->addObject($invoice->getOrder());
+            $transactionSave->save();
+
+            return "Captured online, invoice #{$invoice->getId()} generated.";
         } else {
             return false;
         }
     }
 
     /**
-     * @param Order\Payment\Transaction $transaction
+     * @param Transaction $transaction
+     * @return bool
+     */
+    protected function transactionIsAuth(Transaction $transaction): bool
+    {
+        return $transaction->getTxnType() == Transaction::TYPE_AUTH;
+    }
+
+    /**
+     * @param Transaction $transaction
+     * @return bool
+     */
+    protected function transactionIsNotClosed(Transaction $transaction): bool
+    {
+        return (bool)$transaction->getIsTransactionClosed() == false;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function configAutoInvoice(): bool
+    {
+        return (bool)$this->_config->getAutoInvoiceFraudPassed() == true;
+    }
+
+    /**
+     * @param Transaction $transaction
      * @param Order\Payment $payment
      * @param $fraudscreenrecommendation
      * @param $fraudid
@@ -328,7 +393,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
      * @codeCoverageIgnore
      */
     private function notification(
-        \Magento\Sales\Model\Order\Payment\Transaction $transaction,
+        Transaction $transaction,
         \Magento\Sales\Model\Order\Payment $payment,
         $fraudscreenrecommendation,
         $fraudid,
@@ -339,14 +404,14 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
     
         if ((string)$this->_config->getNotifyFraudResult() != 'disabled') {
             if (((string)$this->_config->getNotifyFraudResult() == "medium_risk" &&
-                    ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY ||
-                        $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_CHALLENGE ||
-                        $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT ||
-                        $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD))
+                    ($fraudscreenrecommendation == Config::REDSTATUS_DENY ||
+                        $fraudscreenrecommendation == Config::REDSTATUS_CHALLENGE ||
+                        $fraudscreenrecommendation == Config::T3STATUS_REJECT ||
+                        $fraudscreenrecommendation == Config::T3STATUS_HOLD))
                 ||
                 ((string)$this->_config->getNotifyFraudResult() == "high_risk" &&
-                    ($fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY ||
-                        $fraudscreenrecommendation == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT))
+                    ($fraudscreenrecommendation == Config::REDSTATUS_DENY ||
+                        $fraudscreenrecommendation == Config::T3STATUS_REJECT))
             ) {
                 $template = "sagepaysuite_fraud_notification";
                 $transport = $this->_mailTransportBuilder->setTemplateIdentifier($template)
