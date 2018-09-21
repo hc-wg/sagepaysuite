@@ -2,6 +2,7 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseInterface;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\PaymentOperations;
@@ -79,9 +80,6 @@ class Payment
                     /** @var $result PiTransactionResultInterface */
                     $payment->setTransactionId($result->getTransactionId());
                     $payment->setParentTransactionId($payment->getParentTransactionId());
-                } else {
-                    $payment->setTransactionId($payment->getLastTransId());
-                    $payment->setParentTransactionId($payment->getLastTransId());
                 }
             }
         } catch (ApiException $apiException) {
@@ -227,5 +225,14 @@ class Payment
         }
 
         return $paymentAction;
+    }
+
+    /**
+     * @param $result
+     * @return bool
+     */
+    private function isPiInstructionResponse($result)
+    {
+        return ($result instanceof PiInstructionResponseInterface);
     }
 }
