@@ -15,11 +15,6 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 class Data extends AbstractHelper
 {
     /**
-     * @var Loader
-     */
-    private $moduleLoader;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
     private $sagePaySuiteConfig;
@@ -37,13 +32,11 @@ class Data extends AbstractHelper
      * @param DateTime $dateTime
      */
     public function __construct(
-        Loader $loader,
         Context $context,
         Config $config,
         DateTime $dateTime
     ) {
         parent::__construct($context);
-        $this->moduleLoader       = $loader;
         $this->sagePaySuiteConfig = $config;
         $this->dateTime           = $dateTime;
     }
@@ -186,21 +179,6 @@ class Data extends AbstractHelper
         );
 
         return $domain;
-    }
-
-    /**
-     * Get module version
-     * @return string
-     */
-    public function getSagePaySuiteModuleVersionNumber()
-    {
-        $modules = $this->moduleLoader->load();
-        $v = "UNKNOWN";
-
-        if (isset($modules['Ebizmarts_SagePaySuite']) && isset($modules['Ebizmarts_SagePaySuite']['setup_version'])) {
-            $v = $modules['Ebizmarts_SagePaySuite']['setup_version'];
-        }
-        return $v;
     }
 
     /**
