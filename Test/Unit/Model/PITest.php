@@ -533,7 +533,7 @@ class PITest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())
+        $paymentMock->expects($this->exactly(2))
             ->method('getCcType')
             ->will($this->returnValue("VI"));
         $paymentMock->expects($this->once())
@@ -725,7 +725,7 @@ class PITest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->once())
+        $paymentMock->expects($this->exactly(2))
             ->method('getCcType')
             ->will($this->returnValue("MI"));
         $paymentMock->expects($this->once())
