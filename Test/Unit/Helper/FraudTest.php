@@ -135,6 +135,16 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $invoiceServiceFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Service\InvoiceServiceFactory')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $transactionFactoryMock = $this
+            ->getMockBuilder('\Magento\Framework\DB\TransactionFactory')
+            ->disableOriginalConstructor()
+            ->getMock();
+        
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudResponseMock */
         $fraudResponseMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse::class)
@@ -188,16 +198,76 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 'Ebizmarts\SagePaySuite\Helper\Fraud',
                 [
                     "config" => $this->configMock,
-                    "reportingApi" => $this->reportingApiMock
+                    "reportingApi" => $this->reportingApiMock,
+                    "invoiceService" => $invoiceServiceFactoryMock,
+                    "transactionFactory" => $transactionFactoryMock
                 ]
             );
+            $invoiceMock = $this
+                ->getMockBuilder(\Magento\Sales\Model\Order\Invoice::class)
+                ->disableOriginalConstructor()
+                ->setMethods(['setRequestedCaptureCase', 'register', 'save', 'getTotalQty', 'getOrder'])
+                ->getMock();
+            $invoiceMock
+                ->expects($this->exactly($data['expectedregister']))
+                ->method('register')
+                ->willReturnSelf();
+            $invoiceMock
+                ->expects($this->exactly($data['expectedcapture']))
+                ->method('setRequestedCaptureCase')
+                ->with(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE)
+                ->willReturnSelf();
+            $invoiceMock
+                ->expects($this->exactly($data['expectedqty']))
+                ->method('getTotalQty')
+                ->willReturn(1);
+
+            $invoiceServiceMock = $this
+                ->getMockBuilder('Magento\Sales\Model\Service\InvoiceService')
+                ->disableOriginalConstructor()
+                ->getMock();
+            $invoiceServiceMock
+                ->expects($this->exactly($data['expectedinvoice']))
+                ->method('prepareInvoice')
+                ->willReturn($invoiceMock);
+
+            $invoiceServiceFactoryMock
+                ->expects($this->exactly($data['expectedcreate']))
+                ->method('create')
+                ->willReturn($invoiceServiceMock);
 
             $orderMock = $this
                 ->getMockBuilder('Magento\Sales\Model\Order')
                 ->disableOriginalConstructor()
                 ->getMock();
 
-            $paymentMock->expects($this->any())
+            $invoiceMock
+                ->expects($this->exactly($data['expectedgetorder']))
+                ->method('getOrder')
+                ->willReturn($orderMock);
+
+            $transactionSaveMock = $this
+                ->getMockBuilder('\Magento\Sales\Model\Order\Payment\Transaction')
+                ->disableOriginalConstructor()
+                ->setMethods(['addObject', 'save'])
+                ->getMock();
+            $transactionSaveMock
+                ->expects($this->exactly($data['expectedaddobject']))
+                ->method('addObject')
+                ->withConsecutive([$invoiceMock],[$orderMock])
+                ->willReturnSelf();
+            $transactionSaveMock
+                ->expects($this->exactly($data['expectedsave']))
+                ->method('save')
+                ->willReturnSelf();
+
+            $transactionFactoryMock
+                ->expects($this->exactly($data['expectedcreate']))
+                ->method('create')
+                ->willReturn($transactionSaveMock);
+
+            $paymentMock
+                ->expects($this->exactly($data['expectedorder']))
                 ->method('getOrder')
                 ->willReturn($orderMock);
 
@@ -216,6 +286,193 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     */
+    public function testNoInvoiceException()
+    {
+        $transactionMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock->expects($this->atLeastOnce())
+            ->method('getAdditionalInformation')
+            ->willReturn(\Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE);
+
+        $invoiceServiceFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Service\InvoiceServiceFactory')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $transactionFactoryMock = $this
+            ->getMockBuilder('\Magento\Framework\DB\TransactionFactory')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudResponseMock */
+        $fraudResponseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['setTimestamp'])
+            ->getMock();
+        $fraudResponseMock->setErrorCode('0000');
+        $fraudResponseMock->setFraudScreenRecommendation('ACCEPT');
+        $fraudResponseMock->setFraudId('12345');
+        $fraudResponseMock->setFraudCode('765');
+        $fraudResponseMock->setFraudCodeDetail('Fraud card');
+        $fraudResponseMock->setFraudProviderName('ReD');
+
+
+        $this->reportingApiMock->expects($this->once())
+            ->method('getFraudScreenDetail')
+            ->willReturn($fraudResponseMock);
+
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->fraudHelperModel = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Helper\Fraud',
+            [
+                "config" => $this->configMock,
+                "reportingApi" => $this->reportingApiMock,
+                "invoiceService" => $invoiceServiceFactoryMock,
+                "transactionFactory" => $transactionFactoryMock
+            ]
+        );
+
+        $invoiceServiceMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Service\InvoiceService')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $invoiceServiceMock
+            ->expects($this->exactly(1))
+            ->method('prepareInvoice')
+            ->willReturn(null);
+
+        $invoiceServiceFactoryMock
+            ->expects($this->exactly(1))
+            ->method('create')
+            ->willReturn($invoiceServiceMock);
+
+        $orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock
+            ->expects($this->exactly(1))
+            ->method('getOrder')
+            ->willReturn($orderMock);
+
+        $this->configMock->expects($this->any())
+            ->method('getAutoInvoiceFraudPassed')
+            ->willReturn(true);
+
+        $transactionMock->expects($this->any())
+            ->method('getTxnType')
+            ->willReturn(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH);
+
+        $this->fraudHelperModel->processFraudInformation($transactionMock, $paymentMock);
+    }
+
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     */
+    public function testNoProductException()
+    {
+        $transactionMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock->expects($this->atLeastOnce())
+            ->method('getAdditionalInformation')
+            ->willReturn(\Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE);
+
+        $invoiceServiceFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Service\InvoiceServiceFactory')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface $fraudResponseMock */
+        $fraudResponseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['setTimestamp'])
+            ->getMock();
+        $fraudResponseMock->setErrorCode('0000');
+        $fraudResponseMock->setFraudScreenRecommendation('ACCEPT');
+        $fraudResponseMock->setFraudId('12345');
+        $fraudResponseMock->setFraudCode('765');
+        $fraudResponseMock->setFraudCodeDetail('Fraud card');
+        $fraudResponseMock->setFraudProviderName('ReD');
+
+        $this->reportingApiMock->expects($this->once())
+            ->method('getFraudScreenDetail')
+            ->willReturn($fraudResponseMock);
+
+        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->fraudHelperModel = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Helper\Fraud',
+            [
+                "config" => $this->configMock,
+                "reportingApi" => $this->reportingApiMock,
+                "invoiceService" => $invoiceServiceFactoryMock
+            ]
+        );
+
+        $invoiceMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\Order\Invoice::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getTotalQty'])
+            ->getMock();
+        $invoiceMock
+            ->expects($this->exactly(1))
+            ->method('getTotalQty')
+            ->willReturn(0);
+
+        $invoiceServiceMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Service\InvoiceService')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $invoiceServiceMock
+            ->expects($this->exactly(1))
+            ->method('prepareInvoice')
+            ->willReturn($invoiceMock);
+
+        $invoiceServiceFactoryMock
+            ->expects($this->exactly(1))
+            ->method('create')
+            ->willReturn($invoiceServiceMock);
+
+        $orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock
+            ->expects($this->exactly(1))
+            ->method('getOrder')
+            ->willReturn($orderMock);
+
+        $this->configMock->expects($this->any())
+            ->method('getAutoInvoiceFraudPassed')
+            ->willReturn(true);
+
+        $transactionMock->expects($this->any())
+            ->method('getTxnType')
+            ->willReturn(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH);
+
+        $this->fraudHelperModel->processFraudInformation($transactionMock, $paymentMock);
+    }
+
     public function processFraudInformationDataProvider()
     {
         return [
@@ -224,6 +481,16 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
                     'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT,
                     'getAutoInvoiceFraudPassed' => false,
+                    'expectedregister' => 0,
+                    'expectedcapture' => 0,
+                    'expectedsave' => 0,
+                    'expectedorder' => 0,
+                    'expectedinvoice' => 0,
+                    'expectedrelatedobject' => 0,
+                    'expectedqty' => 0,
+                    'expectedcreate' => 0,
+                    'expectedgetorder' => 0,
+                    'expectedaddobject' => 0,
                     'expects' => [
                         'VPSTxId'     => null,
                         'fraudprovidername' => 'T3M',
@@ -254,6 +521,16 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
                     'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT,
                     'getAutoInvoiceFraudPassed' => false,
+                    'expectedregister' => 0,
+                    'expectedcapture' => 0,
+                    'expectedsave' => 0,
+                    'expectedorder' => 1,
+                    'expectedinvoice' => 0,
+                    'expectedrelatedobject' => 0,
+                    'expectedqty' => 0,
+                    'expectedcreate' => 0,
+                    'expectedgetorder' => 0,
+                    'expectedaddobject' => 0,
                     'expects' => [
                         'VPSTxId'     => null,
                         'fraudrules' => [],
@@ -271,6 +548,16 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
                     'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_ACCEPT,
                     'getAutoInvoiceFraudPassed' => true,
+                    'expectedregister' => 1,
+                    'expectedcapture' => 1,
+                    'expectedsave' => 1,
+                    'expectedorder' => 1,
+                    'expectedinvoice' => 1,
+                    'expectedrelatedobject' => 1,
+                    'expectedqty' => 1,
+                    'expectedcreate' => 1,
+                    'expectedgetorder' => 3,
+                    'expectedaddobject' => 2,
                     'expects' => [
                         'VPSTxId' => null,
                         'fraudscreenrecommendation' => 'ACCEPT',
