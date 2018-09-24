@@ -8,6 +8,8 @@ namespace Ebizmarts\SagePaySuite\Helper;
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
+use \Ebizmarts\SagePaySuite\Model\Config\ModuleVersion;
+
 class DataTest extends \PHPUnit\Framework\TestCase
 {
     private $objectManagerHelper;
@@ -31,14 +33,11 @@ class DataTest extends \PHPUnit\Framework\TestCase
      */
     private $configMock;
 
+    private $moduleVersionMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
-        $this->loaderMock = $this
-            ->getMockBuilder('Magento\Framework\Module\ModuleList\Loader')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $this->configMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
             ->disableOriginalConstructor()
@@ -51,52 +50,20 @@ class DataTest extends \PHPUnit\Framework\TestCase
         $dateTimeMock->expects($this->any())->method('gmtTimestamp')->willReturn('1456419355');
         $dateTimeMock->expects($this->any())->method('gmtDate')->willReturn('2016-02-25-085555');
 
+        $this->moduleVersionMock = $this->getMockBuilder(ModuleVersion::class)->disableOriginalConstructor()->getMock();
+
         $this->objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
 
         $this->dataHelper = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Data',
             [
-                'loader'   => $this->loaderMock,
                 'config'   => $this->configMock,
                 'dateTime' => $dateTimeMock,
+                'moduleVersion' => $this->moduleVersionMock
             ]
         );
     }
     // @codingStandardsIgnoreEnd
-
-    /**
-     * @dataProvider getVersionDataProvider
-     */
-    public function testGetVersion($data)
-    {
-        $this->loaderMock->expects($this->any())
-            ->method('load')
-            ->will($this->returnValue($data));
-
-        $this->assertEquals(
-            $data['expected'],
-            $this->dataHelper->getSagePaySuiteModuleVersionNumber()
-        );
-    }
-
-    public function getVersionDataProvider()
-    {
-        return [
-            'test normal' => [
-                [
-                    'Ebizmarts_SagePaySuite' => [
-                        'setup_version' => '1.0'
-                    ],
-                    'expected' => '1.0'
-                ]
-            ],
-            'test not found' => [
-                [
-                    'expected' => 'UNKNOWN'
-                ]
-            ]
-        ];
-    }
 
     public function testClearTransactionId()
     {
@@ -121,9 +88,11 @@ class DataTest extends \PHPUnit\Framework\TestCase
      */
     public function testVerify($data)
     {
-        $this->loaderMock->expects($this->any())
-            ->method('load')
-            ->will($this->returnValue($data));
+        $this->moduleVersionMock
+            ->expects($this->once())
+            ->method('getModuleVersion')
+            ->with('Ebizmarts_SagePaySuite')
+            ->willReturn($data['Ebizmarts_SagePaySuite']['setup_version']);
 
         $this->configMock->expects($this->any())
             ->method('getStoreDomain')
