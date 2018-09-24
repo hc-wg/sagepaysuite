@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 namespace Ebizmarts\SagePaySuite\Model\Config;
 
@@ -38,7 +37,7 @@ class ModuleVersion
      * @param string $moduleName
      * @return string
      */
-    public function getModuleVersion($moduleName) : string
+    public function getModuleVersion($moduleName)
     {
         $emptyVersionNumber = '';
         $composerJsonData = null;
@@ -58,7 +57,7 @@ class ModuleVersion
             return $emptyVersionNumber;
         }
 
-        return $jsonData->version ?? $emptyVersionNumber;
+        return isset($jsonData->version) ? $jsonData->version : $emptyVersionNumber;
     }
 
 }

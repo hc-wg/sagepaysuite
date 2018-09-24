@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Config;
 
@@ -8,7 +7,7 @@ use Magento\Framework\Component\ComponentRegistrarInterface;
 use Magento\Framework\Filesystem\Directory\Read;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 
-class ModuleVersionTest extends \PHPUnit\Framework\TestCase
+class ModuleVersionTest extends \PHPUnit_Framework_TestCase
 {
     private $objectManagerHelper;
 
