@@ -35,7 +35,8 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @param string $paymentAction @see \Ebizmarts\SagePaySuite\Model\Config
+     * @param string $paymentAction
+     * @see \Ebizmarts\SagePaySuite\Model\Config
      * @param integer $expectsMarkInitialized
      * @param integer $expectsTransactionClosed
      * @dataProvider placeOrder
@@ -129,7 +130,6 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
             $this->makeMockDisabledConstructor(\Magento\Sales\Model\Order\Payment\Transaction::class)
         );
 
-
         $checkoutSessionMock = $this->getMockBuilder(\Magento\Checkout\Model\Session::class)
         ->disableOriginalConstructor()
         ->setMethods(
@@ -156,20 +156,26 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $checkoutSessionMock->expects($this->once())->method('setLastRealOrderId');
         $checkoutSessionMock->expects($this->once())->method('setLastOrderStatus');
 
+        $quoteValidatorMock = $this->getMockBuilder(\Magento\Quote\Model\QuoteValidator::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $quoteValidatorMock->expects($this->once())->method('validateBeforeSubmit')->with($quoteMock)->willReturnSelf();
+
         /** @var MotoManagement $sut */
         $sut = $this->objectManagerHelper->getObject(
             EcommerceManagement::class,
             [
-                'checkoutHelper' => $checkoutHelperMock,
-                'piRestApi' => $piRestApiMock,
-                'ccConvert' => $sageCardTypeMock,
-                'piRequest' => $piRequestMock,
-                'suiteHelper' => $suiteHelperMock,
-                'result' => $piResultMock,
-                'suiteLogger' => $loggerMock,
-                'actionFactory' => $actionFactoryMock,
+                'checkoutHelper'     => $checkoutHelperMock,
+                'piRestApi'          => $piRestApiMock,
+                'ccConvert'          => $sageCardTypeMock,
+                'piRequest'          => $piRequestMock,
+                'suiteHelper'        => $suiteHelperMock,
+                'result'             => $piResultMock,
+                'suiteLogger'        => $loggerMock,
+                'actionFactory'      => $actionFactoryMock,
                 'transactionFactory' => $transactionFactoryMock,
-                'checkoutSession' => $checkoutSessionMock
+                'checkoutSession'    => $checkoutSessionMock,
+                'quoteValidator'     => $quoteValidatorMock
             ]
         );
 
