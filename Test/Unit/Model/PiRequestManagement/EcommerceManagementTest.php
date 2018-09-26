@@ -6,11 +6,21 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\PiRequestManagement;
 
+use Ebizmarts\SagePaySuite\Api\Data\PiResultInterface;
+use Ebizmarts\SagePaySuite\Helper\Checkout;
+use Ebizmarts\SagePaySuite\Helper\Data;
+use Ebizmarts\SagePaySuite\Model\Api\PIRest;
+use Ebizmarts\SagePaySuite\Model\Config\SagePayCardType;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\PiRequest;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\EcommerceManagement;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForAction;
 use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerInterface;
+use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\QuoteValidator;
+use Magento\Sales\Model\Order;
 
 class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
 {
@@ -43,9 +53,9 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
      */
     public function testPlaceOrder($paymentAction, $expectsMarkInitialized, $expectsTransactionClosed)
     {
-        $checkoutHelperMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Helper\Checkout::class);
+        $checkoutHelperMock = $this->makeMockDisabledConstructor(Checkout::class);
 
-        $quoteMock = $this->makeMockDisabledConstructor(\Magento\Quote\Model\Quote::class);
+        $quoteMock = $this->makeMockDisabledConstructor(Quote::class);
         $quoteMock->expects($this->exactly(2))->method('collectTotals')->willReturnSelf();
         $quoteMock->expects($this->any())->method('reserveOrderId')->willReturnSelf();
 
@@ -55,13 +65,13 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $payResultMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface::class);
         $payResultMock->expects($this->any())->method('getStatusCode')->willReturn(Config::SUCCESS_STATUS);
 
-        $piRestApiMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Model\Api\PIRest::class);
+        $piRestApiMock = $this->makeMockDisabledConstructor(PIRest::class);
         $piRestApiMock->expects($this->once())->method('capture')->willReturn($payResultMock);
 
-        $sageCardTypeMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Model\Config\SagePayCardType::class);
+        $sageCardTypeMock = $this->makeMockDisabledConstructor(SagePayCardType::class);
         $sageCardTypeMock->expects($this->once())->method('convert');
 
-        $piRequestMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Model\PiRequest::class);
+        $piRequestMock = $this->makeMockDisabledConstructor(PiRequest::class);
         $piRequestMock->expects($this->exactly(2))->method('setCart')->willReturnSelf();
         $piRequestMock->expects($this->exactly(2))->method('setMerchantSessionKey')->willReturnSelf();
         $piRequestMock->expects($this->exactly(2))->method('setCardIdentifier')->willReturnSelf();
@@ -71,10 +81,11 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
             ['transactionType' => $paymentAction]
         );
 
-        $suiteHelperMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Helper\Data::class);
+        $suiteHelperMock = $this->makeMockDisabledConstructor(Data::class);
 
-        $piResultMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Api\Data\PiResultInterface::class);
+        $piResultMock = $this->makeMockDisabledConstructor(PiResultInterface::class);
         $piResultMock->expects($this->once())->method('setSuccess')->with(true);
+        $piResultMock->expects($this->once())->method('getSuccess')->willReturn(true);
 
         $methodInstanceMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Model\PI::class);
         $methodInstanceMock->expects($this->exactly($expectsMarkInitialized))->method('markAsInitialized');
@@ -108,14 +119,14 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
 
         $quoteMock->expects($this->any())->method('getPayment')->willReturn($paymentMock);
 
-        $orderMock = $this->makeMockDisabledConstructor(\Magento\Sales\Model\Order::class);
+        $orderMock = $this->makeMockDisabledConstructor(Order::class);
         $orderMock->expects($this->any())->method('getPayment')->willReturn($paymentMock);
         $orderMock->expects($this->any())->method('place')->willReturnSelf();
         $orderMock->expects($this->any())->method('getId')->willReturn(self::TEST_ORDER_NUMBER);
 
         $checkoutHelperMock->expects($this->once())->method('placeOrder')->willReturn($orderMock);
 
-        $loggerMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class);
+        $loggerMock = $this->makeMockDisabledConstructor(Logger::class);
 
         $actionFactoryMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory')
             ->disableOriginalConstructor()
@@ -156,12 +167,12 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $checkoutSessionMock->expects($this->once())->method('setLastRealOrderId');
         $checkoutSessionMock->expects($this->once())->method('setLastOrderStatus');
 
-        $quoteValidatorMock = $this->getMockBuilder(\Magento\Quote\Model\QuoteValidator::class)
+        $quoteValidatorMock = $this->getMockBuilder(QuoteValidator::class)
             ->disableOriginalConstructor()
             ->getMock();
         $quoteValidatorMock->expects($this->once())->method('validateBeforeSubmit')->with($quoteMock)->willReturnSelf();
 
-        /** @var MotoManagement $sut */
+        /** @var EcommerceManagement $sut */
         $sut = $this->objectManagerHelper->getObject(
             EcommerceManagement::class,
             [
@@ -171,7 +182,7 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
                 'piRequest'          => $piRequestMock,
                 'suiteHelper'        => $suiteHelperMock,
                 'result'             => $piResultMock,
-                'suiteLogger'        => $loggerMock,
+                'sagePaySuiteLogger' => $loggerMock,
                 'actionFactory'      => $actionFactoryMock,
                 'transactionFactory' => $transactionFactoryMock,
                 'checkoutSession'    => $checkoutSessionMock,
@@ -182,13 +193,77 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $sut->setQuote($quoteMock);
         $sut->setRequestData($requestDataMock);
 
-        $sut->placeOrder();
+        $result = $sut->placeOrder();
+        $this->assertTrue($result->getSuccess());
+    }
+
+    public function testPlaceOrderInvalidQuote()
+    {
+        $checkoutHelperMock = $this->makeMockDisabledConstructor(Checkout::class);
+
+        $quoteMock = $this->makeMockDisabledConstructor(Quote::class);
+
+        $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManagerInterface::class);
+
+        $piRestApiMock = $this->makeMockDisabledConstructor(PIRest::class);
+        $piRestApiMock->expects($this->never())->method('void');
+
+        $sageCardTypeMock = $this->makeMockDisabledConstructor(SagePayCardType::class);
+
+        $piRequestMock = $this->makeMockDisabledConstructor(PiRequest::class);
+
+        $suiteHelperMock = $this->makeMockDisabledConstructor(Data::class);
+
+        $piResultMock = $this->makeMockDisabledConstructor(PiResultInterface::class);
+        $piResultMock->expects($this->once())->method('setSuccess')->with(false);
+        $piResultMock->expects($this->once())->method('getSuccess')->willReturn(false);
+        $piResultMock
+            ->expects($this->once())
+            ->method('setErrorMessage')
+            ->with(
+                new \Magento\Framework\Phrase('Something went wrong: %1', ['Please specify a shipping method.'])
+            );
+
+        $checkoutHelperMock->expects($this->never())->method('placeOrder');
+
+        $loggerMock = $this->makeMockDisabledConstructor(Logger::class);
+        $loggerMock->expects($this->once())->method('logException');
+
+        $quoteValidatorMock = $this->getMockBuilder(QuoteValidator::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $quoteValidatorMock
+            ->expects($this->once())
+            ->method('validateBeforeSubmit')
+            ->willThrowException($this->makeNoShippingMethodException());
+
+        /** @var EcommerceManagement $sut */
+        $sut = $this->objectManagerHelper->getObject(
+            EcommerceManagement::class,
+            [
+                'checkoutHelper'     => $checkoutHelperMock,
+                'piRestApi'          => $piRestApiMock,
+                'ccConvert'          => $sageCardTypeMock,
+                'piRequest'          => $piRequestMock,
+                'suiteHelper'        => $suiteHelperMock,
+                'result'             => $piResultMock,
+                'sagePaySuiteLogger' => $loggerMock,
+                'quoteValidator'     => $quoteValidatorMock
+            ]
+        );
+
+        $sut->setQuote($quoteMock);
+        $sut->setRequestData($requestDataMock);
+
+        /** @var \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface $result */
+        $result = $sut->placeOrder();
+        $this->assertFalse($result->getSuccess());
     }
 
     public function placeOrder()
     {
         return [
-            'Payment payment action' => [Config::ACTION_PAYMENT_PI, 1, 0],
+            'Payment payment action'  => [Config::ACTION_PAYMENT_PI, 1, 0],
             'Deferred payment action' => [Config::ACTION_DEFER_PI, 0, 1,]
         ];
     }
@@ -202,6 +277,16 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         return $this->getMockBuilder($class)
             ->disableOriginalConstructor()
             ->getMock();
+    }
+
+    /**
+     * @return \Magento\Framework\Exception\LocalizedException
+     */
+    private function makeNoShippingMethodException(): \Magento\Framework\Exception\LocalizedException
+    {
+        return new \Magento\Framework\Exception\LocalizedException(
+            new \Magento\Framework\Phrase('Please specify a shipping method.')
+        );
     }
 
 }
