@@ -304,7 +304,8 @@ class PIRest
 
     /**
      * @param $transactionId
-     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponseInterface
+     * @return PiInstructionResponse
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
     public function void($transactionId)
     {
