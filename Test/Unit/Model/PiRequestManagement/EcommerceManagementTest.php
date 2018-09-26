@@ -43,15 +43,11 @@ class EcommerceManagementTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($sut->getIsMotoTransaction());
     }
 
-    /**
-     * @param string $paymentAction
-     * @see \Ebizmarts\SagePaySuite\Model\Config
-     * @param integer $expectsMarkInitialized
-     * @param integer $expectsTransactionClosed
-     * @dataProvider placeOrder
-     */
-    public function testPlaceOrder($paymentAction, $expectsMarkInitialized, $expectsTransactionClosed)
+    public function testPlaceOrder()
     {
+        $paymentAction = Config::ACTION_PAYMENT_PI;
+        $expectsMarkInitialized = 1;
+
         $checkoutHelperMock = $this->makeMockDisabledConstructor(Checkout::class);
 
         $quoteMock = $this->makeMockDisabledConstructor(Quote::class);
@@ -201,8 +197,8 @@ class EcommerceManagementTest extends \PHPUnit_Framework_TestCase
         $checkoutHelperMock = $this->makeMockDisabledConstructor(Checkout::class);
 
         $quoteMock = $this->makeMockDisabledConstructor(Quote::class);
-        $quoteMock->expects($this->exactly(2))->method('collectTotals')->willReturnSelf();
-        $quoteMock->expects($this->exactly(5))->method('getReservedOrderId')->willReturn('000000083');
+        $quoteMock->expects($this->once())->method('collectTotals')->willReturnSelf();
+        $quoteMock->expects($this->exactly(3))->method('getReservedOrderId')->willReturn('000000083');
         $quoteMock->expects($this->never())->method('reserveOrderId');
 
         $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManagerInterface::class);
@@ -218,12 +214,12 @@ class EcommerceManagementTest extends \PHPUnit_Framework_TestCase
         $sageCardTypeMock->expects($this->once())->method('convert');
 
         $piRequestMock = $this->makeMockDisabledConstructor(PiRequest::class);
-        $piRequestMock->expects($this->exactly(2))->method('setCart')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setMerchantSessionKey')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setCardIdentifier')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setVendorTxCode')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setIsMoto')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('getRequestData')->willReturn(
+        $piRequestMock->expects($this->once())->method('setCart')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setMerchantSessionKey')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setCardIdentifier')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setVendorTxCode')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setIsMoto')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('getRequestData')->willReturn(
             ['transactionType' => Config::ACTION_PAYMENT_PI]
         );
 
@@ -404,13 +400,6 @@ class EcommerceManagementTest extends \PHPUnit_Framework_TestCase
         /** @var \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface $result */
         $result = $sut->placeOrder();
         $this->assertFalse($result->getSuccess());
-    }
-
-    public function placeOrder()
-    {
-        return [
-            'Payment payment action'  => [Config::ACTION_PAYMENT_PI, 1, 0]
-        ];
     }
 
     /**
