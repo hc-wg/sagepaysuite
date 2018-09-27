@@ -7,10 +7,28 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\PiRequestManagement;
 
 use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerInterface;
+use Ebizmarts\SagePaySuite\Api\Data\PiResultInterface;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface;
+use Ebizmarts\SagePaySuite\Helper\Checkout;
+use Ebizmarts\SagePaySuite\Helper\Data;
+use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForAction;
+use Ebizmarts\SagePaySuite\Model\Config\SagePayCardType;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\PI;
+use Ebizmarts\SagePaySuite\Model\PiRequest;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\MotoManagement;
+use Magento\Backend\Model\UrlInterface;
+use Magento\Framework\App\Request\Http;
+use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\Quote\Payment;
+use Magento\Sales\Model\AdminOrder\Create;
+use Magento\Sales\Model\AdminOrder\EmailSender;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Payment\Transaction;
 
 class MotoManagementTest extends \PHPUnit\Framework\TestCase
 {
@@ -33,32 +51,34 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @param string $paymentAction @see \Ebizmarts\SagePaySuite\Model\Config
+     * @param string $paymentAction
+     * @see \Ebizmarts\SagePaySuite\Model\Config
      * @param integer $expectsMarkInitialized
      * @param integer $expectsTransactionClosed
      * @dataProvider placeOrder
      */
     public function testPlaceOrder($paymentAction, $expectsMarkInitialized, $expectsTransactionClosed)
     {
-        $checkoutHelperMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Helper\Checkout::class);
+        $checkoutHelperMock = $this->makeMockDisabledConstructor(Checkout::class);
 
-        $quoteMock = $this->makeMockDisabledConstructor(\Magento\Quote\Model\Quote::class);
+        $quoteMock = $this->makeMockDisabledConstructor(Quote::class);
         $quoteMock->expects($this->exactly(2))->method('collectTotals')->willReturnSelf();
+        $quoteMock->expects($this->exactly(3))->method('getReservedOrderId');
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
 
         $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManagerInterface::class);
-        $requestDataMock->expects($this->any())->method('getPaymentAction')->willReturn($paymentAction);
+        $requestDataMock->expects($this->exactly(4))->method('getPaymentAction')->willReturn($paymentAction);
 
-        $payResultMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface::class);
-        $payResultMock->expects($this->any())->method('getStatusCode')->willReturn(Config::SUCCESS_STATUS);
+        $payResultMock = $this->makeMockDisabledConstructor(PiTransactionResultInterface::class);
+        $payResultMock->expects($this->exactly(2))->method('getStatusCode')->willReturn(Config::SUCCESS_STATUS);
 
-        $piRestApiMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Model\Api\PIRest::class);
+        $piRestApiMock = $this->makeMockDisabledConstructor(PIRest::class);
         $piRestApiMock->expects($this->once())->method('capture')->willReturn($payResultMock);
 
-        $sageCardTypeMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Model\Config\SagePayCardType::class);
+        $sageCardTypeMock = $this->makeMockDisabledConstructor(SagePayCardType::class);
         $sageCardTypeMock->expects($this->once())->method('convert');
 
-        $piRequestMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Model\PiRequest::class);
+        $piRequestMock = $this->makeMockDisabledConstructor(PiRequest::class);
         $piRequestMock->expects($this->once())->method('setCart')->willReturnSelf();
         $piRequestMock->expects($this->once())->method('setMerchantSessionKey')->willReturnSelf();
         $piRequestMock->expects($this->once())->method('setCardIdentifier')->willReturnSelf();
@@ -66,16 +86,16 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
         $piRequestMock->expects($this->once())->method('setIsMoto')->willReturnSelf();
         $piRequestMock->expects($this->once())->method('getRequestData')->willReturn([]);
 
-        $suiteHelperMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Helper\Data::class);
+        $suiteHelperMock = $this->makeMockDisabledConstructor(Data::class);
 
-        $piResultMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Api\Data\PiResultInterface::class);
+        $piResultMock = $this->makeMockDisabledConstructor(PiResultInterface::class);
         $piResultMock->expects($this->once())->method('setSuccess')->with(true);
         $piResultMock->expects($this->once())->method('setResponse');
 
-        $methodInstanceMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Model\PI::class);
+        $methodInstanceMock = $this->makeMockDisabledConstructor(PI::class);
         $methodInstanceMock->expects($this->exactly($expectsMarkInitialized))->method('markAsInitialized');
 
-        $paymentMock = $this->getMockBuilder(\Magento\Quote\Model\Quote\Payment::class)
+        $paymentMock = $this->getMockBuilder(Payment::class)
             ->setMethods(
                 [
                     'setMethod',
@@ -92,23 +112,25 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
             )
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->any())->method('setMethod')->willReturnSelf();
-        $paymentMock->expects($this->any())->method('setTransactionId')->willReturnSelf();
-        $paymentMock->expects($this->any())->method('setAdditionalInformation')->willReturnSelf();
-        $paymentMock->expects($this->any())->method('setCcLast4')->willReturnSelf();
-        $paymentMock->expects($this->any())->method('setCcExpMonth')->willReturnSelf();
-        $paymentMock->expects($this->any())->method('setCcExpYear')->willReturnSelf();
-        $paymentMock->expects($this->any())->method('setCcType')->willReturnSelf();
+        $paymentMock->expects($this->once())->method('setMethod')->willReturnSelf();
+        $paymentMock->expects($this->exactly(2))->method('setTransactionId')->willReturnSelf();
+        $paymentMock->expects($this->exactly(9))->method('setAdditionalInformation')->willReturnSelf();
+        $paymentMock->expects($this->once())->method('setCcLast4')->willReturnSelf();
+        $paymentMock->expects($this->once())->method('setCcExpMonth')->willReturnSelf();
+        $paymentMock->expects($this->once())->method('setCcExpYear')->willReturnSelf();
+        $paymentMock->expects($this->once())->method('setCcType')->willReturnSelf();
         $paymentMock->expects($this->exactly($expectsTransactionClosed))->method('setIsTransactionClosed')->willReturnSelf();
-        $paymentMock->expects($this->any())->method('save')->willReturnSelf();
-        $paymentMock->expects($this->any())->method('getMethodInstance')->willReturn($methodInstanceMock);
+        $paymentMock->expects($this->once())->method('save')->willReturnSelf();
+        $paymentMock->expects(
+            ($paymentAction === 'Payment' ? $this->once() : $this->never())
+        )->method('getMethodInstance')->willReturn($methodInstanceMock);
 
-        $orderMock = $this->makeMockDisabledConstructor(\Magento\Sales\Model\Order::class);
-        $orderMock->expects($this->any())->method('getPayment')->willReturn($paymentMock);
-        $orderMock->expects($this->any())->method('place')->willReturnSelf();
-        $orderMock->expects($this->any())->method('getId')->willReturn(self::TEST_ORDER_NUMBER);
+        $orderMock = $this->makeMockDisabledConstructor(Order::class);
+        $orderMock->expects($this->exactly(16))->method('getPayment')->willReturn($paymentMock);
+        $orderMock->expects($this->once())->method('place')->willReturnSelf();
+        $orderMock->expects($this->once())->method('getId')->willReturn(self::TEST_ORDER_NUMBER);
 
-        $motoOrderCreateModelMock = $this->getMockBuilder(\Magento\Sales\Model\AdminOrder\Create::class)
+        $motoOrderCreateModelMock = $this->getMockBuilder(Create::class)
             ->setMethods(
                 [
                     'setIsValidate',
@@ -122,57 +144,62 @@ class MotoManagementTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $motoOrderCreateModelMock->expects($this->once())->method('setIsValidate')->with(true)->willReturnSelf();
         $motoOrderCreateModelMock->expects($this->once())->method('importPostData')->willReturnSelf();
-        $motoOrderCreateModelMock->expects($this->any())->method('setSendConfirmation')->with(0)->willReturnSelf();
+        $motoOrderCreateModelMock->expects($this->once())->method('setSendConfirmation')->with(0)->willReturnSelf();
         $motoOrderCreateModelMock->expects($this->once())->method('createOrder')->willReturn($orderMock);
         $motoOrderCreateModelMock->expects($this->once())->method('getQuote')->willReturn($quoteMock);
 
-        $objectManagerMock = $this->makeMockDisabledConstructor(\Magento\Framework\ObjectManagerInterface::class);
+        $objectManagerMock = $this->makeMockDisabledConstructor(ObjectManagerInterface::class);
         $objectManagerMock->expects($this->exactly(2))->method('get')->with('Magento\Sales\Model\AdminOrder\Create')
             ->willReturn($motoOrderCreateModelMock);
 
-        $requestMock = $this->makeMockDisabledConstructor(\Magento\Framework\App\Request\Http::class);
+        $requestMock = $this->makeMockDisabledConstructor(Http::class)  ;
         $requestMock->expects($this->exactly(2))->method('getPost')
             ->withConsecutive(['order'], ['payment'])
             ->willReturnOnConsecutiveCalls([], []);
 
-        $urlMock = $this->makeMockDisabledConstructor(\Magento\Backend\Model\UrlInterface::class);
+        $urlMock = $this->makeMockDisabledConstructor(UrlInterface::class);
         $urlMock->expects($this->once())->method('getUrl')->with('sales/order/view', ['order_id' => self::TEST_ORDER_NUMBER]);
 
-        $loggerMock = $this->makeMockDisabledConstructor(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class);
+        $loggerMock = $this->makeMockDisabledConstructor(Logger::class);
 
-        $emailSenderMock = $this->makeMockDisabledConstructor(\Magento\Sales\Model\AdminOrder\EmailSender::class);
+        $emailSenderMock = $this->makeMockDisabledConstructor(EmailSender::class);
         $emailSenderMock->expects($this->once())->method('send');
 
         $actionFactoryMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory')
             ->disableOriginalConstructor()
             ->setMethods(['create'])
             ->getMock();
-        $actionFactoryMock->expects($this->any())->method('create')->willReturn(
-            new ClosedForAction($paymentAction)
-        );
+        $actionFactoryMock
+            ->expects(
+                ($paymentAction === 'Payment' ? $this->never() : $this->once())
+            )
+            ->method('create')->willReturn(new ClosedForAction($paymentAction));
 
         $transactionFactoryMock = $this->makeMockDisabledConstructor('Magento\Sales\Model\Order\Payment\TransactionFactory');
-        $transactionFactoryMock->expects($this->any())->method('create')->willReturn(
-            $this->makeMockDisabledConstructor(\Magento\Sales\Model\Order\Payment\Transaction::class)
-        );
+        $transactionFactoryMock
+            ->expects(
+                ($paymentAction === 'Payment' ? $this->never() : $this->once())
+            )
+            ->method('create')
+            ->willReturn($this->makeMockDisabledConstructor(Transaction::class));
 
         /** @var MotoManagement $sut */
         $sut = $this->objectManagerHelper->getObject(
             MotoManagement::class,
             [
-                'checkoutHelper' => $checkoutHelperMock,
-                'piRestApi' => $piRestApiMock,
-                'ccConvert' => $sageCardTypeMock,
-                'piRequest' => $piRequestMock,
-                'suiteHelper' => $suiteHelperMock,
-                'result' => $piResultMock,
-                'objectManager' => $objectManagerMock,
-                'httpRequest' => $requestMock,
-                'backendUrl' => $urlMock,
-                'suiteLogger' => $loggerMock,
-                'emailSender' => $emailSenderMock,
-                'actionFactory' => $actionFactoryMock,
-                'transactionFactory' => $transactionFactoryMock
+                'checkoutHelper'     => $checkoutHelperMock,
+                'piRestApi'          => $piRestApiMock,
+                'ccConvert'          => $sageCardTypeMock,
+                'piRequest'          => $piRequestMock,
+                'suiteHelper'        => $suiteHelperMock,
+                'result'             => $piResultMock,
+                'objectManager'      => $objectManagerMock,
+                'httpRequest'        => $requestMock,
+                'backendUrl'         => $urlMock,
+                'suiteLogger'        => $loggerMock,
+                'emailSender'        => $emailSenderMock,
+                'actionFactory'      => $actionFactoryMock,
+                'transactionFactory' => $transactionFactoryMock,
             ]
         );
 
