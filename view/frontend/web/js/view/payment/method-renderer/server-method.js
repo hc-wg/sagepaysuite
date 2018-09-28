@@ -309,8 +309,11 @@ define(
                 return this.use_token;
             },
             getCustomerTokens: function () {
-                this.useSavedTokens();
-                return window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens;
+                var sagePayTokens = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens;
+                if (sagePayTokens.length > 0) {
+                    this.useSavedTokens();
+                }
+                return sagePayTokens;
             },
             getIcons: function (type) {
                 switch (type) {
