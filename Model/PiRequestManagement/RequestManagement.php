@@ -78,7 +78,10 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
     public function getRequest()
     {
         $this->getQuote()->collectTotals();
-        $this->getQuote()->reserveOrderId();
+
+        if (null === $this->getQuote()->getReservedOrderId()) {
+            $this->getQuote()->reserveOrderId();
+        }
 
         return $this->piRequest
             ->setCart($this->getQuote())
