@@ -86,7 +86,6 @@ class Request extends \Magento\Backend\App\AbstractAction
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         Logger $suiteLogger,
-        \Magento\Customer\Model\Session $customerSession,
         \Magento\Backend\Model\Session\Quote $quoteSession,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Magento\Quote\Model\QuoteManagement $quoteManagement,
