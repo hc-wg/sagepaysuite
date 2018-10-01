@@ -9,6 +9,7 @@ namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\Repeat;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
 
 class Request extends \Magento\Backend\App\AbstractAction
 {
@@ -72,7 +73,10 @@ class Request extends \Magento\Backend\App\AbstractAction
     /**
      * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
      */
-    private $_transactionFactory;
+    private $transactionFactory;
+
+    /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory */
+    private $actionFactory;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -98,22 +102,24 @@ class Request extends \Magento\Backend\App\AbstractAction
         \Magento\Quote\Model\QuoteManagement $quoteManagement,
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
         \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
-        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
+        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
+        ClosedForActionFactory $actionFactory
     ) {
     
         parent::__construct($context);
         $this->_config = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_REPEAT);
-        $this->_suiteHelper = $suiteHelper;
-        $this->_suiteLogger = $suiteLogger;
-        $this->_sharedApi = $sharedApi;
-        $this->_checkoutHelper = $checkoutHelper;
-        $this->_customerSession = $customerSession;
-        $this->_quoteSession = $quoteSession;
-        $this->_quoteManagement = $quoteManagement;
-        $this->_requestHelper = $requestHelper;
-        $this->_transactionFactory = $transactionFactory;
-        $this->_quote = $this->_quoteSession->getQuote();
+        $this->_suiteHelper       = $suiteHelper;
+        $this->_suiteLogger       = $suiteLogger;
+        $this->_sharedApi         = $sharedApi;
+        $this->_checkoutHelper    = $checkoutHelper;
+        $this->_customerSession   = $customerSession;
+        $this->_quoteSession      = $quoteSession;
+        $this->_quoteManagement   = $quoteManagement;
+        $this->_requestHelper     = $requestHelper;
+        $this->transactionFactory = $transactionFactory;
+        $this->actionFactory      = $actionFactory;
+        $this->_quote             = $this->_quoteSession->getQuote();
     }
 
     public function execute()
@@ -212,20 +218,34 @@ class Request extends \Magento\Backend\App\AbstractAction
 
     private function _confirmPayment($transactionId, $order)
     {
+        /** @var \Magento\Sales\Model\Order\Payment $payment */
+        /** @var \Magento\Sales\Model\Order $order */
         $payment = $order->getPayment();
         $payment->setTransactionId($transactionId);
         $payment->setLastTransId($transactionId);
 
-        $paymentAction = $this->_config->getSagepayPaymentAction();
+        $sagePayPaymentAction = $this->_config->getSagepayPaymentAction();
 
         //leave transaction open in case defer
-        if ($paymentAction === Config::ACTION_REPEAT_DEFERRED) {
-            $payment->setIsTransactionClosed(0);
+        if ($sagePayPaymentAction === Config::ACTION_REPEAT_DEFERRED) {
+            /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
+            $actionClosed = $this->actionFactory->create(['paymentAction' => $sagePayPaymentAction]);
+            list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
+
+            /** @var \Magento\Sales\Model\Order\Payment\Transaction $transaction */
+            $transaction = $this->transactionFactory->create();
+            $transaction->setOrderPaymentObject($payment);
+            $transaction->setTxnId($transactionId);
+            $transaction->setOrderId($order->getEntityId());
+            $transaction->setTxnType($action);
+            $transaction->setPaymentId($payment->getId());
+            $transaction->setIsClosed($closed);
+            $transaction->save();
         }
 
         $payment->save();
 
-        if ($paymentAction === Config::ACTION_REPEAT) {
+        if ($sagePayPaymentAction === Config::ACTION_REPEAT) {
             $payment->getMethodInstance()->markAsInitialized();
         }
 
