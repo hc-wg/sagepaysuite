@@ -45,16 +45,6 @@ class Request extends \Magento\Backend\App\AbstractAction
     private $_postData;
 
     /**
-     * @var \Magento\Customer\Model\Session
-     */
-    private $_customerSession;
-
-    /**
-     * @var \Magento\Backend\Model\Session\Quote
-     */
-    private $_quoteSession;
-
-    /**
      * @var \Magento\Quote\Model\QuoteManagement
      */
     private $_quoteManagement;
@@ -113,13 +103,11 @@ class Request extends \Magento\Backend\App\AbstractAction
         $this->_suiteLogger       = $suiteLogger;
         $this->_sharedApi         = $sharedApi;
         $this->_checkoutHelper    = $checkoutHelper;
-        $this->_customerSession   = $customerSession;
-        $this->_quoteSession      = $quoteSession;
         $this->_quoteManagement   = $quoteManagement;
         $this->_requestHelper     = $requestHelper;
         $this->transactionFactory = $transactionFactory;
         $this->actionFactory      = $actionFactory;
-        $this->_quote             = $this->_quoteSession->getQuote();
+        $this->_quote             = $quoteSession->getQuote();
     }
 
     public function execute()
