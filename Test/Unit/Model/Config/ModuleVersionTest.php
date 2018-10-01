@@ -17,6 +17,8 @@ class ModuleVersionTest extends \PHPUnit_Framework_TestCase
 
     const COMPOSER_JSON_FILENAME = 'composer.json';
 
+    const VERSION_EMPTY = '.';
+
     protected function setUp()
     {
         $this->objectManagerHelper = new ObjectManager($this);
@@ -45,7 +47,7 @@ class ModuleVersionTest extends \PHPUnit_Framework_TestCase
 
         $moduleVersion = $sut->getModuleVersion(self::MODULE_NAME);
 
-        $this->assertEquals('', $moduleVersion);
+        $this->assertEquals(self::VERSION_EMPTY, $moduleVersion);
     }
 
     public function testGetModuleVersionNoVersionInComposerJson()
@@ -76,7 +78,7 @@ class ModuleVersionTest extends \PHPUnit_Framework_TestCase
 
         $moduleVersion = $sut->getModuleVersion(self::MODULE_NAME);
 
-        $this->assertEquals('', $moduleVersion);
+        $this->assertEquals(self::VERSION_EMPTY, $moduleVersion);
     }
 
     public function testGetModuleVersionOk()
@@ -141,7 +143,7 @@ class ModuleVersionTest extends \PHPUnit_Framework_TestCase
 
         $moduleVersion = $sut->getModuleVersion(self::MODULE_NAME);
 
-        $this->assertEquals('', $moduleVersion);
+        $this->assertEquals(self::VERSION_EMPTY, $moduleVersion);
     }
 
     public function testGetModuleVersionReadFileException()
@@ -173,7 +175,7 @@ class ModuleVersionTest extends \PHPUnit_Framework_TestCase
 
         $moduleVersion = $sut->getModuleVersion(self::MODULE_NAME);
 
-        $this->assertEquals('', $moduleVersion);
+        $this->assertEquals(self::VERSION_EMPTY, $moduleVersion);
     }
 
     /**

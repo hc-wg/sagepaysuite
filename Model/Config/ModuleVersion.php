@@ -39,7 +39,7 @@ class ModuleVersion
      */
     public function getModuleVersion($moduleName)
     {
-        $emptyVersionNumber = '';
+        $emptyVersionNumber = '.';
         $composerJsonData = null;
 
         try {
