@@ -6,10 +6,19 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\Repeat;
 
+use Ebizmarts\SagePaySuite\Helper\Checkout as SuiteHelperCheckout;
+use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
+use Ebizmarts\SagePaySuite\Helper\Request as SuiteHelperRequest;
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
+use Ebizmarts\SagePaySuite\Model\Api\Shared as SuiteSharedApi;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Magento\Backend\App\Action\Context;
+use Magento\Backend\Model\Session\Quote;
 use Magento\Framework\Controller\ResultFactory;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
+use Magento\Quote\Model\QuoteManagement;
+use Magento\Sales\Model\Order\Payment\TransactionFactory;
 
 class Request extends \Magento\Backend\App\AbstractAction
 {
@@ -19,7 +28,7 @@ class Request extends \Magento\Backend\App\AbstractAction
     private $_config;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Helper\Data
+     * @var SuiteHelper
      */
     private $_suiteHelper;
 
@@ -35,7 +44,7 @@ class Request extends \Magento\Backend\App\AbstractAction
     private $_suiteLogger;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Helper\Checkout
+     * @var SuiteHelperCheckout
      */
     private $_checkoutHelper;
 
@@ -45,53 +54,41 @@ class Request extends \Magento\Backend\App\AbstractAction
     private $_postData;
 
     /**
-     * @var \Magento\Quote\Model\QuoteManagement
+     * @var QuoteManagement
      */
     private $_quoteManagement;
 
     /**
      * Sage Pay Suite Request Helper
-     * @var \Ebizmarts\SagePaySuite\Helper\Request
+     * @var SuiteHelperRequest
      */
     private $_requestHelper;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\Shared
+     * @var SuiteSharedApi
      */
     private $_sharedApi;
 
     /**
-     * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
+     * @var TransactionFactory
      */
     private $transactionFactory;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory */
+    /** @var ClosedForActionFactory */
     private $actionFactory;
 
-    /**
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param Config $config
-     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
-     * @param Logger $suiteLogger
-     * @param \Magento\Customer\Model\Session $customerSession
-     * @param \Magento\Backend\Model\Session\Quote $quoteSession
-     * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
-     * @param \Magento\Quote\Model\QuoteManagement $quoteManagement
-     * @param \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
-     * @param \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi
-     * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
-     */
+
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        Context $context,
+        Config $config,
+        SuiteHelper $suiteHelper,
         Logger $suiteLogger,
-        \Magento\Backend\Model\Session\Quote $quoteSession,
-        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Magento\Quote\Model\QuoteManagement $quoteManagement,
-        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
-        \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
-        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
+        Quote $quoteSession,
+        SuiteHelperCheckout $checkoutHelper,
+        QuoteManagement $quoteManagement,
+        SuiteHelperRequest $requestHelper,
+        SuiteSharedApi $sharedApi,
+        TransactionFactory $transactionFactory,
         ClosedForActionFactory $actionFactory
     ) {
     
@@ -136,7 +133,7 @@ class Request extends \Magento\Backend\App\AbstractAction
             $transactionId = str_replace("{", "", str_replace("}", "", $post_response["data"]["VPSTxId"]));
 
             $payment = $this->_quote->getPayment();
-            $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_REPEAT);
+            $payment->setMethod(Config::METHOD_REPEAT);
             $payment->setTransactionId($transactionId);
             $payment->setAdditionalInformation('statusDetail', $post_response["data"]["StatusDetail"]);
             $payment->setAdditionalInformation('vendorTxCode', $vendorTxCode);
@@ -166,7 +163,7 @@ class Request extends \Magento\Backend\App\AbstractAction
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order.'));
             }
-        } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
+        } catch (ApiException $apiException) {
             $this->_suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
             $responseContent = [
                 'success' => false,
