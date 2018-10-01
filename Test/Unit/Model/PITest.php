@@ -503,7 +503,7 @@ class PITest extends \PHPUnit_Framework_TestCase
     public function testGetConfigPaymentAction()
     {
         $this->configMock->expects($this->once())
-            ->method('getPaymentAction');
+            ->method('getSagepayPaymentAction');
         $this->piModel->getConfigPaymentAction();
     }
 
