@@ -8,6 +8,8 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Adminhtml\Request;
 
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
+use Ebizmarts\SagePaySuite\Model\Config\ClosedForAction;
+use Magento\Sales\Model\Order\Payment\Transaction;
 
 class RequestTest extends \PHPUnit\Framework\TestCase
 {
@@ -49,6 +51,10 @@ class RequestTest extends \PHPUnit\Framework\TestCase
     private $paymentMock;
 
     // @codingStandardsIgnoreStart
+    private $actionFactoryMock;
+
+    private $transactionFactoryMock;
+
     protected function setUp()
     {
         $this->repeatModelMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Repeat')->disableOriginalConstructor()->getMock();
@@ -152,6 +158,11 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         $suiteHelperMock->expects($this->any())
             ->method('generateVendorTxCode')
             ->will($this->returnValue("10000001-2015-12-12-12-12345"));
+        $suiteHelperMock
+            ->expects($this->once())
+            ->method('removeCurlyBraces')
+            ->with(self::TEST_VPSTXID)
+            ->willReturn(self::TEST_VPSTXID);
 
         $sharedapiMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Shared')
@@ -196,17 +207,31 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             ->method('getOrderDescription')
             ->will($this->returnValue("description"));
 
+        $this->actionFactoryMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+
+        $this->transactionFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+
         $objectManagerHelper = new ObjectManagerHelper($this);
         $this->repeatRequestController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\Repeat\Request',
             [
-                'context' => $contextMock,
-                'config' => $this->configMock,
-                'suiteHelper' => $suiteHelperMock,
-                'sharedApi' => $sharedapiMock,
-                'quoteSession' => $quoteSessionMock,
-                'quoteManagement' => $this->quoteManagementMock,
-                'requestHelper' => $requestHelperMock
+                'context'            => $contextMock,
+                'config'             => $this->configMock,
+                'suiteHelper'        => $suiteHelperMock,
+                'sharedApi'          => $sharedapiMock,
+                'quoteSession'       => $quoteSessionMock,
+                'quoteManagement'    => $this->quoteManagementMock,
+                'requestHelper'      => $requestHelperMock,
+                'actionFactory'      => $this->actionFactoryMock,
+                'transactionFactory' => $this->transactionFactoryMock,
             ]
         );
     }
@@ -220,6 +245,26 @@ class RequestTest extends \PHPUnit\Framework\TestCase
      */
     public function testExecuteSuccess($paymentAction, $initializedCount, $transactionClosedCount)
     {
+        $actionTransactionMock = $paymentAction === Config::ACTION_REPEAT_DEFERRED ? 1 : 0;
+
+        $this->actionFactoryMock
+            ->expects($this->exactly($actionTransactionMock))
+            ->method('create')
+            ->willReturn(
+            new ClosedForAction($paymentAction)
+        );
+
+        $transactionMock = $this->getMockBuilder(Transaction::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $transactionMock->expects($this->exactly($actionTransactionMock))->method('setIsClosed')->with(false);
+        $transactionMock->expects($this->exactly($actionTransactionMock))->method('setTxnType')->with('authorization');
+
+        $this->transactionFactoryMock
+            ->expects($this->exactly($actionTransactionMock))
+            ->method('create')
+            ->willReturn($transactionMock);
+
         $this->repeatModelMock->expects($this->exactly($initializedCount))->method('markAsInitialized');
 
         $this->configMock->expects($this->any())->method('getSagepayPaymentAction')->willReturn($paymentAction);
@@ -248,7 +293,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
     {
         return [
             [Config::ACTION_REPEAT, 1, 0],
-            [Config::ACTION_REPEAT_DEFERRED, 0, 1]
+            [Config::ACTION_REPEAT_DEFERRED, 0, 0]
         ];
     }
 
