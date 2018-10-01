@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2015 ebizmarts. All rights reserved.
+ * Copyright © 2018 ebizmarts. All rights reserved.
  * See LICENSE.txt for license details.
  */
 
