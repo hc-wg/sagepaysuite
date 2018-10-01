@@ -257,6 +257,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $transactionMock = $this->getMockBuilder(Transaction::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $transactionMock->expects($this->exactly($actionTransactionMock))->method('setIsClosed')->with(false);
+        $transactionMock->expects($this->exactly($actionTransactionMock))->method('setTxnType')->with('authorization');
+
         $this->transactionFactoryMock
             ->expects($this->exactly($actionTransactionMock))
             ->method('create')
