@@ -77,7 +77,20 @@ class Request extends \Magento\Backend\App\AbstractAction
     /** @var ClosedForActionFactory */
     private $actionFactory;
 
-
+    /**
+     * Request constructor.
+     * @param Context $context
+     * @param Config $config
+     * @param SuiteHelper $suiteHelper
+     * @param Logger $suiteLogger
+     * @param Quote $quoteSession
+     * @param SuiteHelperCheckout $checkoutHelper
+     * @param QuoteManagement $quoteManagement
+     * @param SuiteHelperRequest $requestHelper
+     * @param SuiteSharedApi $sharedApi
+     * @param TransactionFactory $transactionFactory
+     * @param ClosedForActionFactory $actionFactory
+     */
     public function __construct(
         Context $context,
         Config $config,
@@ -130,7 +143,7 @@ class Request extends \Magento\Backend\App\AbstractAction
             //set payment info for save order
 
             //strip brackets
-            $transactionId = str_replace("{", "", str_replace("}", "", $post_response["data"]["VPSTxId"]));
+            $transactionId = $this->suiteHelper->removeCurlyBraces($post_response["data"]["VPSTxId"]);
 
             $payment = $this->quote->getPayment();
             $payment->setMethod(Config::METHOD_REPEAT);
