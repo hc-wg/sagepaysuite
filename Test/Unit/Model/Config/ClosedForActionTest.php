@@ -33,6 +33,8 @@ class ClosedForActionTest extends \PHPUnit\Framework\TestCase
             ['AUTHENTICATE', 'authorization', false],
             ['Payment', 'capture', true],
             ['Deferred', 'authorization', false],
+            ['REPEATDEFERRED', 'authorization', false],
+            ['REPEAT', 'capture', true],
         ];
     }
 
