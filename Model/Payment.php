@@ -79,9 +79,6 @@ class Payment
                     /** @var $result PiTransactionResultInterface */
                     $payment->setTransactionId($result->getTransactionId());
                     $payment->setParentTransactionId($payment->getParentTransactionId());
-                } else {
-                    $payment->setTransactionId($payment->getLastTransId());
-                    $payment->setParentTransactionId($payment->getLastTransId());
                 }
             }
         } catch (ApiException $apiException) {

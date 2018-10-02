@@ -111,10 +111,10 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
         $orderMock = $this->makeOrderMockPendingState();
 
         $paymentMock = $this->makePaymentMock($orderMock);
-        $paymentMock->expects($this->exactly(3))->method('getLastTransId')->willReturn($testVpsTxId);
-        $paymentMock->expects($this->once())->method('setParentTransactionId')->with($testVpsTxId);
+        $paymentMock->expects($this->once())->method('getLastTransId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->never())->method('setParentTransactionId');
         $paymentMock->expects($this->once())->method('getParentTransactionId')->willReturn($testVpsTxId);
-        $paymentMock->expects($this->once())->method('setTransactionId')->with($testVpsTxId);
+        $paymentMock->expects($this->never())->method('setTransactionId');
 
         $sut->capture($paymentMock, $testAmount);
     }

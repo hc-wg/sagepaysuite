@@ -11,6 +11,8 @@ class VersionTest extends \PHPUnit\Framework\TestCase
     private $objectManagerHelper;
 
     // @codingStandardsIgnoreStart
+    const MODULE_VERSION = '1.2.8';
+
     protected function setUp()
     {
         $this->objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
@@ -19,24 +21,28 @@ class VersionTest extends \PHPUnit\Framework\TestCase
 
     public function testGetVersion()
     {
-        $suiteHelperMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Data')
+        $moduleVersionMock =
+
+        $moduleVersionMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config\ModuleVersion::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $suiteHelperMock->expects($this->any())
-            ->method('getSagePaySuiteModuleVersionNumber')
-            ->will($this->returnValue('1.0.0'));
+        $moduleVersionMock
+            ->expects($this->once())
+            ->method('getModuleVersion')
+            ->with('Ebizmarts_SagePaySuite')
+            ->willReturn(self::MODULE_VERSION);
 
         /** @var \Ebizmarts\SagePaySuite\Block\Adminhtml\System\Config\Fieldset\Version $versionBlock */
         $versionBlock = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Block\Adminhtml\System\Config\Fieldset\Version',
             [
-                'suiteHelper' => $suiteHelperMock
+                'moduleVersion' => $moduleVersionMock
             ]
         );
 
         $this->assertEquals(
-            '1.0.0',
+            self::MODULE_VERSION,
             $versionBlock->getVersion()
         );
     }

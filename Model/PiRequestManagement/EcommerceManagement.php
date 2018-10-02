@@ -16,6 +16,7 @@ use Ebizmarts\SagePaySuite\Model\Config\SagePayCardType;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\PiRequest;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
 use Magento\Sales\Model\Order\Payment\TransactionFactory;
@@ -32,6 +33,9 @@ class EcommerceManagement extends RequestManagement
     /** @var TransactionFactory */
     private $transactionFactory;
 
+    /** @var \Magento\Quote\Model\QuoteValidator */
+    private $quoteValidator;
+
     public function __construct(
         Checkout $checkoutHelper,
         PIRest $piRestApi,
@@ -42,7 +46,8 @@ class EcommerceManagement extends RequestManagement
         Session $checkoutSession,
         Logger $sagePaySuiteLogger,
         ClosedForActionFactory $actionFactory,
-        TransactionFactory $transactionFactory
+        TransactionFactory $transactionFactory,
+        \Magento\Quote\Model\QuoteValidator $quoteValidator
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -56,6 +61,7 @@ class EcommerceManagement extends RequestManagement
         $this->sagePaySuiteLogger = $sagePaySuiteLogger;
         $this->actionFactory      = $actionFactory;
         $this->transactionFactory = $transactionFactory;
+        $this->quoteValidator     = $quoteValidator;
     }
 
     /**
@@ -69,7 +75,10 @@ class EcommerceManagement extends RequestManagement
     public function placeOrder()
     {
         try {
+            $this->quoteValidator->validateBeforeSubmit($this->getQuote());
             $this->tryToChargeCustomerAndCreateOrder();
+        } catch (LocalizedException $quoteException) {
+            $this->tryToVoidTransactionLogErrorAndUpdateResult($quoteException);
         } catch (ApiException $apiException) {
             $this->tryToVoidTransactionLogErrorAndUpdateResult($apiException);
         } catch (\Exception $e) {
@@ -165,12 +174,16 @@ class EcommerceManagement extends RequestManagement
      */
     private function tryToVoidTransactionLogErrorAndUpdateResult($exceptionObject)
     {
-        $this->sagePaySuiteLogger->logException($exceptionObject);
+        $this->sagePaySuiteLogger->logException($exceptionObject, [__METHOD__, __LINE__]);
         $this->getResult()->setSuccess(false);
         $this->getResult()->setErrorMessage(__("Something went wrong: %1", $exceptionObject->getMessage()));
 
         if ($this->getPayResult() !== null && $this->getPayResult()->getStatusCode() == "0000") {
-            $this->getPiRestApi()->void($this->getPayResult()->getTransactionId());
+            try {
+                $this->getPiRestApi()->void($this->getPayResult()->getTransactionId());
+            } catch (ApiException $apiException) {
+                $this->sagePaySuiteLogger->logException($exceptionObject);
+            }
         }
     }
 }

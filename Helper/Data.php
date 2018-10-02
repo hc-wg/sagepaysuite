@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Helper;
 
 use \Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Config\ModuleVersion;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Module\ModuleList\Loader;
@@ -14,11 +15,6 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 
 class Data extends AbstractHelper
 {
-    /**
-     * @var Loader
-     */
-    private $moduleLoader;
-
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
@@ -30,22 +26,27 @@ class Data extends AbstractHelper
     private $dateTime;
 
     /**
+     * @var ModuleVersion
+     */
+    private $moduleVersion;
+
+    /**
      * Data constructor.
-     * @param Loader $loader
      * @param Context $context
      * @param Config $config
      * @param DateTime $dateTime
+     * @param ModuleVersion $moduleVersion
      */
     public function __construct(
-        Loader $loader,
         Context $context,
         Config $config,
-        DateTime $dateTime
+        DateTime $dateTime,
+        ModuleVersion $moduleVersion
     ) {
         parent::__construct($context);
-        $this->moduleLoader       = $loader;
         $this->sagePaySuiteConfig = $config;
         $this->dateTime           = $dateTime;
+        $this->moduleVersion      = $moduleVersion;
     }
 
     /**
@@ -97,7 +98,7 @@ class Data extends AbstractHelper
         $this->sagePaySuiteConfig->setConfigurationScope($this->obtainConfigurationScopeCodeFromRequest());
 
         $versionNumberToCheck = $this->obtainMajorAndMinorVersionFromVersionNumber(
-            $this->getSagePaySuiteModuleVersionNumber()
+            $this->moduleVersion->getModuleVersion('Ebizmarts_SagePaySuite')
         );
         $localSignature = $this->localSignature(
             $this->extractHostFromCurrentConfigScopeStoreCheckoutUrl(), $versionNumberToCheck
@@ -186,21 +187,6 @@ class Data extends AbstractHelper
         );
 
         return $domain;
-    }
-
-    /**
-     * Get module version
-     * @return string
-     */
-    public function getSagePaySuiteModuleVersionNumber()
-    {
-        $modules = $this->moduleLoader->load();
-        $v = "UNKNOWN";
-
-        if (isset($modules['Ebizmarts_SagePaySuite']) && isset($modules['Ebizmarts_SagePaySuite']['setup_version'])) {
-            $v = $modules['Ebizmarts_SagePaySuite']['setup_version'];
-        }
-        return $v;
     }
 
     /**
