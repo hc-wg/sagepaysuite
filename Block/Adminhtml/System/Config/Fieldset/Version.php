@@ -6,37 +6,28 @@
 
 namespace Ebizmarts\SagePaySuite\Block\Adminhtml\System\Config\Fieldset;
 
+use Ebizmarts\SagePaySuite\Model\Config\ModuleVersion;
+use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Data\Form\Element\Renderer\RendererInterface;
 use Magento\Backend\Block\Template;
 
 class Version extends Template implements RendererInterface
 {
     /**
-     * @var \Magento\Framework\App\ProductMetadataInterface
+     * @var ModuleVersion
      */
-    private $_metaData;
+    private $moduleVersion;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Helper\Data
-     */
-    private $_suiteHelper;
-
-    /**
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\Framework\App\ProductMetadataInterface $productMetaData
-     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+     * Version constructor.
+     *
+     * @param ModuleVersion $moduleVersion
+     * @param Context $context
      * @param array $data
      */
-    public function __construct(
-        \Magento\Backend\Block\Template\Context $context,
-        \Magento\Framework\App\ProductMetadataInterface $productMetaData,
-        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
-        array $data = []
-    ) {
-    
+    public function __construct(ModuleVersion $moduleVersion, Context $context, array $data = []) {
+        $this->moduleVersion = $moduleVersion;
         parent::__construct($context, $data);
-        $this->_metaData    = $productMetaData;
-        $this->_suiteHelper = $suiteHelper;
     }
     /**
      * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
@@ -53,7 +44,7 @@ class Version extends Template implements RendererInterface
 
     public function getVersion()
     {
-        return $this->_suiteHelper->getSagePaySuiteModuleVersionNumber();
+        return $this->moduleVersion->getModuleVersion('Ebizmarts_SagePaySuite');
     }
 
     /**
