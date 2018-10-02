@@ -1,3 +1,25 @@
+1.2.9 (01/10/2018)
+=============
+**This release requires Magento 2.2.x.**
+
+**Implemented enhancements:**
+
+- Improve error message when transaction fails (SERVER) [#470]
+- Read module version from composer file [#496]
+
+**Fixed bugs:**
+
+- Quote not found when STATUS: NOTAUTHED on SERVER [#466]
+- Repeat deferred invoice error [#509]
+- Problem when there is no shipping method. Validate quote befor submit. [#498]
+- Orders made with PI DropIn MOTO add +1 on the VendorTxCode [#500]
+- Delay fraud check to avoid no fraud information result [#479]
+- Fraud check command failure [#477]
+- Auto-invoice not working [#472]
+- This credit card type is not allowed for this payment method on PI no DropIn [#490]
+- Second credit card is not being saved on Server [#475]
+- PI Defer partial invoice [#468]
+
 1.2.8 (22/08/2018)
 =============
 **This release requires Magento 2.2.x.**

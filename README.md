@@ -25,7 +25,7 @@ composer config repositories.ebizmarts composer https://packages.ebizmarts.com
 
 __Requirements__
 
-  - The ZIP file named **Ebizmarts_SagePaySuiteM2-1.2.6.zip**
+  - The ZIP file named **Ebizmarts_SagePaySuiteM2-1.2.9.zip**
   - Access to the Magento 2 server via SSH
   - The unzip command should be available, check by running `which unzip`
   - [Composer](https://getcomposer.org/) needs to be installed in the server
@@ -49,7 +49,7 @@ __Installation__
    
   6. Uncompress Sage Pay Suite package
   
-    $ unzip /PATH/TO/PACKAGE/Ebizmarts_SagePaySuiteM2-1.2.6.zip
+    $ unzip /PATH/TO/PACKAGE/Ebizmarts_SagePaySuiteM2-1.2.9.zip
 
   7. This will create the following content in $MAGENTO_FOLDER$/app/code
     <pre>
