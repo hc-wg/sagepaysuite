@@ -342,6 +342,7 @@ class Config
         switch ($action) {
             case self::ACTION_PAYMENT:
             case self::ACTION_REPEAT:
+            case self::ACTION_PAYMENT_PI:
                 $magentoAction = AbstractMethod::ACTION_AUTHORIZE_CAPTURE;
                 break;
             case self::ACTION_DEFER:

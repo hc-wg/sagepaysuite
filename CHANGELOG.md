@@ -1,3 +1,21 @@
+1.1.21 (01/10/2018)
+=============
+**This release requires Magento 2.1.x.**
+
+**Implemented enhancements:**
+
+ - Improve error message when transaction fails (SERVER) [#471]
+ - Read module version from composer file [#496]
+
+ **Fixed bugs:**
+ - Repeat deferred invoice error [#511]
+ - Problem when there is no shipping method. Validate quote befor submit. [#502]
+ - Orders made with PI DropIn MOTO add +1 on the VendorTxCode [#501]
+ - Second credit card is not being saved on Server [#476]
+ - This credit card type is not allowed for this payment method on PI no DropIn [#491]
+ - Auto-invoice not working [#474]
+ - Quote not found when STATUS: NOTAUTHED on SERVER [#467]
+ 
 1.1.20 (22/08/2018)
 =============
 **This release requires Magento 2.1.x.**

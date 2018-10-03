@@ -79,17 +79,14 @@ define(
                     };
                 }
 
-                if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver) {
-                    if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled &&
-                        window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled == true) {
-                        if (document.getElementById("remembertoken") &&
-                            document.getElementById("remembertoken").checked == true){
-                            use_token : false;
-                            save_token : true;
-                        } else {
-                            self.use_token = true;
-                            self.save_token =  false;
-                        }
+                if (this.isTokenServiceEnabled()) {
+                    if (document.getElementById('remembertoken') &&
+                        document.getElementById('remembertoken').checked == true) {
+                        use_token : false;
+                        save_token : true;
+                    } else {
+                        self.use_token = true;
+                        self.save_token =  false;
                     }
                 }
 
@@ -184,7 +181,6 @@ define(
              * Create SERVER modal
              */
             openSERVERModal: function (nextURL) {
-
                 if (this.sagePayIsMobile()) {
                     location.href = nextURL;
                 } else {
@@ -199,7 +195,6 @@ define(
                     });
                     this.modal.modal('openModal');
                 }
-
             },
             sagePayIsMobile: function () {
                 return (navigator.userAgent.match(/BlackBerry/i) ||
@@ -227,11 +222,13 @@ define(
 
                 var span = document.getElementById(this.getCode() + '-payment-errors');
                 span.style.display = "none";
-
             },
             addNewCard: function () {
                 this.use_token = false;
+                document.getElementById('remembertoken').checked = 1;
                 $('#' + this.getCode() + '-tokens .token-list').hide();
+                $('#sagepay-server-remembertoken-container').show();
+
                 $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
                 $('#' + this.getCode() + '-tokens .using-new-card-message').show();
                 $('#' + this.getCode() + '-tokens .use-saved-card-link').show();
@@ -239,16 +236,16 @@ define(
             },
             useSavedTokens: function () {
                 this.use_token = true;
+                document.getElementById('remembertoken').checked = 0;
+                $('#sagepay-server-remembertoken-container').hide();
+
                 $('#' + this.getCode() + '-tokens .token-list').show();
                 $('#' + this.getCode() + '-tokens .use-saved-card-link').hide();
                 $('#' + this.getCode() + '-tokens .using-new-card-message').hide();
                 $('#' + this.getCode() + '-tokens .add-new-card-link').show();
-
             },
             deleteToken: function (id) {
-
                 var self = this;
-
                 if (confirm("Are you sure you wish to delete this saved credit card token?")) {
                     var serviceUrl = url.build('sagepaysuite/token/delete');
 
@@ -266,7 +263,7 @@ define(
                                 $('#' + self.getCode() + '-tokenrow-' + id).hide()
 
                                 //delete from token list
-                                var tokens = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens;
+                                var tokens = this.getCustomerTokens();
                                 for (var i = 0; i < tokens.length; i++) {
                                     if (id == tokens[i].id) {
                                         tokens.splice(i, 1);
@@ -287,39 +284,38 @@ define(
                     );
                 }
             },
-            customerHasTokens: function () {
-                if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver) {
-                    if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled &&
-                        window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled == true) {
-                        this.save_token = true;
-                        if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens &&
-                            window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens.length > 0) {
-                            this.used_token_slots = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens.length;
-                            this.checkMaxTokensPerCustomer();
-                            this.use_token = true;
-                            return true;
-                        } else {
-                            this.use_token = false;
-                            return false;
-                        }
-                    } else {
-                        this.save_token = false;
-                        this.use_token = false;
-                        return false;
-                    }
-                }
-                return false;
+
+            isTokenServiceEnabled: function () {
+              return (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver &&
+                  (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled == true));
             },
             getTokenizationState: function () {
-                if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver) {
-                    if (window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.token_enabled == true) {
-                        return true;
+                return this.isTokenServiceEnabled();
+            },
+
+            customerHasTokens: function () {
+                this.save_token = false;
+                this.use_token = false;
+
+                if (this.isTokenServiceEnabled()) {
+                    this.save_token = true;
+                    if (this.getCustomerTokens() && this.getCustomerTokens().length > 0) {
+                        this.used_token_slots = this.getCustomerTokens().length;
+                        this.checkMaxTokensPerCustomer();
+                        this.use_token = true;
+                    } else {
+                        this.use_token = false;
                     }
                 }
-                return false;
+
+                return this.use_token;
             },
             getCustomerTokens: function () {
-                return window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens;
+                var sagePayTokens = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.tokens;
+                if (sagePayTokens.length > 0) {
+                    this.useSavedTokens();
+                }
+                return sagePayTokens;
             },
             getIcons: function (type) {
                 switch (type) {

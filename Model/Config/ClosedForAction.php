@@ -26,10 +26,13 @@ class ClosedForAction
     {
         switch ($this->paymentAction) {
             case Config::ACTION_PAYMENT:
+            case Config::ACTION_PAYMENT_PI:
+            case Config::ACTION_REPEAT:
                 $action = Transaction::TYPE_CAPTURE;
                 $closed = true;
                 break;
             case Config::ACTION_DEFER:
+            case Config::ACTION_REPEAT_DEFERRED:
                 $action = Transaction::TYPE_AUTH;
                 $closed = false;
                 break;
