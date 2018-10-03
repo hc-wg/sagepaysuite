@@ -320,7 +320,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      */
     public function getConfigPaymentAction()
     {
-        return $this->config->getSagepayPaymentAction();
+        return $this->config->getPaymentAction();
     }
 
     /**
