@@ -384,6 +384,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'email' => null,
                         'telephone' => null,
                         'streetLine' => null,
+                        'expectedStreetLine' => null,
                         'city' => null,
                         'regionCode' => null,
                         'country' => null,
@@ -414,6 +415,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'email' => 'email',
                         'telephone' => '123456',
                         'streetLine' => 'streetLine',
+                        'expectedStreetLine' => '<![CDATA[streetLine]]>',
                         'city' => 'city',
                         'country' => 'co',
                         'postCode' => '11222',
@@ -453,6 +455,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'email' => 'email',
                         'telephone' => '123456',
                         'streetLine' => '1 Alfa & testing, more Address',
+                        'expectedStreetLine' => '<![CDATA[1 Alfa & testing, more Address]]>',
                         'city' => 'city',
                         'country' => 'co',
                         'postCode' => '11222',
@@ -490,6 +493,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'email' => 'email',
                         'telephone' => '123456',
                         'streetLine' => 'streetLine',
+                        'expectedStreetLine' => '<![CDATA[streetLine]]>',
                         'city' => 'city',
                         'country' => 'co',
                         'postCode' => '11222',
@@ -562,8 +566,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     '<recipientSal>' . $data['prefix'] . '</recipientSal>' .
                     '<recipientEmail>' . $data['email'] . '</recipientEmail>' .
                     '<recipientPhone>' . $data['telephone'] . '</recipientPhone>' .
-                    '<recipientAdd1>' . $data['streetLine'] . '</recipientAdd1>' .
-                    '<recipientAdd2>' . $data['streetLine'] . '</recipientAdd2>' .
+                    '<recipientAdd1>' . $data['expectedStreetLine'] . '</recipientAdd1>' .
+                    '<recipientAdd2>' . $data['expectedStreetLine'] . '</recipientAdd2>' .
                     '<recipientCity>' . $data['city'] . '</recipientCity>' .
                     '<recipientCountry>' . $data['country'] . '</recipientCountry>' .
                     '<recipientPostCode>' . $data['postCode'] . '</recipientPostCode>' .
