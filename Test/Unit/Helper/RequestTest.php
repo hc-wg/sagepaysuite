@@ -404,7 +404,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'name' => 'SybilRunningShort & more information',
                         'expected_name' => '<![CDATA[SybilRunningShort & more information]]>',
                         'sku' => 'WSH08-28Pur&',
-                        'expected_sku' => '<![CDATA[WSH08-28Pur&]]>',
+                        'expected_sku' => '<![CDATA[WSH08-28Pur]]>',
                         'product_id' => 56,
                         'id' => null,
                         'qty' => 1,
