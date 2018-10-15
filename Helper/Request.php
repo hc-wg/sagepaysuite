@@ -710,7 +710,7 @@ class Request extends AbstractHelper
             $itemDesc = substr(implode("", $matchesDescription[0]), 0, 100);
         }
 
-        $node->addChild('description', $this->stringToSafeXMLChar($itemDesc));
+        $this->addChildCData('description', $this->stringToSafeXMLChar($itemDesc), $node);
     }
 
     /**
