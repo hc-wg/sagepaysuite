@@ -74,7 +74,7 @@ class PiRequest
         $data['billingAddress'] = [
             'address1'      => $billingAddress->getStreetLine(1),
             'city'          => $billingAddress->getCity(),
-            'postalCode'    => $billingAddress->getPostCode(),
+            'postalCode'    => $billingAddress->getPostcode(),
             'country'       => $billingAddress->getCountryId()
         ];
         if ($data['billingAddress']['country'] == 'US') {
@@ -94,7 +94,7 @@ class PiRequest
             'recipientLastName'  => $shippingAddress->getLastname(),
             'shippingAddress1'   => $shippingAddress->getStreetLine(1),
             'shippingCity'       => $shippingAddress->getCity(),
-            'shippingPostalCode' => $shippingAddress->getPostCode(),
+            'shippingPostalCode' => $shippingAddress->getPostcode(),
             'shippingCountry'    => $shippingAddress->getCountryId()
         ];
         if ($data['shippingDetails']['shippingCountry'] == 'US') {
