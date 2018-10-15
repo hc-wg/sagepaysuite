@@ -364,8 +364,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                     [
                         'lines' => 2,
                         'sku' => 'WSH08-28-Purple',
+                        'expected_sku' => 'WSH08-28-Purple',
                         'name' => 'SybilRunningShort',
-                        'expected_name' => '<![CDATA[SybilRunningShort]]>',
+                        'expected_name' => 'SybilRunningShort',
                         'qty' => 1,
                         'priceInclTax' => 44,
                         'product_id' => 1234,
@@ -402,7 +403,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                     [
                         'name' => 'SybilRunningShort & more information',
                         'expected_name' => '<![CDATA[SybilRunningShort & more information]]>',
-                        'sku' => 'WSH08-28-Pur',
+                        'sku' => 'WSH08-28Pur&',
+                        'expected_sku' => '<![CDATA[WSH08-28Pur&]]>',
                         'product_id' => 56,
                         'id' => null,
                         'qty' => 1,
@@ -443,6 +445,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                         'name' => 'Pursuit Lumaflex&trade; Tone Band',
                         'expected_name' => '<![CDATA[Pursuit Lumaflex Tone Band]]>',
                         'sku' => '24-UG02',
+                        'expected_sku' => '<![CDATA[24-UG02]]>',
                         'product_id' => 56,
                         'id' => null,
                         'qty' => 1,
@@ -483,6 +486,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                         'expected_name' => '<![CDATA[SybilRunningShort]]>',
                         'product_id' => 66,
                         'sku' => 'taxable-WSH0',
+                        'expected_sku' => '<![CDATA[taxable-WSH0]]>',
                         'id' => null,
                         'qty' => 3,
                         'taxAmount' => 120,
@@ -556,7 +560,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             '<basket>' .
             '<item>' .
                     $xmlDesc .
-                    '<productSku>' . $data['sku'] . '</productSku>' .
+                    '<productSku>' . $data['expected_sku'] . '</productSku>' .
                     '<productCode>' . $data['product_id'] . '</productCode>' .
                     '<quantity>' . $data['qty'] . '</quantity>' .
                     '<unitNetAmount>' . number_format($data['price'], 2) . '</unitNetAmount>' .
