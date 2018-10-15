@@ -637,7 +637,7 @@ class Request extends AbstractHelper
         $validSku = preg_match_all("/[\p{L}0-9\s\-]+/", $item->getSku(), $matchesSku);
         if ($validSku === 1) {
             //<productSku>
-            $node->addChild('productSku', substr($item->getSku(), 0, 12));
+            $this->addChildCData('productSku', substr($item->getSku(), 0, 12), $node);
         }
     }
 
