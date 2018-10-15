@@ -128,22 +128,26 @@ class PiRequestTest extends \PHPUnit\Framework\TestCase
         $billingAddressMock = $this->getMockBuilder(\Magento\Quote\Model\Quote\Address::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $billingAddressMock->expects($this->once())->method('getFirstname')->willReturn('Juan');
-        $billingAddressMock->expects($this->once())->method('getLastname')->willReturn('Perez');
+        $billingAddressMock->expects($this->once())->method('getFirstname')->willReturn('Juan with a lot of names');
+        $billingAddressMock->expects($this->once())->method('getLastname')->willReturn('Perez long lastname truncated');
         $billingAddressMock->expects($this->once())->method('getEmail')->willReturn('juan.perez@example.com');
         $billingAddressMock->expects($this->once())->method('getTelephone')->willReturn('0900 2020');
         $billingAddressMock->expects($this->once())->method('getStreetLine')->with(1)->willReturn('50-51 Patrick Street');
-        $billingAddressMock->expects($this->once())->method('getCity')->willReturn('Dun Laoghaire');
+        $billingAddressMock->expects($this->once())->method('getCity')->willReturn('Dun Laoghaireinternational long cityrt56123');
         $billingAddressMock->expects($this->once())->method('getCountryId')->willReturn('IE');
+        $billingAddressMock->expects($this->once())->method('getPostcode')->willReturn('super long 1234 post  code');
 
         $deliveryAddressMock = $this->getMockBuilder(\Magento\Quote\Model\Quote\Address::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $deliveryAddressMock->expects($this->once())->method('getFirstname')->willReturn('Juan');
-        $deliveryAddressMock->expects($this->once())->method('getLastname')->willReturn('Perez');
+        $deliveryAddressMock->expects($this->once())->method('getFirstname')->willReturn('Juan lots of names this lad');
+        $deliveryAddressMock->expects($this->once())->method('getLastname')->willReturn('Perez Gonzalez more 20 chars');
         $deliveryAddressMock->expects($this->once())->method('getStreetLine')->with(1)->willReturn('50-51 Patrick Street');
-        $deliveryAddressMock->expects($this->once())->method('getCity')->willReturn('Dun Laoghaire');
+        $deliveryAddressMock->expects($this->once())->method('getCity')->willReturn(
+            'Dun Laoghaire over 40- chDun Laoghaire over 40 chars'
+        );
         $deliveryAddressMock->expects($this->once())->method('getCountryId')->willReturn('IE');
+        $deliveryAddressMock->expects($this->once())->method('getPostcode')->willReturn('delivery long9823 code');
 
         $requestHelperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Request::class)
             ->disableOriginalConstructor()
@@ -204,8 +208,8 @@ class PiRequestTest extends \PHPUnit\Framework\TestCase
             ],
             'vendorTxCode'      => "000000194-2017-01-19-1351141484833874",
             'description'       => "Online transaction.",
-            'customerFirstName' => "Juan",
-            'customerLastName'  => "Perez",
+            'customerFirstName' => "Juan with a lot of n",
+            'customerLastName'  => "Perez long lastname ",
             'apply3DSecure'     => "UseMSPSetting",
             'applyAvsCvcCheck'  => "UseMSPSetting",
             'referrerId'        => "01bf51f9-0dcd-49dd-a07a-3b1f918c77d7",
@@ -214,15 +218,15 @@ class PiRequestTest extends \PHPUnit\Framework\TestCase
             'entryMethod'       => "Ecommerce",
             'billingAddress'    => [
                                     'address1'   => "50-51 Patrick Street",
-                                    'city'       => "Dun Laoghaire",
+                                    'city'       => "Dun Laoghaireinternational long cityrt56",
                                     'country'    => "IE",
                                     'postalCode' => "000"
             ],
             'shippingDetails'  => [
-                                    "recipientFirstName" => "Juan",
-                                    "recipientLastName"  => "Perez",
+                                    "recipientFirstName" => "Juan lots of names t",
+                                    "recipientLastName"  => "Perez Gonzalez more ",
                                     "shippingAddress1"   => "50-51 Patrick Street",
-                                    "shippingCity"       => "Dun Laoghaire",
+                                    "shippingCity"       => "Dun Laoghaire over 40- chDun Laoghaire o",
                                     "shippingCountry"    => "IE",
                                     "shippingPostalCode"   => "000"
             ],
