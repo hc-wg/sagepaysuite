@@ -295,6 +295,26 @@ class Request extends AbstractHelper
     }
 
     /**
+     * Adds a CDATA property to an XML document.
+     *
+     * @param string $name
+     *   Name of property that should contain CDATA.
+     * @param string $value
+     *   Value that should be inserted into a CDATA child.
+     * @param object $parent
+     *   Element that the CDATA child should be attached too.
+     */
+    private function addChildCData($name, $value, &$parent) {
+        $child = $parent->addChild($name);
+
+        if ($child !== NULL) {
+            $child_node = dom_import_simplexml($child);
+            $child_owner = $child_node->ownerDocument;
+            $child_node->appendChild($child_owner->createCDATASection($value));
+        }
+    }
+
+    /**
      * @param $quote \Magento\Quote\Model\Quote
      * @return string
      */
@@ -362,14 +382,14 @@ class Request extends AbstractHelper
             //<recipientAdd1>
             $address1 = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getStreetLine(1)), 0, 100));
             if (!empty($address1)) {
-                $node->addChild('recipientAdd1', $address1);
+                $this->addChildCData('recipientAdd1', $address1,$node);
             }
 
             //<recipientAdd2>
             if ($shippingAdd->getStreet(2)) {
                 $recipientAdd2 = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getStreetLine(2)), 0, 100));
                 if (!empty($recipientAdd2)) {
-                    $node->addChild('recipientAdd2', $recipientAdd2);
+                    $this->addChildCData('recipientAdd2', $recipientAdd2,$node);
                 }
             }
 
