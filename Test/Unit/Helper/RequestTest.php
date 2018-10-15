@@ -452,7 +452,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                         'prefix' => 'pref',
                         'email' => 'email',
                         'telephone' => '123456',
-                        'streetLine' => 'streetLine',
+                        'streetLine' => '1 Alfa & testing, more Address',
                         'city' => 'city',
                         'country' => 'co',
                         'postCode' => '11222',
