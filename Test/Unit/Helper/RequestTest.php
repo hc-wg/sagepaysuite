@@ -364,7 +364,9 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     [
                         'lines' => 2,
                         'sku' => 'WSH08-28-Purple',
+                        'expected_sku' => 'WSH08-28-Purple',
                         'name' => 'SybilRunningShort',
+                        'expected_name' => 'SybilRunningShort',
                         'qty' => 1,
                         'priceInclTax' => 44,
                         'product_id' => 1234,
@@ -384,6 +386,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'email' => null,
                         'telephone' => null,
                         'streetLine' => null,
+                        'expectedStreetLine' => null,
                         'city' => null,
                         'regionCode' => null,
                         'country' => null,
@@ -398,8 +401,10 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             'test XML' =>
                 [
                     [
-                        'name' => 'SybilRunningShort',
-                        'sku' => 'WSH08-28-Pur',
+                        'name' => 'SybilRunningShort & more information',
+                        'expected_name' => '<![CDATA[SybilRunningShort & more information]]>',
+                        'sku' => 'WSH08-28Pur&',
+                        'expected_sku' => '<![CDATA[WSH08-28Pur]]>',
                         'product_id' => 56,
                         'id' => null,
                         'qty' => 1,
@@ -414,6 +419,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'email' => 'email',
                         'telephone' => '123456',
                         'streetLine' => 'streetLine',
+                        'expectedStreetLine' => '<![CDATA[streetLine]]>',
                         'city' => 'city',
                         'country' => 'co',
                         'postCode' => '11222',
@@ -437,8 +443,9 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                 [
                     [
                         'name' => 'Pursuit Lumaflex&trade; Tone Band',
-                        'expected_name' => 'Pursuit Lumaflex Tone Band',
+                        'expected_name' => '<![CDATA[Pursuit Lumaflex Tone Band]]>',
                         'sku' => '24-UG02',
+                        'expected_sku' => '<![CDATA[24-UG02]]>',
                         'product_id' => 56,
                         'id' => null,
                         'qty' => 1,
@@ -452,7 +459,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'prefix' => 'pref',
                         'email' => 'email',
                         'telephone' => '123456',
-                        'streetLine' => 'streetLine',
+                        'streetLine' => '1 Alfa & testing, more Address',
+                        'expectedStreetLine' => '<![CDATA[1 Alfa & testing, more Address]]>',
                         'city' => 'city',
                         'country' => 'co',
                         'postCode' => '11222',
@@ -475,8 +483,10 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                 [
                     [
                         'name' => 'SybilRunningShort',
+                        'expected_name' => '<![CDATA[SybilRunningShort]]>',
                         'product_id' => 66,
                         'sku' => 'taxable-WSH0',
+                        'expected_sku' => '<![CDATA[taxable-WSH0]]>',
                         'id' => null,
                         'qty' => 3,
                         'taxAmount' => 120,
@@ -490,6 +500,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'email' => 'email',
                         'telephone' => '123456',
                         'streetLine' => 'streetLine',
+                        'expectedStreetLine' => '<![CDATA[streetLine]]>',
                         'city' => 'city',
                         'country' => 'co',
                         'postCode' => '11222',
@@ -549,7 +560,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             '<basket>' .
             '<item>' .
                     $xmlDesc .
-                    '<productSku>' . $data['sku'] . '</productSku>' .
+                    '<productSku>' . $data['expected_sku'] . '</productSku>' .
                     '<productCode>' . $data['product_id'] . '</productCode>' .
                     '<quantity>' . $data['qty'] . '</quantity>' .
                     '<unitNetAmount>' . number_format($data['price'], 2) . '</unitNetAmount>' .
@@ -562,8 +573,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     '<recipientSal>' . $data['prefix'] . '</recipientSal>' .
                     '<recipientEmail>' . $data['email'] . '</recipientEmail>' .
                     '<recipientPhone>' . $data['telephone'] . '</recipientPhone>' .
-                    '<recipientAdd1>' . $data['streetLine'] . '</recipientAdd1>' .
-                    '<recipientAdd2>' . $data['streetLine'] . '</recipientAdd2>' .
+                    '<recipientAdd1>' . $data['expectedStreetLine'] . '</recipientAdd1>' .
+                    '<recipientAdd2>' . $data['expectedStreetLine'] . '</recipientAdd2>' .
                     '<recipientCity>' . $data['city'] . '</recipientCity>' .
                     '<recipientCountry>' . $data['country'] . '</recipientCountry>' .
                     '<recipientPostCode>' . $data['postCode'] . '</recipientPostCode>' .
