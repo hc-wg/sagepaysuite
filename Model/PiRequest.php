@@ -56,13 +56,13 @@ class PiRequest
             ],
             'vendorTxCode'      => $this->getVendorTxCode(),
             'description'       => $this->requestHelper->getOrderDescription($this->getIsMoto()),
-            'customerFirstName' => $billingAddress->getFirstname(),
-            'customerLastName'  => $billingAddress->getLastname(),
+            'customerFirstName' => substr(trim($billingAddress->getFirstname()), 0, 20),
+            'customerLastName'  => substr(trim($billingAddress->getLastname()), 0, 20),
             'apply3DSecure'     => $this->sagepayConfig->get3Dsecure($this->getIsMoto()),
             'applyAvsCvcCheck'  => $this->sagepayConfig->getAvsCvc(),
             'referrerId'        => $this->requestHelper->getReferrerId(),
             'customerEmail'     => $billingAddress->getEmail(),
-            'customerPhone'     => $billingAddress->getTelephone(),
+            'customerPhone'     => substr(trim($billingAddress->getTelephone()), 0, 20),
         ];
 
         if ($this->getIsMoto()) {
@@ -72,10 +72,10 @@ class PiRequest
         }
 
         $data['billingAddress'] = [
-            'address1'      => $billingAddress->getStreetLine(1),
-            'city'          => $billingAddress->getCity(),
-            'postalCode'    => $billingAddress->getPostCode(),
-            'country'       => $billingAddress->getCountryId()
+            'address1'      => substr(trim($billingAddress->getStreetLine(1)), 0, 100),
+            'city'          => substr(trim($billingAddress->getCity()), 0, 40),
+            'postalCode'    => substr(trim($billingAddress->getPostcode()), 0, 10),
+            'country'       => substr(trim($billingAddress->getCountryId()), 0, 2)
         ];
         if ($data['billingAddress']['country'] == 'US') {
             $data['billingAddress']['state'] = substr($billingAddress->getRegionCode(), 0, 2);
@@ -90,12 +90,12 @@ class PiRequest
         }
 
         $data['shippingDetails'] = [
-            'recipientFirstName' => $shippingAddress->getFirstname(),
-            'recipientLastName'  => $shippingAddress->getLastname(),
-            'shippingAddress1'   => $shippingAddress->getStreetLine(1),
-            'shippingCity'       => $shippingAddress->getCity(),
-            'shippingPostalCode' => $shippingAddress->getPostCode(),
-            'shippingCountry'    => $shippingAddress->getCountryId()
+            'recipientFirstName' => substr(trim($shippingAddress->getFirstname()), 0, 20),
+            'recipientLastName'  => substr(trim($shippingAddress->getLastname()), 0, 20),
+            'shippingAddress1'   => substr(trim($shippingAddress->getStreetLine(1)), 0, 100),
+            'shippingCity'       => substr(trim($shippingAddress->getCity()), 0, 40),
+            'shippingPostalCode' => substr(trim($shippingAddress->getPostcode()), 0, 10),
+            'shippingCountry'    => substr(trim($shippingAddress->getCountryId()), 0, 2)
         ];
         if ($data['shippingDetails']['shippingCountry'] == 'US') {
             $data['shippingDetails']['shippingState'] = substr($shippingAddress->getRegionCode(), 0, 2);
