@@ -1,4 +1,17 @@
-1.1.21 (01/10/2018)
+1.1.22 (17/10/2018)
+=============
+**This release requires Magento 2.1.x.**
+
+**Implemented enhancements:**
+
+- Update translation file strings en_GB.csv [#524]
+
+ **Fixed bugs:**
+- Enforce fields length according to Sage Pay rules on Pi integration [#531]
+- Disable Multishipping payment methods because they dont work [#535]
+- Problems with PayPal basket and special characters [#544]
+ 
+ 1.1.21 (01/10/2018)
 =============
 **This release requires Magento 2.1.x.**
 
