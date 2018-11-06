@@ -17,6 +17,8 @@ use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheck;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheckFactory;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory;
 use Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory;
@@ -53,6 +55,9 @@ class PIRest
 
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDInterface */
     private $threedStatusResultFactory;
+
+    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheck */
+    private $avsCvcCheckResultFactory;
 
     /** @var PiTransactionResultAmountFactory */
     private $amountResultFactory;
@@ -109,7 +114,10 @@ class PIRest
         PiThreeDSecureRequestFactory $threeDRequest,
         PiRefundRequestFactory $refundRequest,
         PiInstructionRequestFactory $instructionRequest,
-        PiInstructionResponseFactory $instructionResponse
+        PiInstructionResponseFactory $instructionResponse,
+        PiRepeatRequestFactory $repeatRequest,
+        PiTransactionResultAvsCvcCheckFactory $avsCvcCheckResultFactory
+
     ) {
 
         $this->config = $config;
@@ -127,6 +135,8 @@ class PIRest
         $this->instructionRequest         = $instructionRequest;
         $this->instructionResponse        = $instructionResponse;
         $this->httpRestFactory            = $httpRestFactory;
+        $this->repeatRequestFactory       = $repeatRequest;
+        $this->avsCvcCheckResultFactory   = $avsCvcCheckResultFactory;
     }
 
     /**
@@ -463,6 +473,16 @@ class PIRest
                 $amount->setTotalAmount($captureResult->amount->totalAmount);
                 $amount->setSurchargeAmount($captureResult->amount->surchargeAmount);
                 $transaction->setAmount($amount);
+            }
+
+            if (isset($captureResult->avsCvcCheck)) {
+                /** @var PiTransactionResultAvsCvcCheck $avsCvcCheck */
+                $avsCvcCheck = $this->avsCvcCheckResultFactory->create();
+                $avsCvcCheck->setStatus($captureResult->avsCvcCheck->status);
+                $avsCvcCheck->setAddress($captureResult->avsCvcCheck->address);
+                $avsCvcCheck->setPostalCode($captureResult->avsCvcCheck->postalCode);
+                $avsCvcCheck->setSecurityCode($captureResult->avsCvcCheck->securityCode);
+                $transaction->setAvsCvcCheck($avsCvcCheck);
             }
         }
 
