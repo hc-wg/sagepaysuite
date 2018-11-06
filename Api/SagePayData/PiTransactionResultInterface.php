@@ -19,6 +19,7 @@ interface PiTransactionResultInterface
     const PAR_EQ              = 'par_eq';
     const C_REQ              = 'c_req';
     const TX_AUTH_NO          = 'tx_auth_no';
+    const AVS_CVC_CHECK       = 'avs_cvc_check';
 
     /**
      * Sage Pay's unique reference for this transaction.
@@ -219,4 +220,15 @@ interface PiTransactionResultInterface
      * @return void
      */
     public function setThreeDSecure($threed);
+
+    /**
+     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheckInterface
+     */
+    public function getAvsCvcCheck();
+
+    /**
+     * @param \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheckInterface $avsCvcCheck
+     * @return void
+     */
+    public function setAvsCvcCheck($avsCvcCheck);
 }
