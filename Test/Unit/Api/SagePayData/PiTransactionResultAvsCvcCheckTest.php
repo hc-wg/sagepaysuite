@@ -16,15 +16,6 @@ class PiTransactionResultAvsCvcCheckTest extends \PHPUnit\Framework\TestCase
             'Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheck'
         );
 
-//        $objectManagerHelper->getObject(
-//            'Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer\Recommendation',
-//            [
-//                'context' => $this->makeContextMock(),
-//                'information' => $this->makeAdditionalInformation(),
-//                []
-//            ]
-//        );
-
         $sut->setSecurityCode('Matched');
         $sut->setPostalCode('Ok');
         $sut->setAddress('OkAddress');
