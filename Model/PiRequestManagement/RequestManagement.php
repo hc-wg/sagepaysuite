@@ -147,7 +147,7 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
         if ($this->getPayResult()->getThreeDSecure() !== null) {
             $this->getPayment()->setAdditionalInformation('threeDStatus', $this->getPayResult()->getThreeDSecure()->getStatus());
         }
-        $avsCvcCheck = $payResult->getAvsCvcCheck();
+        $avsCvcCheck = $this->getPayResult()->getAvsCvcCheck();
         if ($avsCvcCheck !== null) {
             $this->getPayment()->setAdditionalInformation('avsCvcCheckStatus', $avsCvcCheck->getStatus());
             $this->getPayment()->setAdditionalInformation('avsCvcCheckAddress', $avsCvcCheck->getAddress());
