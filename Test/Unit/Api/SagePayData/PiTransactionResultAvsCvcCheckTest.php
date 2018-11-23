@@ -4,7 +4,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Api\SagePayData;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 
-class PiTransactionResultAvsCvcCheckTest extends \PHPUnit\Framework\TestCase
+class PiTransactionResultAvsCvcCheckTest extends \PHPUnit_Framework_TestCase
 {
 
     public function testOkAccessors()

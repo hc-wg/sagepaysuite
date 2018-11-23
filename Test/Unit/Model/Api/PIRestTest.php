@@ -19,7 +19,7 @@ use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Phrase;
 
-class PIRestTest extends \PHPUnit\Framework\TestCase
+class PIRestTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\PIRest
