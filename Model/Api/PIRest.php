@@ -115,7 +115,6 @@ class PIRest
         PiRefundRequestFactory $refundRequest,
         PiInstructionRequestFactory $instructionRequest,
         PiInstructionResponseFactory $instructionResponse,
-        PiRepeatRequestFactory $repeatRequest,
         PiTransactionResultAvsCvcCheckFactory $avsCvcCheckResultFactory
 
     ) {
@@ -135,7 +134,6 @@ class PIRest
         $this->instructionRequest         = $instructionRequest;
         $this->instructionResponse        = $instructionResponse;
         $this->httpRestFactory            = $httpRestFactory;
-        $this->repeatRequestFactory       = $repeatRequest;
         $this->avsCvcCheckResultFactory   = $avsCvcCheckResultFactory;
     }
 
