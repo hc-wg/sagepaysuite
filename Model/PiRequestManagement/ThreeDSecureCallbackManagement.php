@@ -162,6 +162,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
                 $this->getPayResult()->setStatusCode($response->getStatusCode());
                 $this->getPayResult()->setThreeDSecure($response->getThreeDSecure());
                 $this->getPayResult()->setTransactionId($response->getTransactionId());
+                $this->getPayResult()->setAvsCvcCheck($response->getAvsCvcCheck());
 
                 $this->processPayment();
 
