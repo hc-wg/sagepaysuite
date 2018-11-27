@@ -20,6 +20,8 @@ use Magento\Sales\Model\Order;
 class PI extends \Magento\Payment\Model\Method\Cc
 {
 
+    const DEFERRED_AWAITING_RELEASE = "14";
+
     /**
      * @var string
      */
@@ -112,6 +114,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
      */
     private $reportingApi;
+
     /**
      *
      * @param \Magento\Framework\Model\Context $context
@@ -131,8 +134,6 @@ class PI extends \Magento\Payment\Model\Method\Cc
      * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
      * @param array $data
      */
-    const DEFERRED_AWAITING_RELEASE = "14";
-
     public function __construct(
         \Magento\Framework\Model\Context $context,
         \Magento\Framework\Registry $registry,
