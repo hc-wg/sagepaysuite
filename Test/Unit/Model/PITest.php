@@ -391,12 +391,7 @@ class PITest extends \PHPUnit\Framework\TestCase
 
     public function testCancel()
     {
-        $orderMock = $this->getMockBuilder(Order::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('getStoreId')
-            ->willReturn(1);
+        $orderMock = $this->makeOrderMockWithStoreId();
 
         $reportingApiMock = $this->getMockBuilder(Reporting::class)
             ->disableOriginalConstructor()
@@ -438,10 +433,23 @@ class PITest extends \PHPUnit\Framework\TestCase
 
     public function testCancelERROR()
     {
+        $orderMock = $this->makeOrderMockWithStoreId();
+
+        $reportingApiMock = $this->getMockBuilder(Reporting::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $reportingApiMock
+            ->expects($this->once())
+            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
+
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
         $paymentMock->expects($this->once())
             ->method('getLastTransId')
             ->will($this->returnValue(self::TEST_VPSTXID));
@@ -458,7 +466,8 @@ class PITest extends \PHPUnit\Framework\TestCase
         $piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
             [
-                "pirestapi"   => $piRestApiMock
+                "pirestapi"   => $piRestApiMock,
+                "reportingApi" => $reportingApiMock
             ]
         );
         $response = "";
@@ -868,5 +877,16 @@ class PITest extends \PHPUnit\Framework\TestCase
         $transactionDetails->txstateid = self::SUCCESSFULLY_AUTH_TRANSACTION;
 
         return $transactionDetails;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeOrderMockWithStoreId()
+    {
+        $orderMock = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
+        $orderMock->expects($this->once())->method('getStoreId')->willReturn(1);
+
+        return $orderMock;
     }
 }
