@@ -368,12 +368,25 @@ class PITest extends \PHPUnit\Framework\TestCase
      * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
      * @expectedExceptionMessage No transaction found.
      */
-    public function testVoidException2()
+    public function testVoidApiException()
     {
+        $orderMock = $this->makeOrderMockWithStoreId();
+
+        $reportingApiMock = $this->getMockBuilder(Reporting::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $reportingApiMock
+            ->expects($this->once())
+            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
+
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
         $paymentMock
             ->expects($this->once())
             ->method('getLastTransId')
@@ -396,7 +409,8 @@ class PITest extends \PHPUnit\Framework\TestCase
         $piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
             [
-                "pirestapi"   => $piRestApiMock
+                "pirestapi"   => $piRestApiMock,
+                "reportingApi" => $reportingApiMock
             ]
         );
 
