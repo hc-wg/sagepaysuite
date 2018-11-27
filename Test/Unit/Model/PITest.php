@@ -6,8 +6,10 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use Ebizmarts\SagePaySuite\Model\Api\Reporting;
 use Ebizmarts\SagePaySuite\Model\PI;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
 use Ebizmarts\SagePaySuite\Model\Payment as SagePayPayment;
 
@@ -36,6 +38,8 @@ class PITest extends \PHPUnit\Framework\TestCase
     private $configMock;
 
     // @codingStandardsIgnoreStart
+    const SUCCESSFULLY_AUTH_TRANSACTION = 16;
+
     protected function setUp()
     {
         $this->objectManagerHelper = new ObjectManager($this);
@@ -387,10 +391,28 @@ class PITest extends \PHPUnit\Framework\TestCase
 
     public function testCancel()
     {
+        $orderMock = $this->getMockBuilder(Order::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(1);
+
+        $reportingApiMock = $this->getMockBuilder(Reporting::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $reportingApiMock
+            ->expects($this->once())
+            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
+
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
         $paymentMock
             ->expects($this->once())
             ->method('getLastTransId')
@@ -407,7 +429,8 @@ class PITest extends \PHPUnit\Framework\TestCase
         $piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
             [
-                "pirestapi"   => $piRestApiMock
+                "pirestapi"    => $piRestApiMock,
+                "reportingApi" => $reportingApiMock
             ]
         );
         $piModel->cancel($paymentMock);
@@ -834,5 +857,16 @@ class PITest extends \PHPUnit\Framework\TestCase
             ])->disableOriginalConstructor()->getMock();
 
         return $stateMock;
+    }
+
+    /**
+     * @return \stdClass
+     */
+    private function makeReportingResult()
+    {
+        $transactionDetails            = new \stdClass;
+        $transactionDetails->txstateid = self::SUCCESSFULLY_AUTH_TRANSACTION;
+
+        return $transactionDetails;
     }
 }
