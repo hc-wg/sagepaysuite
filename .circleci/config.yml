@@ -22,6 +22,7 @@ jobs:
     working_directory: ~/magento2
 
     steps:
+      - run: sudo apt-get update || sudo apt-get update
       - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
 
       # Install dependencies
