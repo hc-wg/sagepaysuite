@@ -316,10 +316,23 @@ class PITest extends \PHPUnit\Framework\TestCase
      */
     public function testVoidException()
     {
+        $orderMock = $this->makeOrderMockWithStoreId();
+
+        $reportingApiMock = $this->getMockBuilder(Reporting::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $reportingApiMock
+            ->expects($this->once())
+            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
+
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
         $paymentMock
             ->expects($this->once())
             ->method('getLastTransId')
@@ -343,7 +356,8 @@ class PITest extends \PHPUnit\Framework\TestCase
             [
                 "config"      => $this->configMock,
                 "suiteHelper" => $this->suiteHelperMock,
-                "pirestapi"   => $piRestApiMock
+                "pirestapi"   => $piRestApiMock,
+                "reportingApi" => $reportingApiMock
             ]
         );
 
