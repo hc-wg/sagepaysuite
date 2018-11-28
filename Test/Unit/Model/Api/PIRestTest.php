@@ -65,6 +65,10 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
 
     const TRANSACTION_RESULT_AMOUNT_FACTORY = '\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory';
 
+    const TEST_VPS_TX_ID = "2B97808F-9A36-6E71-F87F-6714667E8AF4";
+
+    const ABORT_INSTRUCTION_TYPE = "abort";
+
     protected function setUp()
     {
         $this->objectManager = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
@@ -898,8 +902,66 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
                 "instructionResponse"        => $instructionResponseFactory,
             ]
         );
-        $result = $this->pirestApiModel->void("2B97808F-9A36-6E71-F87F-6714667E8AF4");
+        $result = $this->pirestApiModel->void(self::TEST_VPS_TX_ID);
         $this->assertEquals($result->getInstructionType(), "void");
+        $this->assertEquals($result->getDate(), "2015-08-11T11:45:16.285+01:00");
+    }
+
+    public function testAbortSuccess()
+    {
+        $piInstructionRequest = $this
+            ->getMockBuilder(PiInstructionRequest::class)
+        ->disableOriginalConstructor()
+            ->setMethods(['setInstructionType', '__toArray'])
+            ->getMock();
+        $piInstructionRequest->expects($this->once())->method('setInstructionType')->with(self::ABORT_INSTRUCTION_TYPE);
+        $piInstructionRequest->expects($this->once())->method('__toArray')->willReturn(
+            ["instructionType" => self::ABORT_INSTRUCTION_TYPE]
+        );
+        $piInstructionRequestFactory = $this
+            ->getMockBuilder(PiInstructionRequestFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $piInstructionRequestFactory->expects($this->once())->method('create')->willReturn($piInstructionRequest);
+
+        $instructionResponse = $this
+            ->getMockBuilder(PiInstructionResponse::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['__toArray'])
+            ->getMock();
+
+        $instructionResponseFactory = $this
+        ->getMockBuilder(PiInstructionResponseFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $instructionResponseFactory->expects($this->once())->method('create')->willReturn($instructionResponse);
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->with('{"instructionType":"abort"}')
+            ->willReturn($this->httpResponseMock);
+
+        $this->verifyResponseCalledOnceReturns201();
+        $this->httpResponseMock
+            ->expects($this->once())
+            ->method('getResponseData')
+            ->willReturn(json_decode('{"instructionType": "abort","date": "2015-08-11T11:45:16.285+01:00"}'));
+
+        $this->pirestApiModel  = $this->objectManager->getObject(
+            self::PI_REST,
+            [
+                "httpRestFactory"            => $this->httpRestFactoryMock,
+                "config"                     => $this->configMock,
+                "apiExceptionFactory"        => $this->apiExceptionFactoryMock,
+                "instructionRequest"         => $piInstructionRequestFactory,
+                "instructionResponse"        => $instructionResponseFactory,
+            ]
+        );
+        $result = $this->pirestApiModel->abort(self::TEST_VPS_TX_ID);
+        $this->assertEquals($result->getInstructionType(), self::ABORT_INSTRUCTION_TYPE);
         $this->assertEquals($result->getDate(), "2015-08-11T11:45:16.285+01:00");
     }
 
@@ -957,7 +1019,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
                 "instructionResponse"        => $instructionResponseFactory,
             ]
         );
-        $result = $this->pirestApiModel->release("2B97808F-9A36-6E71-F87F-6714667E8AF4", 97.38);
+        $result = $this->pirestApiModel->release(self::TEST_VPS_TX_ID, 97.38);
         $this->assertEquals($result->getInstructionType(), "release");
         $this->assertEquals($result->getDate(), "2015-08-11T11:45:16.285+01:00");
     }
@@ -1129,8 +1191,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         );
 
         $this->pirestApiModel->refund(
-            "R000000122-2016-12-22-1423481482416628",
-            "2B97808F-9A36-6E71-F87F-6714667E8AF4",
+            "R000000122-2016-12-22-1423481482416628", self::TEST_VPS_TX_ID,
             10800,
             "GBP",
             "Magento backend refund."

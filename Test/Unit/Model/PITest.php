@@ -6,8 +6,10 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use Ebizmarts\SagePaySuite\Model\Api\Reporting;
 use Ebizmarts\SagePaySuite\Model\PI;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
 use Ebizmarts\SagePaySuite\Model\Payment as SagePayPayment;
 
@@ -36,6 +38,8 @@ class PITest extends \PHPUnit\Framework\TestCase
     private $configMock;
 
     // @codingStandardsIgnoreStart
+    const SUCCESSFULLY_AUTH_TRANSACTION = 16;
+
     protected function setUp()
     {
         $this->objectManagerHelper = new ObjectManager($this);
@@ -267,10 +271,22 @@ class PITest extends \PHPUnit\Framework\TestCase
      */
     public function testVoidInvalidTransactionState()
     {
+        $orderMock = $this->makeOrderMockWithStoreId();
+
+        $reportingApiMock = $this->getMockBuilder(Reporting::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $reportingApiMock
+            ->expects($this->once())
+            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
         $paymentMock
             ->expects($this->any())
             ->method('getLastTransId')
@@ -299,7 +315,8 @@ class PITest extends \PHPUnit\Framework\TestCase
             [
                 "config"      => $this->configMock,
                 "suiteHelper" => $this->suiteHelperMock,
-                "pirestapi"   => $piRestApiMock
+                "pirestapi"   => $piRestApiMock,
+                "reportingApi" => $reportingApiMock
             ]
         );
 
@@ -312,10 +329,23 @@ class PITest extends \PHPUnit\Framework\TestCase
      */
     public function testVoidException()
     {
+        $orderMock = $this->makeOrderMockWithStoreId();
+
+        $reportingApiMock = $this->getMockBuilder(Reporting::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $reportingApiMock
+            ->expects($this->once())
+            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
+
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
         $paymentMock
             ->expects($this->once())
             ->method('getLastTransId')
@@ -339,7 +369,8 @@ class PITest extends \PHPUnit\Framework\TestCase
             [
                 "config"      => $this->configMock,
                 "suiteHelper" => $this->suiteHelperMock,
-                "pirestapi"   => $piRestApiMock
+                "pirestapi"   => $piRestApiMock,
+                "reportingApi" => $reportingApiMock
             ]
         );
 
@@ -350,12 +381,25 @@ class PITest extends \PHPUnit\Framework\TestCase
      * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
      * @expectedExceptionMessage No transaction found.
      */
-    public function testVoidException2()
+    public function testVoidApiException()
     {
+        $orderMock = $this->makeOrderMockWithStoreId();
+
+        $reportingApiMock = $this->getMockBuilder(Reporting::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $reportingApiMock
+            ->expects($this->once())
+            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
+
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
         $paymentMock
             ->expects($this->once())
             ->method('getLastTransId')
@@ -378,7 +422,8 @@ class PITest extends \PHPUnit\Framework\TestCase
         $piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
             [
-                "pirestapi"   => $piRestApiMock
+                "pirestapi"   => $piRestApiMock,
+                "reportingApi" => $reportingApiMock
             ]
         );
 
@@ -387,10 +432,23 @@ class PITest extends \PHPUnit\Framework\TestCase
 
     public function testCancel()
     {
+        $orderMock = $this->makeOrderMockWithStoreId();
+
+        $reportingApiMock = $this->getMockBuilder(Reporting::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $reportingApiMock
+            ->expects($this->once())
+            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
+
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
         $paymentMock
             ->expects($this->once())
             ->method('getLastTransId')
@@ -407,7 +465,8 @@ class PITest extends \PHPUnit\Framework\TestCase
         $piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
             [
-                "pirestapi"   => $piRestApiMock
+                "pirestapi"    => $piRestApiMock,
+                "reportingApi" => $reportingApiMock
             ]
         );
         $piModel->cancel($paymentMock);
@@ -415,10 +474,23 @@ class PITest extends \PHPUnit\Framework\TestCase
 
     public function testCancelERROR()
     {
+        $orderMock = $this->makeOrderMockWithStoreId();
+
+        $reportingApiMock = $this->getMockBuilder(Reporting::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $reportingApiMock
+            ->expects($this->once())
+            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
+
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
         $paymentMock->expects($this->once())
             ->method('getLastTransId')
             ->will($this->returnValue(self::TEST_VPSTXID));
@@ -435,7 +507,8 @@ class PITest extends \PHPUnit\Framework\TestCase
         $piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
             [
-                "pirestapi"   => $piRestApiMock
+                "pirestapi"   => $piRestApiMock,
+                "reportingApi" => $reportingApiMock
             ]
         );
         $response = "";
@@ -834,5 +907,27 @@ class PITest extends \PHPUnit\Framework\TestCase
             ])->disableOriginalConstructor()->getMock();
 
         return $stateMock;
+    }
+
+    /**
+     * @return \stdClass
+     */
+    private function makeReportingResult()
+    {
+        $transactionDetails            = new \stdClass;
+        $transactionDetails->txstateid = self::SUCCESSFULLY_AUTH_TRANSACTION;
+
+        return $transactionDetails;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeOrderMockWithStoreId()
+    {
+        $orderMock = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
+        $orderMock->expects($this->once())->method('getStoreId')->willReturn(1);
+
+        return $orderMock;
     }
 }
