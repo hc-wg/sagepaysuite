@@ -2,7 +2,6 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Ui\Component\Listing\Column;
 
-use bar\foo\baz\Object;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud;
 use Magento\Framework\App\RequestInterface;
