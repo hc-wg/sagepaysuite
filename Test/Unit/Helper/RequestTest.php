@@ -10,7 +10,6 @@ use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPost;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
-use Symfony\Component\DependencyInjection\SimpleXMLElement;
 
 class RequestTest extends \PHPUnit\Framework\TestCase
 {
@@ -192,8 +191,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         $configMock->expects($this->exactly(2))->method('getCurrencyConfig')->willReturn($data['currency_setting']);
         $configMock->expects($this->exactly(3))->method('setConfigurationScopeId')->with(1234);
 
-
-        $amount = $data["base_grand_total"];
+        $amount = $data['base_grand_total'];
         if ($data['currency_setting'] !== Config::CURRENCY_BASE) {
             $amount = $data['grand_total'];
         }
@@ -205,7 +203,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        if ($data["isRestRequest"]) {
+        if ($data['isRestRequest']) {
             $transactionAmountFactory->expects($this->once())->method('create')->willReturn(new TransactionAmount($amount));
         } else {
             $transactionAmountPostFactory->expects($this->once())->method('create')->willReturn(new TransactionAmountPost($amount));
@@ -359,8 +357,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
     public function populateBasketInformationDataProvider()
     {
         return [
-            'test Sage50' =>
-                [
+            'test Sage50' => [
                     [
                         'lines' => 2,
                         'sku' => 'WSH08-28-Purple',
@@ -398,8 +395,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     ]
                 ]
             ,
-            'test XML' =>
-                [
+            'test XML' => [
                     [
                         'name' => 'SybilRunningShort & more information',
                         'expected_name' => '<![CDATA[SybilRunningShort & more information]]>',
@@ -439,8 +435,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     ]
                 ]
             ,
-            'test XML special chars' =>
-                [
+            'test XML special chars' => [
                     [
                         'name' => 'Pursuit Lumaflex&trade; Tone Band',
                         'expected_name' => '<![CDATA[Pursuit Lumaflex Tone Band]]>',
@@ -479,8 +474,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'method' => 'sagepayserver',
                     ]
                 ],
-            'test XML with tax' =>
-                [
+            'test XML with tax' => [
                     [
                         'name' => 'SybilRunningShort',
                         'expected_name' => '<![CDATA[SybilRunningShort]]>',
@@ -532,8 +526,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
 
         if ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50) {
             $basket = [
-                'Basket' =>
-                    $data['lines'] . ':' . '[' .
+                'Basket' => $data['lines'] . ':' . '[' .
                     $data['sku'] . '] ' .
                     $data['name'] . ':' .
                     $data['qty'] . ':' .
@@ -555,8 +548,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             }
 
             $basket = [
-                'BasketXML' =>
-            '<?xml version="1.0" encoding="utf-8"?>' .
+                'BasketXML' => '<?xml version="1.0" encoding="utf-8"?>' .
             '<basket>' .
             '<item>' .
                     $xmlDesc .
@@ -607,25 +599,25 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                 'getPostcode',
                 'getFax'
             ])->getMock();
-          $addressMock->expects($this->any())
+        $addressMock->expects($this->any())
              ->method('getShippingDescription')
              ->willReturn($data['shippingDescription']);
-         $addressMock->expects($this->any())
+        $addressMock->expects($this->any())
              ->method('getShippingAmount')
              ->willReturn($data['shippingAmount']);
-         $addressMock->expects($this->any())
+        $addressMock->expects($this->any())
              ->method('getShippingTaxAmount')
              ->willReturn($data['shippingTaxAmount']);
-         $addressMock->expects($this->any())
+        $addressMock->expects($this->any())
              ->method('getFirstname')
              ->willReturn($data['firstName']);
-         $addressMock->expects($this->any())
+        $addressMock->expects($this->any())
              ->method('getLastname')
              ->willReturn($data['lastName']);
-         $addressMock->expects($this->any())
+        $addressMock->expects($this->any())
              ->method('getMiddlename')
              ->willReturn($data['middleName']);
-         $addressMock->expects($this->any())
+        $addressMock->expects($this->any())
              ->method('getPrefix')
              ->willReturn($data['prefix']);
         $addressMock->expects($this->any())
@@ -742,7 +734,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             ->method('getAllAddresses')
             ->willReturn($data['allAddresses']);
 
-         $this->configMock->expects($this->any())
+        $this->configMock->expects($this->any())
              ->method('getBasketFormat')
              ->willReturn($data['format']);
 
@@ -1783,21 +1775,23 @@ class RequestTest extends \PHPUnit\Framework\TestCase
     private function makeStoreMock($data)
     {
         $storeMock = $this->getMockBuilder("Magento\Store\Api\Data\StoreInterface")->setMethods([
-                "getBaseCurrencyCode",
-                "getId",
-                "setId",
-                "getCode",
-                "setCode",
-                "getName",
-                "setName",
-                "getWebsiteId",
-                "setWebsiteId",
-                "getStoreGroupId",
-                "setStoreGroupId",
-                "getExtensionAttributes",
-                "setExtensionAttributes",
-                "getDefaultCurrencyCode",
-                "getCurrentCurrencyCode"
+                'getBaseCurrencyCode',
+                'getId',
+                'setId',
+                'getCode',
+                'setCode',
+                'getName',
+                'setName',
+                'getWebsiteId',
+                'setWebsiteId',
+                'getStoreGroupId',
+                'setStoreGroupId',
+                'getExtensionAttributes',
+                'setExtensionAttributes',
+                'getDefaultCurrencyCode',
+                'getCurrentCurrencyCode',
+                'setIsActive',
+                'getIsActive'
             ])->disableOriginalConstructor()->getMock();
 
         if ($data["currency_setting"] == "base_currency") {
