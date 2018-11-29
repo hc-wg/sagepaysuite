@@ -8,9 +8,12 @@ use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Framework\App\RequestInterface;
 use Psr\Log\LoggerInterface;
+use Magento\Framework\App\CsrfAwareActionInterface;
 
-class Callback3D extends Action
+class Callback3D extends Action implements CsrfAwareActionInterface
 {
     /** @var Config */
     private $config;
@@ -90,5 +93,31 @@ class Callback3D extends Action
                 . $this->_url->getUrl($url, ['_secure' => true])
                 . '";</script>'
             );
+    }
+
+    /**
+     * Create exception in case CSRF validation failed.
+     * Return null if default exception will suffice.
+     *
+     * @param RequestInterface $request
+     *
+     * @return InvalidRequestException|null
+     */
+    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
+    {
+        return null;
+    }
+
+    /**
+     * Perform custom request validation.
+     * Return null if default validation is needed.
+     *
+     * @param RequestInterface $request
+     *
+     * @return bool|null
+     */
+    public function validateForCsrf(RequestInterface $request): ?bool
+    {
+        return true;
     }
 }

@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\PI;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
+use Magento\Framework\App\CsrfAwareActionInterface;
 
 class Callback3DTest extends \PHPUnit\Framework\TestCase
 {
@@ -48,6 +49,16 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
         $this->objectManagerHelper = new ObjectManagerHelper($this);
     }
     // @codingStandardsIgnoreEnd
+
+    public function testCsrfMethods()
+    {
+        $piCallback3DController = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\PI\Callback3D',
+            []
+        );
+
+        $this->assertInstanceOf(CsrfAwareActionInterface::class, $piCallback3DController);
+    }
 
     public function testExecuteSUCCESS()
     {
