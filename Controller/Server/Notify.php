@@ -12,21 +12,21 @@ use Ebizmarts\SagePaySuite\Model\InvalidSignatureException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Ebizmarts\SagePaySuite\Model\Token;
-use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Validator\Exception;
 use Magento\Quote\Model\QuoteRepository;
 use Magento\Quote\Model\Quote;
-use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderFactory;
-use \Magento\Sales\Model\Order;
 use \Ebizmarts\SagePaySuite\Helper\Data;
 
-class Notify extends Action
+class Notify extends Action implements CsrfAwareActionInterface
 {
 
     /**
@@ -361,5 +361,31 @@ class Notify extends Action
                 $this->config->getVendorname()
             );
         }
+    }
+
+    /**
+     * Create exception in case CSRF validation failed.
+     * Return null if default exception will suffice.
+     *
+     * @param RequestInterface $request
+     *
+     * @return InvalidRequestException|null
+     */
+    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
+    {
+        return null;
+    }
+
+    /**
+     * Perform custom request validation.
+     * Return null if default validation is needed.
+     *
+     * @param RequestInterface $request
+     *
+     * @return bool|null
+     */
+    public function validateForCsrf(RequestInterface $request): ?bool
+    {
+        return true;
     }
 }
