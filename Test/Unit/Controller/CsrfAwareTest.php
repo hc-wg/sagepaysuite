@@ -29,6 +29,13 @@ class CsrfAwareTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(CsrfAwareActionInterface::class, $controller);
     }
 
+    public function testPaypalCallbackProcessing()
+    {
+        $controller = $this->objectManagerHelper
+            ->getObject('Ebizmarts\SagePaySuite\Controller\Paypal\Processing', []);
+        $this->assertInstanceOf(CsrfAwareActionInterface::class, $controller);
+    }
+
     public function testPiCallbackMethods()
     {
         $piCallback3DController = $this->objectManagerHelper
