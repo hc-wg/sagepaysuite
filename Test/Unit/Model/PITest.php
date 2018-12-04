@@ -86,7 +86,7 @@ class PITest extends \PHPUnit_Framework_TestCase
         $orderMock->expects($this->once())
             ->method('getOrderCurrencyCode')
             ->willReturn('GBP');
-
+        
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
@@ -94,6 +94,12 @@ class PITest extends \PHPUnit_Framework_TestCase
         $paymentMock->expects($this->once())
             ->method('getOrder')
             ->will($this->returnValue($orderMock));
+
+        $orderMock->expects($this->once())
+            ->method('getBaseCurrencyCode')
+            ->willReturn('GBP');
+
+        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
         $paymentMock->expects($this->once())
             ->method('setIsTransactionClosed')
             ->with(1);
@@ -125,17 +131,32 @@ class PITest extends \PHPUnit_Framework_TestCase
                 'R1000001',
                 self::TEST_VPSTXID,
                 10000,
-                'GBP',
                 'Magento backend refund.'
             )
         ->willReturn($returnMock);
+
+        $transactionAmountMock = $this->getMockBuilder(
+            \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount::class
+        )
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $transactionAmountFactoryMock = $this->getMockBuilder(
+            'Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory'
+        )
+            ->disableOriginalConstructor()
+            ->getMock();
+        $transactionAmountFactoryMock
+            ->expects($this->never())
+            ->method('create');
 
         $piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
             [
                 "config"      => $this->configMock,
                 "suiteHelper" => $this->suiteHelperMock,
-                "pirestapi"   => $piRestApiMock
+                "pirestapi"   => $piRestApiMock,
+                "transactionAmountFactory" => $transactionAmountFactoryMock
             ]
         );
 
@@ -153,6 +174,9 @@ class PITest extends \PHPUnit_Framework_TestCase
             ->willReturn("1000001");
         $orderMock->expects($this->once())
             ->method('getOrderCurrencyCode')
+            ->willReturn('GBP');
+        $orderMock->expects($this->once())
+            ->method('getBaseCurrencyCode')
             ->willReturn('GBP');
 
         $paymentMock = $this
@@ -179,17 +203,32 @@ class PITest extends \PHPUnit_Framework_TestCase
                 'R1000001',
                 self::TEST_VPSTXID,
                 10000,
-                'GBP',
                 'Magento backend refund.'
             )
             ->willThrowException(new \Exception("Error in Refunding"));
+
+        $transactionAmountMock = $this->getMockBuilder(
+            \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount::class
+        )
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $transactionAmountFactoryMock = $this->getMockBuilder(
+            'Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory'
+        )
+            ->disableOriginalConstructor()
+            ->getMock();
+        $transactionAmountFactoryMock
+            ->expects($this->never())
+            ->method('create');
 
         $piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
             [
                 "config"      => $this->configMock,
                 "suiteHelper" => $this->suiteHelperMock,
-                "pirestapi"   => $piRestApiMock
+                "pirestapi"   => $piRestApiMock,
+                "transactionAmountFactory" => $transactionAmountFactoryMock
             ]
         );
 
@@ -218,6 +257,9 @@ class PITest extends \PHPUnit_Framework_TestCase
         $orderMock->expects($this->once())
             ->method('getOrderCurrencyCode')
             ->willReturn('GBP');
+        $orderMock->expects($this->once())
+            ->method('getBaseCurrencyCode')
+            ->willReturn('GBP');
 
         $this->suiteHelperMock
             ->expects($this->once())
@@ -244,7 +286,6 @@ class PITest extends \PHPUnit_Framework_TestCase
                 'R1000001',
                 self::TEST_VPSTXID,
                 10000,
-                'GBP',
                 'Magento backend refund.'
             )
             ->willThrowException(
@@ -253,12 +294,28 @@ class PITest extends \PHPUnit_Framework_TestCase
                 )
             );
 
+        $transactionAmountMock = $this->getMockBuilder(
+            \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount::class
+        )
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $transactionAmountFactoryMock = $this->getMockBuilder(
+            'Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory'
+        )
+            ->disableOriginalConstructor()
+            ->getMock();
+        $transactionAmountFactoryMock
+            ->expects($this->never())
+            ->method('create');
+
         $piModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\PI',
             [
                 "config"      => $this->configMock,
                 "suiteHelper" => $this->suiteHelperMock,
-                "pirestapi"   => $piRestApiMock
+                "pirestapi"   => $piRestApiMock,
+                "transactionAmountFactory" => $transactionAmountFactoryMock
             ]
         );
 
