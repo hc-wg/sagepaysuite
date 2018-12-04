@@ -108,7 +108,11 @@ class PI extends \Magento\Payment\Model\Method\Cc
     /** @var \Ebizmarts\SagePaySuite\Model\Payment */
     private $paymentOps;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount */
+    private $transactionAmountFactory;
+
     /**
+     *
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory
@@ -141,6 +145,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         \Ebizmarts\SagePaySuite\Model\Payment $paymentOps,
         \Ebizmarts\SagePaySuite\Model\Api\Pi $piApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory $transactionAmountFactory,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
@@ -168,6 +173,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
         $this->paymentOps = $paymentOps;
         $this->paymentOps->setApi($piApi);
+
+        $this->transactionAmountFactory  = $transactionAmountFactory;
     }
 
     public function assignData(DataObject $data)
@@ -209,11 +216,11 @@ class PI extends \Magento\Payment\Model\Method\Cc
      * Refunds specified amount
      *
      * @param InfoInterface $payment
-     * @param float $amount
+     * @param float $baseAmount
      * @return $this
      * @throws LocalizedException
      */
-    public function refund(InfoInterface $payment, $amount)
+    public function refund(InfoInterface $payment, $baseAmount)
     {
         try {
             /** @var Order $order */
@@ -222,12 +229,23 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $vendorTxCode = $this->suiteHelper->generateVendorTxCode($order->getIncrementId(), Config::ACTION_REFUND);
             $description  = 'Magento backend refund.';
 
+            $refundAmount = $baseAmount * 100;
+
+            $orderCurrencyCode = $order->getOrderCurrencyCode();
+            $baseCurrencyCode  = $order->getBaseCurrencyCode();
+            if ($baseCurrencyCode !== $orderCurrencyCode) {
+                $rate = $order->getBaseToOrderRate();
+                $refundAmount = $baseAmount * $rate;
+
+                $transactionAmount = $this->transactionAmountFactory->create(['amount' => $refundAmount]);
+                $refundAmount      = $transactionAmount->getCommand($orderCurrencyCode)->execute();
+            }
+
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $refundResult */
             $refundResult = $this->pirestapi->refund(
                 $vendorTxCode,
                 $vpsTxId,
-                $amount * 100,
-                $order->getOrderCurrencyCode(),
+                $refundAmount,
                 $description
             );
 
