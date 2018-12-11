@@ -116,9 +116,7 @@ class PIRest
         PiInstructionRequestFactory $instructionRequest,
         PiInstructionResponseFactory $instructionResponse,
         PiTransactionResultAvsCvcCheckFactory $avsCvcCheckResultFactory
-
     ) {
-
         $this->config = $config;
         $this->config->setMethodCode(Config::METHOD_PI);
         $this->apiExceptionFactory        = $apiExceptionFactory;
