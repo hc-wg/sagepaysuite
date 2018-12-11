@@ -74,6 +74,18 @@ class PITest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @param $orderMock
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makePaymentMockForInitialize($orderMock)
+    {
+        $paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')->disableOriginalConstructor()->getMock();
+        $paymentMock->expects($this->once())->method('getOrder')->will($this->returnValue($orderMock));
+
+        return $paymentMock;
+    }
+
     public function testRefund()
     {
         $orderMock = $this
@@ -99,7 +111,6 @@ class PITest extends \PHPUnit_Framework_TestCase
             ->method('getBaseCurrencyCode')
             ->willReturn('GBP');
 
-        $paymentMock = $this->makePaymentMockForInitialize($orderMock);
         $paymentMock->expects($this->once())
             ->method('setIsTransactionClosed')
             ->with(1);
