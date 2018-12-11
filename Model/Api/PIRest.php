@@ -116,7 +116,6 @@ class PIRest
         PiInstructionRequestFactory $instructionRequest,
         PiInstructionResponseFactory $instructionResponse,
         PiTransactionResultAvsCvcCheckFactory $avsCvcCheckResultFactory
-
     ) {
 
         $this->config = $config;
