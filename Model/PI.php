@@ -181,9 +181,6 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $this->suiteLogger = $suiteLogger;
 
 
-        $this->paymentOps = $paymentOps;
-        $this->paymentOps->setApi($piApi);
-
         $this->reportingApi = $reportingApi;
 
         $this->transactionAmountFactory  = $transactionAmountFactory;
