@@ -76,5 +76,5 @@ jobs:
       - run: /home/circleci/magento2/phpunit-6.2.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
 
       # Run code checks
-      - run: composer create-project --repository=https://repo.magento.com magento/marketplace-eqp dev-master
+      - run: composer create-project --repository=https://repo.magento.com magento/marketplace-eqp 2.0.0
       - run: cd dev-master && vendor/bin/phpcs ../app/code/Ebizmarts/SagePaySuite/* --standard=MEQP2,PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
