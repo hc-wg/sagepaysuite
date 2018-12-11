@@ -7,6 +7,12 @@ use Magento\Framework\DB\Statement\Pdo\Mysql;
 
 class FraudTest extends \PHPUnit\Framework\TestCase
 {
+
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
     public function testGetOrdersToCancel()
     {
         $selectMock = $this
