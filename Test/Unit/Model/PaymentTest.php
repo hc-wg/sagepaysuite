@@ -179,7 +179,6 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
         $sut->setApi($sharedApiMock);
 
         $orderMock = $this->makeOrderMockPendingState();
-        $orderMock->expects($this->once())->method('getIncrementId')->willReturn('000000084');
 
         $paymentMock = $this->makePaymentMock($orderMock);
         $paymentMock
@@ -200,13 +199,13 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
     {
         $testAmount  = 963.80;
         $testVpsTxId = 'D55E2CC0-168C-F770-6862-C28D0CAD0755';
-        $testOrderIncrementId = '000000084';
+        $orderMock = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
 
         $sharedApiMock = $this->getMockBuilder(Shared::class)
             ->disableOriginalConstructor()
             ->getMock();
         $sharedApiMock->expects($this->once())->method('refundTransaction')
-            ->with($testVpsTxId, $testAmount, $testOrderIncrementId)
+            ->with($testVpsTxId, $testAmount, $orderMock)
             ->willReturn($this->makeRefundResponseMock());
 
         $configMock = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
@@ -222,13 +221,11 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
 
         $sut->setApi($sharedApiMock);
 
-        $orderMock = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
-        $orderMock->expects($this->once())->method('getIncrementId')->willReturn($testOrderIncrementId);
-
         $paymentMock = $this->makePaymentMock($orderMock);
         $paymentMock->expects($this->once())->method('getParentTransactionId')->willReturn($testVpsTxId);
         $paymentMock->expects($this->once())->method('setIsTransactionClosed')->with(1);
         $paymentMock->expects($this->once())->method('setShouldCloseParentTransaction')->with(1);
+        $paymentMock->expects($this->once())->method('getOrder')->willReturn($orderMock);
         $this->checkSetTransactionAdditionalCorrectRefund($paymentMock);
 
         $sut->refund($paymentMock, $testAmount);
