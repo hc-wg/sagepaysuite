@@ -78,7 +78,7 @@ class Pi implements PaymentOperations
         );
     }
 
-    public function authorizeTransaction($vpstxid, $amount, $order_id)
+    public function authorizeTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
         throw new \Exception("not implented.");
     }

@@ -149,14 +149,14 @@ class Shared implements PaymentOperations
         return $this->executeRequest(Config::ACTION_RELEASE, $data);
     }
 
-    public function authorizeTransaction($vpstxid, $amount, $order_id)
+    public function authorizeTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
-        $transaction = $this->reportingApi->getTransactionDetails($vpstxid);
+        $transaction = $this->reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol']         = $this->config->getVPSProtocol();
         $data['TxType']              = \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE;
         $data['Vendor']              = $this->config->getVendorname();
-        $data['VendorTxCode']        = $this->suiteHelper->generateVendorTxCode($order_id, Config::ACTION_AUTHORISE);
+        $data['VendorTxCode']        = $this->suiteHelper->generateVendorTxCode($order->getIncrementId(), Config::ACTION_AUTHORISE);
         $data['Amount']              = number_format($amount, 2, '.', '');
         $data['Description']         = "Authorise transaction from Magento";
         $data['RelatedVPSTxId']      = (string)$transaction->vpstxid;
