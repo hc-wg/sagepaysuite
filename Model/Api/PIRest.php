@@ -116,7 +116,6 @@ class PIRest
         PiInstructionRequestFactory $instructionRequest,
         PiInstructionResponseFactory $instructionResponse,
         PiTransactionResultAvsCvcCheckFactory $avsCvcCheckResultFactory
-
     ) {
 
         $this->config = $config;
@@ -285,7 +284,7 @@ class PIRest
      * @param $description
      * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
      */
-    public function refund($vendorTxCode, $refTransactionId, $amount, $currency, $description)
+    public function refund($vendorTxCode, $refTransactionId, $amount, $description)
     {
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequest $refundRequest */
         $refundRequest = $this->refundRequest->create();
