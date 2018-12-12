@@ -195,11 +195,6 @@
                         <frontend_class>validate-number</frontend_class>
                         <config_path>payment/sagepaysuitepi/sort_order</config_path>
                     </field>
-                    <field id="cctypes" translate="label" type="multiselect" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Credit card types</label>
-                        <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\Cctype</source_model>
-                        <config_path>payment/sagepaysuitepi/cctypes</config_path>
-                    </field>
                     <field id="allowspecific" translate="label" type="allowspecific" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Payment from Applicable Countries</label>
                         <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
