@@ -87,14 +87,14 @@ class Shared implements PaymentOperations
         return $this->executeRequest(Config::ACTION_VOID, $data);
     }
 
-    public function refundTransaction($vpstxid, $amount, $order_id)
+    public function refundTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
-        $transaction = $this->reportingApi->getTransactionDetails($vpstxid);
+        $transaction = $this->reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol']         = $this->config->getVPSProtocol();
         $data['TxType']              = Config::ACTION_REFUND;
         $data['Vendor']              = $this->config->getVendorname();
-        $data['VendorTxCode']        = $this->suiteHelper->generateVendorTxCode($order_id, Config::ACTION_REFUND);
+        $data['VendorTxCode']        = $this->suiteHelper->generateVendorTxCode($order->getIncrementId(), Config::ACTION_REFUND);
         $data['Amount']              = number_format($amount, 2, '.', '');
         $data['Currency']            = (string)$transaction->currency;
         $data['Description']         = "Refund issued from magento.";
