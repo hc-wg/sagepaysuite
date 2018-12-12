@@ -83,7 +83,7 @@ class Pi implements PaymentOperations
         throw new \Exception("not implented.");
     }
 
-    public function refundTransaction($vpstxid, $amount, $order_id)
+    public function refundTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
         throw new \Exception("not implented.");
     }

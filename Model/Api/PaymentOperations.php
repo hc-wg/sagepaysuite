@@ -10,7 +10,15 @@ interface PaymentOperations
     const SUCCESSFULLY_AUTHORISED   = 16;
 
     public function captureDeferredTransaction($transactionId, $amount);
-    public function refundTransaction($transactionId, $amount, $orderId);
+
+    /**
+     * @param $transactionId
+     * @param $amount
+     * @param \Magento\Sales\Api\Data\OrderInterface $order.
+     * @return mixed
+     */
+    public function refundTransaction($transactionId, $amount, \Magento\Sales\Api\Data\OrderInterface $order);
+
     public function authorizeTransaction($transactionId, $amount, $orderId);
     public function repeatTransaction($vpstxid, $quote_data, $paymentAction = Config::ACTION_REPEAT);
 }
