@@ -110,6 +110,9 @@ class PI extends \Magento\Payment\Model\Method\Cc
     /** @var \Ebizmarts\SagePaySuite\Model\Payment */
     private $paymentOps;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount */
+    private $transactionAmountFactory;
+
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
      */
@@ -150,6 +153,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         \Ebizmarts\SagePaySuite\Model\Api\Pi $piApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi,
+        \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory $transactionAmountFactory,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
@@ -177,8 +181,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
         $this->paymentOps = $paymentOps;
         $this->paymentOps->setApi($piApi);
-
         $this->reportingApi = $reportingApi;
+        $this->transactionAmountFactory  = $transactionAmountFactory;
     }
 
     public function assignData(DataObject $data)
@@ -218,13 +222,13 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
     /**
      * Refunds specified amount
-     *
+     *`
      * @param InfoInterface $payment
-     * @param float $amount
+     * @param float $baseAmount
      * @return $this
      * @throws LocalizedException
      */
-    public function refund(InfoInterface $payment, $amount)
+    public function refund(InfoInterface $payment, $baseAmount)
     {
         try {
             /** @var Order $order */
@@ -233,12 +237,23 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $vendorTxCode = $this->suiteHelper->generateVendorTxCode($order->getIncrementId(), Config::ACTION_REFUND);
             $description  = 'Magento backend refund.';
 
+            $refundAmount = $baseAmount * 100;
+
+            $orderCurrencyCode = $order->getOrderCurrencyCode();
+            $baseCurrencyCode  = $order->getBaseCurrencyCode();
+            if ($baseCurrencyCode !== $orderCurrencyCode) {
+                $rate = $order->getBaseToOrderRate();
+                $refundAmount = $baseAmount * $rate;
+
+                $transactionAmount = $this->transactionAmountFactory->create(['amount' => $refundAmount]);
+                $refundAmount      = $transactionAmount->getCommand($orderCurrencyCode)->execute();
+            }
+
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $refundResult */
             $refundResult = $this->pirestapi->refund(
                 $vendorTxCode,
                 $vpsTxId,
-                $amount * 100,
-                $order->getOrderCurrencyCode(),
+                $refundAmount,
                 $description
             );
 
@@ -372,22 +387,6 @@ class PI extends \Magento\Payment\Model\Method\Cc
          * calling parent validate function
          */
         \Magento\Payment\Model\Method\AbstractMethod::validate();
-
-        $info = $this->getInfoInstance();
-        $errorMsg = false;
-
-        //check allowed card types
-        if ($this->config->dropInEnabled() === false) {
-            $allowedCcTypes = $this->config->setMethodCode(Config::METHOD_PI)->getAllowedCcTypes();
-            $availableTypes = explode(',', $allowedCcTypes);
-            if (!empty($info->getCcType()) && !in_array($info->getCcType(), $availableTypes)) {
-                $errorMsg = __('This credit card type is not allowed for this payment method');
-            }
-        }
-
-        if ($errorMsg) {
-            throw new LocalizedException($errorMsg);
-        }
 
         return $this;
     }
