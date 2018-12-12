@@ -65,7 +65,7 @@ class Payment
                     $result = $this->api->captureDeferredTransaction($transactionId, $amount);
                 } elseif ($this->isAuthenticateAction($paymentAction)) {
                     $action = 'authorizing';
-                    $result = $this->api->authorizeTransaction($transactionId, $amount, $order->getIncrementId());
+                    $result = $this->api->authorizeTransaction($transactionId, $amount, $order);
                 }
 
                 if (\is_array($result) && array_key_exists('data', $result)) {
