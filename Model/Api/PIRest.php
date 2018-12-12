@@ -323,6 +323,26 @@ class PIRest
     }
 
     /**
+     * @param $transactionId
+     * @return PiInstructionResponse
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     */
+    public function abort($transactionId)
+    {
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionRequest $request */
+        $request = $this->instructionRequest->create();
+        $request->setInstructionType('abort');
+
+        $jsonRequest = json_encode($request->__toArray());
+        $result = $this->executePostRequest(
+            $this->getServiceUrl(self::ACTION_TRANSACTION_INSTRUCTIONS, $transactionId),
+            $jsonRequest
+        );
+
+        return $this->processInstructionsResponse($result);
+    }
+
+    /**
      * Make release request.
      *
      * @param string $transactionId

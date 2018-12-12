@@ -20,6 +20,8 @@ use Magento\Sales\Model\Order;
 class PI extends \Magento\Payment\Model\Method\Cc
 {
 
+    const DEFERRED_AWAITING_RELEASE = "14";
+
     /**
      * @var string
      */
@@ -112,6 +114,11 @@ class PI extends \Magento\Payment\Model\Method\Cc
     private $transactionAmountFactory;
 
     /**
+     * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
+     */
+    private $reportingApi;
+
+    /**
      *
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
@@ -145,6 +152,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         \Ebizmarts\SagePaySuite\Model\Payment $paymentOps,
         \Ebizmarts\SagePaySuite\Model\Api\Pi $piApi,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
+        \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi,
         \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory $transactionAmountFactory,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
@@ -173,7 +181,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
         $this->paymentOps = $paymentOps;
         $this->paymentOps->setApi($piApi);
-
+        $this->reportingApi = $reportingApi;
         $this->transactionAmountFactory  = $transactionAmountFactory;
     }
 
@@ -284,7 +292,17 @@ class PI extends \Magento\Payment\Model\Method\Cc
         $transactionId = $payment->getLastTransId();
 
         try {
-            $this->pirestapi->void($transactionId);
+            $order              = $payment->getOrder();
+            $transactionDetails = $this->reportingApi->getTransactionDetails($transactionId, $order->getStoreId());
+
+            if ((string)$transactionDetails->txstateid === self::DEFERRED_AWAITING_RELEASE) {
+                if ($order->canInvoice()) {
+                    $this->pirestapi->abort($transactionId);
+                }
+            } else {
+                $this->pirestapi->void($transactionId);
+            }
+
         } catch (ApiException $apiException) {
             if ($this->exceptionCodeIsInvalidTransactionState($apiException)) {
                 //unable to void transaction
