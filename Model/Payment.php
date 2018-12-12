@@ -131,7 +131,7 @@ class Payment
      */
     private function tryRefund(\Magento\Payment\Model\InfoInterface $payment, $transactionId, $amount)
     {
-        $result = $this->api->refundTransaction($transactionId, $amount, $payment->getOrder()->getIncrementId());
+        $result = $this->api->refundTransaction($transactionId, $amount, $payment->getOrder());
 
         $this->addAdditionalInformationToTransaction($payment, $result);
 
