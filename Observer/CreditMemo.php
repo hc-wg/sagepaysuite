@@ -35,18 +35,20 @@ class CreditMemo implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        $payment           = $observer->getData('creditmemo')->getOrder()->getPayment();
+        /** @var \Magento\Sales\Model\Order $order */
+        $order             = $observer->getData('creditmemo')->getOrder();
+        $payment           = $order->getPayment();
         $paymentMethodCode = $payment->getMethod();
 
         if (!$this->suiteHelper->methodCodeIsSagePay($paymentMethodCode)) {
             return;
         }
 
-        $vpsTxIdRaw = $observer->getData('creditmemo')->getOrder()->getPayment()->getLastTransId();
+        $vpsTxIdRaw = $order->getPayment()->getLastTransId();
         $vpsTxId    = $this->suiteHelper->clearTransactionId($vpsTxIdRaw);
 
         try {
-            $this->reportingApi->getTransactionDetails($vpsTxId);
+            $this->reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
         } catch (\Exception $e) {
             $this->messageManager->addErrorMessage($this->reportingApiErrorMessage($e));
         }
