@@ -38,7 +38,23 @@ class Rules extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
      */
     public function render(\Magento\Framework\DataObject $row)
     {
-        $additionalInfo = $this->information->getUnserializedData($row->getData("additional_information"));
-        return array_key_exists("fraudrules", $additionalInfo) ? $additionalInfo["fraudrules"] : "";
+        $serializedData = $row->getData("additional_information");
+        $additionalInfo = $this->information->getUnserializedData($serializedData);
+
+        if (\array_key_exists("fraudrules", $additionalInfo)) {
+            $rules = $additionalInfo["fraudrules"];
+
+            if (!\is_array($rules)) {
+                return $rules;
+            }
+
+            $return = '<ul>';
+            foreach ($rules as $rule) {
+                $return .= __('<li>%1 <strong>(score: %2)</strong></li>', $rule['description'], $rule['score']);
+            }
+            $return .= '</ul>';
+
+            return $return;
+        }
     }
 }
