@@ -38,23 +38,50 @@ class Rules extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
      */
     public function render(\Magento\Framework\DataObject $row)
     {
-        $serializedData = $row->getData("additional_information");
+        $serializedData = $row->getData('additional_information');
         $additionalInfo = $this->information->getUnserializedData($serializedData);
 
-        if (\array_key_exists("fraudrules", $additionalInfo)) {
-            $rules = $additionalInfo["fraudrules"];
+        return $this->processAdditionalInformation($additionalInfo);
+    }
 
-            if (!\is_array($rules)) {
-                return $rules;
-            }
+    /**
+     * @param array $info
+     * @return string
+     */
+    private function processAdditionalInformation(array $info)
+    {
+        if (\array_key_exists('fraudrules', $info)) {
+            $rules = $info['fraudrules'];
 
-            $return = '<ul>';
-            foreach ($rules as $rule) {
-                $return .= __('<li>%1 <strong>(score: %2)</strong></li>', $rule['description'], $rule['score']);
-            }
-            $return .= '</ul>';
-
-            return $return;
+            return $this->processRules($rules);
         }
+    }
+
+    /**
+     * @param $rules
+     * @return string
+     */
+    private function processRules($rules)
+    {
+        if (!\is_array($rules)) {
+            return $rules;
+        }
+
+        return $this->processMultipleRulesData($rules);
+    }
+
+    /**
+     * @param $rules
+     * @return string
+     */
+    private function processMultipleRulesData($rules)
+    {
+        $return = '<ul>';
+        foreach ($rules as $rule) {
+            $return .= __('<li>%1 <strong>(score: %2)</strong></li>', $rule['description'], $rule['score']);
+        }
+        $return .= '</ul>';
+
+        return $return;
     }
 }
