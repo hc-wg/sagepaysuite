@@ -89,9 +89,15 @@
     /* important:  dimensions or positioning here! */
 }
 
-.sagepaysuiteserver_embed_iframe {
+.sagepaysuiteserver_embed_normal {
     width: 100%;
     min-height: 1100px;
+    border: 0;
+}
+
+.sagepaysuiteserver_embed_low {
+    width: 100%;
+    min-height: 500px;
     border: 0;
 }
 
