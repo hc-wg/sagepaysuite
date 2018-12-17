@@ -181,13 +181,16 @@ define(
              * Create SERVER modal
              */
             openSERVERModal: function (nextURL) {
+
+                var winProfile  = parseInt(window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver.low_profile) > 0 ? 'low' : 'normal';
+
                 if (this.sagePayIsMobile()) {
                     location.href = nextURL;
                 } else {
-                    this.modal = $("<div class='sagepaysuiteserver-scroll-wrapper'><iframe class='sagepaysuiteserver_embed_iframe' src='" + nextURL + "'></iframe></div>").modal({
+                    this.modal = $("<div class='sagepaysuiteserver-scroll-wrapper'><iframe class='sagepaysuiteserver_embed_" + winProfile + "' src='" + nextURL + "'></iframe></div>").modal({
                         modalClass: 'sagepaysuiteserver-modal',
                         title: "Sage Pay Secure Gateway",
-                        type: 'slide',
+                        type: (winProfile === 'normal') ? 'slide' : 'popup',
                         responsive: true,
                         clickableOverlay: false,
                         closeOnEscape: false,
