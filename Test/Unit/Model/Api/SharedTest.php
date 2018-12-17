@@ -228,6 +228,12 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('executePost')
             ->willReturn($responseMock);
 
+        $orderMock = $this->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->expects($this->once())->method('getStoreId')->willReturn(1);
+        $orderMock->expects($this->once())->method('getIncrementId')->willReturn('1000000001');
+
         $this->assertEquals(
             [
                 "status" => 200,
@@ -239,7 +245,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                     'StatusDetail' => 'Success.'
                 ]
             ],
-            $this->sharedApiModel->refundTransaction("12345", 100, 1)
+            $this->sharedApiModel->refundTransaction("12345", 100, $orderMock)
         );
     }
 
@@ -301,7 +307,13 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($apiException));
 
-        $this->sharedApiModel->refundTransaction("12345", 100, 1);
+        $orderMock = $this->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->expects($this->once())->method('getStoreId')->willReturn(1);
+        $orderMock->expects($this->once())->method('getIncrementId')->willReturn('1000000001');
+
+        $this->sharedApiModel->refundTransaction("12345", 100, $orderMock);
     }
 
     public function testReleaseTransaction()
@@ -406,6 +418,12 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('executePost')
             ->willReturn($responseMock);
 
+        $orderMock = $this->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->expects($this->once())->method('getStoreId')->willReturn(1);
+        $orderMock->expects($this->once())->method('getIncrementId')->willReturn('1000000001');
+
         $this->assertEquals(
             [
                 "status" => 200,
@@ -420,7 +438,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                     'DeclineCode'  => '00'
                 ]
             ],
-            $this->sharedApiModel->authorizeTransaction("12345", 100, 1)
+            $this->sharedApiModel->authorizeTransaction("12345", 100, $orderMock)
         );
     }
 
