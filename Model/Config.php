@@ -693,4 +693,14 @@ class Config
 
         return $configurationScopeId;
     }
+
+    public function getInvoiceConfirmationNotification()
+    {
+        $config_value = $this->scopeConfig->getValue(
+            $this->getAdvancedConfigPath("invoice_confirmation_notification"),
+            $this->configurationScope,
+            $this->configurationScopeId
+        );
+        return $config_value;
+    }
 }
