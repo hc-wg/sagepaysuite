@@ -19,6 +19,7 @@ use Ebizmarts\SagePaySuite\Model\PiRequest;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Ebizmarts\SagePaySuite\Model\Config;
 
 class EcommerceManagement extends RequestManagement
 {
