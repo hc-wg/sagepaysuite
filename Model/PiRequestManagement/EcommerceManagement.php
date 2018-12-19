@@ -20,6 +20,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
 use Magento\Sales\Model\Order\Payment\TransactionFactory;
+use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 
 class EcommerceManagement extends RequestManagement
 {
@@ -36,6 +37,12 @@ class EcommerceManagement extends RequestManagement
     /** @var \Magento\Quote\Model\QuoteValidator */
     private $quoteValidator;
 
+    /** @var InvoiceSender */
+    private $invoiceEmailSender;
+
+    /** @var Config */
+    private $config;
+
     public function __construct(
         Checkout $checkoutHelper,
         PIRest $piRestApi,
@@ -47,7 +54,9 @@ class EcommerceManagement extends RequestManagement
         Logger $sagePaySuiteLogger,
         ClosedForActionFactory $actionFactory,
         TransactionFactory $transactionFactory,
-        \Magento\Quote\Model\QuoteValidator $quoteValidator
+        \Magento\Quote\Model\QuoteValidator $quoteValidator,
+        InvoiceSender $invoiceEmailSender,
+        Config $config
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -62,6 +71,8 @@ class EcommerceManagement extends RequestManagement
         $this->actionFactory      = $actionFactory;
         $this->transactionFactory = $transactionFactory;
         $this->quoteValidator     = $quoteValidator;
+        $this->invoiceEmailSender = $invoiceEmailSender;
+        $this->config = $config;
     }
 
     /**
@@ -141,6 +152,7 @@ class EcommerceManagement extends RequestManagement
             $order->place()->save();
 
             $this->getCheckoutHelper()->sendOrderEmail($order);
+            $this->sendInvoiceNotification($order);
 
             if ($sagePayPaymentAction === Config::ACTION_DEFER_PI) {
                 /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
@@ -185,5 +197,32 @@ class EcommerceManagement extends RequestManagement
                 $this->sagePaySuiteLogger->logException($exceptionObject);
             }
         }
+    }
+
+    public function sendInvoiceNotification($order)
+    {
+        if ($this->invoiceConfirmationIsEnable() && $this->paymentActionIsCapture()) {
+            $invoices = $order->getInvoiceCollection();
+            if ($invoices->count() > 0) {
+                $this->invoiceEmailSender->send($invoices->getFirstItem());
+            }
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    private function paymentActionIsCapture()
+    {
+        $sagePayPaymentAction = $this->config->getSagepayPaymentAction();
+        return $sagePayPaymentAction === Config::ACTION_PAYMENT_PI;
+    }
+
+    /**
+     * @return bool
+     */
+    private function invoiceConfirmationIsEnable()
+    {
+        return (string)$this->config->getInvoiceConfirmationNotification() === "1";
     }
 }
