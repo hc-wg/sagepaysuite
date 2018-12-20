@@ -42,6 +42,7 @@
                 <model>Ebizmarts\SagePaySuite\Model\PI</model>
                 <payment_action>Payment</payment_action>
                 <title>Sage Pay Pi</title>
+                <cctypes>AE,VI,MC,DI,JCB</cctypes>
                 <allowspecific>0</allowspecific>
                 <use_dropin>1</use_dropin>
                 <password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
