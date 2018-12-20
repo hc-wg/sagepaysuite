@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Model\Order\Payment\Transaction\Repository as TransactionRepository;
 use Magento\Sales\Model\Order\Payment\TransactionFactory;
 
@@ -22,6 +22,9 @@ class OrderUpdateOnCallback
     /** @var OrderSender */
     private $orderEmailSender;
 
+    /** @var InvoiceSender */
+    private $invoiceEmailSender;
+
     /** @var ClosedForActionFactory */
     private $actionFactory;
 
@@ -34,12 +37,14 @@ class OrderUpdateOnCallback
     public function __construct(
         Config $config,
         OrderSender $orderEmailSender,
+        InvoiceSender $invoiceEmailSender,
         ClosedForActionFactory $actionFactory,
         TransactionFactory $transactionFactory,
         TransactionRepository $transactionRepository
     ) {
         $this->config = $config;
         $this->orderEmailSender = $orderEmailSender;
+        $this->invoiceEmailSender = $invoiceEmailSender;
         $this->actionFactory = $actionFactory;
         $this->transactionFactory = $transactionFactory;
         $this->transactionRepository = $transactionRepository;
@@ -80,6 +85,7 @@ class OrderUpdateOnCallback
         if ((bool)$payment->getAdditionalInformation('euroPayment') !== true) {
             //don't send email if EURO PAYMENT as it was already sent
             $this->orderEmailSender->send($this->order);
+            $this->sendInvoiceNotification();
         }
 
         /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
@@ -100,5 +106,32 @@ class OrderUpdateOnCallback
         $this->order->getInvoiceCollection()
             ->setDataToAll('transaction_id', $payment->getLastTransId())
             ->save();
+    }
+
+    public function sendInvoiceNotification()
+    {
+        if ($this->invoiceConfirmationIsEnable() && $this->paymentActionIsCapture()) {
+            $invoices = $this->order->getInvoiceCollection();
+            if ($invoices->count() > 0) {
+                $this->invoiceEmailSender->send($invoices->getFirstItem());
+            }
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    private function paymentActionIsCapture()
+    {
+        $sagePayPaymentAction = $this->config->getSagepayPaymentAction();
+        return $sagePayPaymentAction === Config::ACTION_PAYMENT;
+    }
+
+    /**
+     * @return bool
+     */
+    private function invoiceConfirmationIsEnable()
+    {
+        return (string)$this->config->getInvoiceConfirmationNotification() === "1";
     }
 }
