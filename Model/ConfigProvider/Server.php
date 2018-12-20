@@ -7,7 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Model\ConfigProvider;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
-use \Ebizmarts\SagePaySuite\Model\Config as Config;
+use \Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Payment\Helper\Data as PaymentHelper;
 
 class Server implements ConfigProviderInterface
@@ -51,14 +51,14 @@ class Server implements ConfigProviderInterface
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
         \Magento\Customer\Model\Session $customerSession,
-        \Ebizmarts\SagePaySuite\Model\Config $config
+        Config $config
     ) {
         $this->_customerSession = $customerSession;
         $this->_tokenModel      = $tokenModel;
         $this->method           = $paymentHelper->getMethodInstance($this->methodCode);
         $this->_suiteHelper     = $suiteHelper;
         $this->_config          = $config;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
+        $this->_config->setMethodCode(Config::METHOD_SERVER);
     }
 
     public function getConfig()
@@ -81,15 +81,17 @@ class Server implements ConfigProviderInterface
             }
         }
 
-        return ['payment' => [
-            'ebizmarts_sagepaysuiteserver' => [
-                'licensed' => $this->_suiteHelper->verify(),
+        return [
+            'payment' => [
+                'ebizmarts_sagepaysuiteserver' => [
+                'licensed'      => $this->_suiteHelper->verify(),
                 'token_enabled' => $tokenEnabled,
-                'tokens' => $tokens,
-                'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER,
-                'mode' => $this->_config->getMode()
-            ],
-        ]
+                'tokens'        => $tokens,
+                'max_tokens'    => Config::MAX_TOKENS_PER_CUSTOMER,
+                'mode'          => $this->_config->getMode(),
+                'low_profile'   => $this->method->getConfigData('profile'),
+                ],
+            ]
         ];
     }
 }
