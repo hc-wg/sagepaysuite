@@ -964,4 +964,21 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             'test repeat deferred' => ['test', 'REPEATDEFERRED', 'https://test.sagepay.com/gateway/service/repeat.vsp']
         ];
     }
+
+    public function testIsInvoiceConfirmationNotificationEnabled()
+    {
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with(
+                'sagepaysuite/advanced/invoice_confirmation_notification',
+                ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn(true);
+
+        $this->assertEquals(
+            true,
+            $this->configModel->getInvoiceConfirmationNotification()
+        );
+    }
 }
