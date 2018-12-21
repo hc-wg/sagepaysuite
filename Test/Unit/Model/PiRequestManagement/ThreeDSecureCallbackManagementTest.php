@@ -15,9 +15,16 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\ResourceModel\Order\Invoice\Collection;
 use stdClass;
+use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Ebizmarts\SagePaySuite\Model\Config;
 
 class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
 {
+    /** @var InvoiceSender|\PHPUnit_Framework_MockObject_MockObject */
+    private $invoiceEmailSenderMock;
+
+    /** @var Config|\PHPUnit_Framework_MockObject_MockObject */
+    private $configMock;
 
     const THREE_D_SECURE_CALLBACK_MANAGEMENT = "Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement";
 
@@ -41,6 +48,8 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
      * @param $cntTrnFactoryMockCreate
      * @param $cntMethodInstance
      * @param $cntSetDataToAll
+     * @param $invoiceConfirmationSender
+     * @param $cntInvoiceCollection
      * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      * @throws \Magento\Framework\Validator\Exception
      * @dataProvider placeOrderOkProvider
@@ -50,7 +59,9 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $cntActionFactoryMockCreate,
         $cntTrnFactoryMockCreate,
         $cntMethodInstance,
-        $cntSetDataToAll
+        $cntSetDataToAll,
+        $invoiceConfirmationSender,
+        $cntInvoiceCollection
     )
     {
         $objectManagerHelper = new ObjectManager($this);
@@ -124,17 +135,26 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $paymentMock->expects($this->once())->method('save');
         $paymentMock->expects($this->exactly($cntMethodInstance))->method('getMethodInstance')->willReturn($paymentInstanceMock);
 
-        $invoiceCollectionMock = $this->getMockBuilder(Collection::class)
+        $invoiceCollectionMock = $this
+            ->getMockBuilder(Collection::class)
+            ->setMethods(['setDataToAll', 'count', 'getFirstItem', 'save'])
             ->disableOriginalConstructor()
             ->getMock();
-        $invoiceCollectionMock->expects($this->exactly($cntSetDataToAll))->method('setDataToAll')->willReturnSelf();
+        $invoiceCollectionMock->expects($this
+            ->exactly($cntSetDataToAll))
+            ->method('setDataToAll')
+            ->willReturnSelf();
+        $invoiceCollectionMock
+            ->expects($this->exactly($invoiceConfirmationSender))
+            ->method('count')
+            ->willReturn(1);
 
         $orderMock = $this->getMockBuilder(Order::class)
             ->disableOriginalConstructor()
             ->getMock();
         $orderMock->expects($this->once())->method('place')->willReturnSelf();
         $orderMock->expects($this->exactly(15))->method('getPayment')->willReturn($paymentMock);
-        $orderMock->expects($this->exactly($cntMethodInstance))->method('getInvoiceCollection')->willReturn($invoiceCollectionMock);
+        $orderMock->expects($this->exactly($cntInvoiceCollection))->method('getInvoiceCollection')->willReturn($invoiceCollectionMock);
 
         $orderRepositoryMock = $this->getMockBuilder(\Magento\Sales\Api\OrderRepositoryInterface::class)
             ->disableOriginalConstructor()
@@ -172,20 +192,57 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $transactionFactoryMock->expects($this->exactly($cntTrnFactoryMockCreate))->method('create')
         ->willReturn($transactionMock);
 
+        $this->invoiceEmailSenderMock = $this
+            ->getMockBuilder(InvoiceSender::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->configMock = $this
+            ->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->configMock
+            ->expects($this->once())
+            ->method('getInvoiceConfirmationNotification')
+            ->willReturn("1");
+        $this->configMock
+            ->expects($this->once())
+            ->method('getSagepayPaymentAction')
+            ->willReturn($paymentAction);
+
+        $invoiceMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\Order\Invoice::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $invoiceCollectionMock
+            ->expects($this->exactly($invoiceConfirmationSender))
+            ->method('getFirstItem')
+            ->willReturn($invoiceMock);
+
         /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement $model */
         $model = $objectManagerHelper->getObject(
             self::THREE_D_SECURE_CALLBACK_MANAGEMENT,
             [
-                'checkoutHelper'   => $checkoutHelperMock,
-                'payResultFactory' => $piTransactionResultFactoryMock,
-                'piRestApi'        => $piRestApiMock,
-                'checkoutSession'  => $checkoutSessionMock,
-                'orderRepository'  => $orderRepositoryMock,
-                'httpRequest'      => $httpRequestMock,
-                'actionFactory'    => $actionFactoryMock,
-                'transactionFactory' => $transactionFactoryMock
+                'checkoutHelper'     => $checkoutHelperMock,
+                'payResultFactory'   => $piTransactionResultFactoryMock,
+                'piRestApi'          => $piRestApiMock,
+                'checkoutSession'    => $checkoutSessionMock,
+                'orderRepository'    => $orderRepositoryMock,
+                'httpRequest'        => $httpRequestMock,
+                'actionFactory'      => $actionFactoryMock,
+                'transactionFactory' => $transactionFactoryMock,
+                'invoiceEmailSender' => $this->invoiceEmailSenderMock,
+                'config'             => $this->configMock
             ]
         );
+
+        $this->invoiceEmailSenderMock
+            ->expects($this->exactly($invoiceConfirmationSender))
+            ->method('send')
+            ->with($invoiceMock)
+            ->willReturn(true);
 
         $requestDataMock = $this->getMockBuilder(PiRequestManager::class)
             ->disableOriginalConstructor()
@@ -199,8 +256,8 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
     public function placeOrderOkProvider()
     {
         return [
-            'Payment payment action' => ['Payment', 0, 0, 1, 1],
-            'Deferred payment action' => ['Deferred', 1, 1, 0, 0]
+            'Payment payment action' => ['Payment', 0, 0, 1, 1, 1, 2],
+            'Deferred payment action' => ['Deferred', 1, 1, 0, 0, 0, 0]
         ];
     }
 
