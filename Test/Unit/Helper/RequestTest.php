@@ -411,6 +411,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'firstName' => 'first name',
                         'expected_firstName' => '<![CDATA[first name]]>',
                         'lastName' => 'last name',
+                        'expected_lastName' => '<![CDATA[last name]]>',
                         'middleName' => 'm',
                         'prefix' => 'pref',
                         'email' => 'email',
@@ -452,6 +453,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'firstName' => 'first name',
                         'expected_firstName' => '<![CDATA[first name]]>',
                         'lastName' => 'last name',
+                        'expected_lastName' => '<![CDATA[last name]]>',
                         'middleName' => 'm',
                         'prefix' => 'pref',
                         'email' => 'email',
@@ -492,6 +494,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'firstName' => 'first name',
                         'expected_firstName' => '<![CDATA[first name]]>',
                         'lastName' => 'last name',
+                        'expected_lastName' => '<![CDATA[last name]]>',
                         'middleName' => 'm',
                         'prefix' => 'pref',
                         'email' => 'email',
@@ -532,7 +535,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'totalGrossAmount' => 16,
                         'firstName' => '1st-3name',
                         'expected_firstName' => '<![CDATA[st-name]]>',
-                        'lastName' => 'last name',
+                        'lastName' => 'Last2 na4-me',
+                        'expected_lastName' => '<![CDATA[Last na-me]]>',
                         'middleName' => 'm',
                         'prefix' => 'pref',
                         'email' => 'email',
@@ -604,7 +608,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     '<unitGrossAmount>' . number_format($data['unitGrossAmount'], 2) . '</unitGrossAmount>' .
                     '<totalGrossAmount>' . number_format($data['totalGrossAmount'], 2) . '</totalGrossAmount>' .
                     '<recipientFName>' . $data['expected_firstName'] . '</recipientFName>' .
-                    '<recipientLName>' . $data['lastName'] . '</recipientLName>' .
+                    '<recipientLName>' . $data['expected_lastName'] . '</recipientLName>' .
                     '<recipientMName>' . $data['middleName'] . '</recipientMName>' .
                     '<recipientSal>' . $data['prefix'] . '</recipientSal>' .
                     '<recipientEmail>' . $data['email'] . '</recipientEmail>' .
