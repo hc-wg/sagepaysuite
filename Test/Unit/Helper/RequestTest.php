@@ -409,6 +409,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'unitGrossAmount' => 16,
                         'totalGrossAmount' => 16,
                         'firstName' => 'first name',
+                        'expected_firstName' => '<![CDATA[first name]]>',
                         'lastName' => 'last name',
                         'middleName' => 'm',
                         'prefix' => 'pref',
@@ -449,6 +450,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'unitGrossAmount' => 16,
                         'totalGrossAmount' => 16,
                         'firstName' => 'first name',
+                        'expected_firstName' => '<![CDATA[first name]]>',
                         'lastName' => 'last name',
                         'middleName' => 'm',
                         'prefix' => 'pref',
@@ -488,6 +490,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'unitGrossAmount' => 240,
                         'totalGrossAmount' => 720,
                         'firstName' => 'first name',
+                        'expected_firstName' => '<![CDATA[first name]]>',
                         'lastName' => 'last name',
                         'middleName' => 'm',
                         'prefix' => 'pref',
@@ -503,6 +506,47 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'deliveryGrossAmount' => 16,
                         'price' => 200,
                         'priceInclTax' => 240,
+                        'fax' => '11222',
+                        'parentItem' => false,
+                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML,
+                        'shippingDescription' => 'desc',
+                        'regionCode' => 'rc',
+                        'allAddresses' => [],
+                        'isMultishipping' => false,
+                        'method' => 'sagepayserver',
+                    ]
+                ],
+            'test XML recipientName' =>
+                [
+                    [
+                        'name' => 'Pursuit Lumaflex&trade; Tone Band',
+                        'expected_name' => '<![CDATA[Pursuit Lumaflex Tone Band]]>',
+                        'sku' => '24-UG02',
+                        'expected_sku' => '<![CDATA[24-UG02]]>',
+                        'product_id' => 56,
+                        'id' => null,
+                        'qty' => 1,
+                        'taxAmount' => 0,
+                        'unitTaxAmount' => 0,
+                        'unitGrossAmount' => 16,
+                        'totalGrossAmount' => 16,
+                        'firstName' => '1st-3name',
+                        'expected_firstName' => '<![CDATA[st-name]]>',
+                        'lastName' => 'last name',
+                        'middleName' => 'm',
+                        'prefix' => 'pref',
+                        'email' => 'email',
+                        'telephone' => '123456',
+                        'streetLine' => '1 Alfa & testing, more Address',
+                        'expectedStreetLine' => '<![CDATA[1 Alfa & testing, more Address]]>',
+                        'city' => 'city',
+                        'country' => 'co',
+                        'postCode' => '11222',
+                        'shippingAmount' => 15,
+                        'shippingTaxAmount' => 1,
+                        'deliveryGrossAmount' => 16,
+                        'priceInclTax' => 16,
+                        'price' => 16,
                         'fax' => '11222',
                         'parentItem' => false,
                         'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML,
@@ -559,7 +603,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     '<unitTaxAmount>' . number_format($data['unitTaxAmount'], 2) . '</unitTaxAmount>' .
                     '<unitGrossAmount>' . number_format($data['unitGrossAmount'], 2) . '</unitGrossAmount>' .
                     '<totalGrossAmount>' . number_format($data['totalGrossAmount'], 2) . '</totalGrossAmount>' .
-                    '<recipientFName>' . $data['firstName'] . '</recipientFName>' .
+                    '<recipientFName>' . $data['expected_firstName'] . '</recipientFName>' .
                     '<recipientLName>' . $data['lastName'] . '</recipientLName>' .
                     '<recipientMName>' . $data['middleName'] . '</recipientMName>' .
                     '<recipientSal>' . $data['prefix'] . '</recipientSal>' .
