@@ -1,3 +1,25 @@
+1.2.11 (07/01/2019)
+=============
+**This release requires Magento 2.2.x.**
+
+**Implemented features:**
+
+- Invoice confirmation email for Authorise and capture [#572]
+
+**Implemented enhancements:**
+
+- Show verification results in payment layout at order details [#549]
+- Server low profile smaller modal window [#538]
+
+ **Fixed bugs:**
+- Cancel or Void a Defer order without invoice [#550]
+- Refund problem on multi-currency sites [#570]
+- PI without DropIn problem when you enter a wrong CVN [#552]
+- Problem with refunds on multi-sites using two vendors [#571]
+- Exception thrown when open Fraud report [#527]
+- Basket XML constraint fix [#613]
+- Magento's sign appearing when click fraud cell [#623]
+
 1.2.10 (16/10/2018)
 =============
 **This release requires Magento 2.2.x.**
