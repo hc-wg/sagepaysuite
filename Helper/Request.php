@@ -496,6 +496,12 @@ class Request extends AbstractHelper
         return preg_replace("/[^a-zA-Z0-9-\s]/", "", $text);
     }
 
+
+    private function sanitizeRecipientName($text)
+    {
+        return preg_replace('/[0-9\d\"\&\:\,\{\}\@]/', "", $text);
+    }
+
     /**
      * Check if basket is OKay to be sent to Sage Pay.
      *
@@ -596,9 +602,17 @@ class Request extends AbstractHelper
      */
     private function basketXmlRecipientFName($shippingAdd, $node)
     {
-        $recipientFName = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getFirstname()), 0, 20));
-        if (!empty($recipientFName)) {
-            $node->addChild('recipientFName', $recipientFName);
+        $validFName = preg_match_all('/([a-zA-Z\s\+\'\/\\\.\-\(\)]+)/', $shippingAdd->getFirstname(), $matchesFName);
+        if ($validFName > 0) {
+            $this->addChildCData(
+                'recipientFName',
+                substr(
+                    $this->sanitizeRecipientName($this->stringToSafeXMLChar($shippingAdd->getFirstname())),
+                    0,
+                    20
+                ),
+                $node
+            );
         }
     }
 
@@ -608,9 +622,17 @@ class Request extends AbstractHelper
      */
     private function basketXmlRecipientLName($shippingAdd, $node)
     {
-        $recipientLName = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getLastname()), 0, 20));
-        if (!empty($recipientLName)) {
-            $node->addChild('recipientLName', $recipientLName);
+        $validFName = preg_match_all('/([a-zA-Z\s\+\'\/\\\.\-\(\)]+)/', $shippingAdd->getLastname(), $matchesFName);
+        if ($validFName > 0) {
+            $this->addChildCData(
+                'recipientLName',
+                substr(
+                    $this->sanitizeRecipientName($this->stringToSafeXMLChar($shippingAdd->getLastname())),
+                    0,
+                    20
+                ),
+                $node
+            );
         }
     }
 
