@@ -7,6 +7,17 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequest;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmount;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheckFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory;
+use Ebizmarts\SagePaySuite\Model\Api\PIRest;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Phrase;
 
 class PIRestTest extends \PHPUnit_Framework_TestCase
 {
@@ -259,6 +270,24 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $threedResultMock->expects($this->once())->method('setStatus')->with("NotChecked");
 
+        $avsCvcCheckResultMock = $this->
+            getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheck::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $avsCvcCheckResultMock->expects($this->once())->method('setStatus')->with('SecurityCodeMatchOnly');
+        $avsCvcCheckResultMock->expects($this->once())->method('setAddress')->with('NotMatched');
+        $avsCvcCheckResultMock->expects($this->once())->method('setPostalCode')->with('NotMatched');
+        $avsCvcCheckResultMock->expects($this->once())->method('setSecurityCode')->with('Matched');
+
+        $avsCvcCheckResultFactoryMock = $this->
+            getMockBuilder(PiTransactionResultAvsCvcCheckFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $avsCvcCheckResultFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($avsCvcCheckResultMock);
+
         $threedResultFactoryMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory::class)
             ->disableOriginalConstructor()
@@ -317,6 +346,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         $piTransactionResult->expects($this->once())->method('setBankResponseCode')->with("00");
         $piTransactionResult->expects($this->once())->method('setPaymentMethod')->with($payResult);
         $piTransactionResult->expects($this->once())->method('setThreeDSecure')->with($threedResultMock);
+        $piTransactionResult->expects($this->once())->method('setAvsCvcCheck')->with($avsCvcCheckResultMock);
 
         $piResultFactory = $this
             ->getMockBuilder('\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory')
@@ -361,6 +391,12 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                             },
                             "3DSecure": {
                                 "status": "NotChecked"
+                            },
+                            "avsCvcCheck": {
+                                "status": "SecurityCodeMatchOnly",
+                                "address": "NotMatched",
+                                "postalCode": "NotMatched",
+                                "securityCode": "Matched"
                             }
                         }
                     '
@@ -406,7 +442,8 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 "piCaptureResultFactory"     => $piResultFactory,
                 "cardResultFactory"          => $cardResultFactory,
                 "paymentMethodResultFactory" => $paymentMethodResultFactory,
-                "threedResultFactory"        => $threedResultFactoryMock
+                "threedResultFactory"        => $threedResultFactoryMock,
+                "avsCvcCheckResultFactory"   => $avsCvcCheckResultFactoryMock
             ]
         );
 

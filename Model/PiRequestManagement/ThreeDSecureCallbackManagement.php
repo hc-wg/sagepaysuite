@@ -6,6 +6,7 @@ use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Validator\Exception as ValidatorException;
+use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 
 class ThreeDSecureCallbackManagement extends RequestManagement
 {
@@ -31,6 +32,12 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory */
     private $payResultFactory;
 
+    /** @var InvoiceSender */
+    private $invoiceEmailSender;
+
+    /** @var Config */
+    private $config;
+
     public function __construct(
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Model\Api\PIRest $piRestApi,
@@ -42,7 +49,9 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         \Magento\Framework\App\RequestInterface $httpRequest,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $payResultFactory
+        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $payResultFactory,
+        InvoiceSender $invoiceEmailSender,
+        Config $config
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -58,6 +67,8 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         $this->orderFactory       = $orderFactory;
         $this->transactionFactory = $transactionFactory;
         $this->payResultFactory   = $payResultFactory;
+        $this->invoiceEmailSender = $invoiceEmailSender;
+        $this->config = $config;
     }
 
     public function getPayment()
@@ -162,6 +173,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
                 $this->getPayResult()->setStatusCode($response->getStatusCode());
                 $this->getPayResult()->setThreeDSecure($response->getThreeDSecure());
                 $this->getPayResult()->setTransactionId($response->getTransactionId());
+                $this->getPayResult()->setAvsCvcCheck($response->getAvsCvcCheck());
 
                 $this->processPayment();
 
@@ -175,6 +187,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
 
                 //send email
                 $this->getCheckoutHelper()->sendOrderEmail($this->order);
+                $this->sendInvoiceNotification($this->order);
 
                 //update invoice transaction id
                 $this->order->getInvoiceCollection()
@@ -194,5 +207,32 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         } else {
             throw new ValidatorException(__('Invalid Sage Pay response: %1', $response->getStatusDetail()));
         }
+    }
+
+    public function sendInvoiceNotification($order)
+    {
+        if ($this->invoiceConfirmationIsEnable() && $this->paymentActionIsCapture()) {
+            $invoices = $order->getInvoiceCollection();
+            if ($invoices->count() > 0) {
+                $this->invoiceEmailSender->send($invoices->getFirstItem());
+            }
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    private function paymentActionIsCapture()
+    {
+        $sagePayPaymentAction = $this->config->getSagepayPaymentAction();
+        return $sagePayPaymentAction === Config::ACTION_PAYMENT_PI;
+    }
+
+    /**
+     * @return bool
+     */
+    private function invoiceConfirmationIsEnable()
+    {
+        return (string)$this->config->getInvoiceConfirmationNotification() === "1";
     }
 }

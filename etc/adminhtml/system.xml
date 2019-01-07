@@ -86,6 +86,12 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>sagepaysuite/advanced/giftaid</config_path>
                     </field>
+                    <field id="invoice_confirmation_notification" translate="label comment" type="select" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Send email on automatic invoice?</label>
+                        <comment><![CDATA[If payment action is Authorize and Capture, an invoice confirmation email is sent]]></comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>sagepaysuite/advanced/invoice_confirmation_notification</config_path>
+                    </field>
                 </group>
                 <group id="sagepaysuiteform" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sage Pay FORM Integration</label>
@@ -194,11 +200,6 @@
                         <label>Sort Order</label>
                         <frontend_class>validate-number</frontend_class>
                         <config_path>payment/sagepaysuitepi/sort_order</config_path>
-                    </field>
-                    <field id="cctypes" translate="label" type="multiselect" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Credit card types</label>
-                        <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\Cctype</source_model>
-                        <config_path>payment/sagepaysuitepi/cctypes</config_path>
                     </field>
                     <field id="allowspecific" translate="label" type="allowspecific" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Payment from Applicable Countries</label>

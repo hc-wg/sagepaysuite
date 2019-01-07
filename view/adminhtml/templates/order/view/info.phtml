@@ -60,6 +60,30 @@ $payment = $block->getPayment();
                     <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("threeDStatus")); ?></td>
                 </tr>
             <?php } ?>
+            <?php if ($payment->getAdditionalInformation("avsCvcCheckAddress")) { ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('Address Verification Result')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("avsCvcCheckAddress")); ?></td>
+                </tr>
+            <?php } ?>
+            <?php if ($payment->getAdditionalInformation("avsCvcCheckPostalCode")) { ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('Postcode Verification Result')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("avsCvcCheckPostalCode")); ?></td>
+                </tr>
+            <?php } ?>
+            <?php if ($payment->getAdditionalInformation("avsCvcCheckSecurityCode")) { ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('CV2 Verification Result')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("avsCvcCheckSecurityCode")); ?></td>
+                </tr>
+            <?php } ?>
+            <?php if ($payment->getAdditionalInformation("avsCvcCheckStatus")) { ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('AVS and CV2 Verification Result')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("avsCvcCheckStatus")); ?></td>
+                </tr>
+            <?php } ?>
             </tbody>
         </table>
     </div>

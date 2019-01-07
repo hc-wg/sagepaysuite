@@ -57,7 +57,7 @@ class Payment
                     $result = $this->sharedApi->captureDeferredTransaction($transactionId, $amount);
                 } elseif ($this->isAuthenticateAction($paymentAction)) {
                     $action = 'authorizing';
-                    $result = $this->sharedApi->authorizeTransaction($transactionId, $amount, $order->getIncrementId());
+                    $result = $this->sharedApi->authorizeTransaction($transactionId, $amount, $order);
                 }
 
                 $this->addAdditionalInformationToTransaction($payment, $result);
@@ -117,7 +117,7 @@ class Payment
      */
     private function tryRefund(\Magento\Payment\Model\InfoInterface $payment, $transactionId, $amount)
     {
-        $result = $this->sharedApi->refundTransaction($transactionId, $amount, $payment->getOrder()->getIncrementId());
+        $result = $this->sharedApi->refundTransaction($transactionId, $amount, $payment->getOrder());
 
         $this->addAdditionalInformationToTransaction($payment, $result);
 

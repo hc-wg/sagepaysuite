@@ -22,17 +22,26 @@ use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteValidator;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 
 class EcommerceManagementTest extends \PHPUnit_Framework_TestCase
 {
     /** @var \Magento\Framework\TestFramework\Unit\Helper\ObjectManager */
     private $objectManagerHelper;
 
+    /** @var InvoiceSender|\PHPUnit_Framework_MockObject_MockObject */
+    private $invoiceEmailSenderMock;
+
+    /** @var Config|\PHPUnit_Framework_MockObject_MockObject */
+    private $configMock;
+
     const TEST_ORDER_NUMBER = 7832;
 
     protected function setUp()
     {
         $this->objectManagerHelper = new ObjectManager($this);
+        $this->invoiceEmailSenderMock = $this->getMockBuilder(InvoiceSender::class)->disableOriginalConstructor()->getMock();
+        $this->configMock = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
     }
 
     public function testIsMotoTransaction()
@@ -59,6 +68,8 @@ class EcommerceManagementTest extends \PHPUnit_Framework_TestCase
 
         $payResultMock = $this->makeMockDisabledConstructor(PiTransactionResultInterface::class);
         $payResultMock->expects($this->any())->method('getStatusCode')->willReturn(Config::SUCCESS_STATUS);
+
+        $payResultMock->expects($this->once())->method('getAvsCvcCheck');
 
         $piRestApiMock = $this->makeMockDisabledConstructor(PIRest::class);
         $piRestApiMock->expects($this->once())->method('capture')->willReturn($payResultMock);
@@ -181,9 +192,51 @@ class EcommerceManagementTest extends \PHPUnit_Framework_TestCase
                 'actionFactory'      => $actionFactoryMock,
                 'transactionFactory' => $transactionFactoryMock,
                 'checkoutSession'    => $checkoutSessionMock,
-                'quoteValidator'     => $quoteValidatorMock
+                'quoteValidator'     => $quoteValidatorMock,
+                'invoiceEmailSender' => $this->invoiceEmailSenderMock,
+                'config'             => $this->configMock
             ]
         );
+
+
+        $this->configMock
+            ->expects($this->once())
+            ->method('getInvoiceConfirmationNotification')
+            ->willReturn("1");
+        $this->configMock
+            ->expects($this->once())
+            ->method('getSagepayPaymentAction')
+            ->willReturn(Config::ACTION_PAYMENT_PI);
+
+        $invoiceMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\Order\Invoice::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $invoiceCollectionMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
+            ->setMethods(['getFirstItem', 'count'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $invoiceCollectionMock
+            ->expects($this->once())
+            ->method('count')
+            ->willReturn(1);
+        $invoiceCollectionMock
+            ->expects($this->once())
+            ->method('getFirstItem')
+            ->willReturn($invoiceMock);
+
+        $orderMock
+            ->expects($this->once())
+            ->method('getInvoiceCollection')
+            ->willReturn($invoiceCollectionMock);
+
+        $this->invoiceEmailSenderMock
+            ->expects($this->once())
+            ->method('send')
+            ->with($invoiceMock)
+            ->willReturn(true);
 
         $sut->setQuote($quoteMock);
         $sut->setRequestData($requestDataMock);
@@ -422,5 +475,4 @@ class EcommerceManagementTest extends \PHPUnit_Framework_TestCase
             new \Magento\Framework\Phrase('Please specify a shipping method.')
         );
     }
-
 }

@@ -27,9 +27,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->serverModelMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Server')->disableOriginalConstructor()->getMock();
-        $this->serverModelMock->expects($this->any())
-            ->method('isAvailable')
-            ->willReturn(true);
+
 
         $this->paymentHelperMocj = $this->getMockBuilder('Magento\Payment\Helper\Data')->disableOriginalConstructor()->getMock();
         $this->paymentHelperMocj->expects($this->any())
@@ -103,7 +101,16 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
     public function testGetConfig()
     {
-        $this->customerSessionMock->expects($this->any())
+        $this->serverModelMock->expects($this->any())
+            ->method('isAvailable')
+            ->willReturn(true);
+        $this->serverModelMock
+            ->expects($this->once())
+            ->method('getConfigData')
+            ->with('profile')
+            ->willReturn('1');
+
+        $this->customerSessionMock->expects($this->never())
             ->method('getCustomerId')
             ->willReturn(1);
 
@@ -119,7 +126,8 @@ class ServerTest extends \PHPUnit_Framework_TestCase
                         'token_enabled' => false,
                         'tokens' => null,
                         'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER,
-                        'mode' => null
+                        'mode' => null,
+                        'low_profile' => '1'
                     ]
                 ]
             ],
@@ -129,6 +137,15 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
     public function testGetConfigWithToken()
     {
+        $this->serverModelMock->expects($this->any())
+            ->method('isAvailable')
+            ->willReturn(true);
+        $this->serverModelMock
+            ->expects($this->once())
+            ->method('getConfigData')
+            ->with('profile')
+            ->willReturn('1');
+
         $this->customerSessionMock->expects($this->any())
             ->method('getCustomerId')
             ->willReturn(1);
@@ -147,7 +164,8 @@ class ServerTest extends \PHPUnit_Framework_TestCase
                             "token_id" => 1
                         ],
                         'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER,
-                        'mode' => null
+                        'mode' => null,
+                        'low_profile' => '1'
                     ]
                 ]
             ],
@@ -157,6 +175,15 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
     public function testGetConfigWithTokenNoCustomer()
     {
+        $this->serverModelMock->expects($this->any())
+            ->method('isAvailable')
+            ->willReturn(true);
+        $this->serverModelMock
+            ->expects($this->once())
+            ->method('getConfigData')
+            ->with('profile')
+            ->willReturn('1');
+
         $this->configMock->expects($this->once())
             ->method('isTokenEnabled')
             ->willReturn(true);
@@ -186,7 +213,8 @@ class ServerTest extends \PHPUnit_Framework_TestCase
                         'token_enabled' => false,
                         'tokens' => null,
                         'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER,
-                        'mode' => null
+                        'mode' => null,
+                        'low_profile' => '1'
                     ]
                 ]
             ],
