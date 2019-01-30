@@ -10,6 +10,7 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\OrderFactory;
@@ -50,6 +51,11 @@ class Cancel extends Action
     private $orderFactory;
 
     /**
+     * @var EncryptorInterface
+     */
+    private $encryptor;
+
+    /**
      * Cancel constructor.
      * @param Context $context
      * @param Logger $suiteLogger
@@ -68,7 +74,8 @@ class Cancel extends Action
         Session $checkoutSession,
         Quote $quote,
         QuoteIdMaskFactory $quoteIdMaskFactory,
-        OrderFactory $orderFactory
+        OrderFactory $orderFactory,
+        EncryptorInterface $encryptor
     ) {
     
         parent::__construct($context);
@@ -80,6 +87,7 @@ class Cancel extends Action
         $this->quote              = $quote;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
         $this->orderFactory       = $orderFactory;
+        $this->encryptor          = $encryptor;
     }
 
     public function execute()
@@ -87,7 +95,7 @@ class Cancel extends Action
         $this->saveErrorMessage();
 
         $storeId = $this->getRequest()->getParam("_store");
-        $quoteId = $this->getRequest()->getParam("quote");
+        $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quote"));
 
         $this->quote->setStoreId($storeId);
         $this->quote->load($quoteId);
