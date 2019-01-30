@@ -15,6 +15,7 @@ use Ebizmarts\SagePaySuite\Model\Token;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Validator\Exception;
@@ -66,7 +67,7 @@ class Notify extends Action
     private $cartRepository;
 
     /**
-     * @var \Magento\Framework\Encryption\EncryptorInterface
+     * @var EncryptorInterface
      */
     private $encryptor;
 
@@ -92,7 +93,7 @@ class Notify extends Action
         OrderUpdateOnCallback $updateOrderCallback,
         Data $suiteHelper,
         QuoteRepository $cartRepository,
-        \Magento\Framework\Encryption\EncryptorInterface $encryptor
+        EncryptorInterface $encryptor
     ) {
         parent::__construct($context);
 
@@ -114,7 +115,7 @@ class Notify extends Action
         $this->postData = $this->getRequest()->getPost();
 
         $storeId = $this->getRequest()->getParam("_store");
-        $quoteId = $this->processQuoteId($this->getRequest()->getParam("quoteid"));
+        $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
 
         //log response
         $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->postData, [__METHOD__, __LINE__]);
@@ -220,11 +221,6 @@ class Notify extends Action
         }
     }
 
-    private function processQuoteId($quoteId)
-    {
-        return $this->encryptor->decrypt($quoteId);
-    }
-
     private function getVPSSignatureString($payment)
     {
         return $this->postData->VPSTxId .
@@ -308,7 +304,9 @@ class Notify extends Action
             '_store' => $this->getRequest()->getParam('_store')
         ]);
 
-        $url .= "?quote={$quoteId}&message=Transaction cancelled by customer";
+        $quoteId = $this->encryptor->encrypt($quoteId);
+
+        $url .= "?quote=" . $quoteId . "&message=Transaction cancelled by customer";
 
         return $url;
     }
@@ -320,7 +318,7 @@ class Notify extends Action
             '_store'  => $this->quote->getStoreId()
         ]);
 
-        $url .= "?quoteid=" . $this->quote->getId();
+        $url .= "?quoteid=" . $this->encryptor->encrypt($this->quote->getId());
 
         return $url;
     }
@@ -332,7 +330,9 @@ class Notify extends Action
             '_store' => $this->getRequest()->getParam('_store')
         ]);
 
-        $url .= "?message=" . $message . "&quote={$quoteId}";
+        $quoteId = $this->encryptor->encrypt($quoteId);
+
+        $url .= "?message=" . $message . "&quote=" . $quoteId;
 
         return $url;
     }
