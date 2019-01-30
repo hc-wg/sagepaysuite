@@ -66,6 +66,11 @@ class Notify extends Action
     private $cartRepository;
 
     /**
+     * @var \Magento\Framework\Encryption\EncryptorInterface
+     */
+    private $encryptor;
+
+    /**
      * Notify constructor.
      * @param Context $context
      * @param Logger $suiteLogger
@@ -86,7 +91,8 @@ class Notify extends Action
         Token $tokenModel,
         OrderUpdateOnCallback $updateOrderCallback,
         Data $suiteHelper,
-        QuoteRepository $cartRepository
+        QuoteRepository $cartRepository,
+        \Magento\Framework\Encryption\EncryptorInterface $encryptor
     ) {
         parent::__construct($context);
 
@@ -98,6 +104,7 @@ class Notify extends Action
         $this->tokenModel          = $tokenModel;
         $this->suiteHelper         = $suiteHelper;
         $this->cartRepository      = $cartRepository;
+        $this->encryptor           = $encryptor;
         $this->config->setMethodCode(Config::METHOD_SERVER);
     }
 
@@ -107,7 +114,7 @@ class Notify extends Action
         $this->postData = $this->getRequest()->getPost();
 
         $storeId = $this->getRequest()->getParam("_store");
-        $quoteId = $this->getRequest()->getParam("quoteid");
+        $quoteId = $this->processQuoteId($this->getRequest()->getParam("quoteid"));
 
         //log response
         $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->postData, [__METHOD__, __LINE__]);
@@ -211,6 +218,11 @@ class Notify extends Action
 
             return $this->returnInvalid(__("Something went wrong: %1", $e->getMessage()), $this->quote->getId());
         }
+    }
+
+    private function processQuoteId($quoteId)
+    {
+        return $this->encryptor->decrypt($quoteId);
     }
 
     private function getVPSSignatureString($payment)
