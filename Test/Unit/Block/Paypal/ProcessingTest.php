@@ -62,4 +62,28 @@ class PaypalTest extends \PHPUnit\Framework\TestCase
         $this->assertStringStartsWith('<html', $htmlResult);
     }
 
+    public function testHtmlError()
+    {
+        /** @var $paypalProcessingBlock \Ebizmarts\SagePaySuite\Block\Paypal\Processing $paypalProcessingBlock|\PHPUnit_Framework_MockObject_MockObject */
+        $paypalProcessingBlock = $this->getMockBuilder(
+            \Ebizmarts\SagePaySuite\Block\Paypal\Processing::class
+        )
+            ->setMethods(['getViewFileUrl', 'getUrl', 'getRequest', 'getData'])
+        ->disableOriginalConstructor()
+        ->getMock();
+
+        $paypalProcessingBlock->expects($this->once())->method('getData')->with('paypal_post')
+        ->willReturn([]);
+
+        $paypalProcessingBlock->expects($this->once())->method('getViewFileUrl')
+            ->with('Ebizmarts_SagePaySuite::images/paypal_checkout.png');
+
+        $paypalProcessingBlock->expects($this->once())->method('getUrl')
+            ->with('sagepaysuite/paypal/callback', ['_secure' => true]);
+
+        $htmlResult = $paypalProcessingBlock->paypalHtml();
+
+        $this->assertContains('ERROR: Invalid response from PayPal', $htmlResult);
+    }
+
 }
