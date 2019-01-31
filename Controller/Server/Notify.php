@@ -207,15 +207,17 @@ class Notify extends Action
         } catch (ApiException $apiException) {
             $this->suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
 
-            //cancel pending payment order
-            $this->cancelOrder($order);
+            if (isset($order)) {
+                $this->cancelOrder($order);
+            }
 
             return $this->returnInvalid(__("Something went wrong: %1", $apiException->getUserMessage()));
         } catch (\Exception $e) {
             $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
-            //cancel pending payment order
-            $this->cancelOrder($order);
+            if (isset($order)) {
+                $this->cancelOrder($order);
+            }
 
             return $this->returnInvalid(__("Something went wrong: %1", $e->getMessage()), $this->quote->getId());
         }
