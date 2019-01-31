@@ -147,9 +147,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
         $this->encryptor->expects($this->once())->method('decrypt')->willReturn(self::QUOTE_ID);
 
-        $this->encryptor->expects($this->any())->method('encrypt')
-            ->with(self::QUOTE_ID)
-            ->willReturn(self::ENC_QUOTE_ID);
+        $this->checkEncryptIsCalled();
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -215,9 +213,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($transactionMock));
 
-        $this->encryptor->expects($this->any())->method('encrypt')
-            ->with(self::QUOTE_ID)
-            ->willReturn(self::ENC_QUOTE_ID);
+        $this->checkEncryptIsCalled();
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -297,9 +293,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
         $this->orderSender->expects($this->once())->method('send')->with($this->order);
 
-        $this->encryptor->expects($this->any())->method('encrypt')
-            ->with(self::QUOTE_ID)
-            ->willReturn(self::ENC_QUOTE_ID);
+        $this->checkEncryptIsCalled();
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -362,9 +356,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($transactionMock));
 
-        $this->encryptor->expects($this->any())->method('encrypt')
-            ->with(self::QUOTE_ID)
-            ->willReturn(self::ENC_QUOTE_ID);
+        $this->checkEncryptIsCalled();
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -433,9 +425,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($transactionMock));
 
-        $this->encryptor->expects($this->any())->method('encrypt')
-            ->with(self::QUOTE_ID)
-            ->willReturn(self::ENC_QUOTE_ID);
+        $this->checkEncryptIsCalled();
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -501,9 +491,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($transactionMock));
 
-        $this->encryptor->expects($this->any())->method('encrypt')
-            ->with(self::QUOTE_ID)
-            ->willReturn(self::ENC_QUOTE_ID);
+        $this->checkEncryptIsCalled();
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -568,9 +556,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->expects($this->never())
             ->method('getInvoiceCollection');
 
-        $this->encryptor->expects($this->any())->method('encrypt')
-            ->with(self::QUOTE_ID)
-            ->willReturn(self::ENC_QUOTE_ID);
+        $this->checkEncryptIsCalled();
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -636,9 +622,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->expects($this->never())
             ->method('getInvoiceCollection');
 
-        $this->encryptor->expects($this->any())->method('encrypt')
-            ->with(self::QUOTE_ID)
-            ->willReturn(self::ENC_QUOTE_ID);
+        $this->checkEncryptIsCalled();
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -705,9 +689,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->expects($this->never())
             ->method('getInvoiceCollection');
 
-        $this->encryptor->expects($this->any())->method('encrypt')
-            ->with(self::QUOTE_ID)
-            ->willReturn(self::ENC_QUOTE_ID);
+        $this->checkEncryptIsCalled();
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -830,9 +812,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 'testebizmarts'
             )->willReturnSelf();
 
-        $this->encryptor->expects($this->any())->method('encrypt')
-            ->with(self::QUOTE_ID)
-            ->willReturn(self::ENC_QUOTE_ID);
+        $this->checkEncryptIsCalled();
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -895,9 +875,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('cancel')
             ->willReturnSelf();
 
-        $this->encryptor->expects($this->any())->method('encrypt')
-            ->with(self::QUOTE_ID)
-            ->willReturn(self::ENC_QUOTE_ID);
+        $this->checkEncryptIsCalled();
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -1129,5 +1107,13 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
                 return '';
             });
+    }
+
+    /**
+     * Check that encrypt method is called with plain ID and returns encrypted one.
+     */
+    private function checkEncryptIsCalled()
+    {
+        $this->encryptor->expects($this->any())->method('encrypt')->with(self::QUOTE_ID)->willReturn(self::ENC_QUOTE_ID);
     }
 }
