@@ -227,7 +227,10 @@ class Callback extends Action implements CsrfAwareActionInterface
 
     private function loadQuoteFromDataSource()
     {
-        $this->quote = $this->quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
+        $this->quote = $this->quoteFactory->create()->load(
+            $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"))
+        );
+
         if (empty($this->quote->getId())) {
             throw new LocalizedException(__("Unable to find payment data."));
         }
