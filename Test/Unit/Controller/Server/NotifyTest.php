@@ -16,6 +16,7 @@ use Ebizmarts\SagePaySuite\Model\Token;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Response\Http as HttpResponse;
 use Magento\Framework\App\Request\Http as HttpRequest;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
@@ -37,6 +38,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
     const QUOTE_ID      = '99999999';
     const ORDER_ID      = '88888888';
     const STORE_ID      = 1;
+    const ENC_QUOTE_ID  =  '0:2:Dwn8kCUk6nZU5B7b0Xn26uYQDeLUKBrD:S72utt9n585GrslZpDp+DRpW+8dpqiu/EiCHXwfEhS0=';
 
     /** @var Config|\PHPUnit_Framework_MockObject_MockObject */
     private $config;
@@ -89,6 +91,9 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
     /** @var OrderUpdateOnCallback|\PHPUnit_Framework_MockObject_MockObject */
     private $updateOrderCallback;
 
+    /** @var EncryptorInterface|\PHPUnit_Framework_MockObject_MockObject */
+    private $encryptor;
+
     // @codingStandardsIgnoreStart
     public function setUp()
     {
@@ -106,6 +111,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->makeUrlBuilder();
         $this->makeContext();
         $this->makeToken();
+        $this->makeEncryptor();
     }
     // @codingStandardsIgnoreEnd
 
@@ -139,6 +145,12 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->expects($this->never())
             ->method('getInvoiceCollection');
 
+        $this->encryptor->expects($this->once())->method('decrypt')->willReturn(self::QUOTE_ID);
+
+        $this->encryptor->expects($this->any())->method('encrypt')
+            ->with(self::QUOTE_ID)
+            ->willReturn(self::ENC_QUOTE_ID);
+
         $this->request->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
@@ -166,7 +178,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
         );
 
         $this->updateOrderCallback->expects($this->once())->method('setOrder')->with($this->order);
@@ -203,6 +215,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($transactionMock));
 
+        $this->encryptor->expects($this->any())->method('encrypt')
+            ->with(self::QUOTE_ID)
+            ->willReturn(self::ENC_QUOTE_ID);
+
         $this->request->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
@@ -230,7 +246,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
         );
 
         $this->updateOrderCallback->expects($this->once())->method('setOrder')->with($this->order);
@@ -281,6 +297,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
         $this->orderSender->expects($this->once())->method('send')->with($this->order);
 
+        $this->encryptor->expects($this->any())->method('encrypt')
+            ->with(self::QUOTE_ID)
+            ->willReturn(self::ENC_QUOTE_ID);
+
         $this->request->expects($this->once())
             ->method('getPost')
             ->willReturn((object)[
@@ -308,7 +328,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -342,6 +362,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($transactionMock));
 
+        $this->encryptor->expects($this->any())->method('encrypt')
+            ->with(self::QUOTE_ID)
+            ->willReturn(self::ENC_QUOTE_ID);
+
         $this->request->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
@@ -369,7 +393,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction ABORTED successfully' . "\r\n" .
-            'RedirectURL=?quote=' . self::QUOTE_ID . '&message=Transaction cancelled by customer' . "\r\n"
+            'RedirectURL=?quote=' . self::ENC_QUOTE_ID . '&message=Transaction cancelled by customer' . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -409,6 +433,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($transactionMock));
 
+        $this->encryptor->expects($this->any())->method('encrypt')
+            ->with(self::QUOTE_ID)
+            ->willReturn(self::ENC_QUOTE_ID);
+
         $this->request->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
@@ -438,7 +466,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=' . $errorStatusDetail . "\r\n" .
-            'RedirectURL=?message=' . $errorStatusDetail . '&quote=' . self::QUOTE_ID . "\r\n"
+            'RedirectURL=?message=' . $errorStatusDetail . '&quote=' . self::ENC_QUOTE_ID . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -473,6 +501,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($transactionMock));
 
+        $this->encryptor->expects($this->any())->method('encrypt')
+            ->with(self::QUOTE_ID)
+            ->willReturn(self::ENC_QUOTE_ID);
+
         $this->request->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
@@ -485,7 +517,6 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "BankAuthCode" => "999777",
                 "TxAuthNo" => "17962849",
                 "Last4Digits" => "0006",
-                "ExpiryDate" => "0222",
                 "ExpiryDate" => "0222",
                 "VendorTxCode" => "10000000001-2015-12-12-123456",
                 "AVSCV2" => "OK",
@@ -501,7 +532,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Something went wrong: Invalid transaction id' . "\r\n" .
-            'RedirectURL=?message=Something went wrong: Invalid transaction id&quote=' . self::QUOTE_ID . "\r\n"
+            'RedirectURL=?message=Something went wrong: Invalid transaction id&quote=' . self::ENC_QUOTE_ID . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -536,6 +567,11 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->order
             ->expects($this->never())
             ->method('getInvoiceCollection');
+
+        $this->encryptor->expects($this->any())->method('encrypt')
+            ->with(self::QUOTE_ID)
+            ->willReturn(self::ENC_QUOTE_ID);
+
         $this->request->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
@@ -561,7 +597,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
         );
 
         $this->updateOrderCallback->expects($this->once())->method('setOrder')->with($this->order);
@@ -599,6 +635,11 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->order
             ->expects($this->never())
             ->method('getInvoiceCollection');
+
+        $this->encryptor->expects($this->any())->method('encrypt')
+            ->with(self::QUOTE_ID)
+            ->willReturn(self::ENC_QUOTE_ID);
+
         $this->request->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
@@ -624,7 +665,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
         );
 
         $this->updateOrderCallback->expects($this->once())->method('setOrder')->with($this->order);
@@ -663,6 +704,11 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->order
             ->expects($this->never())
             ->method('getInvoiceCollection');
+
+        $this->encryptor->expects($this->any())->method('encrypt')
+            ->with(self::QUOTE_ID)
+            ->willReturn(self::ENC_QUOTE_ID);
+
         $this->request->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
@@ -688,7 +734,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
         );
 
         $this->updateOrderCallback->expects($this->once())->method('setOrder')->with($this->order);
@@ -784,6 +830,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 'testebizmarts'
             )->willReturnSelf();
 
+        $this->encryptor->expects($this->any())->method('encrypt')
+            ->with(self::QUOTE_ID)
+            ->willReturn(self::ENC_QUOTE_ID);
+
         $this->request->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
@@ -810,7 +860,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -845,6 +895,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('cancel')
             ->willReturnSelf();
 
+        $this->encryptor->expects($this->any())->method('encrypt')
+            ->with(self::QUOTE_ID)
+            ->willReturn(self::ENC_QUOTE_ID);
+
         $this->request->expects($this->once())
             ->method('getPost')
             ->will($this->returnValue((object)[
@@ -855,7 +909,6 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                 "3DSecureStatus" => "NOTCHECKED",
                 "CardType" => "VISA",
                 "Last4Digits" => "0006",
-                "ExpiryDate" => "0222",
                 "ExpiryDate" => "0222",
                 "VendorTxCode" => "10000000001-2015-12-12-123456",
                 "AVSCV2" => "OK",
@@ -871,7 +924,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Something went wrong: Invalid VPS Signature' . "\r\n" .
-            'RedirectURL=?message=Something went wrong: Invalid VPS Signature&quote=' . self::QUOTE_ID . "\r\n"
+            'RedirectURL=?message=Something went wrong: Invalid VPS Signature&quote=' . self::ENC_QUOTE_ID . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -906,7 +959,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             'tokenModel'         => $this->token,
             'updateOrderCallback'=> $this->updateOrderCallback,
             'suiteHelper'        => $this->suiteHelper,
-            'cartRepository'     => $this->cartRepository
+            'cartRepository'     => $this->cartRepository,
+            'encryptor'          => $this->encryptor
         ];
 
         if ($updateOrderCallback !== null) {
@@ -1045,6 +1099,14 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->token = $this->getMockBuilder(Token::class)->disableOriginalConstructor()->getMock();
     }
 
+    private function makeEncryptor() {
+        $this->encryptor = $this->getMockBuilder(EncryptorInterface::class)
+            ->disableOriginalConstructor()->getMock();
+        $this->encryptor->expects($this->once())->method('decrypt')
+            ->with(self::ENC_QUOTE_ID)
+            ->willReturn(self::QUOTE_ID);
+    }
+
     /**
      * @param $body
      */
@@ -1063,7 +1125,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
                     return self::STORE_ID;
 
                 if ($param === 'quoteid')
-                    return self::QUOTE_ID;
+                    return self::ENC_QUOTE_ID;
 
                 return '';
             });
