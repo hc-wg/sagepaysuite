@@ -62,6 +62,7 @@ class PaypalTest extends \PHPUnit\Framework\TestCase
         $this->assertStringStartsWith('<html', $htmlResult);
     }
 
+<<<<<<< HEAD
     public function testHtmlError()
     {
         /** @var $paypalProcessingBlock \Ebizmarts\SagePaySuite\Block\Paypal\Processing $paypalProcessingBlock|\PHPUnit_Framework_MockObject_MockObject */
@@ -86,4 +87,6 @@ class PaypalTest extends \PHPUnit\Framework\TestCase
         $this->assertContains('ERROR: Invalid response from PayPal', $htmlResult);
     }
 
+=======
+>>>>>>> 98af6d8... Test PayPal processing block.
 }
