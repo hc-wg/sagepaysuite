@@ -228,8 +228,7 @@ class Callback extends Action
         $this->quote = $this->quoteFactory->create()->load(
             $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"))
         );
-        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->getRequest()->getParam("quoteid"), [__METHOD__, __LINE__]);
-        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->encryptor->decrypt($this->getRequest()->getParam("quoteid")), [__METHOD__, __LINE__]);
+
         if (empty($this->quote->getId())) {
             throw new LocalizedException(__("Unable to find payment data."));
         }
