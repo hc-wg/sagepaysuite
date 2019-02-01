@@ -38,6 +38,11 @@ class Success extends \Magento\Framework\App\Action\Action
     private $_quoteFactory;
 
     /**
+     * @var \Magento\Framework\Encryption\EncryptorInterface
+     */
+    private $encryptor;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      * @param Logger $suiteLogger
      * @param \Psr\Log\LoggerInterface $logger
@@ -51,7 +56,8 @@ class Success extends \Magento\Framework\App\Action\Action
         \Psr\Log\LoggerInterface $logger,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory
+        \Magento\Quote\Model\QuoteFactory $quoteFactory,
+        \Magento\Framework\Encryption\EncryptorInterface $encryptor
     ) {
     
         parent::__construct($context);
@@ -61,13 +67,14 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_checkoutSession = $checkoutSession;
         $this->_orderFactory    = $orderFactory;
         $this->_quoteFactory    = $quoteFactory;
+        $this->encryptor        = $encryptor;
     }
 
     public function execute()
     {
         try {
             $storeId = $this->getRequest()->getParam("_store");
-            $quoteId = $this->getRequest()->getParam("quoteid");
+            $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
 
             $quote = $this->_quoteFactory->create();
             $quote->setStoreId($storeId);
