@@ -119,6 +119,7 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
         $quoteMock->expects($this->once())->method('collectTotals')->willReturnSelf();
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
         $quoteMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
+        $quoteMock->expects($this->any())->method('getId')->willReturn(456);
 
         $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
             ->disableOriginalConstructor()
@@ -130,6 +131,12 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $checkoutHelperMock->expects($this->once())->method('placeOrder')->willReturn($orderMock);
+
+        $encryptorMock = $this->getMockBuilder(\Magento\Framework\Encryption\EncryptorInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $encryptorMock->expects($this->once())->method('encrypt')->with(456)
+            ->willReturn('0:2:Dwn8kCUk6nZU5B7b0Xn26uYQDeLUKBrD:S72utt9n585GrslZpDp+DRpW+8dpqiu/EiCHXwfEhS0=');
 
         $cryptObject = new \Ebizmarts\SagePaySuite\Model\FormCrypt();
 
@@ -149,7 +156,8 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
                     "quoteRepository"    => $quoteRepoMock,
                     "quoteIdMaskFactory" => $quoteIdMaskRepoMock,
                     "coreUrl"            => $url,
-                    "formCrypt"          => $cryptObject
+                    "formCrypt"          => $cryptObject,
+                    "encryptor"          => $encryptorMock
                 ]
             )
             ->getMock();
