@@ -83,6 +83,11 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
      */
     private $quoteIdMaskFactory;
 
+    /**
+     * @var \Magento\Framework\Encryption\EncryptorInterface
+     */
+    private $encryptor;
+
     public function __construct(
         Config $config,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
@@ -96,7 +101,8 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         \Ebizmarts\SagePaySuite\Api\Data\ResultInterface $result,
         \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
         \Magento\Framework\UrlInterface $coreUrl,
-        \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory
+        \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory,
+        \Magento\Framework\Encryption\EncryptorInterface $encryptor
     ) {
     
         $this->result             = $result;
@@ -112,6 +118,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         $this->_tokenModel        = $tokenModel;
         $this->_coreUrl           = $coreUrl;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
+        $this->encryptor          = $encryptor;
 
         $this->_config->setMethodCode(Config::METHOD_SERVER);
     }
@@ -202,7 +209,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
             '_store' => $this->_quote->getStoreId()
         ]);
 
-        $url .= "?quoteid=" . $this->_quote->getId();
+        $url .= "?quoteid=" . $this->encryptor->encrypt($this->_quote->getId());
 
         return $url;
     }
