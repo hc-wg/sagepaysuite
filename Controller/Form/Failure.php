@@ -16,6 +16,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 
 class Failure extends Action
 {
@@ -59,6 +60,11 @@ class Failure extends Action
     private $checkoutSession;
 
     /**
+     * @var EncryptorInterface
+     */
+    private $encryptor;
+
+    /**
      * @param Context $context
      * @param Logger $suiteLogger
      * @param LoggerInterface $logger
@@ -71,7 +77,8 @@ class Failure extends Action
         Form $formModel,
         OrderFactory $orderFactory,
         QuoteFactory $quoteFactory,
-        Session $checkoutSession
+        Session $checkoutSession,
+        EncryptorInterface $encryptor
     ) {
     
         parent::__construct($context);
@@ -81,6 +88,7 @@ class Failure extends Action
         $this->orderFactory    = $orderFactory;
         $this->quoteFactory    = $quoteFactory;
         $this->checkoutSession = $checkoutSession;
+        $this->encryptor       = $encryptor;
     }
 
     /**
@@ -99,7 +107,9 @@ class Failure extends Action
                 throw new LocalizedException(__('Invalid response from Sage Pay'));
             }
 
-            $this->quote = $this->quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
+            $this->quote = $this->quoteFactory->create()->load(
+                $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"))
+            );
             $this->order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
 
             //cancel pending payment order

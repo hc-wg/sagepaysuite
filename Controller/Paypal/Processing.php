@@ -19,11 +19,11 @@ class Processing extends Action implements CsrfAwareActionInterface
     public function execute()
     {
         $body = $this->_view->getLayout()->createBlock(
-            'Ebizmarts\SagePaySuite\Block\Paypal\Processing'
+            \Ebizmarts\SagePaySuite\Block\Paypal\Processing::class
         )
-            ->setData(
-                ["paypal_post"=>$this->getRequest()->getPost()]
-            )->toHtml();
+        ->setData(
+            ["paypal_post"=>$this->getRequest()->getPost()]
+        )->toHtml();
 
         $this->getResponse()->setBody($body);
     }

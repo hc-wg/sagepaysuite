@@ -18,6 +18,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderFactory;
+use Magento\Framework\Encryption\EncryptorInterface;
 
 class Success extends \Magento\Framework\App\Action\Action
 {
@@ -64,6 +65,16 @@ class Success extends \Magento\Framework\App\Action\Action
     private $updateOrderCallback;
 
     /**
+     * @var SuiteHelper
+     */
+    private $suiteHelper;
+
+    /**
+     * @var EncryptorInterface
+     */
+    private $encryptor;
+
+    /**
      * Success constructor.
      * @param Context $context
      * @param Session $checkoutSession
@@ -86,7 +97,8 @@ class Success extends \Magento\Framework\App\Action\Action
         OrderFactory $orderFactory,
         OrderSender $orderSender,
         OrderUpdateOnCallback $updateOrderCallback,
-        SuiteHelper $suiteHelper
+        SuiteHelper $suiteHelper,
+        EncryptorInterface $encryptor
     ) {
     
         parent::__construct($context);
@@ -98,6 +110,7 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->orderSender         = $orderSender;
         $this->updateOrderCallback = $updateOrderCallback;
         $this->suiteHelper         = $suiteHelper;
+        $this->encryptor           = $encryptor;
     }
 
     /**
@@ -114,7 +127,9 @@ class Success extends \Magento\Framework\App\Action\Action
 
             $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
 
-            $this->_quote = $this->_quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
+            $this->_quote = $this->_quoteFactory->create()->load(
+                $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"))
+            );
 
             $this->_order = $this->_orderFactory->create()->loadByIncrementId($this->_quote->getReservedOrderId());
             if ($this->_order === null || $this->_order->getId() === null) {
