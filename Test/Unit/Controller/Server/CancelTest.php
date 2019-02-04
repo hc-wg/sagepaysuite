@@ -26,6 +26,8 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
 
+use Magento\Framework\Encryption\EncryptorInterface;
+
 class CancelTest extends \PHPUnit\Framework\TestCase
 {
     const QUOTE_ID = 1234;
@@ -79,6 +81,9 @@ class CancelTest extends \PHPUnit\Framework\TestCase
     /** @var UrlInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $urlBuilder;
 
+    /** @var EncryptorInterface|\PHPUnit_Framework_MockObject_MockObject */
+    private $encryptorMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -95,6 +100,7 @@ class CancelTest extends \PHPUnit\Framework\TestCase
         $this->response = $this->getMockBuilder(HttpResponse::class)->disableOriginalConstructor()->getMock();
         $this->suiteLogger = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $this->urlBuilder = $this->getMockBuilder(UrlInterface::class)->disableOriginalConstructor()->getMock();
+        $this->encryptorMock = $this->getMockBuilder(EncryptorInterface::class)->disableOriginalConstructor()->getMock();
 
         $this->orderFactory = $this->getMockBuilder(OrderFactory::class)
             ->disableOriginalConstructor()
@@ -120,7 +126,8 @@ class CancelTest extends \PHPUnit\Framework\TestCase
             $this->checkoutSession,
             $this->quote,
             $this->quoteIdMaskFactory,
-            $this->orderFactory
+            $this->orderFactory,
+            $this->encryptorMock
         );
     }
     // @codingStandardsIgnoreEnd
