@@ -23,6 +23,7 @@ use Magento\Framework\Validator\Exception as ValidatorException;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\OrderFactory;
+use Magento\Framework\Encryption\EncryptorInterface;
 
 class Callback extends Action implements CsrfAwareActionInterface
 {
@@ -41,11 +42,6 @@ class Callback extends Action implements CsrfAwareActionInterface
      * @var Session
      */
     private $checkoutSession;
-
-    /**
-     * @var Checkout
-     */
-    private $checkoutHelper;
 
     /**
      * Logging instance
@@ -76,37 +72,41 @@ class Callback extends Action implements CsrfAwareActionInterface
     private $suiteHelper;
 
     /**
+     * @var EncryptorInterface
+     */
+    private $encryptor;
+
+    /**
      * Callback constructor.
      * @param Context $context
      * @param Session $checkoutSession
      * @param Config $config
      * @param Logger $suiteLogger
-     * @param Checkout $checkoutHelper
      * @param Post $postApi
      * @param Quote $quote
      * @param OrderFactory $orderFactory
      * @param QuoteFactory $quoteFactory
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
+     * @param EncryptorInterface $encryptor
      */
     public function __construct(
         Context $context,
         Session $checkoutSession,
         Config $config,
         Logger $suiteLogger,
-        Checkout $checkoutHelper,
         Post $postApi,
         Quote $quote,
         OrderFactory $orderFactory,
         QuoteFactory $quoteFactory,
         OrderUpdateOnCallback $updateOrderCallback,
-        SuiteHelper $suiteHelper
+        SuiteHelper $suiteHelper,
+        EncryptorInterface $encryptor
     ) {
     
         parent::__construct($context);
         $this->config              = $config;
         $this->checkoutSession     = $checkoutSession;
-        $this->checkoutHelper      = $checkoutHelper;
         $this->suiteLogger         = $suiteLogger;
         $this->postApi             = $postApi;
         $this->quote               = $quote;
@@ -114,6 +114,7 @@ class Callback extends Action implements CsrfAwareActionInterface
         $this->quoteFactory        = $quoteFactory;
         $this->updateOrderCallback = $updateOrderCallback;
         $this->suiteHelper         = $suiteHelper;
+        $this->encryptor           = $encryptor;
 
         $this->config->setMethodCode(Config::METHOD_PAYPAL);
     }
@@ -227,7 +228,10 @@ class Callback extends Action implements CsrfAwareActionInterface
 
     private function loadQuoteFromDataSource()
     {
-        $this->quote = $this->quoteFactory->create()->load($this->getRequest()->getParam("quoteid"));
+        $this->quote = $this->quoteFactory->create()->load(
+            $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"))
+        );
+
         if (empty($this->quote->getId())) {
             throw new LocalizedException(__("Unable to find payment data."));
         }
