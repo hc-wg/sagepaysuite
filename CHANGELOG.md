@@ -1,3 +1,11 @@
+1.1.24 (05/02/2019)
+=============
+**This release requires Magento 2.1.x.**
+
+ **Fixed bugs:**
+- Security vulnerability passing quote id on query string. Server, PayPal, Form. [#650 #658 #656]
+- 3D secure iframe alignment on mobile devices. [#643]
+
 1.1.23 (07/01/2019)
 =============
 **This release requires Magento 2.1.x.**
