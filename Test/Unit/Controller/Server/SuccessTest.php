@@ -12,6 +12,7 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\App\Response\Http as HttpResponse;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Message\ManagerInterface as MessageManager;
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Model\Quote;
@@ -61,6 +62,9 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
     /** @var UrlInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $urlBuilder;
 
+    /** @var EncryptorInterface|\PHPUnit_Framework_MockObject_MockObject */
+    private $encryptorMock;
+
     public function setUp() {
         $this->context = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
         $this->suiteLogger = $this->getMockBuilder(SuiteLogger::class)->disableOriginalConstructor()->getMock();
@@ -74,6 +78,7 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
 
         $this->order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
         $this->quote = $this->getMockBuilder(Quote::class)->disableOriginalConstructor()->getMock();
+        $this->encryptorMock = $this->getMockBuilder(EncryptorInterface::class)->disableOriginalConstructor()->getMock();
 
         $this->orderFactory = $this->getMockBuilder(OrderFactory::class)
             ->disableOriginalConstructor()
@@ -110,7 +115,8 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             $this->logger,
             $this->checkoutSession,
             $this->orderFactory,
-            $this->quoteFactory
+            $this->quoteFactory,
+            $this->encryptorMock
         );
 
         $this->serverSuccessController->execute();
@@ -133,7 +139,8 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             $this->logger,
             $this->checkoutSession,
             $this->orderFactory,
-            $this->quoteFactory
+            $this->quoteFactory,
+            $this->encryptorMock
         );
 
         $this->serverSuccessController->execute();
