@@ -1,3 +1,12 @@
+1.3.2 (05/02/2019)
+=============
+**This release requires Magento 2.3.x.**
+
+ **Fixed bugs:**
+- Security vulnerability passing quote id on query string. Server, PayPal, Form. [#651 #659 #657]
+- 3D secure iframe alignment on mobile devices. [#644]
+- last_trans_id field on table sales_order_payment truncated to 32, causing error on callbacks [#640]
+
 1.3.1 (07/01/2019)
 =============
 **This release requires Magento 2.3.x.**
