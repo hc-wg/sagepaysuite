@@ -26,6 +26,7 @@ use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderFactory;
 use \Magento\Sales\Model\Order;
 use \Ebizmarts\SagePaySuite\Helper\Data;
+use function urlencode;
 
 class Notify extends Action
 {
@@ -308,7 +309,7 @@ class Notify extends Action
 
         $quoteId = $this->encryptor->encrypt($quoteId);
 
-        $url .= "?quote=" . $quoteId . "&message=Transaction cancelled by customer";
+        $url .= "?quote=" . urlencode($quoteId) . "&message=Transaction cancelled by customer";
 
         return $url;
     }
@@ -320,7 +321,7 @@ class Notify extends Action
             '_store'  => $this->quote->getStoreId()
         ]);
 
-        $url .= "?quoteid=" . $this->encryptor->encrypt($this->quote->getId());
+        $url .= "?quoteid=" . urlencode($this->encryptor->encrypt($this->quote->getId()));
 
         return $url;
     }
@@ -334,7 +335,7 @@ class Notify extends Action
 
         $quoteId = $this->encryptor->encrypt($quoteId);
 
-        $url .= "?message=" . $message . "&quote=" . $quoteId;
+        $url .= "?message=" . $message . "&quote=" . urlencode($quoteId);
 
         return $url;
     }
