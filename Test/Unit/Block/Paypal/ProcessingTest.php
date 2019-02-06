@@ -5,7 +5,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Block\Paypal;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use stdClass;
 
-class PaypalTest extends \PHPUnit\Framework\TestCase
+class PaypalTest extends \PHPUnit_Framework_TestCase
 {
     private $objectManagerHelper;
 
