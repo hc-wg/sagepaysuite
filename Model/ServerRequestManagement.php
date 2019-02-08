@@ -209,7 +209,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
             '_store' => $this->_quote->getStoreId()
         ]);
 
-        $url .= "?quoteid=" . $this->encryptor->encrypt($this->_quote->getId());
+        $url .= "?quoteid=" . urlencode($this->encryptor->encrypt($this->_quote->getId()));
 
         return $url;
     }
