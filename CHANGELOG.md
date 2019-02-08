@@ -3,7 +3,7 @@
 **This release requires Magento 2.2.x.**
 
  **Fixed bugs:**
-- Security vulnerability passing quote id on query string. Server, PayPal, Form. [#648 #654 #652]
+- Encrypt callback URL. [#648 #654 #652]
 - 3D secure iframe alignment on mobile devices. [#638]
 
 1.2.11 (07/01/2019)
