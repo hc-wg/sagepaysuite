@@ -28,6 +28,7 @@ use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\Order\Payment\TransactionFactory;
 use Magento\Sales\Model\OrderFactory;
+use function urlencode;
 
 class NotifyTest extends \PHPUnit\Framework\TestCase
 {
@@ -178,14 +179,14 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . urlencode(self::ENC_QUOTE_ID) . "\r\n"
         );
 
         $this->updateOrderCallback->expects($this->once())->method('setOrder')->with($this->order);
         $this->updateOrderCallback->expects($this->once())->method('confirmPayment')->with(self::TEST_VPSTXID);
 
         $this->controllerInstantiate();
-        $this->serverNotifyController->execute();
+         $this->serverNotifyController->execute();
     }
 
     public function testExecuteOkSagePayRetry()
@@ -246,7 +247,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . urlencode(self::ENC_QUOTE_ID) . "\r\n"
         );
 
         $this->updateOrderCallback->expects($this->once())->method('setOrder')->with($this->order);
@@ -328,7 +329,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . urlencode(self::ENC_QUOTE_ID) . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -393,7 +394,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction ABORTED successfully' . "\r\n" .
-            'RedirectURL=?quote=' . self::ENC_QUOTE_ID . '&message=Transaction cancelled by customer' . "\r\n"
+            'RedirectURL=?quote=' . urlencode(self::ENC_QUOTE_ID) . '&message=Transaction cancelled by customer' . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -466,7 +467,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=' . $errorStatusDetail . "\r\n" .
-            'RedirectURL=?message=' . $errorStatusDetail . '&quote=' . self::ENC_QUOTE_ID . "\r\n"
+            'RedirectURL=?message=' . $errorStatusDetail . '&quote=' . urlencode(self::ENC_QUOTE_ID) . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -532,7 +533,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Something went wrong: Invalid transaction id' . "\r\n" .
-            'RedirectURL=?message=Something went wrong: Invalid transaction id&quote=' . self::ENC_QUOTE_ID . "\r\n"
+            'RedirectURL=?message=Something went wrong: Invalid transaction id&quote=' . urlencode(self::ENC_QUOTE_ID) . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -598,7 +599,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . urlencode(self::ENC_QUOTE_ID) . "\r\n"
         );
 
         $this->updateOrderCallback->expects($this->once())->method('setOrder')->with($this->order);
@@ -667,7 +668,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . urlencode(self::ENC_QUOTE_ID) . "\r\n"
         );
 
         $this->updateOrderCallback->expects($this->once())->method('setOrder')->with($this->order);
@@ -737,7 +738,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . urlencode(self::ENC_QUOTE_ID) . "\r\n"
         );
 
         $this->updateOrderCallback->expects($this->once())->method('setOrder')->with($this->order);
@@ -865,7 +866,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction completed successfully' . "\r\n" .
-            'RedirectURL=?quoteid=' . self::ENC_QUOTE_ID . "\r\n"
+            'RedirectURL=?quoteid=' . urlencode(self::ENC_QUOTE_ID) . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -929,7 +930,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Something went wrong: Invalid VPS Signature' . "\r\n" .
-            'RedirectURL=?message=Something went wrong: Invalid VPS Signature&quote=' . self::ENC_QUOTE_ID . "\r\n"
+            'RedirectURL=?message=Something went wrong: Invalid VPS Signature&quote=' . urlencode(self::ENC_QUOTE_ID) . "\r\n"
         );
 
         $this->controllerInstantiate();

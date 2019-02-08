@@ -212,13 +212,13 @@ class FormRequestManagement implements FormManagementInterface
             '_secure' => true,
             '_store'  => $this->quote->getStoreId()
         ]);
-        $data['SuccessURL'] .= '?quoteid=' . $encryptedQuoteId;
+        $data['SuccessURL'] .= '?quoteid=' . urlencode($encryptedQuoteId);
 
         $data['FailureURL'] = $this->url->getUrl('sagepaysuite/form/failure', [
             '_secure' => true,
             '_store'  => $this->quote->getStoreId()
         ]);
-        $data['FailureURL'] .= '?quoteid=' . $encryptedQuoteId;
+        $data['FailureURL'] .= '?quoteid=' . urlencode($encryptedQuoteId);
 
         //email details
         $data['VendorEMail']  = $this->config->getFormVendorEmail();

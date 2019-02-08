@@ -226,7 +226,7 @@ class PayPalRequestManagement implements \Ebizmarts\SagePaySuite\Api\PayPalManag
             '_store'  => $this->quote->getStoreId()
         ]);
 
-        $url .= "?quoteid=" . $this->encryptor->encrypt($this->quote->getId());
+        $url .= "?quoteid=" . urlencode($this->encryptor->encrypt($this->quote->getId()));
 
         return $url;
     }
