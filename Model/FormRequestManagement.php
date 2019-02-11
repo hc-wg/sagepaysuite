@@ -10,6 +10,7 @@ use Ebizmarts\SagePaySuite\Helper\Request;
 use Ebizmarts\SagePaySuite\Model\FormCrypt;
 use Magento\Checkout\Model\Session;
 use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Model\QuoteIdMaskFactory;
@@ -79,6 +80,11 @@ class FormRequestManagement implements FormManagementInterface
 
     private $formCrypt;
 
+    /**
+     * @var EncryptorInterface
+     */
+    private $encryptor;
+
     public function __construct(
         Config $config,
         Data $suiteHelper,
@@ -91,7 +97,8 @@ class FormRequestManagement implements FormManagementInterface
         CartRepositoryInterface $quoteRepository,
         QuoteIdMaskFactory $quoteIdMaskFactory,
         UrlInterface $coreUrl,
-        FormCrypt $formCrypt
+        FormCrypt $formCrypt,
+        EncryptorInterface $encryptor
     ) {
     
         $this->result             = $result;
@@ -106,6 +113,7 @@ class FormRequestManagement implements FormManagementInterface
         $this->url                = $coreUrl;
         $this->formCrypt          = $formCrypt;
         $this->checkoutHelper     = $checkoutHelper;
+        $this->encryptor          = $encryptor;
 
         $this->config->setMethodCode(Config::METHOD_FORM);
     }
@@ -198,16 +206,19 @@ class FormRequestManagement implements FormManagementInterface
             $data = array_merge($data, $this->requestHelper->populateBasketInformation($this->quote));
         }
 
+        $encryptedQuoteId = $this->encryptor->encrypt($this->quote->getId());
+
         $data['SuccessURL'] = $this->url->getUrl('sagepaysuite/form/success', [
             '_secure' => true,
-            '_store'  => $this->quote->getStoreId(),
-            'quoteid' => $this->quote->getId()
+            '_store'  => $this->quote->getStoreId()
         ]);
+        $data['SuccessURL'] .= '?quoteid=' . urlencode($encryptedQuoteId);
+
         $data['FailureURL'] = $this->url->getUrl('sagepaysuite/form/failure', [
             '_secure' => true,
-            '_store'  => $this->quote->getStoreId(),
-            'quoteid' => $this->quote->getId()
+            '_store'  => $this->quote->getStoreId()
         ]);
+        $data['FailureURL'] .= '?quoteid=' . urlencode($encryptedQuoteId);
 
         //email details
         $data['VendorEMail']  = $this->config->getFormVendorEmail();

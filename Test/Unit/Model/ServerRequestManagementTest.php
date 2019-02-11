@@ -1,6 +1,7 @@
 <?php
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
+use Magento\Framework\Encryption\EncryptorInterface;
 
 class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
 {
@@ -80,7 +81,7 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $orderMock->expects($this->once())->method('getId')->willReturn(456);
+        $orderMock->method('getId')->willReturn(456);
 
         $checkoutHelperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Checkout::class)
             ->disableOriginalConstructor()
@@ -154,6 +155,7 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
         $quoteMock->expects($this->once())->method('getReservedOrderId')->willReturn(123);
         $quoteMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
+        $quoteMock->expects($this->once())->method('getId')->willReturn(456);
 
         $checkoutSessionMock->method('getQuote')->willReturn($quoteMock);
         $checkoutSessionMock->expects($this->once())->method('setData')->with(
@@ -162,6 +164,13 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
         );
 
         $resultObject = $this->objectManagerHelper->getObject('\Ebizmarts\SagePaySuite\Api\Data\FormResult');
+
+        $encryptorMock = $this->getMockBuilder(EncryptorInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $encryptorMock->expects($this->once())->method('encrypt')->with(456)->willReturn(
+            '0:2:Dwn8kCUk6nZU5B7b0Xn26uYQDeLUKBrD:S72utt9n585GrslZpDp+DRpW+8dpqiu/EiCHXwfEhS0='
+        );
 
         /** @var \Ebizmarts\SagePaySuite\Model\ServerRequestManagement $requestManager */
         $requestManager = $this
@@ -182,6 +191,7 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
                     'quoteRepository'    => $quoteRepositoryMock,
                     'coreUrl'            => $coreUrl,
                     'quoteIdMaskFactory' => $quoteIdMaskFactory,
+                    'encryptor'          => $encryptorMock
                 ]
             )
             ->getMock();
@@ -326,6 +336,12 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
 
         $checkoutSessionMock->method('getQuote')->willReturn($quoteMock);
 
+        $encryptorMock = $this
+            ->getMockBuilder(EncryptorInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $encryptorMock->expects($this->once())->method('encrypt');
+
         $resultObject = $this->objectManagerHelper->getObject('\Ebizmarts\SagePaySuite\Api\Data\FormResult');
 
         /** @var \Ebizmarts\SagePaySuite\Model\ServerRequestManagement $requestManager */
@@ -347,6 +363,7 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
                     'quoteRepository'    => $quoteRepositoryMock,
                     'coreUrl'            => $coreUrl,
                     'quoteIdMaskFactory' => $quoteIdMaskFactory,
+                    'encryptor'          => $encryptorMock
                 ]
             )
             ->getMock();
