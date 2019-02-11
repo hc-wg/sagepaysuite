@@ -15,6 +15,7 @@ use Ebizmarts\SagePaySuite\Model\Token;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Validator\Exception;
@@ -25,6 +26,7 @@ use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderFactory;
 use \Magento\Sales\Model\Order;
 use \Ebizmarts\SagePaySuite\Helper\Data;
+use function urlencode;
 
 class Notify extends Action
 {
@@ -66,6 +68,11 @@ class Notify extends Action
     private $cartRepository;
 
     /**
+     * @var EncryptorInterface
+     */
+    private $encryptor;
+
+    /**
      * Notify constructor.
      * @param Context $context
      * @param Logger $suiteLogger
@@ -86,7 +93,8 @@ class Notify extends Action
         Token $tokenModel,
         OrderUpdateOnCallback $updateOrderCallback,
         Data $suiteHelper,
-        QuoteRepository $cartRepository
+        QuoteRepository $cartRepository,
+        EncryptorInterface $encryptor
     ) {
         parent::__construct($context);
 
@@ -98,6 +106,7 @@ class Notify extends Action
         $this->tokenModel          = $tokenModel;
         $this->suiteHelper         = $suiteHelper;
         $this->cartRepository      = $cartRepository;
+        $this->encryptor           = $encryptor;
         $this->config->setMethodCode(Config::METHOD_SERVER);
     }
 
@@ -107,7 +116,7 @@ class Notify extends Action
         $this->postData = $this->getRequest()->getPost();
 
         $storeId = $this->getRequest()->getParam("_store");
-        $quoteId = $this->getRequest()->getParam("quoteid");
+        $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
 
         //log response
         $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->postData, [__METHOD__, __LINE__]);
@@ -199,15 +208,17 @@ class Notify extends Action
         } catch (ApiException $apiException) {
             $this->suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
 
-            //cancel pending payment order
-            $this->cancelOrder($order);
+            if (isset($order)) {
+                $this->cancelOrder($order);
+            }
 
             return $this->returnInvalid(__("Something went wrong: %1", $apiException->getUserMessage()));
         } catch (\Exception $e) {
             $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
-            //cancel pending payment order
-            $this->cancelOrder($order);
+            if (isset($order)) {
+                $this->cancelOrder($order);
+            }
 
             return $this->returnInvalid(__("Something went wrong: %1", $e->getMessage()), $this->quote->getId());
         }
@@ -296,7 +307,9 @@ class Notify extends Action
             '_store' => $this->getRequest()->getParam('_store')
         ]);
 
-        $url .= "?quote={$quoteId}&message=Transaction cancelled by customer";
+        $quoteId = $this->encryptor->encrypt($quoteId);
+
+        $url .= "?quote=" . urlencode($quoteId) . "&message=Transaction cancelled by customer";
 
         return $url;
     }
@@ -308,7 +321,7 @@ class Notify extends Action
             '_store'  => $this->quote->getStoreId()
         ]);
 
-        $url .= "?quoteid=" . $this->quote->getId();
+        $url .= "?quoteid=" . urlencode($this->encryptor->encrypt($this->quote->getId()));
 
         return $url;
     }
@@ -320,7 +333,9 @@ class Notify extends Action
             '_store' => $this->getRequest()->getParam('_store')
         ]);
 
-        $url .= "?message=" . $message . "&quote={$quoteId}";
+        $quoteId = $this->encryptor->encrypt($quoteId);
+
+        $url .= "?message=" . $message . "&quote=" . urlencode($quoteId);
 
         return $url;
     }

@@ -6,6 +6,9 @@
 
 namespace Ebizmarts\SagePaySuite\Block\Paypal;
 
+use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\View\Element\Template\Context;
+
 class Processing extends \Magento\Framework\View\Element\Template
 {
     // @codingStandardsIgnoreStart
@@ -27,10 +30,7 @@ class Processing extends \Magento\Framework\View\Element\Template
         $html .= '<div class="container"><img
                  src="' . $this->getViewFileUrl('Ebizmarts_SagePaySuite::images/paypal_checkout.png') . '">';
 
-        $callbackUrl = $this->getUrl(
-            'sagepaysuite/paypal/callback',
-            ['_secure' => true, 'quoteid' => $this->getRequest()->getParam('quoteid')]
-        );
+        $callbackUrl = $this->getUrl('sagepaysuite/paypal/callback', ['_secure' => true]);
 
         //form POST
         $postData = $this->getData("paypal_post");
@@ -46,6 +46,9 @@ class Processing extends \Magento\Framework\View\Element\Template
             for ($i = 0; $i < $keysCount; $i++) {
                 $html .= '<input type="hidden" name="' . $keys[$i] . '" value="' . $postData[$keys[$i]] . '">';
             }
+
+            $html .= '<input type="hidden" name="quoteid" value="' . $this->getRequest()->getParam('quoteid') . '">';
+
             $html .= '</form>';
             $html .= '<script>document.getElementById("paypal_post_form").submit();</script>';
         } else {

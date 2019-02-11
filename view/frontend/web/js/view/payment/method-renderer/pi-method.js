@@ -360,14 +360,18 @@ define(
                                     "&orderId=" + response.order_id +
                                     "&quoteId=" + response.quote_id;
 
-                                self.open3DModal();
-
+                                //Build 3D form.
                                 var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
-                                form3D.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
                                 form3D.setAttribute('action', response.acs_url);
                                 form3D.elements[0].setAttribute('value', response.par_eq);
                                 form3D.elements[1].setAttribute('value', callbackUrl);
                                 form3D.elements[2].setAttribute('value', response.transaction_id);
+
+                                if (!self.sagePayIsMobile()) {
+                                    self.open3DModal();
+                                    form3D.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
+                                }
+
                                 form3D.submit();
 
                                 if (!self.dropInEnabled()) {
@@ -405,7 +409,14 @@ define(
                 });
                 this.modal.modal('openModal');
             },
-
+            sagePayIsMobile: function () {
+            return (navigator.userAgent.match(/BlackBerry/i) ||
+                navigator.userAgent.match(/webOS/i) ||
+                navigator.userAgent.match(/Android/i) ||
+                navigator.userAgent.match(/iPhone/i) ||
+                navigator.userAgent.match(/iPod/i) ||
+                navigator.userAgent.match(/iPad/i));
+            },
             /**
              * @override
              */
