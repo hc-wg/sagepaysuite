@@ -2,6 +2,8 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Magento\Framework\Encryption\EncryptorInterface;
+
 class PayPalRequestManagement implements \Ebizmarts\SagePaySuite\Api\PayPalManagementInterface
 {
     /** @var \Magento\Quote\Api\CartRepositoryInterface */
@@ -40,6 +42,11 @@ class PayPalRequestManagement implements \Ebizmarts\SagePaySuite\Api\PayPalManag
     /** @var \Magento\Quote\Model\QuoteIdMaskFactory */
     private $quoteIdMaskFactory;
 
+    /**
+     * @var EncryptorInterface
+     */
+    private $encryptor;
+
     public function __construct(
         \Ebizmarts\SagePaySuite\Model\Config $config,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
@@ -47,27 +54,25 @@ class PayPalRequestManagement implements \Ebizmarts\SagePaySuite\Api\PayPalManag
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Customer\Model\Session $customerSession,
         \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
         \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory,
         \Magento\Framework\UrlInterface $coreUrl,
-        \Magento\Framework\ObjectManager\ObjectManager $objectManager,
         \Ebizmarts\SagePaySuite\Api\Data\ResultInterface $result,
-        \Ebizmarts\SagePaySuite\Model\Api\Post $postApi
+        \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
+        EncryptorInterface $encryptor
     ) {
         $this->quoteRepository    = $quoteRepository;
         $this->sagePayConfig      = $config;
         $this->suiteHelper        = $suiteHelper;
         $this->checkoutSession    = $checkoutSession;
-        $this->_customerSession   = $customerSession;
         $this->suiteLogger        = $suiteLogger;
         $this->requestHelper      = $requestHelper;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
         $this->coreUrl            = $coreUrl;
-        $this->objectManager      = $objectManager;
         $this->checkoutHelper     = $checkoutHelper;
         $this->result             = $result;
         $this->postApi            = $postApi;
+        $this->encryptor          = $encryptor;
 
         $this->sagePayConfig->setMethodCode($this->getMethodCode());
     }
@@ -221,7 +226,7 @@ class PayPalRequestManagement implements \Ebizmarts\SagePaySuite\Api\PayPalManag
             '_store'  => $this->quote->getStoreId()
         ]);
 
-        $url .= "?quoteid=" . $this->quote->getId();
+        $url .= "?quoteid=" . urlencode($this->encryptor->encrypt($this->quote->getId()));
 
         return $url;
     }
