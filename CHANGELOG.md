@@ -1,3 +1,11 @@
+1.2.12 (05/02/2019)
+=============
+**This release requires Magento 2.2.x.**
+
+ **Fixed bugs:**
+- Encrypt callback URL. [#648 #654 #652]
+- 3D secure iframe alignment on mobile devices. [#638]
+
 1.2.11 (07/01/2019)
 =============
 **This release requires Magento 2.2.x.**
