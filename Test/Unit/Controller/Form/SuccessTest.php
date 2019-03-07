@@ -89,6 +89,7 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $quoteMock = $this->makeQuoteMock($paymentMock);
 
         $checkoutSessionMock = $this->makeCheckoutSessionMock($quoteMock);
+        $checkoutSessionMock->expects($this->once())->method('start')->willReturnSelf();
 
         $this->makeResponseMock();
 
@@ -168,6 +169,7 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $quoteMock = $this->makeQuoteMock($paymentMock);
 
         $checkoutSessionMock = $this->makeCheckoutSessionMock($quoteMock);
+        $checkoutSessionMock->expects($this->once())->method('start')->willReturnSelf();
 
         $this->makeResponseMock();
 
@@ -248,6 +250,7 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $quoteMock = $this->makeQuoteMock($paymentMock);
 
         $checkoutSessionMock = $this->makeCheckoutSessionMock($quoteMock);
+        $checkoutSessionMock->expects($this->once())->method('start')->willReturnSelf();
 
         $this->makeResponseMock();
 
@@ -356,8 +359,6 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             ->getMock();
 
         $quoteMock = $this->makeQuoteMock($paymentMock);
-
-        $checkoutSessionMock = $this->makeCheckoutSessionMock($quoteMock);
 
         $invoiceCollectionMock = $this
             ->getMockBuilder(\Magento\Sales\Model\ResourceModel\Order\Invoice\Collection::class)
