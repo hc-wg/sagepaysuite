@@ -29,7 +29,6 @@
         <payment>
             <sagepaysuiteform>
                 <active>0</active>
-                <active_moto>0</active_moto>
                 <model>Ebizmarts\SagePaySuite\Model\Form</model>
                 <payment_action>PAYMENT</payment_action>
                 <send_email>1</send_email>

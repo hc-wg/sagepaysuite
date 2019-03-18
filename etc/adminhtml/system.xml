@@ -100,11 +100,6 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/sagepaysuiteform/active</config_path>
                     </field>
-                    <field id="active_moto" translate="label" type="select" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>DEPRECATED -- Enabled MOTO</label>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                        <config_path>payment/sagepaysuiteform/active_moto</config_path>
-                    </field>
                     <field id="payment_action" translate="label" type="select" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Payment Action</label>
                         <comment><![CDATA[Details of all possible payment actions can be found <a target="_blank" href="http://www.sagepay.co.uk/support/12/36/transaction-types">here</a>.]]></comment>
