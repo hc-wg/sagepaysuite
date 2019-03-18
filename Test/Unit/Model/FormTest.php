@@ -188,6 +188,22 @@ class FormTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->formModelObject->isInitializeNeeded());
     }
 
+    public function testCanUseInternal()
+    {
+        $configMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock->expects($this->any())->method('setMethodCode')->with('sagepaysuiteform')->willReturnSelf();
+        $configMock->expects($this->never())->method('isMethodActiveMoto')->willReturn(1);
+        $form = $this->objectManagerHelper->getObject(
+            '\Ebizmarts\SagePaySuite\Model\Form',
+            [
+                'config' => $configMock,
+            ]
+        );
+        $this->assertFalse($form->canUseInternal());
+    }
+
     /**
      * @dataProvider magentoPaymentActionProvider
      * @param string $paymentAction
