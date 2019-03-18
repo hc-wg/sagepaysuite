@@ -125,7 +125,6 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
         $testVpsTxId = 'ABCD-1234';
 
         $orderMock = $this->makeOrderMockPendingState();
-
         $orderMock
             ->expects($this->once())
             ->method('getOrderCurrencyCode')
