@@ -177,6 +177,17 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     }
 
     /**
+     * Using internal pages for input payment data
+     * Can be used in admin
+     *
+     * @return bool
+     */
+    public function canUseInternal()
+    {
+        return false;
+    }
+
+    /**
      * Instantiate state and set it to state object
      *
      * @param string $paymentAction
