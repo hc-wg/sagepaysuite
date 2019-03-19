@@ -9,7 +9,13 @@ interface PaymentOperations
     const DEFERRED_AWAITING_RELEASE = 14;
     const SUCCESSFULLY_AUTHORISED   = 16;
 
-    public function captureDeferredTransaction($transactionId, $amount);
+    /**
+     * @param $transactionId
+     * @param $amount
+     * @param \Magento\Sales\Api\Data\OrderInterface $order.
+     * @return mixed
+     */
+    public function captureDeferredTransaction($transactionId, $amount, \Magento\Sales\Api\Data\OrderInterface $order);
 
     /**
      * @param $transactionId

@@ -69,7 +69,7 @@ class Payment
                         $invoiceAmount = $amount * $rate;
                         $amount = $invoiceAmount;
                     }
-                    $result = $this->api->captureDeferredTransaction($transactionId, $amount);
+                    $result = $this->api->captureDeferredTransaction($transactionId, $amount, $order);
                 } elseif ($this->isAuthenticateAction($paymentAction)) {
                     $action = 'authorizing';
                     $result = $this->api->authorizeTransaction($transactionId, $amount, $order);
