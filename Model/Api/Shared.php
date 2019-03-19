@@ -109,18 +109,18 @@ class Shared
         return $this->_executeRequest(Config::ACTION_REFUND, $data);
     }
 
-    public function captureDeferredTransaction($vpsTxId, $amount)
+    public function captureDeferredTransaction($vpsTxId, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
         $vpsTxId = $this->_suiteHelper->clearTransactionId($vpsTxId);
 
-        $transaction = $this->_reportingApi->getTransactionDetails($vpsTxId);
-        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $transaction, [__METHOD__, __LINE__]);
+        $transaction = $this->_reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
+        $this->__suiteLogger->sageLog(Logger::LOG_REQUEST, $transaction, [__METHOD__, __LINE__]);
 
         $result = null;
 
         $txStateId = (int)$transaction->txstateid;
         if ($txStateId == self::DEFERRED_AWAITING_RELEASE) {
-            $result = $this->releaseTransaction($vpsTxId, $amount);
+            $result = $this->releaseTransaction($vpsTxId, $amount, $order);
         } else {
             if($txStateId == self::SUCCESSFULLY_AUTHORISED) {
                 $data = [];
@@ -136,9 +136,9 @@ class Shared
         return $result;
     }
 
-    public function releaseTransaction($vpstxid, $amount)
+    public function releaseTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
-        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol']   = $this->_config->getVPSProtocol();
         $data['TxType']        = Config::ACTION_RELEASE;
