@@ -106,18 +106,18 @@ class Shared implements PaymentOperations
         return $this->executeRequest(Config::ACTION_REFUND, $data);
     }
 
-    public function captureDeferredTransaction($vpsTxId, $amount)
+    public function captureDeferredTransaction($vpsTxId, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
         $vpsTxId = $this->suiteHelper->clearTransactionId($vpsTxId);
 
-        $transaction = $this->reportingApi->getTransactionDetails($vpsTxId);
+        $transaction = $this->reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
         $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $transaction, [__METHOD__, __LINE__]);
 
         $result = null;
 
         $txStateId = (int)$transaction->txstateid;
         if ($txStateId == PaymentOperations::DEFERRED_AWAITING_RELEASE) {
-            $result = $this->releaseTransaction($vpsTxId, $amount);
+            $result = $this->releaseTransaction($vpsTxId, $amount, $order);
         } else {
             if($txStateId == PaymentOperations::SUCCESSFULLY_AUTHORISED) {
                 $data = [];
@@ -133,9 +133,9 @@ class Shared implements PaymentOperations
         return $result;
     }
 
-    public function releaseTransaction($vpstxid, $amount)
+    public function releaseTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
-        $transaction = $this->reportingApi->getTransactionDetails($vpstxid);
+        $transaction = $this->reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol']   = $this->config->getVPSProtocol();
         $data['TxType']        = Config::ACTION_RELEASE;
