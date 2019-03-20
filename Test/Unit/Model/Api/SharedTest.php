@@ -377,6 +377,15 @@ class SharedTest extends \PHPUnit\Framework\TestCase
             ->method('executePost')
             ->willReturn($responseMock);
 
+        $orderMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(1);
+
         $this->assertEquals(
             [
                 "status" => 200,
@@ -386,7 +395,7 @@ class SharedTest extends \PHPUnit\Framework\TestCase
                     'VPSProtocol'  => '3.00'
                 ]
             ],
-            $this->sharedApiModel->releaseTransaction("12345", 100)
+            $this->sharedApiModel->releaseTransaction("12345", 100, $orderMock)
         );
     }
 
@@ -433,6 +442,15 @@ class SharedTest extends \PHPUnit\Framework\TestCase
 
         $this->transactionDetailsResponse->txstateid = PaymentOperations::DEFERRED_AWAITING_RELEASE;
 
+        $orderMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock
+            ->expects($this->exactly(2))
+            ->method('getStoreId')
+            ->willReturn(1);
+
         $this->assertEquals(
             [
                 'status' => 200,
@@ -442,7 +460,7 @@ class SharedTest extends \PHPUnit\Framework\TestCase
                     'VPSProtocol'  => '3.00'
                 ]
             ],
-            $this->sharedApiModel->captureDeferredTransaction('12345', 100)
+            $this->sharedApiModel->captureDeferredTransaction('12345', 100, $orderMock)
         );
     }
 
@@ -493,6 +511,15 @@ class SharedTest extends \PHPUnit\Framework\TestCase
 
         $this->transactionDetailsResponse->txstateid = PaymentOperations::SUCCESSFULLY_AUTHORISED;
 
+        $orderMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(1);
+
         $this->assertEquals(
             [
                 'status' => 200,
@@ -502,7 +529,7 @@ class SharedTest extends \PHPUnit\Framework\TestCase
                     'VPSProtocol'  => '3.00'
                 ]
             ],
-            $this->sharedApiModel->captureDeferredTransaction('12345', 100)
+            $this->sharedApiModel->captureDeferredTransaction('12345', 100, $orderMock)
         );
     }
 

@@ -43,12 +43,12 @@ class Pi implements PaymentOperations
         $this->reportingApi        = $reportingApi;
     }
 
-    public function captureDeferredTransaction($vpsTxId, $amount)
+    public function captureDeferredTransaction($vpsTxId, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
         $result = null;
 
         $vpsTxId = $this->suiteHelper->clearTransactionId($vpsTxId);
-        $transaction = $this->reportingApi->getTransactionDetails($vpsTxId);
+        $transaction = $this->reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
 
         $txStateId = (int)$transaction->txstateid;
         if ($txStateId === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
