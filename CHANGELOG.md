@@ -1,38 +1,35 @@
-1.3.2 (05/02/2019)
-=============
-**This release requires Magento 2.3.x.**
+## [1.3.3] - 2019-03-25
+### Added
+- On Hold status stop auto-invoice
 
- **Fixed bugs:**
-- Encrypt callback URL. [#651 #659 #657]
-- 3D secure iframe alignment on mobile devices. [#644]
+### Changed
+- Conflict problems on db_schema
+- Redirect to empty cart fix
+- Multi-Currency invoice use base currency amount
+- Defer invoice problem with Multi-Store setup
+- Repeat problem with Multi-Store setup
+
+## [1.3.2] - 2019-02-05
+### Changed
+- Encrypt callback URL
+- 3D secure iframe alignment on mobile devices
 - last_trans_id field on table sales_order_payment truncated to 32, causing error on callbacks [#640]
 
-1.3.1 (07/01/2019)
-=============
-**This release requires Magento 2.3.x.**
+## [1.3.1] - 2019-01-07
+### Added
+- Invoice confirmation email for Authorise and capture
+- Server low profile smaller modal window
 
-**Implemented features:**
+### Changed
+- Cancel or Void a Defer order without invoice
+- Refund problem on multi-currency sites
+- PI without DropIn problem when you enter a wrong CVN
+- Problem with refunds on multi-sites using two vendors
+- Exception thrown when open Fraud report
+- Basket XML constraint fix
+- Magento's sign appearing when click fraud cell
 
-- Invoice confirmation email for Authorise and capture [#607]
-
-**Implemented enhancements:**
-
-- Server low profile smaller modal window [#601]
-
- **Fixed bugs:**
-- Cancel or Void a Defer order without invoice [#581]
-- Refund problem on multi-currency sites [#578]
-- PI without DropIn problem when you enter a wrong CVN [#585]
-- Problem with refunds on multi-sites using two vendors [#591]
-- Exception thrown when open Fraud report [#594]
-- Basket XML constraint fix [#617]
-- Magento's sign appearing when click fraud cell [#626]
-
-1.3.0 (04/12/2018)
-=============
-**This release requires Magento 2.3.x.**
-
-**Fixed bugs:**
-
-- Magento not running schema updates. Switching to Schema patches. [#574]
-- New CSRF checks rejecting callbacks [#566] [#568] [#567]
+## [1.3.0] - 2018-12-04
+### Changed
+- Magento not running schema updates. Switching to Schema patches
+- New CSRF checks rejecting callbacks
