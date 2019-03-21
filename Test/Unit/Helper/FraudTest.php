@@ -271,6 +271,11 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 ->method('getOrder')
                 ->willReturn($orderMock);
 
+            $orderMock
+                ->expects($this->once())
+                ->method('getState')
+                ->willReturn($data['getState']);
+
             $this->configMock->expects($this->any())
                 ->method('getAutoInvoiceFraudPassed')
                 ->willReturn($data['getAutoInvoiceFraudPassed']);
@@ -363,9 +368,14 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $paymentMock
-            ->expects($this->exactly(1))
+            ->expects($this->exactly(2))
             ->method('getOrder')
             ->willReturn($orderMock);
+
+        $orderMock
+            ->expects($this->once())
+            ->method('getState')
+            ->willReturn(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
 
         $this->configMock->expects($this->any())
             ->method('getAutoInvoiceFraudPassed')
@@ -458,9 +468,14 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $paymentMock
-            ->expects($this->exactly(1))
+            ->expects($this->exactly(2))
             ->method('getOrder')
             ->willReturn($orderMock);
+
+        $orderMock
+            ->expects($this->once())
+            ->method('getState')
+            ->willReturn(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
 
         $this->configMock->expects($this->any())
             ->method('getAutoInvoiceFraudPassed')
@@ -481,10 +496,11 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
                     'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT,
                     'getAutoInvoiceFraudPassed' => false,
+                    'getState' => \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT,
                     'expectedregister' => 0,
                     'expectedcapture' => 0,
                     'expectedsave' => 0,
-                    'expectedorder' => 0,
+                    'expectedorder' => 1,
                     'expectedinvoice' => 0,
                     'expectedrelatedobject' => 0,
                     'expectedqty' => 0,
@@ -521,10 +537,11 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
                     'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT,
                     'getAutoInvoiceFraudPassed' => false,
+                    'getState' => \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT,
                     'expectedregister' => 0,
                     'expectedcapture' => 0,
                     'expectedsave' => 0,
-                    'expectedorder' => 1,
+                    'expectedorder' => 2,
                     'expectedinvoice' => 0,
                     'expectedrelatedobject' => 0,
                     'expectedqty' => 0,
@@ -548,10 +565,11 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
                     'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_ACCEPT,
                     'getAutoInvoiceFraudPassed' => true,
+                    'getState' => \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT,
                     'expectedregister' => 1,
                     'expectedcapture' => 1,
                     'expectedsave' => 1,
-                    'expectedorder' => 1,
+                    'expectedorder' => 2,
                     'expectedinvoice' => 1,
                     'expectedrelatedobject' => 1,
                     'expectedqty' => 1,
@@ -577,6 +595,32 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'expects' => [
                         'VPSTxId' => null,
                         'Action'  => 'Marked as TEST',
+                    ]
+                ]
+            ],
+            'test on hold' => [
+                [
+                    'payment_mode' => \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE,
+                    'fraudscreenrecommendation' => \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_ACCEPT,
+                    'getAutoInvoiceFraudPassed' => true,
+                    'getState' => \Magento\Sales\Model\Order::STATE_HOLDED,
+                    'expectedregister' => 0,
+                    'expectedcapture' => 0,
+                    'expectedsave' => 0,
+                    'expectedorder' => 1,
+                    'expectedinvoice' => 0,
+                    'expectedrelatedobject' => 0,
+                    'expectedqty' => 0,
+                    'expectedcreate' => 0,
+                    'expectedgetorder' => 0,
+                    'expectedaddobject' => 0,
+                    'expects' => [
+                        'VPSTxId' => null,
+                        'fraudscreenrecommendation' => 'ACCEPT',
+                        'fraudid' => '12345',
+                        'fraudcode' => '765',
+                        'fraudcodedetail' => 'Fraud card',
+                        'fraudprovidername' => 'ReD',
                     ]
                 ]
             ]
