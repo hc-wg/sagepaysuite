@@ -1,3 +1,13 @@
+## [1.2.13] - 2019-03-25
+### Added
+- On Hold status stop auto-invoice
+
+### Changed
+- Redirect to empty cart fix
+- Multi-Currency invoice use base currency amount
+- Defer invoice problem with Multi-Store setup
+- Repeat problem with Multi-Store setup
+
 ## [1.2.12] - 2019-02-05
 ### Changed
 - Encrypt callback URL.
