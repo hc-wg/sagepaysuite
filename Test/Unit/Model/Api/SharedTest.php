@@ -189,6 +189,15 @@ class SharedTest extends \PHPUnit\Framework\TestCase
             ->method('executePost')
             ->willReturn($responseMock);
 
+        $orderMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(1);
+
         $this->assertEquals(
             [
                 "status" => 200,
@@ -198,7 +207,7 @@ class SharedTest extends \PHPUnit\Framework\TestCase
                     'StatusDetail' => 'Success.'
                 ]
             ],
-            $this->sharedApiModel->voidTransaction("12345")
+            $this->sharedApiModel->voidTransaction("12345", $orderMock)
         );
     }
 
@@ -516,7 +525,7 @@ class SharedTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $orderMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('getStoreId')
             ->willReturn(1);
 
@@ -654,6 +663,15 @@ class SharedTest extends \PHPUnit\Framework\TestCase
             ->method('executePost')
             ->willReturn($responseMock);
 
+        $orderMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(1);
+
         $this->assertEquals(
             [
                 "status" => 200,
@@ -668,7 +686,7 @@ class SharedTest extends \PHPUnit\Framework\TestCase
                     'DeclineCode'  => '00'
                 ]
             ],
-            $this->sharedApiModel->repeatTransaction("12345", [])
+            $this->sharedApiModel->repeatTransaction("12345", [], $orderMock)
         );
     }
 }

@@ -33,5 +33,12 @@ interface PaymentOperations
      */
     public function authorizeTransaction($transactionId, $amount, \Magento\Sales\Api\Data\OrderInterface $order);
 
-    public function repeatTransaction($vpstxid, $quote_data, $paymentAction = Config::ACTION_REPEAT);
+    /**
+     * @param $vpstxid
+     * @param $quote_data
+     * @param $paymentAction
+     * @param \Magento\Sales\Api\Data\OrderInterface $order
+     * @return mixed
+     */
+    public function repeatTransaction($vpstxid, $quote_data, \Magento\Sales\Api\Data\OrderInterface $order, $paymentAction = Config::ACTION_REPEAT);
 }
