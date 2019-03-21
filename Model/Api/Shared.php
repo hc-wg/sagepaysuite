@@ -114,7 +114,7 @@ class Shared
         $vpsTxId = $this->_suiteHelper->clearTransactionId($vpsTxId);
 
         $transaction = $this->_reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
-        $this->__suiteLogger->sageLog(Logger::LOG_REQUEST, $transaction, [__METHOD__, __LINE__]);
+        $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $transaction, [__METHOD__, __LINE__]);
 
         $result = null;
 
