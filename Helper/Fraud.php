@@ -315,12 +315,14 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Sales\Model\Order\Payment $payment,
         $passedFraudCheck
     ) {
+        $state = $payment->getOrder()->getState();
         //auto-invoice authorized order for full amount if ACCEPT or OK
         if (
             $passedFraudCheck &&
             $this->configAutoInvoice() &&
             $this->transactionIsAuth($transaction) &&
-            $this->transactionIsNotClosed($transaction)
+            $this->transactionIsNotClosed($transaction) &&
+            $state !== Order::STATE_HOLDED
         ) {
 
             $order = $payment->getOrder();
