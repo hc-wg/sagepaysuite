@@ -133,10 +133,14 @@ class Request extends \Magento\Backend\App\AbstractAction
             //generate request data
             $request = $this->_generateRequest($vendorTxCode);
 
+            //save order
+            $order = $this->quoteManagement->submit($this->quote);
+
             //send REPEAT POST to Sage Pay
             $post_response = $this->sharedApi->repeatTransaction(
                 $this->postData->vpstxid,
                 $request,
+                $order,
                 $this->config->getSagepayPaymentAction()
             );
 
@@ -154,9 +158,6 @@ class Request extends \Magento\Backend\App\AbstractAction
             $payment->setAdditionalInformation('moto', true);
             $payment->setAdditionalInformation('vendorname', $this->config->getVendorname());
             $payment->setAdditionalInformation('mode', $this->config->getMode());
-
-            //save order
-            $order = $this->quoteManagement->submit($this->quote);
 
             if ($order) {
                 //mark order as paid
