@@ -1,8 +1,8 @@
 ## [1.1.25] - 2019-03-25
-### Added
+### Changed
 - On Hold status stop auto-invoice
 
-### Changed
+### Fixed
 - Defer invoice problem with Multi-Store setup
 - Repeat problem with Multi-Store setup
 - Redirect to empty cart fix
@@ -12,16 +12,19 @@
  
 ## [1.1.24] - 2019-02-05
 ### Changed
-- Encrypt callback URL.
 - 3D secure iframe alignment on mobile devices.
+
+### Security
+- Encrypt callback URL.
 
 ## [1.1.23] - 2019-01-07
 ### Added
 - Invoice confirmation email for Authorise and capture
 - Show verification results in payment layout at order details
+### Changed
 - Server low profile smaller modal window
 
-### Changed
+### Fixed
 - Refund problem on multi-currency sites 
 - PI without DropIn problem when you enter a wrong CVN
 - Problem with refunds on multi-sites using two vendors
@@ -33,15 +36,19 @@
 ### Changed
 - Update translation file strings en_GB.csv 
 - Enforce fields length according to Sage Pay rules on Pi integration
+
+### Removed
 - Disable Multishipping payment methods because they dont work
+
+### Fixed
 - Problems with PayPal basket and special characters
  
 ## [1.1.21] - 2018-10-01
-### Added
- - Read module version from composer file
-
 ### Changed
+ - Read module version from composer file
  - Improve error message when transaction fails (SERVER)
+
+### Fixed
  - Repeat deferred invoice error
  - Problem when there is no shipping method. Validate quote befor submit.
  - Orders made with PI DropIn MOTO add +1 on the VendorTxCode
@@ -51,18 +58,18 @@
  - Quote not found when STATUS: NOTAUTHED on SERVER
  
 ## [1.1.20] - 2018-08-22
-### Added
+### Changed
 - Uninstall database mechanism
 - Terms & Condition server side validation (only for logged in customers)
 
-### Changed
+### Fixed
 - Checkout missing request to payment-information
 - Unable to continue checkout if button "Load secure credit card form" button is pressed before editing the billing address
 - Unable to find quote
 - FORM email confirmation adds &CardHolder next to the shipping phone number
 
 ## [1.1.19] - 2018-08-06
-### Changed
+### Fixed
 
 - Rounding Issue, order amount mismatch by 1p.
 - Repeat Defered orders with wrong status.
@@ -81,38 +88,41 @@
   - Fraud flags on sales orders grid.
 
 ### Changed
+  - Human friendly report api error on admin config.
+  
+### Fixed
   - Unique Constraint Violation cancelling orders.
   - Form failure StatusDetail inconsistent causes undefined offset.
   - Call to a member function getSagepaysuiteFraudCheck() on boolean.
   - Call to a member function getBillingAddress() on null.
   - Minify exception via xml causes problem with tinymce.
   - Invalid card on Drop-in the load secure from button disappears.
-  - Human friendly report api error on admin config.
   - Invalid parameter type when using SOAP API.
   - Japanese currency issue.
   - SagePaySuite breaks Swagger when enabled.
   - Fix bad column name on sagepaysuite_token table.
   
 ## [1.1.17] - 2018-01-30
-### Added
+### Fixed
   - Fix bad class import on PiRequestManagement.
 
 ## [1.1.16] - 2018-01-15
 ### Changed
+  - Split database support out of the box.
+### Fixed
   - Parent page already initialised Direct Drop-in.
   - Failed MOTO orders send confirmation email.
   - There was an error with Sage Pay transaction : Notice: Undefined variable: result.
   - Quote id repeated if order is canceled by customer SERVER.
   - Money taken for auto cancelled order.
-  - Split database support out of the box.
   
 ## [1.1.15] - 2017-11-06
-### Changed
+### Fixed
   - Fix different vendornames per installation.
   - Direct MOTO Double confirmation email.
   
 ## [1.1.14] - 2017-09-27
-### Changed
+### Fixed
   - Fix FORM transactions not cancelling when in pending_payment state and customer leaves the payment pages.
   - Fix error where if a wrong CVC is entered in PI DropIn you cannot retry.
   - Fix MOTO pricing problem.
@@ -129,6 +139,7 @@
 ## [1.1.13] - 2017-07-12
 ### Changed
   - Partial refunds after partial invoices.
+### Fixed
   - Email error when placing 2 different orders on PI.
   - Can't create 2 credit memos for a transaction using PI.
   - Cart still contains items after purchase.
@@ -138,12 +149,13 @@
   - Verifypeer set to true by default.
 
 ## [1.1.12] - 2017-05-05
-### Changed
+### Fixed
   - Fix test.param is not a funcion on PI MOTO transactions.
 
 ## [1.1.11] - 2017-05-04
 ### Changed
   - Change wording on configuration settings.
+### Fixed  
   - Order status for Deferred and Authenticate transactions. Now the initial status is Pending Payment, then it moves to Pending and when the invoice is created it moves to processing.
   - Fix error when creating an invoice "Notice: Undefined property: \Ebizmarts\SagePaySuite\Model\Payment::$_config"
   - Fix for duplicate customer address when checking out as logged in customer.
@@ -155,9 +167,10 @@
 ## [1.1.10] - 2017-02-07
 ### Added
   - PI requests migrated to WEBAPIs, this fixes issues on frontend orders with custom options.
+### Changed
   - A lot of refactoring, removing duplicate code.
   - DropIn checkout (SAQ-A) for frontend and backend orders.
-### Changed
+### Fixed  
   - additional_information fraud rules object currupting the row.
   - quoteIdMaskFactory is declared too many times fix.
   - Undefined property: stdClass::$code fix.
@@ -168,7 +181,7 @@
    - PI void using instructions/void API.
    - PI refund using own API.
    - Add index on sagepaysuite_token table.
-### Changed
+### Fixed
    - Validation is failed. PI transactions go through even if Magento JS validation fails.
    - Uncaught TypeError: Unable to process binding if: hasSsCardType
    - PI on admin lets you enter cc number with spaces.
@@ -188,35 +201,38 @@
    - Sage Pay Logo loading via HTTPS everywhere now.
    - Sage Pay PI does not show a progress indicator once the place order button is pressed.
    - Don't show "My Saved Credit Cards" link on My Account if not enabled.
+   - Specific ACL on admin controllers.
+   - Many performance and standards compliance improvements.
+### Fixed
    - BasketXML fixes specially for PayPal.
    - Fixed many issues with frontend orders, changed requests to webapis.
    - Fix logo disappearing on checkout.
    - Fix moto order stuck in pending_payment status.
    - Fix cancelled orders in pi frontend when 3D secure is not Authenticated.
-   - Specific ACL on admin controllers.
-   - Many performance and standards compliance improvements.
-
+   
 ## [1.1.7] - 2016-08-18
-### Added
-   - Coding standards for Magento Marketplace.
 ### Changed
+   - Coding standards for Magento Marketplace.
+### Fixed
    - Basket display issue, decimal places.
    - MOTO customer create account for PI integration fixed.
 
 ## [1.1.6.0] - 2016-07-12
 ### Changed
    - Change PI wording for Direct.
+   
+### Fixed   
    - Order with custom option=file with SERVER integration was not working.
    - MOTO fixes.
 
 ## [1.1.5.2] - 2016-06-28
-### Changed
+### Fixed
    - Billing address not updated from checkout.
 
 ## [1.1.5] - 2016-05-09
 ### Added
    - License and Reporting credentials validated in config.
-### Changed
+### Fixed
    - Compilation error with fraud helper in version 2.0.4.
    - Filename of fraud grid in admin with lowercase letter.
 
@@ -232,23 +248,24 @@
    - REPEAT MOTO integration.
    - FORM MOTO integration.
    - Euro Payments now supported with SERVER integration.
-   - Max tokens per customer limitation (3).
    - Paypal "processing payment" page.
    - SERVER nice and shinny "slide" modal mode.
    - Translations backbone.
    - SERVER VPS hash validation.
-   - Recover quote when end user clicks on back button after order was pre saved.
 ### Changed
+   - Max tokens per customer limitation (3).
+   - Recover quote when end user clicks on back button after order was pre saved.
+### Fixed
    - Various fixes to meet magento2 coding standarts.
 
 ## [1.1.2] - 2016-02-01
 ### Added
    - PayPal integration (frontend).
-   - Cancel Pening payments CRON.
+   - Cancel Pending payments CRON.
    - Fraud report CRON.
    - Token list in frontend customer area.
    - Unit tests additions.
-### Changed
+### Fixed
    - Virtual products state address error.
 
 ## [1.1.0] - 2016-01-15
