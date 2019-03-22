@@ -1,84 +1,68 @@
-1.1.24 (05/02/2019)
-=============
-**This release requires Magento 2.1.x.**
+## [1.1.25] - 2019-03-25
+###Added
+- On Hold status stop auto-invoice
 
- **Fixed bugs:**
-- Encrypt callback URL. [#650 #658 #656]
-- 3D secure iframe alignment on mobile devices. [#643]
+###Changed
+- Defer invoice problem with Multi-Store setup
+- Repeat problem with Multi-Store setup
+- Redirect to empty cart fix
 
-1.1.23 (07/01/2019)
-=============
-**This release requires Magento 2.1.x.**
-
-**Implemented features:**
-
-- Invoice confirmation email for Authorise and capture [#606]
-
-**Implemented enhancements:**
-
-- Show verification results in payment layout at order details [#553]
-- Server low profile smaller modal window [#600]
-
- **Fixed bugs:**
-- Refund problem on multi-currency sites [#579]
-- PI without DropIn problem when you enter a wrong CVN [#584]
-- Problem with refunds on multi-sites using two vendors [#590]
-- Exception thrown when open Fraud report [#595]
-- Basket XML constraint fix [#618]
-- Magento's sign appearing when click fraud cell [#625]
-
-1.1.22 (17/10/2018)
-=============
-**This release requires Magento 2.1.x.**
-
-**Implemented enhancements:**
-
-- Update translation file strings en_GB.csv [#524]
-
- **Fixed bugs:**
-- Enforce fields length according to Sage Pay rules on Pi integration [#531]
-- Disable Multishipping payment methods because they dont work [#535]
-- Problems with PayPal basket and special characters [#544]
+###Removed
+- Remove FORM MOTO
  
- 1.1.21 (01/10/2018)
-=============
-**This release requires Magento 2.1.x.**
+## [1.1.24] - 2019-02-05
+###Changed
+- Encrypt callback URL.
+- 3D secure iframe alignment on mobile devices.
 
-**Implemented enhancements:**
+## [1.1.23] - 2019-01-07
+###Added
+- Invoice confirmation email for Authorise and capture
+- Show verification results in payment layout at order details
+- Server low profile smaller modal window
 
- - Improve error message when transaction fails (SERVER) [#471]
- - Read module version from composer file [#496]
+###Changed
+- Refund problem on multi-currency sites 
+- PI without DropIn problem when you enter a wrong CVN
+- Problem with refunds on multi-sites using two vendors
+- Exception thrown when open Fraud report
+- Basket XML constraint fix
+- Magento's sign appearing when click fraud cell
 
- **Fixed bugs:**
- - Repeat deferred invoice error [#511]
- - Problem when there is no shipping method. Validate quote befor submit. [#502]
- - Orders made with PI DropIn MOTO add +1 on the VendorTxCode [#501]
- - Second credit card is not being saved on Server [#476]
- - This credit card type is not allowed for this payment method on PI no DropIn [#491]
- - Auto-invoice not working [#474]
- - Quote not found when STATUS: NOTAUTHED on SERVER [#467]
+## [1.1.22] - 2018-10-17
+###Changed
+- Update translation file strings en_GB.csv 
+- Enforce fields length according to Sage Pay rules on Pi integration
+- Disable Multishipping payment methods because they dont work
+- Problems with PayPal basket and special characters
  
-1.1.20 (22/08/2018)
-=============
-**This release requires Magento 2.1.x.**
+## [1.1.21] - 2018-10-01
+###Added
+ - Read module version from composer file
 
-**Implemented enhancements:**
-
+###Changed
+ - Improve error message when transaction fails (SERVER)
+ - Repeat deferred invoice error
+ - Problem when there is no shipping method. Validate quote befor submit.
+ - Orders made with PI DropIn MOTO add +1 on the VendorTxCode
+ - Second credit card is not being saved on Server
+ - This credit card type is not allowed for this payment method on PI no DropIn
+ - Auto-invoice not working
+ - Quote not found when STATUS: NOTAUTHED on SERVER
+ 
+## [1.1.20] - 2018-08-22
+###Added
 - Uninstall database mechanism
-
-**Fixed bugs:**
-
 - Terms & Condition server side validation (only for logged in customers)
+
+###Changed
 - Checkout missing request to payment-information
 - Unable to continue checkout if button "Load secure credit card form" button is pressed before editing the billing address
 - Unable to find quote
 - FORM email confirmation adds &CardHolder next to the shipping phone number
 
-1.1.19 (06/08/2018)
-=============
-**This release requires Magento 2.1.x.**
-
-**Fixed bugs:**
+## [1.1.19] - 2018-08-06
+###Changed
 
 - Rounding Issue, order amount mismatch by 1p.
 - Repeat Defered orders with wrong status.
@@ -92,14 +76,11 @@
 - Hong Kong optional zipcode.
 - BankAuthCode and TxAuthNo is not saved on the DB
 
-1.1.18 (06/04/2018)
-=============
-**This release requires Magento 2.1.x.**
-
-- Enhancements
+## [1.1.18] - 2018-04-06
+###Added
   - Fraud flags on sales orders grid.
 
-- Bug fixes
+###Changed
   - Unique Constraint Violation cancelling orders.
   - Form failure StatusDetail inconsistent causes undefined offset.
   - Call to a member function getSagepaysuiteFraudCheck() on boolean.
@@ -112,35 +93,26 @@
   - SagePaySuite breaks Swagger when enabled.
   - Fix bad column name on sagepaysuite_token table.
   
-1.1.17 (30/01/2018)
-=============
-**This release requires Magento 2.1.x.**
-- Bug fixes
+## [1.1.17] - 2018-01-30
+###Added
   - Fix bad class import on PiRequestManagement.
 
-1.1.16 (15/01/2018)
-=============
-**This release requires Magento 2.1.x.**
-- Bug fixes
+## [1.1.16] - 2018-01-15
+###Changed
   - Parent page already initialised Direct Drop-in.
   - Failed MOTO orders send confirmation email.
   - There was an error with Sage Pay transaction : Notice: Undefined variable: result.
   - Quote id repeated if order is canceled by customer SERVER.
   - Money taken for auto cancelled order.
-- Improvements
   - Split database support out of the box.
   
-1.1.15 (06/11/2017)
-=============
-**This release requires Magento 2.1.x.**
-- Bug fixes
+## [1.1.15] - 2017-11-06
+###Changed
   - Fix different vendornames per installation.
   - Direct MOTO Double confirmation email.
   
-1.1.14 (27/09/2017)
-=============
-**This release requires Magento 2.1.x.**
-- Bug fixes
+## [1.1.14] - 2017-09-27
+###Changed
   - Fix FORM transactions not cancelling when in pending_payment state and customer leaves the payment pages.
   - Fix error where if a wrong CVC is entered in PI DropIn you cannot retry.
   - Fix MOTO pricing problem.
@@ -154,10 +126,8 @@
   - Fix currency:base problem in frontend.
   - Fix conflict with credit card form dates when other cc payment methods are enabled on frontend.
   
-1.1.13 (12/07/2017)
-=============
-**This release requires Magento 2.1.x.**
-- Bug fixes
+## [1.1.13] - 2017-07-12
+###Changed
   - Partial refunds after partial invoices.
   - Email error when placing 2 different orders on PI.
   - Can't create 2 credit memos for a transaction using PI.
@@ -167,18 +137,13 @@
   - Different billing address button enabled before update the address.
   - Verifypeer set to true by default.
 
-1.1.12 (05/05/2017)
-=============
-**This release requires Magento 2.1.x.**
-- Bug fixes
+## [1.1.12] - 2017-05-05
+###Changed
   - Fix test.param is not a funcion on PI MOTO transactions.
 
-1.1.11 (04/05/2017)
-=============
-**This release requires Magento 2.1.x.**
-- Improvements
+## [1.1.11] - 2017-05-04
+###Changed
   - Change wording on configuration settings.
-- Bug fixes
   - Order status for Deferred and Authenticate transactions. Now the initial status is Pending Payment, then it moves to Pending and when the invoice is created it moves to processing.
   - Fix error when creating an invoice "Notice: Undefined property: \Ebizmarts\SagePaySuite\Model\Payment::$_config"
   - Fix for duplicate customer address when checking out as logged in customer.
@@ -187,134 +152,115 @@
   - Fix postcode error when postcode is not required for the country.
   - Fix for "Notice: Object of class Magento\Framework\ObjectManager\ObjectManager could not be converted to ..." when Magento is in production mode and using Form.
   
-1.1.10 (07/02/2017)
-=============
-**This release requires Magento 2.1.x.**
-- Improvements
+## [1.1.10] - 2017-02-07
+###Added
   - PI requests migrated to WEBAPIs, this fixes issues on frontend orders with custom options.
   - A lot of refactoring, removing duplicate code.
-- Bug fixes
+  - DropIn checkout (SAQ-A) for frontend and backend orders.
+###Changed
   - additional_information fraud rules object currupting the row.
   - quoteIdMaskFactory is declared too many times fix.
   - Undefined property: stdClass::$code fix.
   - Division by zero fix on basket.
-- New features
-  - DropIn checkout (SAQ-A) for frontend and backend orders.
+  
+## [1.1.9] - 2016-12-21
+###Added
+   - PI void using instructions/void API.
+   - PI refund using own API.
+   - Add index on sagepaysuite_token table.
+###Changed
+   - Validation is failed. PI transactions go through even if Magento JS validation fails.
+   - Uncaught TypeError: Unable to process binding if: hasSsCardType
+   - PI on admin lets you enter cc number with spaces.
+   - Magento minification minifies PI external files and 404s.
+   - Fraud on order view Not enough information. Undefined property: stdClass::$fraudscreenrecommendation.
+   - PI integration customer email not sent.
 
-1.1.9 (21/12/2016)
-=============
-**This release requires Magento 2.1.x.**
-* Improvements
-    * PI void using instructions/void API.
-    * PI refund using own API.
-    * Add index on sagepaysuite_token table.
-* Bug fixes
-    * Validation is failed. PI transactions go through even if Magento JS validation fails.
-    * Uncaught TypeError: Unable to process binding if: hasSsCardType
-    * PI on admin lets you enter cc number with spaces.
-    * Magento minification minifies PI external files and 404s.
-    * Fraud on order view Not enough information. Undefined property: stdClass::$fraudscreenrecommendation.
-    * PI integration customer email not sent.
+## [1.1.8] - 2016-10-28
+###Added
+   - Enable disable form and pi on moto, different config.
+   - Add CardHolder to FORM requests for ReD validation.
+   - Add index on sagepaysuite_token table.
+###Changed
+   - Remove reference to legacy code Mage::logException.
+   - Redirect to Sage Pay on server integration when on mobile.
+   - Validate moto order when using pi before submitting to sagepay.
+   - Sage Pay Logo loading via HTTPS everywhere now.
+   - Sage Pay PI does not show a progress indicator once the place order button is pressed.
+   - Don't show "My Saved Credit Cards" link on My Account if not enabled.
+   - BasketXML fixes specially for PayPal.
+   - Fixed many issues with frontend orders, changed requests to webapis.
+   - Fix logo disappearing on checkout.
+   - Fix moto order stuck in pending_payment status.
+   - Fix cancelled orders in pi frontend when 3D secure is not Authenticated.
+   - Specific ACL on admin controllers.
+   - Many performance and standards compliance improvements.
 
-1.1.8 (28/10/2016)
-=============
-**This release requires Magento 2.1.x.**
-* Improvements
-    * Enable disable form and pi on moto, different config.
-    * Add CardHolder to FORM requests for ReD validation.
-    * Add index on sagepaysuite_token table.
-* Bug fixes
-    * Remove reference to legacy code Mage::logException.
-    * Redirect to Sage Pay on server integration when on mobile.
-    * Validate moto order when using pi before submitting to sagepay.
-    * Sage Pay Logo loading via HTTPS everywhere now.
-    * Sage Pay PI does not show a progress indicator once the place order button is pressed.
-    * Don't show "My Saved Credit Cards" link on My Account if not enabled.
-    * BasketXML fixes specially for PayPal.
-    * Fixed many issues with frontend orders, changed requests to webapis.
-    * Fix logo disappearing on checkout.
-    * Fix moto order stuck in pending_payment status.
-    * Fix cancelled orders in pi frontend when 3D secure is not Authenticated.
-    * Specific ACL on admin controllers.
-    * Many performance and standards compliance improvements.
+## [1.1.7] - 2016-08-18
+###Added
+   - Coding standards for Magento Marketplace.
+###Changed
+   - Basket display issue, decimal places.
+   - MOTO customer create account for PI integration fixed.
 
-1.1.7 (18/08/2016)
-=============
-**This release requires Magento 2.1.x.**
-* Improvements
-    * Coding standards for Magento Marketplace.
-* Bug fixes
-    * Basket display issue, decimal places.
-    * MOTO customer create account for PI integration fixed.
+## [1.1.6.0] - 2016-07-12
+###Changed
+   - Change PI wording for Direct.
+   - Order with custom option=file with SERVER integration was not working.
+   - MOTO fixes.
 
-1.1.6.0 (12/07/2016)
-=============
-**This release requires Magento 2.1.x.**
-* Improvements
-    * Change PI wording for Direct.
-* Bug fixes
-    * Order with custom option=file with SERVER integration was not working.
-    * MOTO fixes.
+## [1.1.5.2] - 2016-06-28
+###Changed
+   - Billing address not updated from checkout.
 
-1.1.5.2 (28/06/2016)
-=============
-* Bug fixes
-    * Billing address not updated from checkout.
+## [1.1.5] - 2016-05-09
+###Added
+   - License and Reporting credentials validated in config.
+###Changed
+   - Compilation error with fraud helper in version 2.0.4.
+   - Filename of fraud grid in admin with lowercase letter.
 
-1.1.5 (09/05/2016)
-=============
-* New Features
-    * License and Reporting credentials validated in config.
-* Bug fixes
-    * Compilation error with fraud helper in version 2.0.4.
-    * Filename of fraud grid in admin with lowercase letter.
+## [1.1.4] - 2016-04-01
+###Added
+   - Tokens Report in backend.
+   - Fraud Report in backend.
+   - Fraud score automations.
+   - Unit-testing coverage of 80%.
+   - Basket in all requests, XML and Sage50 compatible.
+   - Currency configuration options.
+   - Transaction details can now be synced from Sage Pay API from backend.
+   - REPEAT MOTO integration.
+   - FORM MOTO integration.
+   - Euro Payments now supported with SERVER integration.
+   - Max tokens per customer limitation (3).
+   - Paypal "processing payment" page.
+   - SERVER nice and shinny "slide" modal mode.
+   - Translations backbone.
+   - SERVER VPS hash validation.
+   - Recover quote when end user clicks on back button after order was pre saved.
+###Changed
+   - Various fixes to meet magento2 coding standarts.
 
-1.1.4 (01/04/2016)
-=============
-* New Features
-    * Tokens Report in backend.
-    * Fraud Report in backend.
-    * Fraud score automations.
-    * Unit-testing coverage of 80%.
-    * Basket in all requests, XML and Sage50 compatible.
-    * Currency configuration options.
-    * Transaction details can now be synced from Sage Pay API from backend.
-    * REPEAT MOTO integration.
-    * FORM MOTO integration.
-    * Euro Payments now supported with SERVER integration.
-* Improvements
-    * Max tokens per customer limitation (3).
-    * Paypal "processing payment" page.
-    * SERVER nice and shinny "slide" modal mode.
-    * Translations backbone.
-    * SERVER VPS hash validation.
-    * Recover quote when end user clicks on back button after order was pre saved.
-* Bug fixes
-    * Various fixes to meet magento2 coding standarts.
+## [1.1.2] - 2016-02-01
+###Added
+   - PayPal integration (frontend).
+   - Cancel Pening payments CRON.
+   - Fraud report CRON.
+   - Token list in frontend customer area.
+   - Unit tests additions.
+###Changed
+   - Virtual products state address error.
 
-1.1.2 (01/02/2016)
-=============
-* New Features
-    * PayPal integration (frontend).
-    * Cancel Pening payments CRON.
-    * Fraud report CRON.
-    * Token list in frontend customer area.
-    * Unit tests additions.
-* Bug fixes
-    * Virtual products state address error.
+## [1.1.0] - 2016-01-15
+###Added
+   - SERVER integration (frontend)
+   - PI integration (backend)
+   - Token integration for SERVER
+   - 3D Secure for all integrations
+   - Auth & Capture, Defer and Authentication payment actions for all integrations
 
-1.1.0 (15/01/2016)
-=============
-* New Features
-    * SERVER integration (frontend)
-    * PI integration (backend)
-    * Token integration for SERVER
-    * 3D Secure for all integrations
-    * Auth & Capture, Defer and Authentication payment actions for all integrations
-
-1.0.6 (15/12/2015)
-=============
-* New Features
-    * FORM integration (frontend)
-    * PI integration (frontend)
-    * Online Refunds
+## [1.0.6] - 2015-12-15
+###Added
+   - FORM integration (frontend)
+   - PI integration (frontend)
+   - Online Refunds
