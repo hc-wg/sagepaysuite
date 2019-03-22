@@ -12,6 +12,8 @@
 ## [1.3.2] - 2019-02-05
 ### Changed
 - 3D secure iframe alignment on mobile devices
+
+### Fixed
 - last_trans_id field on table sales_order_payment truncated to 32, causing error on callbacks
 
 ### Security
