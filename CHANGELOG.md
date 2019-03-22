@@ -1,8 +1,8 @@
 ## [1.2.13] - 2019-03-25
-### Added
+### Changed
 - On Hold status stop auto-invoice
 
-### Changed
+### Fixed
 - Redirect to empty cart fix
 - Multi-Currency invoice use base currency amount
 - Defer invoice problem with Multi-Store setup
@@ -10,16 +10,20 @@
 
 ## [1.2.12] - 2019-02-05
 ### Changed
-- Encrypt callback URL.
 - 3D secure iframe alignment on mobile devices.
+
+### Security
+- Encrypt callback URL.
 
 ## [1.2.11] - 2019-01-07
 ### Added
 - Invoice confirmation email for Authorise and capture
 - Show verification results in payment layout at order details
-- Server low profile smaller modal window
 
 ### Changed
+- Server low profile smaller modal window
+
+### Fixed
 - Cancel or Void a Defer order without invoice
 - Refund problem on multi-currency sites
 - PI without DropIn problem when you enter a wrong CVN
@@ -32,16 +36,22 @@
 ### Changed
 - Update translation file strings en_GB.csv 
 - Enforce fields length according to Sage Pay rules on Pi integration 
+
+### Removed
 - Disable Multishipping payment methods because they dont work
+
+### Fixed
 - Problems with PayPal basket and special characters
 
 ## [1.2.9] - 2018-10-01
 ### Added
 - PI Defer partial invoice
-- Read module version from composer file
 
 ### Changed
+- Read module version from composer file
 - Improve error message when transaction fails (SERVER)
+
+### Fixed
 - Quote not found when STATUS: NOTAUTHED on SERVER
 - Repeat deferred invoice error
 - Problem when there is no shipping method. Validate quote befor submit.
@@ -57,7 +67,7 @@
 - Uninstall database mechanism
 - Terms & Condition server side validation
 
-### Changed
+### Fixed
 - Checkout missing request to payment-information
 - Unable to continue checkout if button "Load secure credit card form" button is pressed before editing the billing address
 - Unable to find quote
@@ -68,6 +78,9 @@
 - 2.2.5 compatibility.
 
 ### Changed
+- Hong Kong optional zipcode.
+
+### Fixed
 - Rounding Issue, order amount mismatch by 1p.
 - Repeat Defered orders with wrong status.
 - Pi Incorrect payment actions.
@@ -77,11 +90,10 @@
 - Undefined property: stdclass::$status.
 - Token is saved without asking the customer.
 - PayPal sort order not being saved.
-- Hong Kong optional zipcode.
 - BankAuthCode and TxAuthNo is not saved on the DB.
 
 ## [1.2.6] - 2018-04-06
-### Changed
+### Fixed
 - Form failure StatusDetail inconsistent causes undefined offset.
 - Unique Constraint Violation cancelling orders on Form and Server integrations.
 
@@ -91,6 +103,8 @@
 
 ### Changed
 - Improve error message when reporting password is incorrect.
+
+### Fixed
 - Unserialize use helper objects.
 - Minify javascript exception via xml causes problem with tinymce, using plugin now.
 - Invalid card on Drop-in, the load secure from button disappears.
@@ -99,29 +113,33 @@
 
 ## [1.2.4] - 2018-03-01
 ### Changed
-- Swagger generation failing because of missing parameter "quote" on webapi.xml.
-- Non-decimal currencies (eg: JPY) sending wrong amount to Sage Pay Pi and failing on Server/Form.
 - Improve admin message error when Reporting API signature fails.
 - Update Sage Pay Direct label to Sage Pay Pi on admin config page.
 
+### Fixed
+- Swagger generation failing because of missing parameter "quote" on webapi.xml.
+- Non-decimal currencies (eg: JPY) sending wrong amount to Sage Pay Pi and failing on Server/Form.
+
 ## [1.2.3] - 2018-02-13
-### Changed
+### Fixed
 - Concrete class parameter breaks SOAP API.
 - Upgrade schema vendorname column not defined.
 
 ## [1.2.2] - 2018-01-30
-### Changed
+### Fixed
 - Fix bad class import on PiRequestManagement.
   
 ## [1.2.1] - 2018-01-16
 ### Changed
+- Split database support out of the box.
+- Updated en_GB.csv translation file.
+
+### Fixed
 - Parent page already initialised Direct Drop-in.
 - Failed MOTO orders send confirmation email.
 - There was an error with Sage Pay transaction : Notice: Undefined variable: result.
 - Quote id repeated if order is canceled by customer SERVER.
 - Money taken for auto cancelled order.
-- Updated en_GB.csv translation file.
-- Split database support out of the box.
 
 ## [1.2.0] - 2017-09-28
 ### Added
