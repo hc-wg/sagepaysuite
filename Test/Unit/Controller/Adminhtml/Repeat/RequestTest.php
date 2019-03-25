@@ -55,6 +55,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
     private $transactionFactoryMock;
 
+    private $suiteHelperMock;
+
     protected function setUp()
     {
         $this->repeatModelMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Repeat')->disableOriginalConstructor()->getMock();
@@ -151,18 +153,13 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $this->configMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')->disableOriginalConstructor()->getMock();
 
-        $suiteHelperMock = $this
+        $this->suiteHelperMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Data')
             ->disableOriginalConstructor()
             ->getMock();
-        $suiteHelperMock->expects($this->any())
+        $this->suiteHelperMock->expects($this->any())
             ->method('generateVendorTxCode')
             ->will($this->returnValue("10000001-2015-12-12-12-12345"));
-        $suiteHelperMock
-            ->expects($this->once())
-            ->method('removeCurlyBraces')
-            ->with(self::TEST_VPSTXID)
-            ->willReturn(self::TEST_VPSTXID);
 
         $sharedapiMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Shared')
@@ -225,7 +222,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             [
                 'context'            => $contextMock,
                 'config'             => $this->configMock,
-                'suiteHelper'        => $suiteHelperMock,
+                'suiteHelper'        => $this->suiteHelperMock,
                 'sharedApi'          => $sharedapiMock,
                 'quoteSession'       => $quoteSessionMock,
                 'quoteManagement'    => $this->quoteManagementMock,
@@ -271,6 +268,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $this->paymentMock->expects($this->exactly($transactionClosedCount))->method('setIsTransactionClosed')->with(0);
 
+        $this->accertRemoveCurlyBraces(1);
+
         $this->quoteManagementMock->expects($this->any())
             ->method('submit')
             ->will($this->returnValue($this->orderMock));
@@ -299,14 +298,16 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteERROR()
     {
-        $this->quoteManagementMock->expects($this->any())
+        $this->quoteManagementMock->expects($this->once())
             ->method('submit')
-            ->will($this->returnValue(null));
+            ->willThrowException(new \Exception('Unable to save Sage Pay order.'));
 
         $this->_expectResultJson([
             "success" => false,
             'error_message' => __("Something went wrong: %1", "Unable to save Sage Pay order.")
         ]);
+
+        $this->accertRemoveCurlyBraces(0);
 
         $this->repeatRequestController->execute();
     }
@@ -319,5 +320,14 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->resultJson->expects($this->once())
             ->method('setData')
             ->with($result);
+    }
+
+    private function accertRemoveCurlyBraces($count)
+    {
+        $this->suiteHelperMock
+            ->expects($this->exactly($count))
+            ->method('removeCurlyBraces')
+            ->with(self::TEST_VPSTXID)
+            ->willReturn(self::TEST_VPSTXID);
     }
 }

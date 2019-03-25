@@ -54,7 +54,7 @@ class Payment
                 $result = [];
                 if ($this->isDeferredOrRepeatDeferredAction($paymentAction)) {
                     $action = 'releasing';
-                    $result = $this->sharedApi->captureDeferredTransaction($transactionId, $amount);
+                    $result = $this->sharedApi->captureDeferredTransaction($transactionId, $amount, $order);
                 } elseif ($this->isAuthenticateAction($paymentAction)) {
                     $action = 'authorizing';
                     $result = $this->sharedApi->authorizeTransaction($transactionId, $amount, $order);

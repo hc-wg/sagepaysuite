@@ -75,9 +75,9 @@ class Shared
         $this->requestHelper        = $requestHelper;
     }
 
-    public function voidTransaction($vpstxid)
+    public function voidTransaction($vpstxid, \Magento\Sales\Api\Data\OrderInterface $order)
     {
-        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol']  = $this->_config->getVPSProtocol();
         $data['TxType']       = Config::ACTION_VOID;
@@ -109,18 +109,18 @@ class Shared
         return $this->_executeRequest(Config::ACTION_REFUND, $data);
     }
 
-    public function captureDeferredTransaction($vpsTxId, $amount)
+    public function captureDeferredTransaction($vpsTxId, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
         $vpsTxId = $this->_suiteHelper->clearTransactionId($vpsTxId);
 
-        $transaction = $this->_reportingApi->getTransactionDetails($vpsTxId);
+        $transaction = $this->_reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
         $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $transaction, [__METHOD__, __LINE__]);
 
         $result = null;
 
         $txStateId = (int)$transaction->txstateid;
         if ($txStateId == self::DEFERRED_AWAITING_RELEASE) {
-            $result = $this->releaseTransaction($vpsTxId, $amount);
+            $result = $this->releaseTransaction($vpsTxId, $amount, $order);
         } else {
             if($txStateId == self::SUCCESSFULLY_AUTHORISED) {
                 $data = [];
@@ -129,16 +129,16 @@ class Shared
                 $data['ReferrerID']   = $this->requestHelper->getReferrerId();
                 $data['Currency']     = (string)$transaction->currency;
                 $data['Amount']       = $amount;
-                $result = $this->repeatTransaction($vpsTxId, $data, Config::ACTION_REPEAT);
+                $result = $this->repeatTransaction($vpsTxId, $data, $order, Config::ACTION_REPEAT);
             }
         }
 
         return $result;
     }
 
-    public function releaseTransaction($vpstxid, $amount)
+    public function releaseTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
-        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol']   = $this->_config->getVPSProtocol();
         $data['TxType']        = Config::ACTION_RELEASE;
@@ -170,9 +170,9 @@ class Shared
         return $this->_executeRequest(Config::ACTION_AUTHORISE, $data);
     }
 
-    public function repeatTransaction($vpstxid, $quote_data, $paymentAction = Config::ACTION_REPEAT)
+    public function repeatTransaction($vpstxid, $quote_data, \Magento\Sales\Api\Data\OrderInterface $order, $paymentAction = Config::ACTION_REPEAT)
     {
-        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid);
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol'] = $this->_config->getVPSProtocol();
         $data['TxType']      = $paymentAction;

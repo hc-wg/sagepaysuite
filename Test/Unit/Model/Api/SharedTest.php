@@ -22,6 +22,10 @@ class SharedTest extends \PHPUnit_Framework_TestCase
     private $httpTextMock;
 
     // @codingStandardsIgnoreStart
+    private $transactionDetailsResponse;
+
+    private $suiteHelperMock;
+
     protected function setUp()
     {
         $this->apiExceptionFactoryMock = $this
@@ -30,12 +34,12 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $transactionDetails = new \stdClass();
-        $transactionDetails->vpstxid      = "12345";
-        $transactionDetails->securitykey  = "fds87";
-        $transactionDetails->vpsauthcode  = "879243978234";
-        $transactionDetails->currency     = "USD";
-        $transactionDetails->vendortxcode = "1000000001-2016-12-12-12345678";
+        $this->transactionDetailsResponse = new \stdClass();
+        $this->transactionDetailsResponse->vpstxid      = "12345";
+        $this->transactionDetailsResponse->securitykey  = "fds87";
+        $this->transactionDetailsResponse->vpsauthcode  = "879243978234";
+        $this->transactionDetailsResponse->currency     = "USD";
+        $this->transactionDetailsResponse->vendortxcode = "1000000001-2016-12-12-12345678";
 
         $reportingApiMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Api\Reporting')
@@ -43,12 +47,12 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $reportingApiMock->expects($this->any())
             ->method('getTransactionDetails')
-            ->willReturn($transactionDetails);
-        $suiteHelperMock = $this
+            ->willReturn($this->transactionDetailsResponse);
+        $this->suiteHelperMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Data')
             ->disableOriginalConstructor()
             ->getMock();
-        $suiteHelperMock->expects($this->any())
+        $this->suiteHelperMock->expects($this->any())
             ->method('generateVendorTxCode')
             ->will($this->returnValue('1000000001-2016-12-12-12345'));
 
@@ -119,10 +123,10 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             'Ebizmarts\SagePaySuite\Model\Api\Shared',
             [
                 "reportingApi"        => $reportingApiMock,
-                "suiteHelper"         => $suiteHelperMock,
+                "suiteHelper"         => $this->suiteHelperMock,
                 "apiExceptionFactory" => $this->apiExceptionFactoryMock,
                 "config"              => $configMock,
-                'suiteRequestHelper'  => $suiteRequestHelperMock,
+                'requestHelper'  => $suiteRequestHelperMock,
                 "httpTextFactory"     => $httpTextFactoryMock
             ]
         );
@@ -169,6 +173,15 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('executePost')
             ->willReturn($responseMock);
 
+        $orderMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(1);
+
         $this->assertEquals(
             [
                 "status" => 200,
@@ -178,7 +191,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                     'StatusDetail' => 'Success.'
                 ]
             ],
-            $this->sharedApiModel->voidTransaction("12345")
+            $this->sharedApiModel->voidTransaction("12345", $orderMock)
         );
     }
 
@@ -357,6 +370,15 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('executePost')
             ->willReturn($responseMock);
 
+        $orderMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(1);
+
         $this->assertEquals(
             [
                 "status" => 200,
@@ -366,7 +388,141 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                     'VPSProtocol'  => '3.00'
                 ]
             ],
-            $this->sharedApiModel->releaseTransaction("12345", 100)
+            $this->sharedApiModel->releaseTransaction("12345", 100, $orderMock)
+        );
+    }
+
+    public function testCaptureDeferredTransactionAwaitingRelease()
+    {
+        $stringResponse = 'HTTP/1.1 200 OK';
+        $stringResponse .= "\n\n";
+        $stringResponse .= "VPSProtocol=3.00\n";
+        $stringResponse .= "Status=OK\n";
+        $stringResponse .= "StatusDetail=Success.\n";
+
+        $responseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\HttpResponse::class)
+            ->setMethods(['getStatus'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $responseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
+            ->willReturn(200);
+
+        $this->httpTextMock
+            ->method('getResponseData')
+            ->willReturn($stringResponse);
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('arrayToQueryParams')
+            ->with(
+                [
+                    'VPSProtocol'   => '3.00',
+                    'TxType'        => 'RELEASE',
+                    'Vendor'        => 'testvendorname',
+                    'VendorTxCode'  => '1000000001-2016-12-12-12345678',
+                    'VPSTxId'       => '12345',
+                    'SecurityKey'   => 'fds87',
+                    'TxAuthNo'      => '879243978234',
+                    'ReleaseAmount' => '100.00',
+                ]
+            );
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->willReturn($responseMock);
+
+        $this->transactionDetailsResponse->txstateid = \Ebizmarts\SagePaySuite\Model\Api\Shared::DEFERRED_AWAITING_RELEASE;
+
+        $orderMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock
+            ->expects($this->exactly(2))
+            ->method('getStoreId')
+            ->willReturn(1);
+
+        $this->assertEquals(
+            [
+                'status' => 200,
+                'data'   => [
+                    'Status'       => 'OK',
+                    'StatusDetail' => 'Success.',
+                    'VPSProtocol'  => '3.00'
+                ]
+            ],
+            $this->sharedApiModel->captureDeferredTransaction('12345', 100, $orderMock)
+        );
+    }
+
+    public function testCaptureDeferredTransactionAlreadyAuthorised()
+    {
+        $stringResponse = 'HTTP/1.1 200 OK';
+        $stringResponse .= "\n\n";
+        $stringResponse .= "VPSProtocol=3.00\n";
+        $stringResponse .= "Status=OK\n";
+        $stringResponse .= "StatusDetail=Success.\n";
+
+        $responseMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\HttpResponse::class)
+            ->setMethods(['getStatus'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $responseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
+            ->willReturn(200);
+
+        $this->httpTextMock
+            ->method('getResponseData')
+            ->willReturn($stringResponse);
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('arrayToQueryParams')
+            ->with(
+                [
+                    'VPSProtocol'   => '3.00',
+                    'TxType'        => 'REPEAT',
+                    'Vendor'        => 'testvendorname',
+                    'VendorTxCode'  => '1000000001-2016-12-12-12345',
+                    'Amount' => 100,
+                    'Currency' => 'USD',
+                    'Description'  => 'Repeat transaction from Magento',
+                    'RelatedVPSTxId' => '12345',
+                    'RelatedVendorTxCode' => '1000000001-2016-12-12-12345678',
+                    'RelatedSecurityKey' => 'fds87',
+                    'RelatedTxAuthNo' => '879243978234',
+                    'ReferrerID' => '01bf51f9-0dcd-49dd-a07a-3b1f918c77d7'
+                ]
+            );
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->willReturn($responseMock);
+
+        $this->transactionDetailsResponse->txstateid = \Ebizmarts\SagePaySuite\Model\Api\Shared::SUCCESSFULLY_AUTHORISED;
+
+        $orderMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock
+            ->expects($this->exactly(2))
+            ->method('getStoreId')
+            ->willReturn(1);
+
+        $this->assertEquals(
+            [
+                'status' => 200,
+                'data'   => [
+                    'Status'       => 'OK',
+                    'StatusDetail' => 'Success.',
+                    'VPSProtocol'  => '3.00'
+                ]
+            ],
+            $this->sharedApiModel->captureDeferredTransaction('12345', 100, $orderMock)
         );
     }
 
@@ -491,6 +647,15 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('executePost')
             ->willReturn($responseMock);
 
+        $orderMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(1);
+
         $this->assertEquals(
             [
                 "status" => 200,
@@ -505,7 +670,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                     'DeclineCode'  => '00'
                 ]
             ],
-            $this->sharedApiModel->repeatTransaction("12345", [])
+            $this->sharedApiModel->repeatTransaction("12345", [], $orderMock)
         );
     }
 }
