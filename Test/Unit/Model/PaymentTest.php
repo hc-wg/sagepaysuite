@@ -119,6 +119,50 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
         $sut->capture($paymentMock, $testAmount);
     }
 
+    public function testCaptureDeferredPiMultiCurrencyTransaction()
+    {
+        $testAmount  = 377.68;
+        $testVpsTxId = 'ABCD-1234';
+
+        $orderMock = $this->makeOrderMockPendingState();
+        $orderMock
+            ->expects($this->once())
+            ->method('getOrderCurrencyCode')
+            ->willReturn('EUR');
+        $orderMock
+            ->expects($this->once())
+            ->method('getBaseCurrencyCode')
+            ->willReturn('GBP');
+        $orderMock
+            ->expects($this->once())
+            ->method('getBaseToOrderRate')
+            ->willReturn(1.3);
+
+        $resultMock = $this->getMockBuilder(PiInstructionResponse::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $piApiMock = $this->makePiApiMock($testVpsTxId, $testAmount * 1.3, $resultMock);
+
+        /** @var Payment $sut */
+        $sut = $this->makeObjectManager()->getObject(
+            Payment::class,
+            [
+                'config' => $this->makeConfigMockPiDeferredAction()
+            ]
+        );
+
+        $sut->setApi($piApiMock);
+
+        $paymentMock = $this->makePaymentMock($orderMock);
+        $paymentMock->expects($this->once())->method('getLastTransId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->never())->method('setParentTransactionId');
+        $paymentMock->expects($this->once())->method('getParentTransactionId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->never())->method('setTransactionId');
+
+        $sut->capture($paymentMock, $testAmount);
+    }
+
     public function testCaptureDeferredReleasedPiTransaction()
     {
         $testAmount  = 377.68;

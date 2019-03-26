@@ -43,12 +43,12 @@ class Pi implements PaymentOperations
         $this->reportingApi        = $reportingApi;
     }
 
-    public function captureDeferredTransaction($vpsTxId, $amount)
+    public function captureDeferredTransaction($vpsTxId, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
         $result = null;
 
         $vpsTxId = $this->suiteHelper->clearTransactionId($vpsTxId);
-        $transaction = $this->reportingApi->getTransactionDetails($vpsTxId);
+        $transaction = $this->reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
 
         $txStateId = (int)$transaction->txstateid;
         if ($txStateId === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
@@ -60,14 +60,14 @@ class Pi implements PaymentOperations
                 $data['Description']  = 'REPEAT deferred transaction from Magento.';
                 $data['Currency']     = (string)$transaction->currency;
                 $data['Amount']       = $amount * 100;
-                $result               = $this->repeatTransaction($vpsTxId, $data, Config::ACTION_REPEAT_PI);
+                $result               = $this->repeatTransaction($vpsTxId, $data, $order, Config::ACTION_REPEAT_PI);
             }
         }
 
         return $result;
     }
 
-    public function repeatTransaction($vpstxid, $quote_data, $paymentAction = Config::ACTION_REPEAT)
+    public function repeatTransaction($vpstxid, $quote_data, \Magento\Sales\Api\Data\OrderInterface $order, $paymentAction = Config::ACTION_REPEAT)
     {
         return $this->piRestApi->repeat(
             $quote_data['VendorTxCode'],
