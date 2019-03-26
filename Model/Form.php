@@ -184,28 +184,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function canUseInternal()
     {
-        $configEnabled = (bool)(int)$this->config->setMethodCode(
-            Config::METHOD_FORM
-        )->isMethodActiveMoto();
-        return $configEnabled;
-    }
-
-    /**
-     * Is active
-     *
-     * @param int|null $storeId
-     * @return bool
-     */
-    public function isActive($storeId = null)
-    {
-        $areaCode = $this->context->getAppState()->getAreaCode();
-
-        $moto = '';
-        if ($areaCode == 'adminhtml') {
-            $moto .= '_moto';
-        }
-
-        return (bool)(int)$this->getConfigData('active' . $moto, $storeId);
+        return false;
     }
 
     /**
