@@ -62,7 +62,14 @@ class Payment
                 $result = [];
                 if ($this->isDeferredOrRepeatDeferredAction($paymentAction)) {
                     $action = 'releasing';
-                    $result = $this->api->captureDeferredTransaction($transactionId, $amount);
+                    $orderCurrencyCode = $order->getOrderCurrencyCode();
+                    $baseCurrencyCode  = $order->getBaseCurrencyCode();
+                    if ($baseCurrencyCode !== $orderCurrencyCode) {
+                        $rate = $order->getBaseToOrderRate();
+                        $invoiceAmount = $amount * $rate;
+                        $amount = $invoiceAmount;
+                    }
+                    $result = $this->api->captureDeferredTransaction($transactionId, $amount, $order);
                 } elseif ($this->isAuthenticateAction($paymentAction)) {
                     $action = 'authorizing';
                     $result = $this->api->authorizeTransaction($transactionId, $amount, $order);
