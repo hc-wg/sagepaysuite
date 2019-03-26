@@ -1,4 +1,4 @@
-## [1.1.25] - 2019-03-25
+## [1.1.25] - 2019-03-26
 ### Changed
 - On Hold status stop auto-invoice
 
