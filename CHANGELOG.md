@@ -1,3 +1,7 @@
+## [1.3.4] - 2019-03-27
+### Added
+- Compatibility with Magento 2.3.1
+
 ## [1.3.3] - 2019-03-26
 ### Changed
 - On Hold status stop auto-invoice
