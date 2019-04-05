@@ -49,6 +49,14 @@ $dropInEnabled = $_config->dropInEnabled();
     <?php else: ?>
         <fieldset class="admin__fieldset">
             <div class="admin__field">
+                <label class="label admin__field-label" for="<?php echo $_code ?>_cardholder"><?php echo __('Card Holder Name') ?><span class="required">*</span></label>
+                <div class="admin__field-control control">
+                    <input type="text" id="<?php echo $_code ?>_cardholder" title="<?php echo __('Card Holder Name') ?>" class="required-entry input-text admin__control-text" autocomplete="off" value="" />
+                </div>
+            </div>
+        </fieldset>
+        <fieldset class="admin__fieldset">
+            <div class="admin__field">
                 <label class="label admin__field-label" for="<?php echo $_code ?>_cc_number"><?php echo __('Credit Card Number') ?><span class="required">*</span></label>
                 <div class="admin__field-control control">
                     <input data-validate="{required:true, 'validate-cc-number':true}" type="number" id="<?php echo $_code ?>_cc_number" title="<?php echo __('Credit Card Number') ?>" class="validate-digits required-entry no-whitespace input-text admin__control-text validate-cc-number" autocomplete="off" value="" />
