@@ -55,19 +55,25 @@ class AdditionalnformationTest extends \PHPUnit\Framework\TestCase
 
     public function testGetUnserializedDataInvalidArgument()
     {
+        $unserializeException = new \InvalidArgumentException('Unable to unserialize value.');
+
         $loggerMock = $this->makeLoggerMock();
         $loggerMock
             ->expects($this->once())
             ->method('logException')
         ->with(
-            new \InvalidArgumentException('Unable to unserialize value.'),
+            $unserializeException,
             [self::INVALID_JSON, 'Ebizmarts\SagePaySuite\Helper\AdditionalInformation::getUnserializedData', 37]
         );
 
         $serializerMock = $this->getMockBuilder(Json::class)
             ->disableOriginalConstructor()
-            ->setMethods(['serialize'])
+            ->setMethods(['unserialize'])
             ->getMock();
+        $serializerMock
+            ->expects($this->once())
+            ->method('unserialize')
+            ->willThrowException($unserializeException);
 
         $objectManagerHelper = new ObjectManager($this);
 
