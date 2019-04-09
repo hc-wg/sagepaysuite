@@ -244,7 +244,7 @@ define(
                         //create token form
                         var token_form = document.getElementById(self.getCode() + '-token-form');
                         token_form.elements[0].setAttribute('value', merchant_session_key);
-                        token_form.elements[1].setAttribute('value', "Owner");
+                        token_form.elements[1].setAttribute('value', document.getElementById(self.getCode() + '_cardholder').value);
                         token_form.elements[2].setAttribute('value', document.getElementById(self.getCode() + '_cc_number').value);
                         var expiration = document.getElementById(self.getCode() + '_expiration').value;
                         expiration = expiration.length === 1 ? "0" + expiration : expiration;
