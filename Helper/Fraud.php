@@ -361,7 +361,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
      * @param Transaction $transaction
      * @return bool
      */
-    protected function transactionIsAuth(Transaction $transaction): bool
+    protected function transactionIsAuth(Transaction $transaction)
     {
         return $transaction->getTxnType() == Transaction::TYPE_AUTH;
     }
@@ -370,7 +370,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
      * @param Transaction $transaction
      * @return bool
      */
-    protected function transactionIsNotClosed(Transaction $transaction): bool
+    protected function transactionIsNotClosed(Transaction $transaction)
     {
         return (bool)$transaction->getIsTransactionClosed() == false;
     }
@@ -378,7 +378,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * @return bool
      */
-    protected function configAutoInvoice(): bool
+    protected function configAutoInvoice()
     {
         return (bool)$this->_config->getAutoInvoiceFraudPassed() == true;
     }
