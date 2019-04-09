@@ -218,7 +218,7 @@ define([
             input_cc_owner.setAttribute('type',"text");
             input_cc_owner.setAttribute('data-sagepay',"cardholderName");
             token_form.appendChild(input_cc_owner);
-            input_cc_owner.setAttribute('value',"Owner");
+            input_cc_owner.setAttribute('value', document.getElementById(self.getCode() + "_cardholder").value);
 
             var input_cc_number = document.createElement("input");
             input_cc_number.setAttribute('type',"text");
@@ -246,7 +246,7 @@ define([
 
             //update token form
             token_form.elements[0].setAttribute('value', merchant_session_key);
-            token_form.elements[1].setAttribute('value', "Owner");
+            token_form.elements[1].setAttribute('value', document.getElementById(self.getCode() + '_cardholder').value);
             token_form.elements[2].setAttribute('value', document.getElementById(self.getCode() + '_cc_number').value);
             var expiration = document.getElementById(self.getCode() + '_expiration').value;
             expiration = expiration.length == 1 ? "0" + expiration : expiration;
