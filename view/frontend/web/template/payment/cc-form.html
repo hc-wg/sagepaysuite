@@ -12,6 +12,19 @@
     </legend><br />
     <!-- /ko -->
     <div class="field number required">
+        <label data-bind="attr: {for: getCode() + '_cardholder'}" class="label">
+            <span><!-- ko i18n: 'Card Holder Name'--><!-- /ko --></span>
+        </label>
+        <div class="control">
+            <input type="text" name="payment[cardholder]" class="input-text" value=""
+                   data-bind="attr: {
+                                    autocomplete: off,
+                                    id: getCode() + '_cardholder',
+                                    title: $t('Card Holder Name')
+                                    } "/>
+        </div>
+    </div>
+    <div class="field number required">
         <label data-bind="attr: {for: getCode() + '_cc_number'}" class="label">
             <span><!-- ko i18n: 'Credit Card Number'--><!-- /ko --></span>
         </label>
