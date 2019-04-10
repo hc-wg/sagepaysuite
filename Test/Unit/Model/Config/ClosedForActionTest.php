@@ -10,9 +10,9 @@ class ClosedForActionTest extends \PHPUnit_Framework_TestCase
      * @dataProvider actionsDataProvider
      */
     public function testGetActionClosedForPaymentAction(
-        string $paymentAction,
-        string $expectedTransactionType,
-        bool $expectedTransactionStatus
+        $paymentAction,
+        $expectedTransactionType,
+        $expectedTransactionStatus
     ) {
 
         $sut = new \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction($paymentAction);
