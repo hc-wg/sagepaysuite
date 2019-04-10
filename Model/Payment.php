@@ -54,6 +54,9 @@ class Payment
                 $result = [];
                 if ($this->isDeferredOrRepeatDeferredAction($paymentAction)) {
                     $action = 'releasing';
+                    if ($this->config->getCurrencyConfig() != CONFIG::CURRENCY_BASE) {
+                        $amount = $this->calculateAmount($amount, $order);
+                    }
                     $result = $this->sharedApi->captureDeferredTransaction($transactionId, $amount, $order);
                 } elseif ($this->isAuthenticateAction($paymentAction)) {
                     $action = 'authorizing';
@@ -208,5 +211,23 @@ class Payment
         }
 
         return $paymentAction;
+    }
+
+    /**
+     * @param $amount
+     * @param $order
+     * @return float|int
+     */
+    public function calculateAmount($amount, $order)
+    {
+        $orderCurrencyCode = $order->getOrderCurrencyCode();
+        $baseCurrencyCode = $order->getBaseCurrencyCode();
+
+        if ($baseCurrencyCode !== $orderCurrencyCode) {
+            $rate = $order->getBaseToOrderRate();
+            $invoiceAmount = $amount * $rate;
+            $amount = $invoiceAmount;
+        }
+        return $amount;
     }
 }
