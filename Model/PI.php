@@ -240,7 +240,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $refundAmount = $baseAmount * 100;
 
             if ($this->config->getCurrencyConfig() !== CONFIG::CURRENCY_BASE) {
-                $refundAmount = $this->calculateRefundAmount($baseAmount, $order);
+                $refundAmount = $this->calculateRefundAmount($baseAmount, $order, $refundAmount);
             }
 
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $refundResult */
@@ -430,7 +430,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      * @param Order $order
      * @return float|int
      */
-    public function calculateRefundAmount($baseAmount, Order $order)
+    public function calculateRefundAmount($baseAmount, Order $order, $refundAmount)
     {
         $orderCurrencyCode = $order->getOrderCurrencyCode();
         $baseCurrencyCode = $order->getBaseCurrencyCode();
