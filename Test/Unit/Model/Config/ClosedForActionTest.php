@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Config;
 
 
@@ -25,7 +23,7 @@ class ClosedForActionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expectedTransactionStatus, $isClosed);
     }
 
-    public function actionsDataProvider() : array
+    public function actionsDataProvider()
     {
         return [
             ['PAYMENT', 'capture', true],
