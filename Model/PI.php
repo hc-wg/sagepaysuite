@@ -241,7 +241,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
             $refundAmount = $baseAmount * 100;
 
-            if ($this->config->getCurrencyConfig() !== CONFIG::CURRENCY_BASE) {
+            if ($this->config->getCurrencyConfig() === CONFIG::CURRENCY_SWITCHER) {
                 $refundAmount = $this->calculateRefundAmount($baseAmount, $order, $refundAmount);
             }
 
