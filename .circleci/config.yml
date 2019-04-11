@@ -1,7 +1,6 @@
 version: 2
 jobs:
   run_php71:
-    build:
       docker:
         - image: circleci/php:7.1-apache-node
           environment:
@@ -76,7 +75,6 @@ jobs:
         - run: cd dev-master && vendor/bin/phpcs ../app/code/Ebizmarts/SagePaySuite/* --standard=MEQP2,PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
         
   run_php56:
-    build:
       docker:
         - image: circleci/php:5.6-apache-node
           environment:
