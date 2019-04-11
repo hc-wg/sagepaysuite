@@ -1,6 +1,6 @@
 version: 2
 jobs:
-    run_php71
+    run_php71:
       docker:
         - image: circleci/php:7.1-apache-node
           environment:
@@ -78,7 +78,7 @@ jobs:
         - run: composer create-project --repository=https://repo.magento.com magento/marketplace-eqp 2.0.0
         - run: cd 2.0.0 && vendor/bin/phpcs ../app/code/Ebizmarts/SagePaySuite/* --standard=MEQP2,PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
 
-    run_php70
+    run_php70:
       docker:
         - image: circleci/php:7.0-apache-node
           environment:
