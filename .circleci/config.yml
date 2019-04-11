@@ -147,3 +147,10 @@ jobs:
       # Run code checks
       - run: composer create-project --repository=https://repo.magento.com magento/marketplace-eqp dev-master
       - run: cd dev-master && vendor/bin/phpcs ../app/code/Ebizmarts/SagePaySuite/* --standard=MEQP2,PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
+
+workflows:
+  version: 2
+  build_test_dist:
+    jobs:
+      - run_php56
+      - run_php71
