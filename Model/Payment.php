@@ -62,7 +62,7 @@ class Payment
                 $result = [];
                 if ($this->isDeferredOrRepeatDeferredAction($paymentAction)) {
                     $action = 'releasing';
-                    if ($this->config->getCurrencyConfig() !== CONFIG::CURRENCY_BASE) {
+                    if ($this->config->getCurrencyConfig() === CONFIG::CURRENCY_SWITCHER) {
                         $amount = $this->calculateAmount($amount, $order);
                     }
                     $result = $this->api->captureDeferredTransaction($transactionId, $amount, $order);
