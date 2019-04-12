@@ -79,7 +79,7 @@ jobs:
 
   run_php72:
     docker:
-      - image: circleci/php:7.2-apache-node
+      - image: circleci/php:7.2.9-apache-node
         environment:
           MYSQL_HOST: 127.0.0.1
           MYSQL_DATABASE: circle_test
