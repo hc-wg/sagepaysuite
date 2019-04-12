@@ -12,6 +12,7 @@ use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Model\InfoInterface;
 use Ebizmarts\SagePaySuite\Model\Api\PIRest;
+use Magento\Sales\Model\Order;
 
 /**
  * Class PI
@@ -400,7 +401,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
      * @param Order $order
      * @return float|int
      */
-    public function calculateRefundAmount($baseAmount, Order $order, $refundAmount)
+    public function calculateRefundAmount($baseAmount, $order, $refundAmount)
     {
         $orderCurrencyCode = $order->getOrderCurrencyCode();
         $baseCurrencyCode = $order->getBaseCurrencyCode();
