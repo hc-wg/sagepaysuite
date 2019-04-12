@@ -124,6 +124,12 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
         $testAmount  = 377.68;
         $testVpsTxId = 'ABCD-1234';
 
+        $configMock = $this->makeConfigMockPiDeferredAction();
+        $configMock
+            ->expects($this->once())
+            ->method('getCurrencyConfig')
+            ->willReturn(CONFIG::CURRENCY_SWITCHER);
+
         $orderMock = $this->makeOrderMockPendingState();
 
         $orderMock
@@ -149,7 +155,7 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
         $sut = $this->makeObjectManager()->getObject(
             Payment::class,
             [
-                'config' => $this->makeConfigMockPiDeferredAction()
+                'config' => $configMock
             ]
         );
 
