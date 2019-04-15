@@ -21,20 +21,20 @@ jobs:
     working_directory: ~/magento2
 
     steps:
-      - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
+      - run: sudo -E sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
 
       # Install dependencies
       - run:
          name: Install libraries
-         command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+         command: sudo -E apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
 
       - run:
          name: Configure PHP extensions
-         command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
+         command: sudo -E docker-php-ext-configure intl && sudo -E docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
 
       - run:
          name: Install PHP extensions
-         command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
+         command: sudo -E docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
 
       - run: sudo apt-get install -y mysql-client
 
@@ -158,5 +158,5 @@ workflows:
   version: 2
   build_test_dist:
     jobs:
-      #- run_php71
+      - run_php71
       - run_php72
