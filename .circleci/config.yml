@@ -79,7 +79,7 @@ jobs:
 
   run_php72:
     docker:
-      - image: circleci/php:7.2.9-fpm-stretch
+      - image: circleci/php:7.2-apache-node
         environment:
           MYSQL_HOST: 127.0.0.1
           MYSQL_DATABASE: circle_test
@@ -103,7 +103,7 @@ jobs:
       # Install dependencies
       - run:
          name: Install libraries
-         command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+         command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
 
       - run:
          name: Configure PHP extensions
@@ -111,7 +111,7 @@ jobs:
 
       - run:
          name: Install PHP extensions
-         command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
+         command: sudo docker-php-ext-install bcmath gd intl opcache pdo_mysql soap xsl zip
 
       - run: sudo apt-get install -y mysql-client
 
@@ -158,5 +158,5 @@ workflows:
   version: 2
   build_test_dist:
     jobs:
-      - run_php71
+      #- run_php71
       - run_php72
