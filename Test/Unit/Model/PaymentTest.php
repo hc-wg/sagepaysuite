@@ -86,6 +86,93 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
 
         return $stateObjectMock;
     }
+    public function testCaptureDeferredTransaction()
+    {
+        $testAmount  = 377.68;
+        $testVpsTxId = 'ABCD-1234';
+
+        $orderMock = $this->makeOrderMockPendingState();
+
+        $sharedApiMock = $this
+            ->getMockBuilder(Shared::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $sharedApiMock
+            ->expects($this->once())->method('captureDeferredTransaction')
+            ->with($testVpsTxId, $testAmount, $orderMock)
+            ->willReturn($this->makeAuthoriseResponseMock());
+
+        /** @var Payment $sut */
+        $sut = $this->makeObjectManager()->getObject(
+            Payment::class,
+            [
+                'sharedApi' => $sharedApiMock,
+                'config'    => $this->makeConfigMockDeferredAction()
+            ]
+        );
+
+        $paymentMock = $this->makePaymentMock($orderMock);
+        $paymentMock->expects($this->once())->method('getLastTransId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->once())->method('setParentTransactionId');
+        $paymentMock->expects($this->exactly(2))->method('getParentTransactionId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->once())->method('setTransactionId');
+
+        $sut->capture($paymentMock, $testAmount);
+    }
+
+    public function testCaptureDeferredMultiCurrencyTransaction()
+    {
+        $testAmount  = 377.68;
+        $testVpsTxId = 'ABCD-1234';
+
+        $configMock = $this->makeConfigMockDeferredAction();
+        $configMock
+            ->expects($this->once())
+            ->method('getCurrencyConfig')
+            ->willReturn(CONFIG::CURRENCY_SWITCHER);
+
+        $orderMock = $this->makeOrderMockPendingState();
+        $orderMock
+            ->expects($this->once())
+            ->method('getOrderCurrencyCode')
+            ->willReturn('EUR');
+        $orderMock
+            ->expects($this->once())
+            ->method('getBaseCurrencyCode')
+            ->willReturn('GBP');
+        $orderMock
+            ->expects($this->once())
+            ->method('getBaseToOrderRate')
+            ->willReturn(1.3);
+
+        $sharedApiMock = $this
+            ->getMockBuilder(Shared::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $sharedApiMock
+            ->expects($this->once())->method('captureDeferredTransaction')
+            ->with($testVpsTxId, $testAmount * 1.3, $orderMock)
+            ->willReturn($this->makeAuthoriseResponseMock());
+
+        /** @var Payment $sut */
+        $sut = $this->makeObjectManager()->getObject(
+            Payment::class,
+            [
+                'sharedApi' => $sharedApiMock,
+                'config'    => $configMock
+            ]
+        );
+
+        $paymentMock = $this->makePaymentMock($orderMock);
+        $paymentMock->expects($this->once())->method('getLastTransId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->once())->method('setParentTransactionId');
+        $paymentMock->expects($this->exactly(2))->method('getParentTransactionId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->once())->method('setTransactionId');
+
+        $sut->capture($paymentMock, $testAmount);
+    }
 
     public function testCaptureAuthenticateForm()
     {
@@ -194,10 +281,16 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeConfigMockPiDeferredAction()
+    private function makeConfigMockDeferredAction()
     {
-        $configMock = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
-        $configMock->expects($this->once())->method('getSagepayPaymentAction')->willReturn('Deferred');
+        $configMock = $this
+            ->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock
+            ->expects($this->once())
+            ->method('getSagepayPaymentAction')
+            ->willReturn(CONFIG::ACTION_DEFER);
 
         return $configMock;
     }
