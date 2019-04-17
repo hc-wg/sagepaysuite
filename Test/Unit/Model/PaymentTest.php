@@ -262,7 +262,7 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
     /**
      * @return ObjectManager
      */
-    private function makeObjectManager(): ObjectManager
+    private function makeObjectManager()
     {
         return new ObjectManager($this);
     }
@@ -349,7 +349,7 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
     /**
      * @return array
      */
-    private function makeRefundResponseMock(): array
+    private function makeRefundResponseMock()
     {
         $authoriseResult = [
             'status' => 200,
@@ -369,7 +369,7 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
     /**
      * @return array
      */
-    private function makeAuthoriseResponseMock(): array
+    private function makeAuthoriseResponseMock()
     {
         $authoriseResult = [
             'status' => 200,
