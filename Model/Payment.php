@@ -63,9 +63,9 @@ class Payment
                     $result = $this->sharedApi->authorizeTransaction($transactionId, $amount, $order);
                 }
 
-                $this->addAdditionalInformationToTransaction($payment, $result);
-
                 if (is_array($result) && array_key_exists('data', $result)) {
+                    $this->addAdditionalInformationToTransaction($payment, $result);
+
                     if (array_key_exists('VPSTxId', $result['data'])) {
                         $payment->setTransactionId($this->suiteHelper->removeCurlyBraces($result['data']['VPSTxId']));
                     }
@@ -177,7 +177,7 @@ class Payment
      */
     private function isDeferredOrRepeatDeferredAction($paymentAction)
     {
-        return $paymentAction == Config::ACTION_DEFER || $paymentAction == Config::ACTION_REPEAT_DEFERRED;
+        return $paymentAction === Config::ACTION_DEFER || $paymentAction === Config::ACTION_REPEAT_DEFERRED;
     }
 
     /**
