@@ -7,18 +7,18 @@
 ## Composer installation (preferred method)
 1. Run this command on Magento's root dir.
 
-`
-composer config repositories.ebizmarts composer https://packages.ebizmarts.com
-`
+`composer config repositories.ebizmarts composer https://packages.ebizmarts.com`
+
 2. Run this command on Magento's root dir. Contact us to get your access token.
 
-`composer config http-basic.gitlab.ebizmarts.com token your_token`
+`composer config http-basic.sagepaysuite.gitlab.ebizmarts.com token your_token`
 
 3. Run this command to get the module.
 
 `composer require ebizmarts/sagepaysuite`
 
 4. Install the module.
+
 `bin/magento setup:upgrade`
 
 
