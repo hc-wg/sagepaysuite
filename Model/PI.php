@@ -12,6 +12,7 @@ use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Model\InfoInterface;
 use Ebizmarts\SagePaySuite\Model\Api\PIRest;
+use Magento\Sales\Model\Order;
 
 /**
  * Class PI
@@ -223,14 +224,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
             $refundAmount = $baseAmount * 100;
 
-            $orderCurrencyCode = $order->getOrderCurrencyCode();
-            $baseCurrencyCode  = $order->getBaseCurrencyCode();
-            if ($baseCurrencyCode !== $orderCurrencyCode) {
-                $rate = $order->getBaseToOrderRate();
-                $refundAmount = $baseAmount * $rate;
-
-                $transactionAmount = $this->transactionAmountFactory->create(['amount' => $refundAmount]);
-                $refundAmount      = $transactionAmount->getCommand($orderCurrencyCode)->execute();
+            if ($this->config->getCurrencyConfig() === CONFIG::CURRENCY_SWITCHER) {
+                $refundAmount = $this->calculateRefundAmount($baseAmount, $order, $refundAmount);
             }
 
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface $refundResult */
@@ -399,5 +394,24 @@ class PI extends \Magento\Payment\Model\Method\Cc
     private function exceptionCodeIsInvalidTransactionState($apiException)
     {
         return $apiException->getCode() == ApiException::INVALID_TRANSACTION_STATE;
+    }
+
+    /**
+     * @param $baseAmount
+     * @param Order $order
+     * @return float|int
+     */
+    public function calculateRefundAmount($baseAmount, $order, $refundAmount)
+    {
+        $orderCurrencyCode = $order->getOrderCurrencyCode();
+        $baseCurrencyCode = $order->getBaseCurrencyCode();
+        if ($baseCurrencyCode !== $orderCurrencyCode) {
+            $rate = $order->getBaseToOrderRate();
+            $refundAmount = $baseAmount * $rate;
+
+            $transactionAmount = $this->transactionAmountFactory->create(['amount' => $refundAmount]);
+            $refundAmount = $transactionAmount->getCommand($orderCurrencyCode)->execute();
+        }
+        return $refundAmount;
     }
 }

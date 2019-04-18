@@ -88,6 +88,11 @@ class PITest extends \PHPUnit_Framework_TestCase
 
     public function testRefund()
     {
+        $this->configMock
+            ->expects($this->once())
+            ->method('getCurrencyConfig')
+            ->willReturn(\Ebizmarts\SagePaySuite\Model\Config::CURRENCY_BASE);
+
         $orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
             ->disableOriginalConstructor()
@@ -95,9 +100,6 @@ class PITest extends \PHPUnit_Framework_TestCase
         $orderMock->expects($this->once())
             ->method('getIncrementId')
             ->willReturn("1000001");
-        $orderMock->expects($this->once())
-            ->method('getOrderCurrencyCode')
-            ->willReturn('GBP');
         
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
@@ -106,10 +108,6 @@ class PITest extends \PHPUnit_Framework_TestCase
         $paymentMock->expects($this->once())
             ->method('getOrder')
             ->will($this->returnValue($orderMock));
-
-        $orderMock->expects($this->once())
-            ->method('getBaseCurrencyCode')
-            ->willReturn('GBP');
 
         $paymentMock->expects($this->once())
             ->method('setIsTransactionClosed')
@@ -170,6 +168,11 @@ class PITest extends \PHPUnit_Framework_TestCase
 
     public function testRefundCurrencySwitcher()
     {
+        $this->configMock
+            ->expects($this->once())
+            ->method('getCurrencyConfig')
+            ->willReturn(\Ebizmarts\SagePaySuite\Model\Config::CURRENCY_SWITCHER);
+
         $orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
             ->disableOriginalConstructor()
@@ -256,6 +259,11 @@ class PITest extends \PHPUnit_Framework_TestCase
 
     public function testRefundERROR()
     {
+        $this->configMock
+            ->expects($this->once())
+            ->method('getCurrencyConfig')
+            ->willReturn(\Ebizmarts\SagePaySuite\Model\Config::CURRENCY_BASE);
+
         $orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
             ->disableOriginalConstructor()
@@ -263,12 +271,6 @@ class PITest extends \PHPUnit_Framework_TestCase
         $orderMock->expects($this->once())
             ->method('getIncrementId')
             ->willReturn("1000001");
-        $orderMock->expects($this->once())
-            ->method('getOrderCurrencyCode')
-            ->willReturn('GBP');
-        $orderMock->expects($this->once())
-            ->method('getBaseCurrencyCode')
-            ->willReturn('GBP');
 
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
@@ -332,6 +334,11 @@ class PITest extends \PHPUnit_Framework_TestCase
 
     public function testRefundApiError()
     {
+        $this->configMock
+            ->expects($this->once())
+            ->method('getCurrencyConfig')
+            ->willReturn(\Ebizmarts\SagePaySuite\Model\Config::CURRENCY_BASE);
+
         $orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
             ->disableOriginalConstructor()
@@ -339,12 +346,6 @@ class PITest extends \PHPUnit_Framework_TestCase
         $orderMock->expects($this->once())
             ->method('getIncrementId')
             ->willReturn("1000001");
-        $orderMock->expects($this->once())
-            ->method('getOrderCurrencyCode')
-            ->willReturn('GBP');
-        $orderMock->expects($this->once())
-            ->method('getBaseCurrencyCode')
-            ->willReturn('GBP');
 
         $this->suiteHelperMock
             ->expects($this->once())
