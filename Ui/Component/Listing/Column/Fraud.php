@@ -11,6 +11,7 @@ use \Magento\Framework\View\Element\UiComponent\ContextInterface;
 use \Magento\Framework\View\Element\UiComponentFactory;
 use \Magento\Ui\Component\Listing\Columns\Column;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\Config;
 
 class Fraud extends Column
 {
@@ -74,10 +75,16 @@ class Fraud extends Column
                 if ($additional !== null) {
                     $additional = $additional->getAdditionalInformation();
                     $image = '';
-                    if (isset($additional['fraudrules'], $additional['fraudcode'])) {
-                        $image = $this->getImageNameThirdman($additional['fraudcode']);
-                    } elseif (isset($additional['fraudcode'])) {
-                        $image = $this->getImageNameRed($additional['fraudcode']);
+                    if (isset($additional["mode"]) && $additional["mode"] === Config::MODE_TEST) {
+                        $image = $this->getTestImage();
+                    } else {
+                        if (isset($additional['fraudrules'], $additional['fraudcode'])) {
+                            $image = $this->getImageNameThirdman($additional['fraudcode']);
+                        } elseif (isset($additional['fraudcode'])) {
+                            $image = $this->getImageNameRed($additional['fraudcode']);
+                        } else {
+                            $image = $this->getLoadingImage();
+                        }
                     }
                     $url = $this->assetRepository->getUrlWithParams($image, $params);
                     $item[$fieldName . '_src'] = $url;
@@ -127,6 +134,19 @@ class Fraud extends Column
     public function getFieldName()
     {
         return $this->getData('name');
+    }
+
+    /**
+     * @return string
+     */
+    public function getTestImage()
+    {
+        return 'Ebizmarts_SagePaySuite::images/test.png';
+    }
+
+    public function getLoadingImage()
+    {
+       return 'Ebizmarts_SagePaySuite::images/loading.png';
     }
 
 
