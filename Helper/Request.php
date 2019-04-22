@@ -460,7 +460,7 @@ class Request extends AbstractHelper
 
     private function cleanSage50BasketString($text)
     {
-        $pattern = '|[^a-zA-Z0-9\-\._]+|';
+        $pattern = '|[^a-zA-Z0-9\-\._\s]+|';
         $text = preg_replace($pattern, '', $text);
         return $text;
     }
