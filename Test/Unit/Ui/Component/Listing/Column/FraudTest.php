@@ -20,6 +20,8 @@ class FraudTest extends \PHPUnit_Framework_TestCase
 
     const IMAGE_PATH = 'Ebizmarts_SagePaySuite::images/icon-shield-';
     const ENTITY_ID = 1;
+    const IMAGE_URL_TEST = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/test.png';
+    const IMAGE_URL_WAITING = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/waiting.png';
     const IMAGE_URL_CHECK = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/icon-shield-check.png';
     const IMAGE_URL_CROSS = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/icon-shield-cross.png';
     const IMAGE_URL_ZEBRA = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/icon-shield-zebra.png';
@@ -179,7 +181,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $suiteLoggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $suiteLoggerMock->expects($this->once())->method('logException')->with(
             $inputException,
-            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 66]
+            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 67]
         );
         return $suiteLoggerMock;
     }
@@ -189,7 +191,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $suiteLoggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $suiteLoggerMock->expects($this->once())->method('logException')->with(
             $noSuchEntityException,
-            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 69]
+            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 70]
         );
         return $suiteLoggerMock;
     }
@@ -773,5 +775,133 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expectedResponse, $response);
     }
 
+    public function testTestFlag()
+    {
+        $orderTest = ['mode' => 'test'];
 
+        $suiteLoggerMock = $this->createMock(Logger::class);
+        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
+        $contextMock = $this->createMock(ContextInterface::class);
+        $uiComponentFactoryMock = $this->createMock(UiComponentFactory::class);
+        $requestMock = $this->createMock(RequestInterface::class);
+        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
+
+        $assetRepositoryMock = $this->createMock(Repository::class);
+        $assetRepositoryMock
+            ->expects($this->once())
+            ->method('getUrlWithParams')
+            ->with('Ebizmarts_SagePaySuite::images/test.png',
+            [
+                '_secure' => true
+            ])
+            ->willReturn(self::IMAGE_URL_TEST);
+
+        $orderMock = $this->createMock(OrderInterface::class);
+
+        $paymentMock = $this->createMock(OrderPaymentInterface::class);
+        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
+        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
+        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
+
+
+        /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
+        $fraudColumnMock = $this->getMockBuilder(Fraud::class)
+            ->setConstructorArgs([
+                'suiteLogger' => $suiteLoggerMock,
+                'context' => $contextMock,
+                'uiComponentFactory' => $uiComponentFactoryMock,
+                'orderRepository' => $orderRepositoryMock,
+                'assetRepository' => $assetRepositoryMock,
+                'requestInterface' => $requestMock,
+                [],
+                []
+            ])
+            ->setMethodsExcept(['prepareDataSource', 'getTestImage'])
+            ->getMock();
+
+        $fraudColumnMock->expects($this->never())->method('getImageNameRed');
+        $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
+
+        $dataSource = self::DATA_SOURCE;
+
+        $response = $fraudColumnMock->prepareDataSource($dataSource);
+
+        $expectedResponse = [
+            'data' => [
+                'items' => [
+                    [
+                        'entity_id' => self::ENTITY_ID,
+                        'sagepay_fraud_src' => self::IMAGE_URL_TEST,
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $response);
+    }
+
+    public function testWaitingFlag()
+    {
+        $orderTest = ['mode' => 'live'];
+
+        $suiteLoggerMock = $this->createMock(Logger::class);
+        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
+        $contextMock = $this->createMock(ContextInterface::class);
+        $uiComponentFactoryMock = $this->createMock(UiComponentFactory::class);
+        $requestMock = $this->createMock(RequestInterface::class);
+        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
+
+        $assetRepositoryMock = $this->createMock(Repository::class);
+        $assetRepositoryMock
+            ->expects($this->once())
+            ->method('getUrlWithParams')
+            ->with('Ebizmarts_SagePaySuite::images/waiting.png',
+                [
+                    '_secure' => true
+                ])
+            ->willReturn(self::IMAGE_URL_WAITING);
+
+        $orderMock = $this->createMock(OrderInterface::class);
+
+        $paymentMock = $this->createMock(OrderPaymentInterface::class);
+        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
+        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
+        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
+
+
+        /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
+        $fraudColumnMock = $this->getMockBuilder(Fraud::class)
+            ->setConstructorArgs([
+                'suiteLogger' => $suiteLoggerMock,
+                'context' => $contextMock,
+                'uiComponentFactory' => $uiComponentFactoryMock,
+                'orderRepository' => $orderRepositoryMock,
+                'assetRepository' => $assetRepositoryMock,
+                'requestInterface' => $requestMock,
+                [],
+                []
+            ])
+            ->setMethodsExcept(['prepareDataSource', 'getWaitingImage'])
+            ->getMock();
+
+        $fraudColumnMock->expects($this->never())->method('getImageNameRed');
+        $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
+
+        $dataSource = self::DATA_SOURCE;
+
+        $response = $fraudColumnMock->prepareDataSource($dataSource);
+
+        $expectedResponse = [
+            'data' => [
+                'items' => [
+                    [
+                        'entity_id' => self::ENTITY_ID,
+                        'sagepay_fraud_src' => self::IMAGE_URL_WAITING,
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $response);
+    }
 }
