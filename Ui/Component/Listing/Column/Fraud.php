@@ -83,7 +83,7 @@ class Fraud extends Column
                         } elseif (isset($additional['fraudcode'])) {
                             $image = $this->getImageNameRed($additional['fraudcode']);
                         } else {
-                            $image = $this->getLoadingImage();
+                            $image = $this->getWaitingImage();
                         }
                     }
                     $url = $this->assetRepository->getUrlWithParams($image, $params);
@@ -144,9 +144,9 @@ class Fraud extends Column
         return 'Ebizmarts_SagePaySuite::images/test.png';
     }
 
-    public function getLoadingImage()
+    public function getWaitingImage()
     {
-       return 'Ebizmarts_SagePaySuite::images/loading.png';
+       return 'Ebizmarts_SagePaySuite::images/waiting.png';
     }
 
 
