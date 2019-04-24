@@ -779,26 +779,27 @@ class FraudTest extends \PHPUnit_Framework_TestCase
     {
         $orderTest = ['mode' => 'test'];
 
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $contextMock = $this->createMock(ContextInterface::class);
-        $uiComponentFactoryMock = $this->createMock(UiComponentFactory::class);
-        $requestMock = $this->createMock(RequestInterface::class);
+        $suiteLoggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
+        $orderRepositoryMock = $this->getMockBuilder(OrderRepositoryInterface::class)->disableOriginalConstructor()->getMock();
+        $contextMock = $this->getMockBuilder(ContextInterface::class)->disableOriginalConstructor()->getMock();
+        $contextMock->expects($this->once())->method('getProcessor')->willReturn(
+            $this->getMockBuilder(Processor::class)
+                ->disableOriginalConstructor()->getMock()
+        );
+        $uiComponentFactoryMock = $this->getMockBuilder(UiComponentFactory::class)->disableOriginalConstructor()->getMock();
+        $requestMock = $this->getMockBuilder(RequestInterface::class)->disableOriginalConstructor()->getMock();
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock
-            ->expects($this->once())
-            ->method('getUrlWithParams')
-            ->with('Ebizmarts_SagePaySuite::images/test.png',
+        $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with('Ebizmarts_SagePaySuite::images/test.png',
             [
                 '_secure' => true
             ])
             ->willReturn(self::IMAGE_URL_TEST);
 
-        $orderMock = $this->createMock(OrderInterface::class);
+        $orderMock = $this->getMockBuilder(OrderInterface::class)->disableOriginalConstructor()->getMock();
 
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
+        $paymentMock = $this->getMockBuilder(OrderPaymentInterface::class)->disableOriginalConstructor()->getMock();
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
@@ -816,7 +817,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethodsExcept(['prepareDataSource', 'getTestImage'])
+            ->setMethods(['getImageNameRed', 'getFieldName'])
             ->getMock();
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
@@ -844,26 +845,27 @@ class FraudTest extends \PHPUnit_Framework_TestCase
     {
         $orderTest = ['mode' => 'live'];
 
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $contextMock = $this->createMock(ContextInterface::class);
-        $uiComponentFactoryMock = $this->createMock(UiComponentFactory::class);
-        $requestMock = $this->createMock(RequestInterface::class);
+        $suiteLoggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
+        $orderRepositoryMock = $this->getMockBuilder(OrderRepositoryInterface::class)->disableOriginalConstructor()->getMock();
+        $contextMock = $this->getMockBuilder(ContextInterface::class)->disableOriginalConstructor()->getMock();
+        $contextMock->expects($this->once())->method('getProcessor')->willReturn(
+            $this->getMockBuilder(Processor::class)
+                ->disableOriginalConstructor()->getMock()
+        );
+        $uiComponentFactoryMock = $this->getMockBuilder(UiComponentFactory::class)->disableOriginalConstructor()->getMock();
+        $requestMock = $this->getMockBuilder(RequestInterface::class)->disableOriginalConstructor()->getMock();
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock
-            ->expects($this->once())
-            ->method('getUrlWithParams')
-            ->with('Ebizmarts_SagePaySuite::images/waiting.png',
-                [
-                    '_secure' => true
-                ])
+        $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with('Ebizmarts_SagePaySuite::images/waiting.png',
+            [
+                '_secure' => true
+            ])
             ->willReturn(self::IMAGE_URL_WAITING);
 
-        $orderMock = $this->createMock(OrderInterface::class);
+        $orderMock = $this->getMockBuilder(OrderInterface::class)->disableOriginalConstructor()->getMock();
 
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
+        $paymentMock = $this->getMockBuilder(OrderPaymentInterface::class)->disableOriginalConstructor()->getMock();
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
@@ -881,7 +883,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethodsExcept(['prepareDataSource', 'getWaitingImage'])
+            ->setMethods(['getImageNameRed', 'getFieldName'])
             ->getMock();
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
