@@ -266,7 +266,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 [],
                 []
             ])
-            ->setMethodsExcept(['getImageNameRed', 'prepareDataSource'])
+            ->setMethodsExcept(['getImageNameRed', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
 
         $fraudColumnMock->expects($this->never())->method('getImageNameThirdman');
@@ -329,7 +329,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 [],
                 []
             ])
-            ->setMethodsExcept(['getImageNameRed', 'prepareDataSource'])
+            ->setMethodsExcept(['getImageNameRed', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
 
         $fraudColumnMock->expects($this->never())->method('getImageNameThirdman');
@@ -392,7 +392,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 [],
                 []
             ])
-            ->setMethodsExcept(['getImageNameRed', 'prepareDataSource'])
+            ->setMethodsExcept(['getImageNameRed', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
 
         $fraudColumnMock->expects($this->never())->method('getImageNameThirdman');
@@ -455,7 +455,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 [],
                 []
             ])
-            ->setMethodsExcept(['getImageNameRed', 'prepareDataSource'])
+            ->setMethodsExcept(['getImageNameRed', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
 
         $fraudColumnMock->expects($this->never())->method('getImageNameThirdman');
@@ -518,7 +518,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 [],
                 []
             ])
-            ->setMethodsExcept(['getImageNameThirdman', 'prepareDataSource'])
+            ->setMethodsExcept(['getImageNameThirdman', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
@@ -580,7 +580,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 [],
                 []
             ])
-            ->setMethodsExcept(['getImageNameThirdman', 'prepareDataSource'])
+            ->setMethodsExcept(['getImageNameThirdman', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
@@ -642,7 +642,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 [],
                 []
             ])
-            ->setMethodsExcept(['getImageNameThirdman', 'prepareDataSource'])
+            ->setMethodsExcept(['getImageNameThirdman', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
@@ -704,7 +704,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 [],
                 []
             ])
-            ->setMethodsExcept(['getImageNameThirdman', 'prepareDataSource'])
+            ->setMethodsExcept(['getImageNameThirdman', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
@@ -769,7 +769,13 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 [],
                 []
             ])
-            ->setMethodsExcept(['prepareDataSource', 'getTestImage'])
+            ->setMethodsExcept([
+                'prepareDataSource',
+                'getTestImage',
+                'getImage',
+                'getFraudImage',
+                'checkTestModeConfiguration'
+            ])
             ->getMock();
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
@@ -834,7 +840,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 [],
                 []
             ])
-            ->setMethodsExcept(['prepareDataSource', 'getWaitingImage'])
+            ->setMethodsExcept(['prepareDataSource', 'getWaitingImage', 'getImage', 'getFraudImage'])
             ->getMock();
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
