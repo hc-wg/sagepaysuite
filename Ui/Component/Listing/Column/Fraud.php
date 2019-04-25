@@ -11,6 +11,7 @@ use \Magento\Framework\View\Element\UiComponent\ContextInterface;
 use \Magento\Framework\View\Element\UiComponentFactory;
 use \Magento\Ui\Component\Listing\Columns\Column;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\Config;
 
 class Fraud extends Column
 {
@@ -73,12 +74,7 @@ class Fraud extends Column
 
                 if ($additional !== null) {
                     $additional = $additional->getAdditionalInformation();
-                    $image = '';
-                    if (isset($additional['fraudrules'], $additional['fraudcode'])) {
-                        $image = $this->getImageNameThirdman($additional['fraudcode']);
-                    } elseif (isset($additional['fraudcode'])) {
-                        $image = $this->getImageNameRed($additional['fraudcode']);
-                    }
+                    $image = $this->getImage($additional);
                     $url = $this->assetRepository->getUrlWithParams($image, $params);
                     $item[$fieldName . '_src'] = $url;
                 }
@@ -127,6 +123,61 @@ class Fraud extends Column
     public function getFieldName()
     {
         return $this->getData('name');
+    }
+
+    /**
+     * @return string
+     */
+    public function getTestImage()
+    {
+        return 'Ebizmarts_SagePaySuite::images/test.png';
+    }
+
+    /**
+     * @return string
+     */
+    public function getWaitingImage()
+    {
+       return 'Ebizmarts_SagePaySuite::images/waiting.png';
+    }
+
+    /**
+     * @param array $additional
+     * @return string
+     */
+    public function getImage(array $additional)
+    {
+        if ($this->checkTestModeConfiguration($additional)) {
+            $image = $this->getTestImage();
+        } else {
+            $image = $this->getFraudImage($additional);
+        }
+        return $image;
+    }
+
+    /**
+     * @param array $additional
+     * @return string
+     */
+    public function getFraudImage(array $additional)
+    {
+        if (isset($additional['fraudrules'], $additional['fraudcode'])) {
+            $image = $this->getImageNameThirdman($additional['fraudcode']);
+        } elseif (isset($additional['fraudcode'])) {
+            $image = $this->getImageNameRed($additional['fraudcode']);
+        } else {
+            $image = $this->getWaitingImage();
+        }
+        return $image;
+    }
+
+    /**
+     * @param array $additional
+     * @return bool
+     */
+    public function checkTestModeConfiguration(array $additional)
+    {
+        return isset($additional["mode"]) && $additional["mode"] === Config::MODE_TEST;
     }
 
 
