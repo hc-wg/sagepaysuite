@@ -128,8 +128,8 @@ class Info extends \Magento\Backend\Block\Template
     {
         return $this->escapeHtml (
             __(
-                "- The customer does not complete 3D and the message will still be visible. 
-                For example, the customer does not remember their pin code."
+                "- The customer does not complete 3D and the message will still be visible."
+                ." For example, the customer does not remember their pin code."
             )
         );
     }
@@ -141,8 +141,9 @@ class Info extends \Magento\Backend\Block\Template
     {
         return $this->escapeHtml (
             __(
-                "If after a few minutes the customer does not complete the order, 
-                you can click the Sync from API link to query Sage Pay for the latest information on this transaction."
+                "If after a few minutes the customer does not complete the order,"
+                ." you can click the Sync from API link"
+        ." to query Sage Pay for the latest information on this transaction."
             )
         );
     }
