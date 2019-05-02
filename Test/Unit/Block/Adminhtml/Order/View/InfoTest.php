@@ -244,8 +244,8 @@ class InfoTest extends \PHPUnit_Framework_TestCase
 
     public function testGetThirdParagraph()
     {
-        $message = "- The customer does not complete 3D and the message will still be visible. 
-                For example, the customer does not remember their pin code.";
+        $message = "- The customer does not complete 3D and the message will still be visible."
+                ." For example, the customer does not remember their pin code.";
         $paragraph = new \Magento\Framework\Phrase(
             $message
         );
@@ -263,8 +263,9 @@ class InfoTest extends \PHPUnit_Framework_TestCase
 
     public function testGetForthParagraph()
     {
-        $message = "If after a few minutes the customer does not complete the order, 
-                you can click the Sync from API link to query Sage Pay for the latest information on this transaction.";
+        $message = "If after a few minutes the customer does not complete the order,"
+                ." you can click the Sync from API link"
+        ." to query Sage Pay for the latest information on this transaction.";
         $paragraph = new \Magento\Framework\Phrase(
             $message
         );
