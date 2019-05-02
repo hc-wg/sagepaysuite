@@ -103,8 +103,8 @@ class Info extends \Magento\Backend\Block\Template
     {
         return $this->escapeHtml (
             __(
-                "The customer was redirected to their bank page to complete 3D authentication.
-                On this scenario two things can happen:"
+                "The customer was redirected to their bank page to complete 3D authentication."
+                ." On this scenario two things can happen:"
             )
         );
     }
