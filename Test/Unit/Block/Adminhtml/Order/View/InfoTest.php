@@ -207,8 +207,8 @@ class InfoTest extends \PHPUnit_Framework_TestCase
 
     public function testGetFirstParagraph()
     {
-        $message = "The customer was redirected to their bank page to complete 3D authentication."
-            ." On this scenario two things can happen:";
+        $message = "The customer was redirected to their bank page to complete 3D authentication.
+             On this scenario two things can happen:";
         $paragraph = new \Magento\Framework\Phrase(
             $message
         );
