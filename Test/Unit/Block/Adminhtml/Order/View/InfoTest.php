@@ -179,4 +179,104 @@ class InfoTest extends \PHPUnit_Framework_TestCase
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         return $objectManagerHelper;
     }
+
+    public function testIsThreeDRedirect()
+    {
+        $statusCode = 2007;
+        /** @var \Ebizmarts\SagePaySuite\Block\Adminhtml\Order\View\Info $infoBlock */
+        $infoBlock = $this->getObjectManager()
+            ->getObject(
+                'Ebizmarts\SagePaySuite\Block\Adminhtml\Order\View\Info'
+            );
+
+        $isThreeDRedirect = $infoBlock->isThreeDRedirect($statusCode);
+        $this->assertTrue($isThreeDRedirect);
+    }
+
+    public function testIsNotThreeDRedirect()
+    {
+        $statusCode = 2000;
+        /** @var \Ebizmarts\SagePaySuite\Block\Adminhtml\Order\View\Info $infoBlock */
+        $infoBlock = $this->getObjectManager()
+            ->getObject(
+                'Ebizmarts\SagePaySuite\Block\Adminhtml\Order\View\Info'
+            );
+        $isThreeDRedirect = $infoBlock->isThreeDRedirect($statusCode);
+        $this->assertFalse($isThreeDRedirect);
+    }
+
+    public function testGetFirstParagraph()
+    {
+        $message = "The customer was redirected to their bank page to complete 3D authentication."
+            ." On this scenario two things can happen:";
+        $paragraph = new \Magento\Framework\Phrase(
+            $message
+        );
+
+        $infoMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Block\Adminhtml\Order\View\Info::class)
+            ->setMethods(['escapeHtml'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $infoMock->expects($this->once())->method('escapeHtml')->with($paragraph)->willReturn($message);
+
+        $firstParagraph = $infoMock->getFirstParagraph();
+        $this->assertEquals($message, $firstParagraph);
+    }
+
+    public function testGetSecondParagraph()
+    {
+        $message = "- The customer completes the 3D check and the order status is updated.";
+        $paragraph = new \Magento\Framework\Phrase(
+            $message
+        );
+
+        $infoMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Block\Adminhtml\Order\View\Info::class)
+            ->setMethods(['escapeHtml'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $infoMock->expects($this->once())->method('escapeHtml')->with($paragraph)->willReturn($message);
+
+        $secondParagraph = $infoMock->getSecondParagraph();
+        $this->assertEquals($message, $secondParagraph);
+    }
+
+    public function testGetThirdParagraph()
+    {
+        $message = "- The customer does not complete 3D and the message will still be visible. 
+                For example, the customer does not remember their pin code.";
+        $paragraph = new \Magento\Framework\Phrase(
+            $message
+        );
+
+        $infoMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Block\Adminhtml\Order\View\Info::class)
+            ->setMethods(['escapeHtml'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $infoMock->expects($this->once())->method('escapeHtml')->with($paragraph)->willReturn($message);
+
+        $thirdParagraph = $infoMock->getThirdParagraph();
+        $this->assertEquals($message, $thirdParagraph);
+    }
+
+    public function testGetForthParagraph()
+    {
+        $message = "If after a few minutes the customer does not complete the order, 
+                you can click the Sync from API link to query Sage Pay for the latest information on this transaction.";
+        $paragraph = new \Magento\Framework\Phrase(
+            $message
+        );
+
+        $infoMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Block\Adminhtml\Order\View\Info::class)
+            ->setMethods(['escapeHtml'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $infoMock->expects($this->once())->method('escapeHtml')->with($paragraph)->willReturn($message);
+
+        $forthParagraph = $infoMock->getForthParagraph();
+        $this->assertEquals($message, $forthParagraph);
+    }
 }
