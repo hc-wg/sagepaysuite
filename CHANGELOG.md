@@ -1,4 +1,4 @@
-## [1.2.14] - 
+## [1.2.14] - 2019-05-08
 ### Added
 - Explanation message to order view
 - Add waiting for score and test fraud flags
