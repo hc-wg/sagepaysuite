@@ -1,3 +1,22 @@
+## [1.1.26] - 2019-05-08
+### Added
+- Explanation message to order view
+- Add waiting for score and test fraud flags
+- Add CardHolder Name field to PI without DropIn
+
+### Changed
+- Update README.md to use url sagepaysuite.gitlab.ebizmarts.com for composer config.
+
+### Fixed
+- PI DropIn MOTO problem with multiple storeviews
+- Invoice and Refund problem with multi currency site and base currency
+- Class for 2.1 is not compatible with PHP 5.6
+- Basket Sage50 doesn't send space character
+
+### Removed
+- PHP restrictions on module for M2.1
+- Remove cc images from the Pi form
+
 ## [1.1.25] - 2019-03-26
 ### Changed
 - On Hold status stop auto-invoice
