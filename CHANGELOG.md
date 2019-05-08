@@ -1,4 +1,4 @@
-## [1.3.5] - 
+## [1.3.5] - 2019-05-08
 ### Added
 - Explanation message to order view
 - Add waiting for score and test fraud flags
@@ -10,6 +10,7 @@
 ### Fixed
 - PI DropIn MOTO problem with multiple storeviews
 - Invoice and Refund problem with multi currency site and base currency
+- Basket Sage50 doesn't send space character
 
 ### Removed
 - PHP restrictions on module for M2.1
