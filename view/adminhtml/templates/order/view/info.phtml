@@ -54,6 +54,19 @@ $payment = $block->getPayment();
                     <td><?php echo $block->escapeHtml($statusDetail); ?></td>
                 </tr>
             <?php } ?>
+            <?php $statusCode = $payment->getAdditionalInformation("statusCode"); ?>
+            <?php if ($this->isThreeDRedirect($statusCode)): ?>
+                <tr>
+                    <td colspan="2">
+                        <div align="left" class="message message-info">
+                            <p><?php echo $block->getFirstParagraph() ?></p>
+                            <p><?php echo $block->getSecondParagraph() ?></p>
+                            <p><?php echo $block->getThirdParagraph() ?></p>
+                            <p><?php echo $block->getForthParagraph() ?></p>
+                        </div>
+                    </td>
+                </tr>
+            <?php endif; ?>
             <?php if ($payment->getAdditionalInformation("threeDStatus")) { ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('3D Status')); ?>:</th>
