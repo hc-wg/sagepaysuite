@@ -398,6 +398,45 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                     ]
                 ]
             ,
+            'test Sage50 with spaces' =>
+                [
+                    [
+                        'lines' => 2,
+                        'sku' => 'WSH08-28-Purple',
+                        'expected_sku' => 'WSH08-28-Purple',
+                        'name' => 'Sybil Running Short',
+                        'expected_name' => 'Sybil Running Short',
+                        'qty' => 1,
+                        'priceInclTax' => 44,
+                        'product_id' => 1234,
+                        'price' => 44,
+                        'taxAmount' => 0,
+                        'shippingDescription' => 'BestWay-TableRate',
+                        'shippingAmount' => 15,
+                        'shippingTaxAmount' => 0,
+                        'deliveryGrossAmount' => 15,
+                        'parentItem' => false,
+                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
+                        'id' => null,
+                        'firstName' => null,
+                        'lastName' => null,
+                        'middleName' => null,
+                        'prefix' => null,
+                        'email' => null,
+                        'telephone' => null,
+                        'streetLine' => null,
+                        'expectedStreetLine' => null,
+                        'city' => null,
+                        'regionCode' => null,
+                        'country' => null,
+                        'postCode' => null,
+                        'fax' => null,
+                        'isMultishipping' => null,
+                        'allAddresses' => null,
+                        'method' => null,
+                    ]
+                ]
+            ,
             'test XML' =>
                 [
                     [

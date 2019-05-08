@@ -54,15 +54,18 @@ class Payment
                 $result = [];
                 if ($this->isDeferredOrRepeatDeferredAction($paymentAction)) {
                     $action = 'releasing';
+                    if ($this->config->getCurrencyConfig() === CONFIG::CURRENCY_SWITCHER) {
+                        $amount = $this->calculateAmount($amount, $order);
+                    }
                     $result = $this->sharedApi->captureDeferredTransaction($transactionId, $amount, $order);
                 } elseif ($this->isAuthenticateAction($paymentAction)) {
                     $action = 'authorizing';
                     $result = $this->sharedApi->authorizeTransaction($transactionId, $amount, $order);
                 }
 
-                $this->addAdditionalInformationToTransaction($payment, $result);
-
                 if (is_array($result) && array_key_exists('data', $result)) {
+                    $this->addAdditionalInformationToTransaction($payment, $result);
+
                     if (array_key_exists('VPSTxId', $result['data'])) {
                         $payment->setTransactionId($this->suiteHelper->removeCurlyBraces($result['data']['VPSTxId']));
                     }
@@ -174,7 +177,7 @@ class Payment
      */
     private function isDeferredOrRepeatDeferredAction($paymentAction)
     {
-        return $paymentAction == Config::ACTION_DEFER || $paymentAction == Config::ACTION_REPEAT_DEFERRED;
+        return $paymentAction === Config::ACTION_DEFER || $paymentAction === Config::ACTION_REPEAT_DEFERRED;
     }
 
     /**
@@ -208,5 +211,23 @@ class Payment
         }
 
         return $paymentAction;
+    }
+
+    /**
+     * @param $amount
+     * @param $order
+     * @return float|int
+     */
+    public function calculateAmount($amount, $order)
+    {
+        $orderCurrencyCode = $order->getOrderCurrencyCode();
+        $baseCurrencyCode = $order->getBaseCurrencyCode();
+
+        if ($baseCurrencyCode !== $orderCurrencyCode) {
+            $rate = $order->getBaseToOrderRate();
+            $invoiceAmount = $amount * $rate;
+            $amount = $invoiceAmount;
+        }
+        return $amount;
     }
 }
