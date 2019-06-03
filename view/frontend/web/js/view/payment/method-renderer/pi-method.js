@@ -61,10 +61,8 @@ define(
                 return true;
             },
             sagepaySetForm: function () {
-                console.info("sagepaySetForm2");
                 var self = this;
                 if (document.getElementById('sagepaysuitepi').checked) {
-                    console.info("selectPaymentMethod");
                     this.selectPaymentMethod();
                 }
                 self.defaultStateForm();
