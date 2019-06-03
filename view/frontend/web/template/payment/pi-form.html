@@ -44,7 +44,7 @@
                                 data-bind="
                             click: tokenise,
                             attr: {title: $t('Submit payment')},
-                            css: {disabled: isPlaceOrderActionAllowed()},
+                            css: {disabled: !isPlaceOrderActionAllowed()},
                             enable: (getCode() == isChecked())
                             "
                                 disabled>
