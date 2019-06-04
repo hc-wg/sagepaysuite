@@ -62,7 +62,9 @@ define(
             },
             sagepaySetForm: function () {
                 var self = this;
-                this.selectPaymentMethod();
+                if (document.getElementById('sagepaysuitepi').checked) {
+                    this.selectPaymentMethod();
+                }
                 self.defaultStateForm();
             },
             getRemoteJsName: function () {
