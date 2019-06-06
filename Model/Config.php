@@ -48,6 +48,7 @@ class Config
     const ACTION_REPEAT_DEFERRED = 'REPEATDEFERRED';
     const ACTION_AUTHORISE       = 'AUTHORISE';
     const ACTION_POST            = 'post';
+    const ACTION_ABORT           = 'ABORT';
 
     /**
      * SagePay MODES
@@ -106,6 +107,8 @@ class Config
     const URL_SHARED_REPEATDEFERRED_LIVE = 'https://live.sagepay.com/gateway/service/repeat.vsp';
     const URL_SHARED_REPEAT_TEST         = 'https://test.sagepay.com/gateway/service/repeat.vsp';
     const URL_SHARED_REPEAT_LIVE         = 'https://live.sagepay.com/gateway/service/repeat.vsp';
+    const URL_SHARED_ABORT_TEST          = 'https://test.sagepay.com/gateway/service/abort.vsp';
+    const URL_SHARED_ABORT_LIVE          = 'https://live.sagepay.com/gateway/service/abort.vsp';
     const URL_SERVER_POST_TEST           = 'https://test.sagepay.com/gateway/service/vspserver-register.vsp';
     const URL_SERVER_POST_LIVE           = 'https://live.sagepay.com/gateway/service/vspserver-register.vsp';
     const URL_DIRECT_POST_TEST           = 'https://test.sagepay.com/gateway/service/vspdirect-register.vsp';
