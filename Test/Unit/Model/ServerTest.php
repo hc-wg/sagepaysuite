@@ -202,7 +202,6 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
-
         $sharedApiMock = $this
             ->getMockBuilder( Shared::class)
             ->disableOriginalConstructor()
@@ -211,6 +210,24 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         $transactionDetails            = new \stdClass;
         $transactionDetails->txstateid = Shared::DEFERRED_AWAITING_RELEASE;
 
+        $reportingApiMock = $this
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Api\Reporting')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $reportingApiMock
+            ->expects($this->once())
+            ->method('getTransactionDetails')
+            ->willReturn($transactionDetails);
+
+        $this->serverModel = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Model\Server',
+            [
+                "config"     => $this->configMock,
+                "paymentOps" => $this->paymentOpsMock,
+                "sharedApi"    => $sharedApiMock,
+                "reportingApi" => $reportingApiMock
+            ]
+        );
         $orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
             ->disableOriginalConstructor()
@@ -223,40 +240,10 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('canInvoice')
             ->willReturn(true);
-
         $paymentMock
             ->expects($this->once())
             ->method('getOrder')
             ->willReturn($orderMock);
-        $paymentMock
-            ->expects($this->once())
-            ->method('getLastTransId')
-            ->willReturn(self::TEST_VPSTXID);
-
-        $orderMock
-            ->expects($this->once())
-            ->method('getStoreId')
-            ->willReturn(1);
-
-        $reportingApiMock = $this
-            ->getMockBuilder(Reporting::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $reportingApiMock
-            ->expects($this->once())
-            ->method('getTransactionDetails')
-            ->willReturn($transactionDetails);
-
-        $this->serverModel = $this->objectManagerHelper->getObject(
-        'Ebizmarts\SagePaySuite\Model\Server',
-            [
-                "config"     => $this->configMock,
-                "paymentOps" => $this->paymentOpsMock,
-                "sharedApi"    => $sharedApiMock,
-                "reportingApi" => $reportingApiMock
-            ]
-        );
-
         $this->serverModel->void($paymentMock);
     }
 
