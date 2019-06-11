@@ -5,6 +5,7 @@
  */
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Model\Api\PaymentOperations;
 use Magento\Framework\Exception\LocalizedException;
 use \Magento\Payment\Model\InfoInterface;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
@@ -14,8 +15,6 @@ use Ebizmarts\SagePaySuite\Model\Api\ApiException;
  */
 class Server extends \Magento\Payment\Model\Method\AbstractMethod
 {
-    const DEFERRED_AWAITING_RELEASE = "14";
-
     /**
      * @var string
      */
@@ -266,7 +265,7 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
             $order              = $payment->getOrder();
             $transactionDetails = $this->reportingApi->getTransactionDetails($transactionId, $order->getStoreId());
 
-            if ((string)$transactionDetails->txstateid === self::DEFERRED_AWAITING_RELEASE) {
+            if ((string)$transactionDetails->txstateid === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
                 if ($order->canInvoice()) {
                     $this->sharedApi->abortDeferredTransaction($transactionId, $order);
                 }

@@ -737,7 +737,7 @@ class PITest extends \PHPUnit\Framework\TestCase
 
         /** @var PI $piModelMock */
         $piModelMock = $this->getMockBuilder(PI::class)
-            ->setMethods(['getInfoInstance'])
+        ->setMethods(['getInfoInstance'])
         ->disableOriginalConstructor()
         ->getMock();
 
