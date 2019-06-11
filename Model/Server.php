@@ -5,7 +5,7 @@
  */
 namespace Ebizmarts\SagePaySuite\Model;
 
-use Ebizmarts\SagePaySuite\Model\Api\PaymentOperations;
+use Ebizmarts\SagePaySuite\Model\Api\Shared;
 use Magento\Framework\Exception\LocalizedException;
 use \Magento\Payment\Model\InfoInterface;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
@@ -120,7 +120,7 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
     private $paymentOps;
 
     /**
-     * @var Api\Shared|\Ebizmarts\SagePaySuite\Model\Api\Shared
+     * @var Api\Shared|Shared
      */
     private $sharedApi;
 
@@ -157,7 +157,7 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Payment\Model\Method\Logger $logger,
         \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Ebizmarts\SagePaySuite\Model\Api\Shared $sharedApi,
+        Shared $sharedApi,
         \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
@@ -265,7 +265,7 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
             $order              = $payment->getOrder();
             $transactionDetails = $this->reportingApi->getTransactionDetails($transactionId, $order->getStoreId());
 
-            if ((int)$transactionDetails->txstateid === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
+            if ((int)$transactionDetails->txstateid === Shared::DEFERRED_AWAITING_RELEASE) {
                 if ($order->canInvoice()) {
                     $this->sharedApi->abortDeferredTransaction($transactionId, $order);
                 }

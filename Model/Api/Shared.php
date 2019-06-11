@@ -111,7 +111,7 @@ class Shared
 
     public function abortDeferredTransaction($vpstxid, \Magento\Sales\Api\Data\OrderInterface $order)
     {
-        $transaction = $this->reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
+        $transaction = $this->_reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol']  = $this->_config->getVPSProtocol();
         $data['TxType']       = Config::ACTION_ABORT;
@@ -122,7 +122,7 @@ class Shared
         $data['SecurityKey']  = (string)$transaction->securitykey;
         $data['TxAuthNo']     = (string)$transaction->vpsauthcode;
 
-        return $this->executeRequest(Config::ACTION_ABORT, $data);
+        return $this->_executeRequest(Config::ACTION_ABORT, $data);
     }
 
     public function captureDeferredTransaction($vpsTxId, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
