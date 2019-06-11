@@ -265,7 +265,7 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
             $order              = $payment->getOrder();
             $transactionDetails = $this->reportingApi->getTransactionDetails($transactionId, $order->getStoreId());
 
-            if ((string)$transactionDetails->txstateid === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
+            if ((int)$transactionDetails->txstateid === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
                 if ($order->canInvoice()) {
                     $this->sharedApi->abortDeferredTransaction($transactionId, $order);
                 }
