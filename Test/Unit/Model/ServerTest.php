@@ -135,19 +135,52 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         $this->serverModel->refund($paymentMock, 100);
     }
 
-//    public function testCancel()
-//    {
-//        $paymentMock = $this
-//            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-//            ->disableOriginalConstructor()
-//            ->getMock();
-//        $this->serverModel->setInfoInstance($paymentMock);
-//        $this->serverModel->void($paymentMock);
-//        $this->assertEquals(
-//            $this->serverModel,
-//            $this->serverModel->cancel($paymentMock)
-//        );
-//    }
+    public function testCancel()
+    {
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $serverModelMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Server')
+            ->setMethods(['void', 'canVoid'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $serverModelMock
+            ->expects($this->once())
+            ->method('canVoid')
+            ->willReturn(true);
+        $serverModelMock
+            ->expects($this->once())
+            ->method('void')
+            ->willReturnSelf();
+
+        $serverModelMock->cancel($paymentMock);
+    }
+
+    public function testCancelError()
+    {
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $serverModelMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Server')
+            ->setMethods(['void', 'canVoid'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $serverModelMock
+            ->expects($this->once())
+            ->method('canVoid')
+            ->willReturn(false);
+        $serverModelMock
+            ->expects($this->never())
+            ->method('void');
+
+        $serverModelMock->cancel($paymentMock);
+    }
 
     public function testAbortDeferTransaction()
     {
