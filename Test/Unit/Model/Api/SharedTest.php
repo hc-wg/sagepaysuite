@@ -408,6 +408,69 @@ class SharedTest extends \PHPUnit\Framework\TestCase
         );
     }
 
+    public function testAbortDeferredTransaction()
+    {
+        $stringResponse = 'HTTP/1.1 200 OK';
+        $stringResponse .= "\n\n";
+        $stringResponse .= "VPSProtocol=3.00\n";
+        $stringResponse .= "Status=OK\n";
+        $stringResponse .= "StatusDetail=2006 : The Abort was Successful.\n";
+
+        $responseMock = $this
+            ->getMockBuilder(HttpResponse::class)
+            ->setMethods(['getStatus'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $responseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
+            ->willReturn(200);
+
+        $this->httpTextMock
+            ->method('getResponseData')
+            ->willReturn($stringResponse);
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('arrayToQueryParams')
+            ->with(
+                [
+                    'VPSProtocol'         => '3.00',
+                    'TxType'              => 'ABORT',
+                    'ReferrerID'          => '01bf51f9-0dcd-49dd-a07a-3b1f918c77d7',
+                    'Vendor'              => "testvendorname",
+                    'VendorTxCode'        => "1000000001-2016-12-12-12345678",
+                    'VPSTxId'             => "12345",
+                    'SecurityKey'         => 'fds87',
+                    'TxAuthNo'            => "879243978234"
+                ]
+            );
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->willReturn($responseMock);
+
+        $orderMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(1);
+
+        $this->assertEquals(
+            [
+                "status" => 200,
+                "data" => [
+                    'VPSProtocol'  => '3.00',
+                    'Status'       => 'OK',
+                    'StatusDetail' => '2006 : The Abort was Successful.'
+                ]
+            ],
+            $this->sharedApiModel->abortDeferredTransaction("12345", $orderMock)
+        );
+    }
+
     public function testCaptureDeferredTransactionAwaitingRelease()
     {
         $stringResponse = 'HTTP/1.1 200 OK';
