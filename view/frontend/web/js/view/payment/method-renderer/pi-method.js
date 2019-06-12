@@ -196,6 +196,13 @@ define(
                 $("#load-dropin-form-button").css("display", "block");
                 $("#submit_dropin_payment").css("display", "none");
             },
+            isPlaceOrderActionAllowed: function (allowedParam) {
+                var self = this;
+                if (typeof allowedParam  === 'undefined') {
+                    return quote.billingAddress() != null;
+                }
+                return allowedParam;
+            },
             sagepayTokeniseCard: function (merchant_session_key) {
 
                 var self = this;
