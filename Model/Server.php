@@ -5,7 +5,10 @@
  */
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Model\Api\Shared;
 use Magento\Framework\Exception\LocalizedException;
+use \Magento\Payment\Model\InfoInterface;
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 
 /**
  * Sage Pay Suite SERVER model
@@ -117,6 +120,16 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
     private $paymentOps;
 
     /**
+     * @var Api\Shared|Shared
+     */
+    private $sharedApi;
+
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
+     */
+    private $reportingApi;
+
+    /**
      * Server constructor.
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
@@ -127,6 +140,8 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Magento\Payment\Model\Method\Logger $logger
      * @param Config $config
+     * @param Api\Shared $sharedApi
+     * @param Api\Reporting $reportingApi
      * @param \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
      * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
@@ -142,6 +157,8 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Payment\Model\Method\Logger $logger,
         \Ebizmarts\SagePaySuite\Model\Config $config,
+        Shared $sharedApi,
+        \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi,
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
@@ -163,6 +180,10 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
         $this->_config             = $config;
         $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_SERVER);
         $this->paymentOps          = $paymentOps;
+
+        $this->sharedApi           = $sharedApi;
+
+        $this->reportingApi        = $reportingApi;
     }
 
     /**
@@ -219,6 +240,60 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
     }
 
     /**
+     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @return $this|\Magento\Payment\Model\Method\AbstractMethod
+     * @throws LocalizedException
+     */
+    public function cancel(InfoInterface $payment)
+    {
+        if ($this->canVoid()) {
+            $this->void($payment);
+        }
+        return $this;
+    }
+
+    /**
+     * @param InfoInterface $payment
+     * @return $this|\Magento\Payment\Model\Method\AbstractMethod
+     * @throws LocalizedException
+     */
+    public function void(InfoInterface $payment)
+    {
+        $transactionId = $payment->getLastTransId();
+
+        try {
+            $order              = $payment->getOrder();
+            $transactionDetails = $this->reportingApi->getTransactionDetails($transactionId, $order->getStoreId());
+
+            if ((int)$transactionDetails->txstateid === Shared::DEFERRED_AWAITING_RELEASE) {
+                if ($order->canInvoice()) {
+                    $this->sharedApi->abortDeferredTransaction($transactionId, $order);
+                }
+            } else {
+                $this->sharedApi->voidTransaction($transactionId, $order);
+            }
+
+        } catch (ApiException $apiException) {
+            if ($this->exceptionCodeIsInvalidTransactionState($apiException)) {
+                //unable to void transaction
+                throw new LocalizedException(
+                    __('Unable to VOID Sage Pay transaction %1: %2', $transactionId, $apiException->getUserMessage())
+                );
+            } else {
+                $this->_logger->critical($apiException);
+                throw $apiException;
+            }
+        } catch (\Exception $e) {
+            $this->_logger->critical($e);
+            throw new LocalizedException(
+                __('Unable to VOID Sage Pay transaction %1: %2', $transactionId, $e->getMessage())
+            );
+        }
+
+        return $this;
+    }
+
+    /**
      * Instantiate state and set it to state object
      *
      * @param string $paymentAction
@@ -247,5 +322,14 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
     public function getConfigPaymentAction()
     {
         return $this->_config->getPaymentAction();
+    }
+
+    /**
+     * @param $apiException
+     * @return bool
+     */
+    private function exceptionCodeIsInvalidTransactionState($apiException)
+    {
+        return $apiException->getCode() == ApiException::INVALID_TRANSACTION_STATE;
     }
 }
