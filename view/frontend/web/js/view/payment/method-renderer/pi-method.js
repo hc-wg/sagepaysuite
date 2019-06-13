@@ -67,6 +67,16 @@ define(
                 }
                 self.defaultStateForm();
             },
+            isOneStepCheckout: function () {
+                return ($('#iosc-summary').length > 0);
+            },
+            selectPaymentMethod: function () {
+                var self = this;
+                if (self.isOneStepCheckout()) { //OneStepCheckout, populate cc fields on radio check.
+                    self.preparePayment();
+                }
+                return this._super();
+            },
             getRemoteJsName: function () {
                 var self = this;
                 var jsName = 'sagepayjs_';
