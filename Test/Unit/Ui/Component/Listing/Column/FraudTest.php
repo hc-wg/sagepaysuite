@@ -31,7 +31,8 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         'data' => [
             'items' => [
                 [
-                    'entity_id' => self::ENTITY_ID
+                    'entity_id' => self::ENTITY_ID,
+                    'payment_method' => "sagepaysuite"
                 ]
             ]
         ]
@@ -126,7 +127,8 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             'data' => [
                 'items' => [
                     [
-                        'entity_id' => false
+                        'entity_id' => false,
+                        'payment_method' => "sagepaysuite"
                     ]
                 ]
             ]
@@ -181,7 +183,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $suiteLoggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $suiteLoggerMock->expects($this->once())->method('logException')->with(
             $inputException,
-            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 67]
+            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 68]
         );
         return $suiteLoggerMock;
     }
@@ -191,7 +193,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $suiteLoggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $suiteLoggerMock->expects($this->once())->method('logException')->with(
             $noSuchEntityException,
-            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 70]
+            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 71]
         );
         return $suiteLoggerMock;
     }
@@ -238,7 +240,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
 
         $dataSource = self::DATA_SOURCE;
 
-        $this->assertEquals(['data' => ['items' => [['entity_id' => self::ENTITY_ID]]]], $fraudColumnMock->prepareDataSource($dataSource));
+        $this->assertEquals(['data' => ['items' => [['entity_id' => self::ENTITY_ID, 'payment_method' => "sagepaysuite"]]]], $fraudColumnMock->prepareDataSource($dataSource));
     }
 
 
@@ -300,7 +302,8 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 'items' => [
                     [
                         'entity_id' => self::ENTITY_ID,
-                        'sagepay_fraud_src' => self::IMAGE_URL_CHECK
+                        'sagepay_fraud_src' => self::IMAGE_URL_CHECK,
+                        'payment_method' => "sagepaysuite"
                     ]
                 ]
             ]
@@ -367,7 +370,8 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 'items' => [
                     [
                         'entity_id' => self::ENTITY_ID,
-                        'sagepay_fraud_src' => self::IMAGE_URL_CROSS
+                        'sagepay_fraud_src' => self::IMAGE_URL_CROSS,
+                        'payment_method' => "sagepaysuite"
                     ]
                 ]
             ]
@@ -434,7 +438,8 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 'items' => [
                     [
                         'entity_id' => self::ENTITY_ID,
-                        'sagepay_fraud_src' => self::IMAGE_URL_ZEBRA
+                        'sagepay_fraud_src' => self::IMAGE_URL_ZEBRA,
+                        'payment_method' => "sagepaysuite"
                     ]
                 ]
             ]
@@ -501,7 +506,8 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 'items' => [
                     [
                         'entity_id' => self::ENTITY_ID,
-                        'sagepay_fraud_src' => self::IMAGE_URL_NOTCHECKED
+                        'sagepay_fraud_src' => self::IMAGE_URL_NOTCHECKED,
+                        'payment_method' => "sagepaysuite"
                     ]
                 ]
             ]
@@ -569,6 +575,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     [
                         'entity_id' => self::ENTITY_ID,
                         'sagepay_fraud_src' => self::IMAGE_URL_CHECK,
+                        'payment_method' => "sagepaysuite"
                     ]
                 ]
             ]
@@ -635,6 +642,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     [
                         'entity_id' => self::ENTITY_ID,
                         'sagepay_fraud_src' => self::IMAGE_URL_ZEBRA,
+                        'payment_method' => "sagepaysuite"
                     ]
                 ]
             ]
@@ -701,6 +709,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     [
                         'entity_id' => self::ENTITY_ID,
                         'sagepay_fraud_src' => self::IMAGE_URL_CROSS,
+                        'payment_method' => "sagepaysuite"
                     ]
                 ]
             ]
@@ -767,6 +776,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     [
                         'entity_id' => self::ENTITY_ID,
                         'sagepay_fraud_src' => self::IMAGE_URL_INVALID,
+                        'payment_method' => "sagepaysuite"
                     ]
                 ]
             ]
@@ -833,6 +843,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     [
                         'entity_id' => self::ENTITY_ID,
                         'sagepay_fraud_src' => self::IMAGE_URL_TEST,
+                        'payment_method' => "sagepaysuite"
                     ]
                 ]
             ]
@@ -899,11 +910,61 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     [
                         'entity_id' => self::ENTITY_ID,
                         'sagepay_fraud_src' => self::IMAGE_URL_WAITING,
+                        'payment_method' => "sagepaysuite"
                     ]
                 ]
             ]
         ];
 
         $this->assertEquals($expectedResponse, $response);
+    }
+
+    public function testPaymentMethodNotSagePay()
+    {
+        $suiteLoggerMock = $this->createMock(Logger::class);
+        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
+        $contextMock = $this->createMock(ContextInterface::class);
+        $uiComponentFactoryMock = $this->createMock(UiComponentFactory::class);
+        $requestMock = $this->createMock(RequestInterface::class);
+        $assetRepositoryMock = $this->createMock(Repository::class);
+
+        /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
+        $fraudColumnMock = $this->getMockBuilder(Fraud::class)
+            ->setConstructorArgs([
+                'suiteLogger' => $suiteLoggerMock,
+                'context' => $contextMock,
+                'uiComponentFactory' => $uiComponentFactoryMock,
+                'orderRepository' => $orderRepositoryMock,
+                'assetRepository' => $assetRepositoryMock,
+                'requestInterface' => $requestMock,
+                [],
+                []
+            ])
+            ->setMethods(['getImageNameRed'])
+            ->getMock();
+
+        $dataSource = [
+            'data' => [
+                'items' => [
+                    [
+                        'entity_id' => self::ENTITY_ID,
+                        'payment_method' => "checkmo"
+                    ]
+                ]
+            ]
+        ];
+
+        $expectedResponse = [
+            'data' => [
+                'items' => [
+                    [
+                        'entity_id' => self::ENTITY_ID,
+                        'payment_method' => "checkmo"
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $fraudColumnMock->prepareDataSource($dataSource));
     }
 }
