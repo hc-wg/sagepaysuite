@@ -1,3 +1,13 @@
+## [1.3.6] - 2019-06-19
+### Added
+- PI DropIn compatibility with OneStepCheckout
+
+### Fixed
+- Module breaks Sales -> Order
+- Server defer orders not being cancelled on SagePay
+- Problem with submit payment button PI
+- PI always selected as default payment method on the checkout
+
 ## [1.3.5] - 2019-05-08
 ### Added
 - Explanation message to order view
