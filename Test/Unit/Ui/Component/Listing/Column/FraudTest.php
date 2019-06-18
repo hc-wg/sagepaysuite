@@ -921,12 +921,14 @@ class FraudTest extends \PHPUnit_Framework_TestCase
 
     public function testPaymentMethodNotSagePay()
     {
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $contextMock = $this->createMock(ContextInterface::class);
-        $uiComponentFactoryMock = $this->createMock(UiComponentFactory::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $assetRepositoryMock = $this->createMock(Repository::class);
+        $suiteLoggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
+        $orderRepositoryMock = $this->getMockBuilder(OrderRepositoryInterface::class)->disableOriginalConstructor()->getMock();
+        $contextMock = $this->getMockBuilder(ContextInterface::class)->disableOriginalConstructor()->getMock();
+        $processorMock = $this->getMockBuilder(Processor::class)->disableOriginalConstructor()->getMock();
+        $contextMock->expects($this->once())->method('getProcessor')->willReturn($processorMock);
+        $uiComponentFactoryMock = $this->getMockBuilder(UiComponentFactory::class)->disableOriginalConstructor()->getMock();
+        $requestMock = $this->getMockBuilder(RequestInterface::class)->disableOriginalConstructor()->getMock();
+        $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
