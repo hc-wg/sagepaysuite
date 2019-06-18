@@ -58,25 +58,27 @@ class Fraud extends Column
     {
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as &$item) {
-                $fieldName = $this->getFieldName();
-                $orderId = $item['entity_id'];
-                $params = ['_secure' => $this->requestInterface->isSecure()];
-                try {
-                    $order = $this->orderRepository->get($orderId);
-                } catch (InputException $e) {
-                    $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
-                    continue;
-                } catch (NoSuchEntityException $e) {
-                    $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
-                    continue;
-                }
-                $additional = $order->getPayment();
+                if (strpos($item['payment_method'], "sagepaysuite") !== false) {
+                    $fieldName = $this->getFieldName();
+                    $orderId = $item['entity_id'];
+                    $params = ['_secure' => $this->requestInterface->isSecure()];
+                    try {
+                        $order = $this->orderRepository->get($orderId);
+                    } catch (InputException $e) {
+                        $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
+                        continue;
+                    } catch (NoSuchEntityException $e) {
+                        $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
+                        continue;
+                    }
+                    $payment = $order->getPayment();
 
-                if ($additional !== null) {
-                    $additional = $additional->getAdditionalInformation();
-                    $image = $this->getImage($additional);
-                    $url = $this->assetRepository->getUrlWithParams($image, $params);
-                    $item[$fieldName . '_src'] = $url;
+                    if ($payment !== null) {
+                        $additional = $payment->getAdditionalInformation();
+                        $image = $this->getImage($additional);
+                        $url = $this->assetRepository->getUrlWithParams($image, $params);
+                        $item[$fieldName . '_src'] = $url;
+                    }
                 }
             }
         }
