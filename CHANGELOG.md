@@ -1,3 +1,9 @@
+## [1.1.27] - 2019-06-19
+### Fixed
+- Module breaks Sales -> Order
+- Server defer orders not being cancelled on SagePay
+- PI always selected as default payment method on the checkout
+
 ## [1.1.26] - 2019-05-08
 ### Added
 - Explanation message to order view
