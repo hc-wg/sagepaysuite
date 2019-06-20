@@ -76,13 +76,13 @@ class Shared implements PaymentOperations
     {
         $transaction = $this->reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
 
-        $data['VPSProtocol']  = $this->config->getVPSProtocol();
-        $data['TxType']       = Config::ACTION_VOID;
-        $data['Vendor']       = $this->config->getVendorname();
+        $data['VPSProtocol'] = $this->config->getVPSProtocol();
+        $data['TxType'] = Config::ACTION_VOID;
+        $data['Vendor'] = $this->config->getVendorname();
         $data['VendorTxCode'] = $this->suiteHelper->generateVendorTxCode();
-        $data['VPSTxId']      = (string)$transaction->vpstxid;
-        $data['SecurityKey']  = (string)$transaction->securitykey;
-        $data['TxAuthNo']     = (string)$transaction->vpsauthcode;
+        $data['VPSTxId'] = (string)$transaction->vpstxid;
+        $data['SecurityKey'] = (string)$transaction->securitykey;
+        $data['TxAuthNo'] = (string)$transaction->vpsauthcode;
 
         return $this->executeRequest(Config::ACTION_VOID, $data);
     }
@@ -104,6 +104,22 @@ class Shared implements PaymentOperations
         $data['RelatedTxAuthNo']     = (string)$transaction->vpsauthcode;
 
         return $this->executeRequest(Config::ACTION_REFUND, $data);
+    }
+
+    public function abortDeferredTransaction($vpstxid, \Magento\Sales\Api\Data\OrderInterface $order)
+    {
+        $transaction = $this->reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
+
+        $data['VPSProtocol']  = $this->config->getVPSProtocol();
+        $data['TxType']       = Config::ACTION_ABORT;
+        $data['ReferrerID']   = $this->requestHelper->getReferrerId();
+        $data['Vendor']       = $this->config->getVendorname();
+        $data['VendorTxCode'] = (string)$transaction->vendortxcode;
+        $data['VPSTxId']      = (string)$transaction->vpstxid;
+        $data['SecurityKey']  = (string)$transaction->securitykey;
+        $data['TxAuthNo']     = (string)$transaction->vpsauthcode;
+
+        return $this->executeRequest(Config::ACTION_ABORT, $data);
     }
 
     public function captureDeferredTransaction($vpsTxId, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
