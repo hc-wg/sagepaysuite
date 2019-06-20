@@ -62,8 +62,20 @@ define(
             },
             sagepaySetForm: function () {
                 var self = this;
-                this.selectPaymentMethod();
+                if (document.getElementById('sagepaysuitepi').checked) {
+                    this.selectPaymentMethod();
+                }
                 self.defaultStateForm();
+            },
+            isOneStepCheckout: function () {
+                return ($('#iosc-summary').length > 0);
+            },
+            selectPaymentMethod: function () {
+                var self = this;
+                if (self.isOneStepCheckout()) { //OneStepCheckout, populate cc fields on radio check.
+                    self.preparePayment();
+                }
+                return this._super();
             },
             getRemoteJsName: function () {
                 var self = this;
@@ -193,6 +205,13 @@ define(
                 $("#sp-container").css("display", "none");
                 $("#load-dropin-form-button").css("display", "block");
                 $("#submit_dropin_payment").css("display", "none");
+            },
+            isPlaceOrderActionAllowed: function (allowedParam) {
+                var self = this;
+                if (typeof allowedParam  === 'undefined') {
+                    return quote.billingAddress() != null;
+                }
+                return allowedParam;
             },
             sagepayTokeniseCard: function (merchant_session_key) {
 
