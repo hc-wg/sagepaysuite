@@ -8,6 +8,13 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
+        <dev>
+            <js>
+                <minify_exclude>
+                    <sagepaysuitepi>api/v1/js/sagepay.js</sagepaysuitepi>
+                </minify_exclude>
+            </js>
+        </dev>
         <sagepaysuite>
             <global>
                 <active>0</active>
