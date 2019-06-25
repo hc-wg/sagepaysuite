@@ -27,7 +27,7 @@ jobs:
       - run: tar xvzf libsodium-1.0.18.tar.gz
       - run: cd libsodium-1.0.18/ && ./configure
       - run: cd libsodium-1.0.18/ && make && make check
-      - run: cd libsodium-1.0.18/ && make install
+      - run: cd libsodium-1.0.18/ && sudo make install
 
       # Install dependencies
       - run:
