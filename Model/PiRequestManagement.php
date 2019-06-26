@@ -54,6 +54,9 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
         $data->setCcLastFour($requestData->getCcLastFour());
         $data->setCcType($requestData->getCcType());
 
+        //TODO PLugin aca para agregar lo que viene en $requestData de 3Dv2.
+        //\Ebizmarts\SagePaySuite\Plugin\StrongCustomerAuthFrontendRequestData
+
         $this->requester->setRequestData($data);
         $this->requester->setQuote($this->getQuoteById($cartId));
 

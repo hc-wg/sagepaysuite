@@ -432,7 +432,11 @@ define(
                         'card_identifier': this.cardIdentifier,
                         'cc_type': this.creditCardType,
                         'cc_exp_year': this.creditCardExpYear,
-                        'cc_exp_month': this.creditCardExpMonth
+                        'cc_exp_month': this.creditCardExpMonth,
+                        'javascript_enabled' : '1',
+                        'accept_headers' : 'Accept headers.',
+                        'language' : navigator.language,
+                        'user_agent' : navigator.userAgent
                     }
                 };
             },
