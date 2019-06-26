@@ -8,7 +8,7 @@
 
 namespace Ebizmarts\SagePaySuite\Api\Data;
 
-class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implements PiRequestInterface
+class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implements PiRequestInterface, PiScaRequestInterface
 {
 
     /**
@@ -111,5 +111,77 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     public function setCcType($cardType)
     {
         $this->setData(self::CARD_TYPE, $cardType);
+    }
+
+    /**
+     * @return int
+     */
+    public function getJavascriptEnabled(): int
+    {
+        return $this->_get(self::JS_ENABLED);
+    }
+
+    /**
+     * Boolean that represents the ability of the cardholder browser to execute JavaScript.
+     * @param int $enabled
+     * @return void
+     */
+    public function setJavascriptEnabled(int $enabled): void
+    {
+        $this->setData(self::JS_ENABLED, $enabled);
+    }
+
+    /**
+     * @return string
+     */
+    public function getAcceptHeaders(): string
+    {
+        return $this->_get(self::ACCEPT_HEADERS);
+    }
+
+    /**
+     * Exact content of the HTTP accept headers as sent to the 3DS Requestor from the Cardholder’s browser.
+     * @param string $headers
+     * @return void
+     */
+    public function setAcceptHeaders(string $headers): void
+    {
+        $this->setData(self::ACCEPT_HEADERS, $headers);
+    }
+
+    /**
+     * @return string
+     */
+    public function getLanguage(): string
+    {
+        return $this->_get(self::LANGUAGE);
+    }
+
+    /**
+     * Value representing the browser language as defined in IETF BCP47. Returned from navigator.language property.
+     * @param string $language
+     * @return void
+     */
+    public function setLanguage(string $language): void
+    {
+        $this->setData(self::LANGUAGE, $language);
+    }
+
+    /**
+     * @return string
+     */
+    public function getUserAgent(): string
+    {
+        return $this->_get(self::USER_AGENT);
+    }
+
+    /**
+     * Exact content of the HTTP user-agent header.
+     * @param string $userAgent
+     * @return void
+     */
+    public function setUserAgent(string $userAgent): void
+    {
+        $this->setData(self::USER_AGENT, $userAgent);
     }
 }

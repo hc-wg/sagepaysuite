@@ -85,7 +85,7 @@ class PiRequest
             } else {
                 if ($data['billingAddress']['country'] == 'HK') {
                     $data['billingAddress']['postalCode'] = "000";
-                } 
+                }
             }
         }
 
@@ -105,9 +105,11 @@ class PiRequest
             } else {
                 if ($data['shippingDetails']['shippingCountry'] == 'HK') {
                     $data['shippingDetails']['shippingPostalCode'] = "000";
-                } 
-            }  
+                }
+            }
         }
+
+
 
         //populate payment amount information
         $data = array_merge($data, $this->requestHelper->populatePaymentAmountAndCurrency($this->getCart(), true));
