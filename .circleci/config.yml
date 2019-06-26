@@ -128,11 +128,7 @@ jobs:
       - run: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
       - run: sudo service apache2 restart
 
-      - run: wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.18.tar.gz
-      - run: tar xvzf libsodium-1.0.18.tar.gz
-      - run: cd libsodium-1.0.18/ && ./configure
-      - run: cd libsodium-1.0.18/ && make && make check
-      - run: cd libsodium-1.0.18/ && sudo make install
+      - run: sudo apt-get install -y apt-get install libsodium-dev
 
       # Install test runners
       - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
