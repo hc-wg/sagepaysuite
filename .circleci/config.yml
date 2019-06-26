@@ -113,11 +113,11 @@ jobs:
 
       - run:
          name: Configure PHP extensions
-         command: sudo docker-php-ext-configure sodium intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
+         command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
 
       - run:
          name: Install PHP extensions
-         command: sudo docker-php-ext-install bcmath gd intl opcache pdo_mysql soap xsl zip
+         command: sudo docker-php-ext-install sodium bcmath gd intl opcache pdo_mysql soap xsl zip
 
       - run: sudo apt-get install -y mysql-client
 
