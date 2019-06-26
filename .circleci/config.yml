@@ -106,6 +106,12 @@ jobs:
     steps:
       - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
 
+      - run: wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.18.tar.gz
+      - run: tar xvzf libsodium-1.0.18.tar.gz
+      - run: cd libsodium-1.0.18/ && ./configure
+      - run: cd libsodium-1.0.18/ && make && make check
+      - run: cd libsodium-1.0.18/ && sudo make install
+
       # Install dependencies
       - run:
          name: Install libraries
