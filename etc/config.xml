@@ -41,6 +41,7 @@
                 <active_moto>0</active_moto>
                 <model>Ebizmarts\SagePaySuite\Model\PI</model>
                 <payment_action>Payment</payment_action>
+                <challengewindowsize>02</challengewindowsize>
                 <title>Sage Pay Pi</title>
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>
                 <allowspecific>0</allowspecific>
