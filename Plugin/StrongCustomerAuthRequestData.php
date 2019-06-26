@@ -4,14 +4,13 @@ declare(strict_types=1);
 namespace Ebizmarts\SagePaySuite\Plugin;
 
 use Ebizmarts\SagePaySuite\Model;
-use Ebizmarts\SagePaySuite\Model\Config;
 
 class StrongCustomerAuthRequestData
 {
     /** @var \Ebizmarts\SagePaySuite\Model\Config */
     private $sagepayConfig;
 
-    public function __construct(Config $sagepayConfig)
+    public function __construct(Model\Config $sagepayConfig)
     {
         $this->sagepayConfig = $sagepayConfig;
     }
@@ -27,12 +26,12 @@ class StrongCustomerAuthRequestData
      *
      * @see \Magento\Framework\View\Asset\Minification::XML_PATH_MINIFICATION_EXCLUDES
      *
-     * @param Minification $subject
+     * @param Model\Config $subject
      * @param string[] $result
      * @param string $contentType
      * @return string[]
      */
-    public function afterGetRequestData(Model\PiRequest $subject, array $result) : array
+    public function afterGetRequestData($subject, array $result) : array
     {
         $result['strongCustomerAuthentication'] = [
             'browserJavascriptEnabled' => true,
