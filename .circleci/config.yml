@@ -105,6 +105,7 @@ jobs:
 
     steps:
       - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
+      - run: sudo apt-get install -y libsodium-dev
 
       # Install dependencies
       - run:
