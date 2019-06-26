@@ -113,7 +113,7 @@ jobs:
 
       - run:
          name: Configure PHP extensions
-         command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
+         command: sudo docker-php-ext-configure sodium intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
 
       - run:
          name: Install PHP extensions
@@ -127,8 +127,6 @@ jobs:
       - run: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
       - run: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
       - run: sudo service apache2 restart
-
-      - run: sudo apt-get install -y libsodium-dev
 
       # Install test runners
       - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
