@@ -50,6 +50,7 @@ jobs:
       - run: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
       - run: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
       - run: sudo service apache2 restart
+      - run: sudo -E apt-get install libsodium23
 
       # Install test runners
       - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
