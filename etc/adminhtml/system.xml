@@ -196,6 +196,12 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/sagepaysuitepi/use_dropin</config_path>
                     </field>
+                    <field id="challengewindowsize" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Challenge Window Size</label>
+                        <comment>Dimensions of the challenge window that has been displayed to the Cardholder.</comment>
+                        <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\PiChallengeWindowSize</source_model>
+                        <config_path>payment/sagepaysuitepi/challengewindowsize</config_path>
+                    </field>
                     <field id="sort_order" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Sort Order</label>
                         <frontend_class>validate-number</frontend_class>
