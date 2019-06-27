@@ -320,16 +320,20 @@ define(
 
                 var callbackUrl = url.build('sagepaysuite/pi/callback3D');
 
+                var sagePayRequestData = {
+                    "merchant_session_key": self.merchantSessionKey,
+                    "card_identifier": self.cardIdentifier,
+                    "cc_type": self.creditCardType,
+                    "cc_exp_month": self.creditCardExpMonth,
+                    "cc_exp_year": self.creditCardExpYear,
+                    "cc_last_four": self.creditCardLast4
+                };
+
+                $.extend(sagePayRequestData, self.scaParams());
+
                 var payload = {
                     "cartId": quote.getQuoteId(),
-                    "requestData": {
-                        "merchant_session_key": self.merchantSessionKey,
-                        "card_identifier": self.cardIdentifier,
-                        "cc_type": self.creditCardType,
-                        "cc_exp_month": self.creditCardExpMonth,
-                        "cc_exp_year": self.creditCardExpYear,
-                        "cc_last_four": self.creditCardLast4
-                    }
+                    "requestData": sagePayRequestData
                 };
 
                 if (self.dropInEnabled()) {
@@ -448,15 +452,23 @@ define(
                         'card_identifier': this.cardIdentifier,
                         'cc_type': this.creditCardType,
                         'cc_exp_year': this.creditCardExpYear,
-                        'cc_exp_month': this.creditCardExpMonth,
-                        'javascript_enabled' : '1',
-                        'accept_headers' : 'Accept headers.',
-                        'language' : navigator.language,
-                        'user_agent' : navigator.userAgent
+                        'cc_exp_month': this.creditCardExpMonth
                     }
                 };
             },
-
+            scaParams: function () {
+                return {
+                    'javascript_enabled' : 1,
+                    'accept_headers' : 'Accept headers.',
+                    'language' : navigator.language,
+                    'user_agent' : navigator.userAgent,
+                    'java_enabled' : navigator.javaEnabled() ? 1 : 0,
+                    'color_depth' : screen.colorDepth,
+                    'screen_width' : screen.width,
+                    'screen_height' : screen.height,
+                    'timezone' : (new Date()).getTimezoneOffset()
+                }
+            },
             /**
              * Place order.
              */
