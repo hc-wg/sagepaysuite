@@ -10,40 +10,41 @@ class StrongCustomerAuthRequestData
     /** @var \Ebizmarts\SagePaySuite\Model\Config */
     private $sagepayConfig;
 
-    public function __construct(Model\Config $sagepayConfig)
-    {
+    /** @var \Zend\Http\PhpEnvironment\Request */
+    private $request;
+
+    public function __construct(
+        Model\Config $sagepayConfig,
+        \Magento\Framework\HTTP\PhpEnvironment\Request $request
+    ) {
         $this->sagepayConfig = $sagepayConfig;
+        $this->request       = $request;
     }
 
     /**
      * Exclude Pi remote javascript files from being minified.
-     *
-     * Using the config node <minify_exclude> is not an option because it does
-     * not get merged but overridden by subsequent modules.
-     *
-     * It will change in Magento 2.3 and merge the values instead of overwriting them
-     * https://github.com/magento/magento2/pull/13687
-     *
-     * @see \Magento\Framework\View\Asset\Minification::XML_PATH_MINIFICATION_EXCLUDES
-     *
-     * @param Model\Config $subject
+
+     * @param \Ebizmarts\SagePaySuite\Model\PiRequest $subject
      * @param string[] $result
-     * @param string $contentType
      * @return string[]
      */
     public function afterGetRequestData($subject, array $result) : array
     {
+        /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequest $data */
+        $data = $subject->getRequest();
+
+        /** @var $subject \Ebizmarts\SagePaySuite\Model\PiRequest */
         $result['strongCustomerAuthentication'] = [
-            'browserJavascriptEnabled' => true,
-            'browserJavaEnabled' => '',
-            'browserColorDepth' => '',
-            'browserScreenHeight' => '',
-            'browserScreenWidth' => '',
-            'browserTZ' => '',
-            'browserAcceptHeader' => '',
-            'clientIPAddress' => '',
-            'browserLanguage' => '',
-            'browserUserAgent' => '',
+            'browserJavascriptEnabled' => 1,
+            'browserJavaEnabled' => $data->getJavaEnabled(),
+            'browserColorDepth' => $data->getColorDepth(),
+            'browserScreenHeight' => $data->getScreenHeight(),
+            'browserScreenWidth' => $data->getScreenWidth(),
+            'browserTZ' => $data->getTimezone(),
+            'browserAcceptHeader' => $this->request->getHeader('Accept'),
+            'clientIPAddress' => $this->request->getClientIp(),
+            'browserLanguage' => $data->getLanguage(),
+            'browserUserAgent' => $data->getUserAgent(),
             //'notificationURL' => '',
             'challengeWindowSize' => $this->sagepayConfig->getValue("challengewindowsize")
         ];
