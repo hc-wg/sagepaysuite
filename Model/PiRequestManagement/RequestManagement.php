@@ -89,6 +89,7 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
             ->setCardIdentifier($this->getRequestData()->getCardIdentifier())
             ->setVendorTxCode($this->getVendorTxCode())
             ->setIsMoto($this->getIsMotoTransaction())
+            ->setRequest($this->getRequestData())
             ->getRequestData();
     }
 
