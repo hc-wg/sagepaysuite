@@ -15,13 +15,6 @@
                 disabled="false"
         />
     </type>
-    <type name="\Ebizmarts\SagePaySuite\Model\PiRequestManagement">
-        <plugin name="strongCustomerAuthentication"
-                type="Ebizmarts\SagePaySuite\Plugin\StrongCustomerAuthFrontendRequestData"
-                sortOrder="1"
-                disabled="false"
-        />
-    </type>
     <!-- 3Dv2 -->
 
     <type name="Magento\Framework\View\Asset\Minification">
