@@ -184,4 +184,94 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     {
         $this->setData(self::USER_AGENT, $userAgent);
     }
+
+    /**
+     * @return int
+     */
+    public function getJavaEnabled(): int
+    {
+        return $this->_get(self::JAVA_ENABLED);
+    }
+
+    /**
+     * Boolean that represents the ability of the cardholder browser to execute Java.
+     * @param int $javaEnabled
+     * @return void
+     */
+    public function setJavaEnabled(int $javaEnabled): void
+    {
+        $this->setData(self::JAVA_ENABLED, $javaEnabled);
+    }
+
+    /**
+     * @return int
+     */
+    public function getColorDepth(): int
+    {
+        return $this->_get(self::COLOR_DEPTH);
+    }
+
+    /**
+     * Exact content of the HTTP user-agent header.
+     * @param int $colorDepth
+     * @return void
+     */
+    public function setColorDepth(int $colorDepth): void
+    {
+        $this->setData(self::COLOR_DEPTH, $colorDepth);
+    }
+
+    /**
+     * @return int
+     */
+    public function getScreenWidth(): int
+    {
+        return $this->_get(self::SCREEN_WIDTH);
+    }
+
+    /**
+     * Exact content of the HTTP user-agent header.
+     * @param int $screenWidth
+     * @return void
+     */
+    public function setScreenWidth(int $screenWidth): void
+    {
+        $this->setData(self::SCREEN_WIDTH, $screenWidth);
+    }
+
+    /**
+     * @return int
+     */
+    public function getScreenHeight(): int
+    {
+        return $this->_get(self::SCREEN_HEIGHT);
+    }
+
+    /**
+     * Exact content of the HTTP user-agent header.
+     * @param int $screenHeight
+     * @return void
+     */
+    public function setScreenHeight(int $screenHeight): void
+    {
+        $this->setData(self::SCREEN_HEIGHT, $screenHeight);
+    }
+
+    /**
+     * @return int
+     */
+    public function getTimezone(): int
+    {
+        return $this->_get(self::TIMEZONE);
+    }
+
+    /**
+     * Exact content of the HTTP user-agent header.
+     * @param int $timezone
+     * @return void
+     */
+    public function setTimezone(int $timezone): void
+    {
+        $this->setData(self::TIMEZONE, $timezone);
+    }
 }
