@@ -105,7 +105,19 @@ jobs:
 
     steps:
       - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
-      - run: sudo apt-get install -y libsodium-dev
+      - run:
+          name: Remove old libsodium and install latest (compiled)
+          command: |- 
+            sudo rm -f /usr/local/etc/php/conf.d/*sodium.ini 
+            sudo rm -f /usr/local/lib/php/extensions/*/*sodium.so 
+            sudo apt-get remove -y libsodium* 
+            sudo mkdir -p /tmp/libsodium 
+            wget https://github.com/jedisct1/libsodium/archive/1.0.18-RELEASE.tar.gz
+            sudo tar -xzf 1.0.18-RELEASE.tar.gz -C /tmp/libsodium 
+            cd /tmp/libsodium/libsodium-1.0.18-RELEASE/ && sudo ./configure && sudo make && sudo make check && sudo make install 
+            cd / && sudo rm -rf /tmp/libsodium 
+            sudo pecl install -o -f libsodium 
+            sudo docker-php-ext-enable sodium
 
       # Install dependencies
       - run:
