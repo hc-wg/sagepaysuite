@@ -145,11 +145,6 @@ class Config
     const BASKETFORMAT_XML      = 'xml';
     const BASKETFORMAT_DISABLED = 'Disabled';
 
-    /*
-     * Max tokens per customer
-     */
-    const MAX_TOKENS_PER_CUSTOMER = 3;
-
     /**
      * Current payment method code
      *
@@ -250,6 +245,16 @@ class Config
         $path = $this->getGlobalConfigPath($key);
 
         return $this->scopeConfig->getValue($path, $this->configurationScope, $resolvedConfigurationScopeId);
+    }
+
+    public function getAdvancedValue($key)
+    {
+        $config_value = $this->scopeConfig->getValue(
+            $this->getAdvancedConfigPath($key),
+            $this->configurationScope,
+            $this->configurationScopeId
+        );
+        return $config_value;
     }
 
     /**
@@ -705,5 +710,10 @@ class Config
             $this->configurationScopeId
         );
         return $config_value;
+    }
+
+    public function getMaxTokenPerCustomer()
+    {
+        return $this->getAdvancedValue("max_token");
     }
 }
