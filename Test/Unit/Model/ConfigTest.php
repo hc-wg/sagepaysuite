@@ -981,4 +981,21 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             $this->configModel->getInvoiceConfirmationNotification()
         );
     }
+
+    public function testGetMaxTokenPerCustomer()
+    {
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with(
+                'sagepaysuite/advanced/max_token',
+                ScopeInterface::SCOPE_STORE,
+                null
+            )
+            ->willReturn(3);
+
+        $this->assertEquals(
+            3,
+            $this->configModel->getMaxTokenPerCustomer()
+        );
+    }
 }
