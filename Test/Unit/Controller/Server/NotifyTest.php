@@ -924,7 +924,8 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
      * @param \Ebizmarts\SagePaySuite\Helper\Data $helperMock
      * @param OrderSender $orderSender
      */
-    private function controllerInstantiate() {
+    private function controllerInstantiate()
+    {
         $args = [
             'context'            => $this->context,
             'suiteLogger'        => $this->logger,
@@ -941,7 +942,8 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->serverNotifyController = $this->objectManagerHelper->getObject(Notify::class, $args);
     }
 
-    private function makeSuiteLogger() {
+    private function makeSuiteLogger()
+    {
         $this->logger = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
     }
 
@@ -950,7 +952,8 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->suiteHelper = $this->getMockBuilder(Data::class)->disableOriginalConstructor()->getMock();
     }
 
-    private function suiteHelperExpectsRemoveCurlyBraces($calls, $return = null) {
+    private function suiteHelperExpectsRemoveCurlyBraces($calls, $return = null)
+    {
         if ($calls === 0) {
             $this->suiteHelper->expects($this->never())->method("removeCurlyBraces");
         } else {
@@ -975,12 +978,14 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->quote->expects($this->any())->method('getId')->willReturn(self::QUOTE_ID);
     }
 
-    private function makeCartRepositoryWithFoundQuote($quoteId, $sharedStoreIds = []) {
+    private function makeCartRepositoryWithFoundQuote($quoteId, $sharedStoreIds = [])
+    {
         $this->cartRepository = $this->getMockBuilder(QuoteRepository::class)->disableOriginalConstructor()->getMock();
         $this->cartRepository->expects($this->once())->method('get')->with($quoteId, $sharedStoreIds)->willReturn($this->quote);
     }
 
-    private function makeCartRepositoryWithException($quoteId, $sharedStoreIds = []) {
+    private function makeCartRepositoryWithException($quoteId, $sharedStoreIds = [])
+    {
         $this->cartRepository = $this->getMockBuilder(QuoteRepository::class)->disableOriginalConstructor()->getMock();
         $this->cartRepository->expects($this->once())->method('get')->with($quoteId, $sharedStoreIds)->willThrowException(new NoSuchEntityException(__('Test quote not found.')));
     }
@@ -1045,7 +1050,8 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->order->expects($this->atLeastOnce())->method('getId')->will($this->returnValue($id));
     }
 
-    private function makeOrderFactoryMock($order = null) {
+    private function makeOrderFactoryMock($order = null)
+    {
         $this->orderFactory = $this->getMockBuilder(OrderFactory::class)
             ->disableOriginalConstructor()
             ->setMethods(['create'])
@@ -1056,21 +1062,25 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    private function makeOrderSender() {
+    private function makeOrderSender()
+    {
         $this->orderSender = $this->getMockBuilder(OrderSender::class)->disableOriginalConstructor()->getMock();
     }
 
-    private function makeUpdateOrderCallback() {
+    private function makeUpdateOrderCallback()
+    {
         $this->updateOrderCallback = $this->getMockBuilder(OrderUpdateOnCallback::class)
             ->disableOriginalConstructor()
             ->getMock();
     }
 
-    private function makeToken() {
+    private function makeToken()
+    {
         $this->token = $this->getMockBuilder(Token::class)->disableOriginalConstructor()->getMock();
     }
 
-    private function makeEncryptor() {
+    private function makeEncryptor()
+    {
         $this->encryptor = $this->getMockBuilder(EncryptorInterface::class)
             ->disableOriginalConstructor()->getMock();
         $this->encryptor->expects($this->once())->method('decrypt')
@@ -1088,15 +1098,18 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
             ->with($body);
     }
 
-    private function requestExpectsGetParam() {
+    private function requestExpectsGetParam()
+    {
         $this->request->expects($this->any())
             ->method('getParam')
             ->willReturnCallback(function ($param) {
-                if ($param === '_store')
+                if ($param === '_store') {
                     return self::STORE_ID;
+                }
 
-                if ($param === 'quoteid')
+                if ($param === 'quoteid') {
                     return self::ENC_QUOTE_ID;
+                }
 
                 return '';
             });

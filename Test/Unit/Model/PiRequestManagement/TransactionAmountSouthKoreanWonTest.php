@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\PiRequestManagement;
 
-
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountSouthKoreanWon;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPostSouthKoreanWon;
 
@@ -36,5 +35,4 @@ class TransactionAmountSouthKoreanWonTest extends \PHPUnit\Framework\TestCase
             [64731, 64731.10],
         ];
     }
-
 }

@@ -6,9 +6,9 @@
 
 namespace Ebizmarts\SagePaySuite\Helper;
 
-namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
-
 use \Ebizmarts\SagePaySuite\Model\Config\ModuleVersion;
+
+namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
 class DataTest extends \PHPUnit\Framework\TestCase
 {

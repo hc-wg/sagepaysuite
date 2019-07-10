@@ -48,8 +48,16 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
 
         $helperMock = $this->makeHelperMock();
 
-        $contextMock = $this->makeContextMock($responseMock, $redirectMock, $messageManagerMock, $requestMock,
-            $urlBuilderMock, $actionFlagMock, $sessionMock, $helperMock);
+        $contextMock = $this->makeContextMock(
+            $responseMock,
+            $redirectMock,
+            $messageManagerMock,
+            $requestMock,
+            $urlBuilderMock,
+            $actionFlagMock,
+            $sessionMock,
+            $helperMock
+        );
 
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
@@ -166,8 +174,16 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
 
         $helperMock = $this->makeHelperMock();
 
-        $contextMock = $this->makeContextMock($responseMock, $redirectMock, $messageManagerMock, $requestMock,
-            $urlBuilderMock, $actionFlagMock, $sessionMock, $helperMock);
+        $contextMock = $this->makeContextMock(
+            $responseMock,
+            $redirectMock,
+            $messageManagerMock,
+            $requestMock,
+            $urlBuilderMock,
+            $actionFlagMock,
+            $sessionMock,
+            $helperMock
+        );
 
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
@@ -333,8 +349,16 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
 
         $helperMock = $this->makeHelperMock();
 
-        $contextMock = $this->makeContextMock($responseMock, $redirectMock, $messageManagerMock, $requestMock,
-            $urlBuilderMock, $actionFlagMock, $sessionMock, $helperMock);
+        $contextMock = $this->makeContextMock(
+            $responseMock,
+            $redirectMock,
+            $messageManagerMock,
+            $requestMock,
+            $urlBuilderMock,
+            $actionFlagMock,
+            $sessionMock,
+            $helperMock
+        );
 
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
@@ -417,8 +441,14 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
      */
     private function makeResponseMock()
     {
-        $responseMock = $this->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '',
-                false)->disableOriginalConstructor()->getMock();
+        $responseMock = $this->getMockBuilder(
+            'Magento\Framework\App\Response\Http',
+            [],
+            [],
+            '',
+            false
+        )
+            ->disableOriginalConstructor()->getMock();
 
         return $responseMock;
     }

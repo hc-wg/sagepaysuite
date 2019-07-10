@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Commands;
 
-
 class CheckFraudCommandTest extends \PHPUnit\Framework\TestCase
 {
     public function testCheckFraud()
