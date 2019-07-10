@@ -71,9 +71,10 @@ jobs:
       - run: /home/circleci/magento2/phpunit-4.8.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
 
       # Run code checks
-      - run: composer create-project --repository=https://repo.magento.com magento/marketplace-eqp dev-master
-      - run: cd dev-master && vendor/bin/phpcs ../app/code/Ebizmarts/SagePaySuite/* --standard=MEQP2,PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
-        
+      - run: composer require --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard
+      - run: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
+      - run: vendor/bin/phpcs --standard=Magento2 app/code/Ebizmarts/* --standard=PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
+
   run_php56:
     docker:
       - image: circleci/php:5.6-apache-node
@@ -145,8 +146,9 @@ jobs:
       - run: /home/circleci/magento2/phpunit-4.8.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
 
       # Run code checks
-      - run: composer create-project --repository=https://repo.magento.com magento/marketplace-eqp dev-master
-      - run: cd dev-master && vendor/bin/phpcs ../app/code/Ebizmarts/SagePaySuite/* --standard=MEQP2,PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
+      - run: composer require --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard
+      - run: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
+      - run: vendor/bin/phpcs --standard=Magento2 app/code/Ebizmarts/* --standard=PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
 
 workflows:
   version: 2
