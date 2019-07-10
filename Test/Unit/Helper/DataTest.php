@@ -4,8 +4,6 @@
  * See LICENSE.txt for license details.
  */
 
-namespace Ebizmarts\SagePaySuite\Helper;
-
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
 use \Ebizmarts\SagePaySuite\Model\Config\ModuleVersion;

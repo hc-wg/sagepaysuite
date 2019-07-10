@@ -191,7 +191,6 @@ class MotoManagement extends RequestManagement
             $transaction->setIsClosed($closed);
             $transaction->save();
         }
-
     }
 
     /**

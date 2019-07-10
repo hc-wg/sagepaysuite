@@ -38,7 +38,8 @@ class Uninstall implements UninstallInterface
         $setup->endSetup();
     }
 
-    private function allowNullTransactionId(SchemaSetupInterface $setup) {
+    private function allowNullTransactionId(SchemaSetupInterface $setup)
+    {
         $this->connectionProvider
             ->getSalesConnection($setup)
             ->modifyColumn(
@@ -48,11 +49,13 @@ class Uninstall implements UninstallInterface
             );
     }
 
-    private function dropSagePayTokensTable(SchemaSetupInterface $setup) {
+    private function dropSagePayTokensTable(SchemaSetupInterface $setup)
+    {
         $setup->getConnection()->dropTable($setup->getTable('sagepaysuite_token'));
     }
 
-    private function removeFraudCheckColumn(SchemaSetupInterface $setup) {
+    private function removeFraudCheckColumn(SchemaSetupInterface $setup)
+    {
         $this->connectionProvider
             ->getSalesConnection($setup)
             ->dropColumn(

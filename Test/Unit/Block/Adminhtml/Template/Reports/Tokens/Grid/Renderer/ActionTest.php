@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Block\Adminhtml\Template\Reports\Toke
 
 use Magento\Framework\DataObject;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+
 class ActionTest extends \PHPUnit\Framework\TestCase
 {
     /**
