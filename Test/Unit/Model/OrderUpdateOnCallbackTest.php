@@ -284,6 +284,5 @@ class OrderUpdateOnCallbackTest extends \PHPUnit_Framework_TestCase
         $sut->setOrder($orderMock);
 
         $sut->confirmPayment("test-transaction-id");
-
     }
 }

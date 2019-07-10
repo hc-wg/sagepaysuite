@@ -68,5 +68,4 @@ class Rules extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
 
         return $return;
     }
-
 }

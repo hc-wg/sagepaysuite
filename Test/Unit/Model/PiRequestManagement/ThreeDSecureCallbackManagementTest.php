@@ -13,7 +13,6 @@ use Magento\Sales\Model\ResourceModel\Order\Invoice\Collection;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Ebizmarts\SagePaySuite\Model\Config;
 
-
 class ThreeDSecureCallbackManagementTest extends \PHPUnit_Framework_TestCase
 {
     /** @var InvoiceSender|\PHPUnit_Framework_MockObject_MockObject */
@@ -249,5 +248,4 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit_Framework_TestCase
 
         return $model;
     }
-
 }

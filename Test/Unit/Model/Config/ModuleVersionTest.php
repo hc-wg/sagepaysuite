@@ -159,7 +159,7 @@ class ModuleVersionTest extends \PHPUnit_Framework_TestCase
                     new \Magento\Framework\Phrase(
                         'No such file or directory'
                     )
-            )
+                )
             );
 
         $readFactoryMock = $this->makeReadFactoryMock($readMock);

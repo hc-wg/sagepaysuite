@@ -28,15 +28,15 @@ class ExcludeFilesFromMinificationTest extends \PHPUnit_Framework_TestCase
     public function pluginDataprovider()
     {
         return [
-            ['js', ['api/v1/js/sagepay'], function($contentType) {
+            ['js', ['api/v1/js/sagepay'], function ($contentType) {
                 $this->assertEquals('js', $contentType);
                 return [];
             }],
-            ['css', ['test'], function($contentType) {
+            ['css', ['test'], function ($contentType) {
                 $this->assertEquals('css', $contentType);
                 return ['test'];
             }],
-            ['js', ['/tiny_mce/', 'api/v1/js/sagepay'], function($contentType) {
+            ['js', ['/tiny_mce/', 'api/v1/js/sagepay'], function ($contentType) {
                 $this->assertEquals('js', $contentType);
                 return ['/tiny_mce/'];
             }],
@@ -64,5 +64,4 @@ class ExcludeFilesFromMinificationTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('preventPiRemoteJsMinification', $pluginNodeAttributes['name']);
         $this->assertEquals('Ebizmarts\SagePaySuite\Plugin\ExcludeFilesFromMinification', $pluginNodeAttributes['type']);
     }
-
 }
