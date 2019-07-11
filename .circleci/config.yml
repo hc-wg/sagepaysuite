@@ -24,6 +24,7 @@ jobs:
       - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
 
       # Install dependencies
+      - run: sudo apt-get update
       - run:
          name: Install libraries
          command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
@@ -96,9 +97,10 @@ jobs:
     working_directory: ~/magento2
 
     steps:
-      - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
+      - run: sudo sh -c 'echo "memory_limit = 2G" > /usr/local/etc/php/conf.d/memory.ini'
 
       # Install dependencies
+      - run: sudo apt-get update
       - run:
          name: Install libraries
          command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
