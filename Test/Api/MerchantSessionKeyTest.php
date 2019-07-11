@@ -44,5 +44,4 @@ class MerchantSessionKeyTest extends WebapiAbstract
         $this->assertArrayHasKey('response', $response);
         $this->assertRegExp(self::VALID_MERCHANT_SESSION_KEY, $response['response']);
     }
-
 }

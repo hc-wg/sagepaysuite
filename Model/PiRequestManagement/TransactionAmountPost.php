@@ -30,5 +30,4 @@ class TransactionAmountPost
 
         return $this->commands[$condition];
     }
-
 }

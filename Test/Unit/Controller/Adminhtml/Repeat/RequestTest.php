@@ -248,8 +248,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             ->expects($this->exactly($actionTransactionMock))
             ->method('create')
             ->willReturn(
-            new ClosedForAction($paymentAction)
-        );
+                new ClosedForAction($paymentAction)
+            );
 
         $transactionMock = $this->getMockBuilder(Transaction::class)
             ->disableOriginalConstructor()

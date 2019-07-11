@@ -211,8 +211,14 @@ class FailureTest extends \PHPUnit\Framework\TestCase
      */
     private function makeResponseMock(): \PHPUnit_Framework_MockObject_MockObject
     {
-        $responseMock = $this->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '',
-                false)->disableOriginalConstructor()->getMock();
+        $responseMock = $this->getMockBuilder(
+            'Magento\Framework\App\Response\Http',
+            [],
+            [],
+            '',
+            false
+        )
+            ->disableOriginalConstructor()->getMock();
 
         return $responseMock;
     }

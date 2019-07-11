@@ -726,8 +726,14 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
 
     private function makeResponseMock()
     {
-        $this->responseMock = $this->getMockBuilder('Magento\Framework\App\Response\Http', [], [], '',
-                false)->disableOriginalConstructor()->getMock();
+        $this->responseMock = $this->getMockBuilder(
+            'Magento\Framework\App\Response\Http',
+            [],
+            [],
+            '',
+            false
+        )
+            ->disableOriginalConstructor()->getMock();
     }
 
     private function makeRequestMock()

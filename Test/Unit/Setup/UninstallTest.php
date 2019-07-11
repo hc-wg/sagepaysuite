@@ -2,7 +2,6 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Setup;
 
-
 use Ebizmarts\SagePaySuite\Setup\Uninstall;
 use Ebizmarts\SagePaySuite\Setup\SplitDatabaseConnectionProvider;
 use Magento\Framework\Setup\ModuleContextInterface;
@@ -26,7 +25,8 @@ class UninstallTest extends \PHPUnit\Framework\TestCase
     /** @var AdapterInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $connection;
 
-    public function setUp() {
+    public function setUp()
+    {
         $this->connectionProvider = $this->getMockBuilder(SplitDatabaseConnectionProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -46,7 +46,8 @@ class UninstallTest extends \PHPUnit\Framework\TestCase
         $this->uninstall = new Uninstall($this->connectionProvider);
     }
 
-    public function testUninstall() {
+    public function testUninstall()
+    {
         $this->connectionProvider->expects($this->exactly(2))->method('getSalesConnection')->willReturn($this->connection);
         $this->setup->expects($this->once())->method('getConnection')->willReturn($this->connection);
 
@@ -58,23 +59,27 @@ class UninstallTest extends \PHPUnit\Framework\TestCase
         $this->uninstall->uninstall($this->setup, $this->context);
     }
 
-    private function connectionExpectsModifyColumn() {
+    private function connectionExpectsModifyColumn()
+    {
         $this->connection->expects($this->once())
             ->method('modifyColumn')
             ->with('sales_order_payment', 'last_trans_id', ['nullable' => true]);
     }
 
-    private function connectionExpectsDropColumn() {
+    private function connectionExpectsDropColumn()
+    {
         $this->connection->expects($this->once())
             ->method('dropColumn')
             ->with('sales_payment_transaction', 'sagepaysuite_fraud_check');
     }
 
-    private function connectionExpectsDropTable() {
+    private function connectionExpectsDropTable()
+    {
         $this->connection->expects($this->once())->method('dropTable')->with('sagepaysuite_token');
     }
 
-    private function setupExpectsGetTable() {
+    private function setupExpectsGetTable()
+    {
         $this->setup->expects($this->exactly(3))->method('getTable')->willReturnCallback(function ($table) {
             return $table;
         });
