@@ -135,7 +135,7 @@ class Shared implements PaymentOperations
         if ($txStateId == PaymentOperations::DEFERRED_AWAITING_RELEASE) {
             $result = $this->releaseTransaction($vpsTxId, $amount, $order);
         } else {
-            if($txStateId == PaymentOperations::SUCCESSFULLY_AUTHORISED) {
+            if ($txStateId == PaymentOperations::SUCCESSFULLY_AUTHORISED) {
                 $data = [];
                 $data['VendorTxCode'] = $this->suiteHelper->generateVendorTxCode("", Config::ACTION_REPEAT);
                 $data['Description']  = "REPEAT deferred transaction from Magento.";

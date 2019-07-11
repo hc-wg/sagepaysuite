@@ -36,14 +36,14 @@ class InstallSchema implements InstallSchemaInterface
             ->connectionProvider
             ->getSalesConnection($setup)
             ->modifyColumn(
-            $tableName,
-            "last_trans_id",
-            [
+                $tableName,
+                "last_trans_id",
+                [
                 'type' => Table::TYPE_TEXT,
                 'length' => 100,
                 'nullable' => false
-            ]
-        );
+                ]
+            );
 
         $installer->endSetup();
     }

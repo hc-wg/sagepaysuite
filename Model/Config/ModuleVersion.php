@@ -27,7 +27,8 @@ class ModuleVersion
      */
     private $readFactory;
 
-    public function __construct(ComponentRegistrarInterface $componentRegistrar, ReadFactory $readFactory) {
+    public function __construct(ComponentRegistrarInterface $componentRegistrar, ReadFactory $readFactory)
+    {
         $this->componentRegistrar = $componentRegistrar;
         $this->readFactory = $readFactory;
     }
@@ -47,9 +48,9 @@ class ModuleVersion
             $path = $this->componentRegistrar->getPath(ComponentRegistrar::MODULE, $moduleName);
             $directoryRead = $this->readFactory->create($path);
             $composerJsonData = $directoryRead->readFile(self::COMPOSER_FILE_NAME);
-        } catch(\LogicException $pathException) {
+        } catch (\LogicException $pathException) {
             return $emptyVersionNumber;
-        } catch(FileSystemException $fsException) {
+        } catch (FileSystemException $fsException) {
             return $emptyVersionNumber;
         }
 
@@ -60,5 +61,4 @@ class ModuleVersion
 
         return $jsonData->version ?? $emptyVersionNumber;
     }
-
 }

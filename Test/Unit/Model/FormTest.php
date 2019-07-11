@@ -410,7 +410,8 @@ class FormTest extends \PHPUnit\Framework\TestCase
                     'resource' => null,
                     'resourceCollection' => null,
                     'data' => [],
-                ])
+                ]
+            )
             ->setMethodsExcept(['refund'])
             ->getMock();
 
@@ -447,7 +448,8 @@ class FormTest extends \PHPUnit\Framework\TestCase
                     'resource' => null,
                     'resourceCollection' => null,
                     'data' => [],
-                ])
+                ]
+            )
             ->setMethodsExcept(['refund'])
             ->getMock();
 
