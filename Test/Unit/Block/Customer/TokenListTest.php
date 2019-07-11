@@ -96,7 +96,7 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
     private function makeConfigMock()
     {
         $configMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -137,5 +137,16 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
             ->setMethods(["getUrl"])->disableOriginalConstructor()->getMock();
 
         return $urlBuilderMock;
+    }
+
+    public function testGetMaxTokenPerCustomer()
+    {
+        $configMock = $this->makeConfigMock();
+        $configMock
+            ->expects($this->once())
+            ->method("getMaxTokenPerCustomer")
+            ->willReturn(3);
+
+        $this->assertEquals(3, $configMock->getMaxTokenPerCustomer());
     }
 }
