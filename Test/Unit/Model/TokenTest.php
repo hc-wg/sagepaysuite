@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use Ebizmarts\SagePaySuite\Model\Config;
+
 class TokenTest extends \PHPUnit_Framework_TestCase
 {
     private $objectManagerHelper;
