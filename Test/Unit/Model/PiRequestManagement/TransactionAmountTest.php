@@ -20,5 +20,4 @@ class TransactionAmountTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(TransactionAmountJapaneseYen::class, $amountObject->getCommand('JPY'));
         $this->assertInstanceOf(TransactionAmountDefaultPi::class, $amountObject->getCommand('GBP'));
     }
-
 }

@@ -1191,7 +1191,8 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         );
 
         $this->pirestApiModel->refund(
-            "R000000122-2016-12-22-1423481482416628", self::TEST_VPS_TX_ID,
+            "R000000122-2016-12-22-1423481482416628",
+            self::TEST_VPS_TX_ID,
             10800,
             "GBP",
             "Magento backend refund."

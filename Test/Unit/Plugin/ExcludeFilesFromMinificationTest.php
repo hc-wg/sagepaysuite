@@ -55,5 +55,4 @@ class ExcludeFilesFromMinificationTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('preventPiRemoteJsMinification', $pluginNodeAttributes['name']);
         $this->assertEquals('Ebizmarts\SagePaySuite\Plugin\ExcludeFilesFromMinification', $pluginNodeAttributes['type']);
     }
-
 }

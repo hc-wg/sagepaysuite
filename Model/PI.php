@@ -298,7 +298,6 @@ class PI extends \Magento\Payment\Model\Method\Cc
             } else {
                 $this->pirestapi->void($transactionId);
             }
-
         } catch (ApiException $apiException) {
             if ($this->exceptionCodeIsInvalidTransactionState($apiException)) {
                 //unable to void transaction

@@ -453,5 +453,4 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
                 ['BankAuthCode', '999777']
             );
     }
-
 }

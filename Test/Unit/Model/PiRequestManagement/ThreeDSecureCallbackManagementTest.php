@@ -62,8 +62,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $cntSetDataToAll,
         $invoiceConfirmationSender,
         $cntInvoiceCollection
-    )
-    {
+    ) {
         $objectManagerHelper = new ObjectManager($this);
 
         $checkoutHelperMock = $this->getMockBuilder("Ebizmarts\SagePaySuite\Helper\Checkout")
@@ -328,5 +327,4 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
 
         return $model;
     }
-
 }

@@ -380,8 +380,7 @@ class PIRest
      * @param $description
      * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
      */
-    public function repeat
-    (
+    public function repeat(
         string $vendorTxCode,
         string $refTransactionId,
         string $currency,

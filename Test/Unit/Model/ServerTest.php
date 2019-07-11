@@ -203,7 +203,7 @@ class ServerTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sharedApiMock = $this
-            ->getMockBuilder( '\Ebizmarts\SagePaySuite\Model\Api\Shared')
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Api\Shared')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -255,7 +255,7 @@ class ServerTest extends \PHPUnit\Framework\TestCase
             ->getMock();
 
         $sharedApiMock = $this
-            ->getMockBuilder( '\Ebizmarts\SagePaySuite\Model\Api\Shared')
+            ->getMockBuilder('\Ebizmarts\SagePaySuite\Model\Api\Shared')
             ->disableOriginalConstructor()
             ->getMock();
 

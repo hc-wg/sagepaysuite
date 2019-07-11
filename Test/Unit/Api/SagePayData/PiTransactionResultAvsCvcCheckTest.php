@@ -26,5 +26,4 @@ class PiTransactionResultAvsCvcCheckTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('OkAddress', $sut->getAddress());
         $this->assertEquals('Approved', $sut->getStatus());
     }
-
 }

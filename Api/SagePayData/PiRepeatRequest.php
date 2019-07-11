@@ -117,5 +117,4 @@ class PiRepeatRequest extends AbstractExtensibleObject implements PiRepeatReques
     {
         $this->setData(self::DESCRIPTION, $description);
     }
-
 }
