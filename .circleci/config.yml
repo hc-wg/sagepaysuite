@@ -30,6 +30,7 @@ jobs:
       - run: cd libsodium-1.0.18/ && sudo make install
 
       # Install dependencies
+      - run: sudo apt-get update
       - run:
          name: Install libraries
          command: sudo -E apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
@@ -121,6 +122,7 @@ jobs:
             sudo docker-php-ext-enable sodium
 
       # Install dependencies
+      - run: sudo apt-get update
       - run:
          name: Install libraries
          command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
