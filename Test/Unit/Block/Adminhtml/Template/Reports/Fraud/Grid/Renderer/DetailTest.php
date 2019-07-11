@@ -67,7 +67,8 @@ class DetailTest extends \PHPUnit\Framework\TestCase
             ->getMock();
 
         return $objectManagerHelper
-            ->getObject(\Ebizmarts\SagePaySuite\Helper\AdditionalInformation::class,
+            ->getObject(
+                \Ebizmarts\SagePaySuite\Helper\AdditionalInformation::class,
                 [
                     'serializer' => $serializerMock,
                     'logger' => $loggerMock

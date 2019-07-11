@@ -117,14 +117,12 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         $payResult = $this->pay();
 
         if ($payResult->getStatus() !== null) {
-
             $transactionDetailsResult = $this->retrieveTransactionDetails();
 
             $this->confirmPayment($transactionDetailsResult);
 
             //remove order pre-saved flag from checkout
             $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
-
         } else {
             $this->getResult()->setErrorMessage("Invalid 3D secure authentication.");
         }

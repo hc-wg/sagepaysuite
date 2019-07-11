@@ -23,7 +23,14 @@ jobs:
     steps:
       - run: sudo -E sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
 
+      - run: wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.18.tar.gz
+      - run: tar xvzf libsodium-1.0.18.tar.gz
+      - run: cd libsodium-1.0.18/ && ./configure
+      - run: cd libsodium-1.0.18/ && make && make check
+      - run: cd libsodium-1.0.18/ && sudo make install
+
       # Install dependencies
+      - run: sudo apt-get update
       - run:
          name: Install libraries
          command: sudo -E apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
@@ -49,7 +56,7 @@ jobs:
       - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
 
       # Install Magento
-      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.1_sample_data.tar.gz && tar xzf Magento-EE-2.3.1_sample_data.tar.gz
+      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.2_sample_data.tar.gz && tar xzf Magento-EE-2.3.2_sample_data.tar.gz
       - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
       - run: chmod +x bin/magento
       - run: composer install --prefer-source --no-interaction
@@ -74,8 +81,9 @@ jobs:
       #- run: /home/circleci/magento2/phpunit-6.2.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
 
       # Run code checks
-      - run: composer create-project --repository=https://repo.magento.com magento/marketplace-eqp 2.0.1
-      - run: cd 2.0.1 && vendor/bin/phpcs ../app/code/Ebizmarts/SagePaySuite/* --standard=MEQP2,PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
+      - run: composer require --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard
+      - run: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
+      - run: vendor/bin/phpcs --standard=Magento2 app/code/Ebizmarts/* --standard=PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
 
   run_php72:
     docker:
@@ -99,8 +107,22 @@ jobs:
 
     steps:
       - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
+      - run:
+          name: Remove old libsodium and install latest (compiled)
+          command: |- 
+            sudo rm -f /usr/local/etc/php/conf.d/*sodium.ini 
+            sudo rm -f /usr/local/lib/php/extensions/*/*sodium.so 
+            sudo apt-get remove -y libsodium* 
+            sudo mkdir -p /tmp/libsodium 
+            wget https://github.com/jedisct1/libsodium/archive/1.0.18-RELEASE.tar.gz
+            sudo tar -xzf 1.0.18-RELEASE.tar.gz -C /tmp/libsodium 
+            cd /tmp/libsodium/libsodium-1.0.18-RELEASE/ && sudo ./configure && sudo make && sudo make check && sudo make install 
+            cd / && sudo rm -rf /tmp/libsodium 
+            sudo pecl install -o -f libsodium 
+            sudo docker-php-ext-enable sodium
 
       # Install dependencies
+      - run: sudo apt-get update
       - run:
          name: Install libraries
          command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
@@ -111,7 +133,7 @@ jobs:
 
       - run:
          name: Install PHP extensions
-         command: sudo docker-php-ext-install bcmath gd intl opcache pdo_mysql soap xsl zip
+         command: sudo docker-php-ext-install sodium bcmath gd intl opcache pdo_mysql soap xsl zip
 
       - run: sudo apt-get install -y mysql-client
 
@@ -126,7 +148,7 @@ jobs:
       - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
 
       # Install Magento
-      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.1_sample_data.tar.gz && tar xzf Magento-EE-2.3.1_sample_data.tar.gz
+      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.2_sample_data.tar.gz && tar xzf Magento-EE-2.3.2_sample_data.tar.gz
       - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
       - run: chmod +x bin/magento
       - run: composer install --prefer-source --no-interaction
@@ -151,8 +173,9 @@ jobs:
       #- run: /home/circleci/magento2/phpunit-6.2.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
 
       # Run code checks
-      - run: composer create-project --repository=https://repo.magento.com magento/marketplace-eqp 2.0.1
-      - run: cd 2.0.1 && vendor/bin/phpcs ../app/code/Ebizmarts/SagePaySuite/* --standard=MEQP2,PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
+      - run: composer require --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard
+      - run: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
+      - run: vendor/bin/phpcs --standard=Magento2 app/code/Ebizmarts/* --standard=PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
 
 workflows:
   version: 2

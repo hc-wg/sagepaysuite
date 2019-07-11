@@ -224,7 +224,8 @@ class PITest extends \PHPUnit\Framework\TestCase
 
         $transactionAmountFactoryMock = $this
             ->getMockBuilder(
-            'Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory')
+                'Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory'
+            )
             ->disableOriginalConstructor()
             ->getMock();
         $transactionAmountFactoryMock
@@ -852,8 +853,8 @@ class PITest extends \PHPUnit\Framework\TestCase
         $scopeConfigMock->expects($this->exactly(2))
             ->method('getValue')
             ->withConsecutive(
-                    ['payment/sagepaysuitepi/allowspecific', 'store'],
-                    ['payment/sagepaysuitepi/specificcountry', 'store']
+                ['payment/sagepaysuitepi/allowspecific', 'store'],
+                ['payment/sagepaysuitepi/specificcountry', 'store']
             )
             ->willReturnOnConsecutiveCalls('1', 'US');
 
@@ -935,8 +936,8 @@ class PITest extends \PHPUnit\Framework\TestCase
         $scopeConfigMock->expects($this->exactly(2))
             ->method('getValue')
             ->withConsecutive(
-                    ['payment/sagepaysuitepi/allowspecific', 'store'],
-                    ['payment/sagepaysuitepi/specificcountry', 'store']
+                ['payment/sagepaysuitepi/allowspecific', 'store'],
+                ['payment/sagepaysuitepi/specificcountry', 'store']
             )
             ->willReturnOnConsecutiveCalls('1', 'UK');
 

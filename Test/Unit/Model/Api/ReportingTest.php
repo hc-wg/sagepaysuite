@@ -98,8 +98,10 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
         $httpTextFactory = $this->createMock('\Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory');
         $httpTextFactory->expects($this->once())->method('create')->willReturn($httpTextMock);
 
-        $apiException = new ApiException(new Phrase("INVALID STATUS"),
-            new LocalizedException(new Phrase("INVALID STATUS")));
+        $apiException = new ApiException(
+            new Phrase("INVALID STATUS"),
+            new LocalizedException(new Phrase("INVALID STATUS"))
+        );
 
         $this->apiExceptionFactoryMock->expects($this->once())->method('create')->with([
                 'phrase' => new Phrase("INVALID STATUS"),

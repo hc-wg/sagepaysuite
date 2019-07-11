@@ -18,7 +18,7 @@
     <div class="message info empty"><span><?php /* @escapeNotVerified */ echo __('You are currently using all your credit card token slots.'); ?></span></div>
 <?php } ?>
 
-<?php if (count($_items)): ?>
+<?php if (count($_items)) : ?>
     <div class="table-wrapper sagepaysuite-tokens">
         <table id="my-sagepaysuite-tokens-table" class="data table sagepaysuite-tokens-table">
             <caption class="table-caption"><?php /* @escapeNotVerified */ echo __('Saved Credit Cards') ?></caption>
@@ -30,7 +30,7 @@
                 </tr>
             </thead>
             <tbody>
-            <?php foreach ($_items as $_item): ?>
+            <?php foreach ($_items as $_item) : ?>
                 <tr>
                     <td data-th="<?php echo $block->escapeHtml(__('CC Last 4 Digits')) ?>" class="col cc_last_4">
                         <?php /* @escapeNotVerified */ echo __(ucfirst($_item['cc_last_4'])) ?>
@@ -51,7 +51,7 @@
             </tbody>
         </table>
     </div>
-<?php else: ?>
+<?php else : ?>
     <div class="message info empty"><span><?php /* @escapeNotVerified */ echo __('You have not saved any credit card tokens yet.'); ?></span></div>
 <?php endif; ?>
 
