@@ -294,7 +294,7 @@ class TokenTest extends \PHPUnit\Framework\TestCase
     {
         $usingMaxToken = true;
 
-        if($this->configMock->getMaxTokenPerCustomer() > 1) {
+        if ($this->configMock->getMaxTokenPerCustomer() > 1) {
             $usingMaxToken = false;
         }
 
