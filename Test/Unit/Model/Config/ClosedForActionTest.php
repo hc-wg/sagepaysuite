@@ -2,7 +2,6 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Config;
 
-
 class ClosedForActionTest extends \PHPUnit_Framework_TestCase
 {
 
@@ -34,5 +33,4 @@ class ClosedForActionTest extends \PHPUnit_Framework_TestCase
             ['REPEAT', 'capture', true],
         ];
     }
-
 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
+
 use Magento\Framework\Encryption\EncryptorInterface;
 
 class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase

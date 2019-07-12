@@ -272,7 +272,6 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
             } else {
                 $this->sharedApi->voidTransaction($transactionId, $order);
             }
-
         } catch (ApiException $apiException) {
             if ($this->exceptionCodeIsInvalidTransactionState($apiException)) {
                 //unable to void transaction

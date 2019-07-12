@@ -217,11 +217,13 @@ class GenerateMerchantKeyTest extends \PHPUnit_Framework_TestCase
     private function makePiGenerateMerchantKeyController($contextMock, $piServiceMock)
     {
         $objectManagerHelper             = new ObjectManagerHelper($this);
-        $piGenerateMerchantKeyController = $objectManagerHelper->getObject('Ebizmarts\SagePaySuite\Controller\Adminhtml\PI\GenerateMerchantKey',
+        $piGenerateMerchantKeyController = $objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\Adminhtml\PI\GenerateMerchantKey',
             [
                 'context' => $contextMock,
                 'piMsk'   => $piServiceMock
-            ]);
+            ]
+        );
 
         return $piGenerateMerchantKeyController;
     }

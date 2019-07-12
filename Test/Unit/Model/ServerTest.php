@@ -203,7 +203,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sharedApiMock = $this
-            ->getMockBuilder( Shared::class)
+            ->getMockBuilder(Shared::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -255,7 +255,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $sharedApiMock = $this
-            ->getMockBuilder( Shared::class)
+            ->getMockBuilder(Shared::class)
             ->disableOriginalConstructor()
             ->getMock();
 
