@@ -171,7 +171,7 @@ class TokenListTest extends \PHPUnit_Framework_TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function makeCurrentCustomerMock(): \PHPUnit_Framework_MockObject_MockObject
+    private function makeCurrentCustomerMock()
     {
         $currentCustomerMock = $this->getMockBuilder('Magento\Customer\Helper\Session\CurrentCustomer')
             ->setMethods(["getCustomerId"])->disableOriginalConstructor()->getMock();
