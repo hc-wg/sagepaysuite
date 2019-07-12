@@ -30,7 +30,7 @@ $dropInEnabled = $_config->dropInEnabled();
 
     <span id="<?php /* @noEscape */ echo $_code ?>-payment-errors" class="message error" style="display: none;"></span>
 
-    <?php if($dropInEnabled): ?>
+    <?php if ($dropInEnabled) : ?>
         <div id="sp-container"></div>
         <div id="submit-container">
             <div class="actions-toolbar">
@@ -46,7 +46,7 @@ $dropInEnabled = $_config->dropInEnabled();
                 <p id="dropin_start_lbl"><?php echo ('Please click on Submit Order to load the secure credit card form.'); ?></p>
             </div>
         </div>
-    <?php else: ?>
+    <?php else : ?>
         <fieldset class="admin__fieldset">
             <div class="admin__field">
                 <label class="label admin__field-label" for="<?php echo $_code ?>_cardholder"><?php echo __('Card Holder Name') ?><span class="required">*</span></label>
@@ -69,21 +69,25 @@ $dropInEnabled = $_config->dropInEnabled();
                 <div class="admin__field-control control">
                     <select data-validate='{"required":true}' id="<?php echo $_code ?>_expiration" class="required-entry month validate-cc-exp required-entry _required select admin__control-select">
                         <?php $_ccExpMonth = $block->getInfoData('cc_exp_month') ?>
-                        <?php foreach ($block->getCcMonths() as $k=>$v): ?>
-                            <option value="<?php echo $k?$k:'' ?>"<?php if($k==$_ccExpMonth): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+                        <?php foreach ($block->getCcMonths() as $k => $v) : ?>
+                            <option value="<?php echo $k?$k:'' ?>"<?php if ($k==$_ccExpMonth) :
+                                ?> selected="selected"<?php
+                                           endif ?>><?php echo $v ?></option>
                         <?php endforeach ?>
                     </select>
                     <?php $_ccExpYear = $block->getInfoData('cc_exp_year') ?>
                     <select data-validate='{"required-entry":true}' id="<?php echo $_code ?>_expiration_yr" class="year required-entry _required select admin__control-select">
-                        <?php foreach ($block->getCcYears() as $k=>$v): ?>
-                            <option value="<?php echo $k?$k:'' ?>"<?php if($k==$_ccExpYear): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+                        <?php foreach ($block->getCcYears() as $k => $v) : ?>
+                            <option value="<?php echo $k?$k:'' ?>"<?php if ($k==$_ccExpYear) :
+                                ?> selected="selected"<?php
+                                           endif ?>><?php echo $v ?></option>
                         <?php endforeach ?>
                     </select>
                 </div>
             </div>
         </fieldset>
 
-        <?php if($block->hasVerification()): ?>
+        <?php if ($block->hasVerification()) : ?>
             <fieldset class="admin__fieldset hide_if_token_selected">
                 <div id="<?php echo $_code ?>_cc_type_cvv_div" class="admin__field">
                     <label class="label admin__field-label" for="<?php echo $_code ?>_cc_cid" ><?php echo __('Card Verification Number') ?><span class="required">*</span></label>

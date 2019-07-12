@@ -45,13 +45,13 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 ->getSalesConnection($setup)
                 ->addColumn(
                     $setup->getTable('sales_payment_transaction'),
-                "sagepaysuite_fraud_check",
-                [
+                    "sagepaysuite_fraud_check",
+                    [
                     'type' => Table::TYPE_BOOLEAN,
                     'nullable' => false,
                     'comment' => 'Sage Pay Fraud Check Flag'
-                ]
-            );
+                    ]
+                );
         }
 
         $installer->endSetup();
@@ -72,24 +72,63 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 ['nullable' => false, 'primary' => true, 'auto_increment' => true],
                 'Token Id'
             )
-            ->addColumn('customer_id', Table::TYPE_INTEGER, null,
-                ['unsigned' => true, 'nullable' => false], 'Customer Id')
-            ->addColumn('token', Table::TYPE_TEXT, 150,
-                ['nullable' => false], 'Token')
-            ->addColumn('cc_last_4', Table::TYPE_TEXT, 100, [],
-                'Cc Last 4')
+            ->addColumn(
+                'customer_id',
+                Table::TYPE_INTEGER,
+                null,
+                ['unsigned' => true, 'nullable' => false],
+                'Customer Id'
+            )
+            ->addColumn(
+                'token',
+                Table::TYPE_TEXT,
+                150,
+                ['nullable' => false],
+                'Token'
+            )
+            ->addColumn(
+                'cc_last_4',
+                Table::TYPE_TEXT,
+                100,
+                [],
+                'Cc Last 4'
+            )
             ->addColumn('cc_exp_month', Table::TYPE_TEXT, 12, [], 'Cc Exp Month')
-            ->addColumn('cc_type',
-                Table::TYPE_TEXT, 32, [], 'Cc Type')
-            ->addColumn('cc_exp_year', Table::TYPE_TEXT, 4, [],
-                'Cc Exp Year')
-            ->addColumn('vendorname', Table::TYPE_TEXT, 100, [],
-                'Vendorname')
-            ->addColumn('created_at', Table::TYPE_TIMESTAMP, null,
-                ['nullable' => false, 'default' => Table::TIMESTAMP_INIT], 'Created At')
-            ->addColumn('store_id',
-                Table::TYPE_SMALLINT, null, ['unsigned' => true],
-                'Store Id')
+            ->addColumn(
+                'cc_type',
+                Table::TYPE_TEXT,
+                32,
+                [],
+                'Cc Type'
+            )
+            ->addColumn(
+                'cc_exp_year',
+                Table::TYPE_TEXT,
+                4,
+                [],
+                'Cc Exp Year'
+            )
+            ->addColumn(
+                'vendorname',
+                Table::TYPE_TEXT,
+                100,
+                [],
+                'Vendorname'
+            )
+            ->addColumn(
+                'created_at',
+                Table::TYPE_TIMESTAMP,
+                null,
+                ['nullable' => false, 'default' => Table::TIMESTAMP_INIT],
+                'Created At'
+            )
+            ->addColumn(
+                'store_id',
+                Table::TYPE_SMALLINT,
+                null,
+                ['unsigned' => true],
+                'Store Id'
+            )
             ->addIndex($installer->getIdxName('sagepaysuite_token', ['customer_id']), ['customer_id']);
 
         $installer->getConnection()->createTable($table);

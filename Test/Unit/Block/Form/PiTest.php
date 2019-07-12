@@ -17,5 +17,4 @@ class PiTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf("\Magento\Payment\Block\Form\Cc", $piPaymentForm);
     }
-
 }

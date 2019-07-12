@@ -4,7 +4,9 @@
  * See LICENSE.txt for license details.
  */
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
+
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+
 class PITest extends \PHPUnit_Framework_TestCase
 {
     private $objectManagerHelper;
@@ -202,7 +204,8 @@ class PITest extends \PHPUnit_Framework_TestCase
             );
         $transactionAmountFactoryMock = $this
             ->getMockBuilder(
-                'Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory')
+                'Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory'
+            )
             ->disableOriginalConstructor()
             ->getMock();
         $transactionAmountFactoryMock

@@ -138,7 +138,7 @@ class Shared
         if ($txStateId == self::DEFERRED_AWAITING_RELEASE) {
             $result = $this->releaseTransaction($vpsTxId, $amount, $order);
         } else {
-            if($txStateId == self::SUCCESSFULLY_AUTHORISED) {
+            if ($txStateId == self::SUCCESSFULLY_AUTHORISED) {
                 $data = [];
                 $data['VendorTxCode'] = $this->_suiteHelper->generateVendorTxCode("", Config::ACTION_REPEAT);
                 $data['Description']  = "REPEAT deferred transaction from Magento.";

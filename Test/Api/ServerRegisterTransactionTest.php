@@ -90,7 +90,6 @@ class ServerRegisterTransactionTest extends WebapiAbstract
         $this->checkSagePayResponseDataIsCorrect($response);
 
         $this->checkOrderStatusIsPendingPayment();
-
     }
 
     private function setPaymentActionAsPayment()
@@ -139,8 +138,10 @@ class ServerRegisterTransactionTest extends WebapiAbstract
         $sagePayResponseData = $response["response"][1];
         $this->assertEquals("3.00", $sagePayResponseData["VPSProtocol"]);
         $this->assertEquals("OK", $sagePayResponseData["Status"]);
-        $this->assertEquals("2014 : The Transaction was Registered Successfully.",
-            $sagePayResponseData["StatusDetail"]);
+        $this->assertEquals(
+            "2014 : The Transaction was Registered Successfully.",
+            $sagePayResponseData["StatusDetail"]
+        );
         $this->assertArrayHasKey("VPSTxId", $sagePayResponseData);
         $this->assertArrayHasKey("SecurityKey", $sagePayResponseData);
         $this->assertArrayHasKey("NextURL", $sagePayResponseData);
@@ -185,5 +186,4 @@ class ServerRegisterTransactionTest extends WebapiAbstract
     {
         return str_pad($n, 3, "0", STR_PAD_LEFT);
     }
-
 }

@@ -230,7 +230,8 @@ class MotoManagementTest extends \PHPUnit_Framework_TestCase
             ->getMock();
     }
 
-    public function testPlaceOrderReservedOrderIdAlreadySet() {
+    public function testPlaceOrderReservedOrderIdAlreadySet()
+    {
         $checkoutHelperMock = $this->makeMockDisabledConstructor(Checkout::class);
 
         $quoteMock = $this->makeMockDisabledConstructor(Quote::class);
@@ -371,5 +372,4 @@ class MotoManagementTest extends \PHPUnit_Framework_TestCase
 
         $sut->placeOrder();
     }
-
 }

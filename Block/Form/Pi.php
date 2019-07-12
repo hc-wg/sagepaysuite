@@ -13,5 +13,4 @@ class Pi extends \Magento\Payment\Block\Form\Cc
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         return $objectManager->get("Magento\Backend\Model\Session\Quote");
     }
-
 }

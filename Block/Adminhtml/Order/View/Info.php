@@ -101,7 +101,7 @@ class Info extends \Magento\Backend\Block\Template
      */
     public function getFirstParagraph()
     {
-        return $this->escapeHtml (
+        return $this->escapeHtml(
             __(
                 "The customer was redirected to their bank page to complete 3D authentication."
                 ." On this scenario two things can happen:"
@@ -114,7 +114,7 @@ class Info extends \Magento\Backend\Block\Template
      */
     public function getSecondParagraph()
     {
-        return $this->escapeHtml (
+        return $this->escapeHtml(
             __(
                 "- The customer completes the 3D check and the order status is updated."
             )
@@ -126,7 +126,7 @@ class Info extends \Magento\Backend\Block\Template
      */
     public function getThirdParagraph()
     {
-        return $this->escapeHtml (
+        return $this->escapeHtml(
             __(
                 "- The customer does not complete 3D and the message will still be visible."
                 ." For example, the customer does not remember their pin code."
@@ -139,11 +139,11 @@ class Info extends \Magento\Backend\Block\Template
      */
     public function getForthParagraph()
     {
-        return $this->escapeHtml (
+        return $this->escapeHtml(
             __(
                 "If after a few minutes the customer does not complete the order,"
                 ." you can click the Sync from API link"
-        ." to query Sage Pay for the latest information on this transaction."
+                ." to query Sage Pay for the latest information on this transaction."
             )
         );
     }
