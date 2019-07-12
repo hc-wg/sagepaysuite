@@ -1,7 +1,6 @@
 <?php
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\PiRequestManagement;
 
-
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountJapaneseYen;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPost;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPostJapaneseYen;
@@ -37,5 +36,4 @@ class TransactionAmountJapaneseYenTest extends \PHPUnit_Framework_TestCase
             [6469, 6469.20]
         ];
     }
-
 }

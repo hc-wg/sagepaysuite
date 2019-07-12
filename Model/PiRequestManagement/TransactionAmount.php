@@ -29,5 +29,4 @@ class TransactionAmount
 
         return $this->commands[$condition];
     }
-
 }

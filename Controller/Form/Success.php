@@ -144,8 +144,7 @@ class Success extends \Magento\Framework\App\Action\Action
             $vendorTxCode = $payment->getAdditionalInformation("vendorTxCode");
 
             if (!empty($transactionId) && ($vendorTxCode == $response['VendorTxCode'])) {
-
-                foreach($response as $name => $value) {
+                foreach ($response as $name => $value) {
                     $payment->setTransactionAdditionalInfo($name, $value);
                     $payment->setAdditionalInformation($name, $value);
                 }
