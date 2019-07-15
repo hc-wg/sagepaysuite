@@ -87,7 +87,7 @@ class Server implements ConfigProviderInterface
                 'licensed'      => $this->_suiteHelper->verify(),
                 'token_enabled' => $tokenEnabled,
                 'tokens'        => $tokens,
-                'max_tokens'    => Config::MAX_TOKENS_PER_CUSTOMER,
+                'max_tokens'    => $this->_config->getMaxTokenPerCustomer(),
                 'mode'          => $this->_config->getMode(),
                 'low_profile'   => $this->method->getConfigData('profile'),
                 ],

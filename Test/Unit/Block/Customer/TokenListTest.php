@@ -128,4 +128,77 @@ class TokenListTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('category/men.html', $url);
     }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeTokenModelMock()
+    {
+        $tokenModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Token::class)
+            ->disableOriginalConstructor()
+            ->setMethodsExcept(["saveToken"])
+            ->getMock();
+
+        return $tokenModelMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeConfigMock()
+    {
+        $configMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        return $configMock;
+    }
+
+    /**
+     * @param $urlBuilderMock
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeContextMockWithUrlBuilder($urlBuilderMock)
+    {
+        $contextMock = $this->getMockBuilder(\Magento\Framework\View\Element\Template\Context::class)
+            ->setMethods(["getUrlBuilder"])->disableOriginalConstructor()->getMock();
+        $contextMock->expects($this->any())->method('getUrlBuilder')->will($this->returnValue($urlBuilderMock));
+
+        return $contextMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeCurrentCustomerMock()
+    {
+        $currentCustomerMock = $this->getMockBuilder('Magento\Customer\Helper\Session\CurrentCustomer')
+            ->setMethods(["getCustomerId"])->disableOriginalConstructor()->getMock();
+        $currentCustomerMock->expects($this->any())->method('getCustomerId')->will($this->returnValue(1));
+
+        return $currentCustomerMock;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function makeUrlBuilderMockWithGetUrl()
+    {
+        $urlBuilderMock = $this->getMockBuilder(\Magento\Framework\Url::class)
+            ->setMethods(["getUrl"])->disableOriginalConstructor()->getMock();
+
+        return $urlBuilderMock;
+    }
+
+    public function testGetMaxTokenPerCustomer()
+    {
+        $configMock = $this->makeConfigMock();
+        $configMock
+            ->expects($this->once())
+            ->method("getMaxTokenPerCustomer")
+            ->willReturn(3);
+
+        $this->assertEquals(3, $configMock->getMaxTokenPerCustomer());
+    }
 }
