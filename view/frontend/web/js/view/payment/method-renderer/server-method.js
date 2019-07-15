@@ -230,12 +230,9 @@ define(
                 this.use_token = false;
                 document.getElementById('remembertoken').checked = 1;
                 $('#' + this.getCode() + '-tokens .token-list').hide();
-                $('#sagepay-server-remembertoken-container').show();
-
                 $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
                 $('#' + this.getCode() + '-tokens .using-new-card-message').show();
                 $('#' + this.getCode() + '-tokens .use-saved-card-link').show();
-
             },
             useSavedTokens: function () {
                 this.use_token = true;
