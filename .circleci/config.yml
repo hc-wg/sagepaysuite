@@ -43,7 +43,7 @@ jobs:
          name: Install PHP extensions
          command: sudo -E docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
 
-      - run: sudo apt-get install -y mysql-client
+      - run: sudo apt-get install -y mariadb-client
 
       # Prepare Apache env
       - run: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
@@ -135,7 +135,7 @@ jobs:
          name: Install PHP extensions
          command: sudo docker-php-ext-install sodium bcmath gd intl opcache pdo_mysql soap xsl zip
 
-      - run: sudo apt-get install -y mysql-client
+      - run: sudo apt-get install -y mariadb-client
 
       # Prepare Apache env
       - run: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
