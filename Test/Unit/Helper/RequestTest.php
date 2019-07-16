@@ -515,7 +515,9 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'isMultishipping' => false,
                         'method' => 'sagepayserver',
                     ]
-                ],
+
+                ]
+            ,
             'test XML with tax' => [
                     [
                         'name' => 'SybilRunningShort',
@@ -556,7 +558,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'isMultishipping' => false,
                         'method' => 'sagepayserver',
                     ]
-                ],
+                ]
+            ,
             'test XML recipientName' =>
                 [
                     [
@@ -597,6 +600,84 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'allAddresses' => [],
                         'isMultishipping' => false,
                         'method' => 'sagepayserver',
+                    ]
+                ]
+            ,
+            'test Ireland postcode' =>
+                [
+                    [
+                        'lines' => 2,
+                        'sku' => 'WSH08-28-Purple',
+                        'expected_sku' => 'WSH08-28-Purple',
+                        'name' => 'SybilRunningShort',
+                        'expected_name' => 'SybilRunningShort',
+                        'qty' => 1,
+                        'priceInclTax' => 44,
+                        'product_id' => 1234,
+                        'price' => 44,
+                        'taxAmount' => 0,
+                        'shippingDescription' => 'BestWay-TableRate',
+                        'shippingAmount' => 15,
+                        'shippingTaxAmount' => 0,
+                        'deliveryGrossAmount' => 15,
+                        'parentItem' => false,
+                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
+                        'id' => null,
+                        'firstName' => 'firstname',
+                        'lastName' => 'lastname',
+                        'middleName' => 'm',
+                        'prefix' => 'pref',
+                        'email' => 'email',
+                        'telephone' => '1234567',
+                        'streetLine' => 'Street test',
+                        'city' => 'city',
+                        'regionCode' => null,
+                        'country' => 'IE',
+                        'postCode' => '',
+                        'expected_postCode' => '000',
+                        'fax' => null,
+                        'isMultishipping' => null,
+                        'allAddresses' => null,
+                        'method' => null,
+                    ]
+                ]
+            ,
+            'test Hong Kong postcode' =>
+                [
+                    [
+                        'lines' => 2,
+                        'sku' => 'WSH08-28-Purple',
+                        'expected_sku' => 'WSH08-28-Purple',
+                        'name' => 'SybilRunningShort',
+                        'expected_name' => 'SybilRunningShort',
+                        'qty' => 1,
+                        'priceInclTax' => 44,
+                        'product_id' => 1234,
+                        'price' => 44,
+                        'taxAmount' => 0,
+                        'shippingDescription' => 'BestWay-TableRate',
+                        'shippingAmount' => 15,
+                        'shippingTaxAmount' => 0,
+                        'deliveryGrossAmount' => 15,
+                        'parentItem' => false,
+                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
+                        'id' => null,
+                        'firstName' => 'firstname',
+                        'lastName' => 'lastname',
+                        'middleName' => 'm',
+                        'prefix' => 'pref',
+                        'email' => 'email',
+                        'telephone' => '1234567',
+                        'streetLine' => 'Street test',
+                        'city' => 'city',
+                        'regionCode' => null,
+                        'country' => 'HK',
+                        'postCode' => '',
+                        'expected_postCode' => '000',
+                        'fax' => null,
+                        'isMultishipping' => null,
+                        'allAddresses' => null,
+                        'method' => null,
                     ]
                 ]
         ];
