@@ -82,6 +82,14 @@ class Request extends AbstractHelper
         //only send state if US due to Sage Pay 2 char restriction
         if ($data['BillingCountry'] == 'US') {
             $data['BillingState'] = substr($billing_address->getRegionCode(), 0, 2);
+        } else {
+            if ($data['BillingCountry'] == 'IE') {
+                $data['BillingPostCode'] = "000";
+            } else {
+                if ($data['BillingCountry'] == 'HK') {
+                    $data['BillingPostCode'] = "000";
+                }
+            }
         }
 
         $data['BillingPhone'] = substr($billing_address->getTelephone(), 0, 20);
@@ -97,6 +105,14 @@ class Request extends AbstractHelper
         //only send state if US due to Sage Pay 2 char restriction
         if ($data['DeliveryCountry'] == 'US') {
             $data['DeliveryState'] = substr($shipping_address->getRegionCode(), 0, 2);
+        } else {
+            if ($data['DeliveryCountry'] == 'IE') {
+                $data['DeliveryPostCode'] = "000";
+            } else {
+                if ($data['DeliveryCountry'] == 'HK') {
+                    $data['DeliveryPostCode'] = "000";
+                }
+            }
         }
 
         $data['DeliveryPhone'] = substr($shipping_address->getTelephone(), 0, 20);
