@@ -82,10 +82,10 @@ class Request extends AbstractHelper
         if ($data['BillingCountry'] == 'US') {
             $data['BillingState'] = substr($billing_address->getRegionCode(), 0, 2);
         } else {
-            if ($data['BillingCountry'] == 'IE') {
+            if ($data['BillingCountry'] == 'IE' && $data['BillingPostCode'] == '') {
                 $data['BillingPostCode'] = "000";
             } else {
-                if ($data['BillingCountry'] == 'HK') {
+                if ($data['BillingCountry'] == 'HK' && $data['BillingPostCode'] == '') {
                     $data['BillingPostCode'] = "000";
                 }
             }
@@ -105,10 +105,10 @@ class Request extends AbstractHelper
         if ($data['DeliveryCountry'] == 'US') {
             $data['DeliveryState'] = substr($shipping_address->getRegionCode(), 0, 2);
         } else {
-            if ($data['DeliveryCountry'] == 'IE') {
+            if ($data['DeliveryCountry'] == 'IE' && $data['DeliveryPostCode'] == '') {
                 $data['DeliveryPostCode'] = "000";
             } else {
-                if ($data['DeliveryCountry'] == 'HK') {
+                if ($data['DeliveryCountry'] == 'HK' && $data['DeliveryPostCode'] == '') {
                     $data['DeliveryPostCode'] = "000";
                 }
             }
