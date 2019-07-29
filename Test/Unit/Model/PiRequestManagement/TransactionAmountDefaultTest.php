@@ -38,5 +38,4 @@ class TransactionAmountDefaultTest extends \PHPUnit\Framework\TestCase
             [146.20, 146.20]
         ];
     }
-
 }

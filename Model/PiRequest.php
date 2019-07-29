@@ -80,12 +80,14 @@ class PiRequest
         if ($data['billingAddress']['country'] == 'US') {
             $data['billingAddress']['state'] = substr($billingAddress->getRegionCode(), 0, 2);
         } else {
-            if ($data['billingAddress']['country'] == 'IE') {
+            if ($data['billingAddress']['country'] == 'IE' &&
+                $data['billingAddress']['postalCode'] == '') {
                 $data['billingAddress']['postalCode'] = "000";
             } else {
-                if ($data['billingAddress']['country'] == 'HK') {
+                if ($data['billingAddress']['country'] == 'HK' &&
+                    $data['billingAddress']['postalCode'] == '') {
                     $data['billingAddress']['postalCode'] = "000";
-                } 
+                }
             }
         }
 
@@ -100,13 +102,15 @@ class PiRequest
         if ($data['shippingDetails']['shippingCountry'] == 'US') {
             $data['shippingDetails']['shippingState'] = substr($shippingAddress->getRegionCode(), 0, 2);
         } else {
-            if ($data['shippingDetails']['shippingCountry'] == 'IE') {
+            if ($data['shippingDetails']['shippingCountry'] == 'IE' &&
+                $data['shippingDetails']['shippingPostalCode'] == '') {
                 $data['shippingDetails']['shippingPostalCode'] = "000";
             } else {
-                if ($data['shippingDetails']['shippingCountry'] == 'HK') {
+                if ($data['shippingDetails']['shippingCountry'] == 'HK' &&
+                    $data['shippingDetails']['shippingPostalCode'] == '') {
                     $data['shippingDetails']['shippingPostalCode'] = "000";
-                } 
-            }  
+                }
+            }
         }
 
         //populate payment amount information

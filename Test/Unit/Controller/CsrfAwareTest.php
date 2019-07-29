@@ -40,9 +40,9 @@ class CsrfAwareTest extends \PHPUnit\Framework\TestCase
     {
         $piCallback3DController = $this->objectManagerHelper
             ->getObject(
-            'Ebizmarts\SagePaySuite\Controller\PI\Callback3D',
-            []
-        );
+                'Ebizmarts\SagePaySuite\Controller\PI\Callback3D',
+                []
+            );
         $this->assertInstanceOf(CsrfAwareActionInterface::class, $piCallback3DController);
     }
 }

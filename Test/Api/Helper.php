@@ -76,5 +76,4 @@ class Helper
         $model->setValue(self::TEST_REPORTING_PASSWORD);
         $model->save();
     }
-
 }

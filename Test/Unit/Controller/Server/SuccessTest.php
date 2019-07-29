@@ -65,7 +65,8 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
     /** @var EncryptorInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $encryptorMock;
 
-    public function setUp() {
+    public function setUp()
+    {
         $this->context = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
         $this->suiteLogger = $this->getMockBuilder(SuiteLogger::class)->disableOriginalConstructor()->getMock();
         $this->logger = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();

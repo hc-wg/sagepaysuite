@@ -254,7 +254,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             $transactionSaveMock
                 ->expects($this->exactly($data['expectedaddobject']))
                 ->method('addObject')
-                ->withConsecutive([$invoiceMock],[$orderMock])
+                ->withConsecutive([$invoiceMock], [$orderMock])
                 ->willReturnSelf();
             $transactionSaveMock
                 ->expects($this->exactly($data['expectedsave']))

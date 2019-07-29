@@ -31,6 +31,7 @@
                 <fraud_autoinvoice>0</fraud_autoinvoice>
                 <basket_format>Sage50</basket_format>
                 <!--<fraud_notify>high_risk</fraud_notify>-->
+                <max_token>3</max_token>
             </advanced>
         </sagepaysuite>
         <payment>

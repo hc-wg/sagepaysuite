@@ -45,8 +45,7 @@ class Fraud extends Column
         RequestInterface $requestInterface,
         array $components = [],
         array $data = []
-    )
-    {
+    ) {
         $this->suiteLogger = $suiteLogger;
         $this->orderRepository = $orderRepository;
         $this->assetRepository = $assetRepository;
@@ -140,7 +139,7 @@ class Fraud extends Column
      */
     public function getWaitingImage()
     {
-       return 'Ebizmarts_SagePaySuite::images/waiting.png';
+        return 'Ebizmarts_SagePaySuite::images/waiting.png';
     }
 
     /**
@@ -181,6 +180,4 @@ class Fraud extends Column
     {
         return isset($additional["mode"]) && $additional["mode"] === Config::MODE_TEST;
     }
-
-
 }

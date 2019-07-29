@@ -172,7 +172,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $suiteLoggerMock = $this->createMock(Logger::class);
         $suiteLoggerMock->expects($this->once())->method('logException')->with(
             $inputException,
-            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 68]
+            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 67]
         );
         return $suiteLoggerMock;
     }
@@ -182,7 +182,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $suiteLoggerMock = $this->createMock(Logger::class);
         $suiteLoggerMock->expects($this->once())->method('logException')->with(
             $noSuchEntityException,
-            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 71]
+            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 70]
         );
         return $suiteLoggerMock;
     }
@@ -241,10 +241,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'check.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'check.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_CHECK);
 
 
@@ -305,10 +307,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'cross.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'cross.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_CROSS);
 
 
@@ -369,10 +373,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'zebra.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'zebra.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_ZEBRA);
 
 
@@ -433,10 +439,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'outline.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'outline.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_NOTCHECKED);
 
 
@@ -498,10 +506,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'check.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'check.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_CHECK);
 
         $orderMock = $this->createMock(OrderInterface::class);
@@ -561,10 +571,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'zebra.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'zebra.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_ZEBRA);
 
         $orderMock = $this->createMock(OrderInterface::class);
@@ -624,10 +636,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'cross.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'cross.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_CROSS);
 
         $orderMock = $this->createMock(OrderInterface::class);
@@ -687,10 +701,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . '',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . '',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_INVALID);
 
         $orderMock = $this->createMock(OrderInterface::class);
@@ -753,10 +769,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $assetRepositoryMock
             ->expects($this->once())
             ->method('getUrlWithParams')
-            ->with('Ebizmarts_SagePaySuite::images/test.png',
-            [
+            ->with(
+                'Ebizmarts_SagePaySuite::images/test.png',
+                [
                 '_secure' => true
-            ])
+                ]
+            )
             ->willReturn(self::IMAGE_URL_TEST);
 
         $orderMock = $this->createMock(OrderInterface::class);
@@ -825,10 +843,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $assetRepositoryMock
             ->expects($this->once())
             ->method('getUrlWithParams')
-            ->with('Ebizmarts_SagePaySuite::images/waiting.png',
+            ->with(
+                'Ebizmarts_SagePaySuite::images/waiting.png',
                 [
                     '_secure' => true
-                ])
+                ]
+            )
             ->willReturn(self::IMAGE_URL_WAITING);
 
         $orderMock = $this->createMock(OrderInterface::class);
