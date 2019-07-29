@@ -74,9 +74,14 @@ class Fraud extends Column
 
                     if ($payment !== null) {
                         $additional = $payment->getAdditionalInformation();
-                        $image = $this->getImage($additional);
-                        $url = $this->assetRepository->getUrlWithParams($image, $params);
-                        $item[$fieldName . '_src'] = $url;
+//                        if (is_string($additional)) {
+//                            $additional = @unserialize($additional); //@codingStandardsIgnoreLine
+//                        }
+//                        if (is_array($additional)) {
+                            $image = $this->getImage($additional);
+                            $url = $this->assetRepository->getUrlWithParams($image, $params);
+                            $item[$fieldName . '_src'] = $url;
+//                        }
                     }
                 }
             }
