@@ -20,7 +20,7 @@ class Token extends \Magento\Framework\Model\AbstractModel
     private $_postApi;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
+     * @var Config
      */
     private $_config;
 
@@ -36,7 +36,7 @@ class Token extends \Magento\Framework\Model\AbstractModel
         \Magento\Framework\Registry $registry,
         Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
+        Config $config,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
@@ -155,10 +155,10 @@ class Token extends \Magento\Framework\Model\AbstractModel
 
     private function _getRemoveServiceURL()
     {
-        if ($this->_config->getMode() == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_LIVE;
+        if ($this->_config->getMode() == Config::MODE_LIVE) {
+            return Config::URL_TOKEN_POST_REMOVE_LIVE;
         } else {
-            return \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_TEST;
+            return Config::URL_TOKEN_POST_REMOVE_TEST;
         }
     }
 
@@ -217,6 +217,6 @@ class Token extends \Magento\Framework\Model\AbstractModel
         }
         $this->setData([]);
         $this->getResource()->getCustomerTokens($this, $customerId, $vendorname);
-        return count($this->_data) >= \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER;
+        return count($this->_data) >= $this->_config->getMaxTokenPerCustomer();
     }
 }

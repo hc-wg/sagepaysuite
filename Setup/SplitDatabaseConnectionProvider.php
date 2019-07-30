@@ -31,5 +31,4 @@ class SplitDatabaseConnectionProvider
 
         return $connection;
     }
-
 }

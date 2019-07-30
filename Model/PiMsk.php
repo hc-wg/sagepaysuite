@@ -43,7 +43,6 @@ class PiMsk implements \Ebizmarts\SagePaySuite\Api\PiMerchantInterface
     public function getSessionKey(\Magento\Quote\Api\Data\CartInterface $quote = null)
     {
         try {
-
             if (null === $quote) {
                 $quote = $this->getDummyQuote();
             }

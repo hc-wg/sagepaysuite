@@ -39,5 +39,4 @@ class AdditionalInformation
 
         return $additionalInfo;
     }
-
 }

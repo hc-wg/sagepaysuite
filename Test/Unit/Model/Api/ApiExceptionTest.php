@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+
 class ApiExceptionTest extends \PHPUnit\Framework\TestCase
 {
     /**

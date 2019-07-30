@@ -1101,7 +1101,8 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->token = $this->getMockBuilder(Token::class)->disableOriginalConstructor()->getMock();
     }
 
-    private function makeEncryptor() {
+    private function makeEncryptor()
+    {
         $this->encryptor = $this->getMockBuilder(EncryptorInterface::class)
             ->disableOriginalConstructor()->getMock();
         $this->encryptor->expects($this->once())->method('decrypt')
