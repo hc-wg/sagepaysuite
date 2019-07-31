@@ -66,17 +66,6 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
     }
     // @codingStandardsIgnoreEnd
 
-    public function testDevMinify()
-    {
-        $configFilePath = BP . DIRECTORY_SEPARATOR . 'app/code/Ebizmarts/SagePaySuite/etc/config.xml';
-
-        $xmlData = \file_get_contents($configFilePath); //@codingStandardsIgnoreLine
-
-        $xml = new \SimpleXMLElement($xmlData);
-
-        $this->assertObjectNotHasAttribute('dev', $xml->default);
-    }
-
     public function testSetConfigurationStoreId()
     {
         $this->configModel->setConfigurationScopeId(59);
@@ -102,6 +91,15 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
         );
     }
 
+    public function testDevMinify()
+    {
+        $configFilePath = BP . DIRECTORY_SEPARATOR . 'app/code/Ebizmarts/SagePaySuite/etc/config.xml';
+        $xmlData = \file_get_contents($configFilePath); //@codingStandardsIgnoreLine
+        $xml = new \SimpleXMLElement($xmlData);
+        $this->assertObjectHasAttribute('dev', $xml->default);
+        $this->assertEquals($xml->default->dev->js->minify_exclude->sagepaysuitepi, "api/v1/js/sagepay.js");
+    }
+    
     public function testIsMethodActive()
     {
         $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
