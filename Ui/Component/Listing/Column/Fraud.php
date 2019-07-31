@@ -12,8 +12,8 @@ use \Magento\Framework\View\Element\UiComponentFactory;
 use \Magento\Ui\Component\Listing\Columns\Column;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Config;
-//use \Magento\Framework\Serialize\Serializer\Base64Json;
 use \Ebizmarts\SagePaySuite\Helper\AdditionalInformation;
+
 class Fraud extends Column
 {
     const IMAGE_PATH = 'Ebizmarts_SagePaySuite::images/icon-shield-';
