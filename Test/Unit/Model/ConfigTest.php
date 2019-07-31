@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use const DIRECTORY_SEPARATOR;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Store\Model\ScopeInterface;
 
@@ -90,6 +91,14 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
         );
     }
 
+    public function testDevMinify()
+    {
+        $configFilePath = BP . DIRECTORY_SEPARATOR . 'app/code/Ebizmarts/SagePaySuite/etc/config.xml';
+        $xmlData = \file_get_contents($configFilePath); //@codingStandardsIgnoreLine
+        $xml = new \SimpleXMLElement($xmlData);
+        $this->assertObjectNotHasAttribute('dev', $xml->default);
+    }
+    
     public function testIsMethodActive()
     {
         $this->configModel->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
