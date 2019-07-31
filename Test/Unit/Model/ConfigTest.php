@@ -96,7 +96,8 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
         $configFilePath = BP . DIRECTORY_SEPARATOR . 'app/code/Ebizmarts/SagePaySuite/etc/config.xml';
         $xmlData = \file_get_contents($configFilePath); //@codingStandardsIgnoreLine
         $xml = new \SimpleXMLElement($xmlData);
-        $this->assertObjectNotHasAttribute('dev', $xml->default);
+        $this->assertObjectHasAttribute('dev', $xml->default);
+        $this->assertEquals($xml->default->dev->js->minify_exclude->sagepaysuitepi, "api/v1/js/sagepay.js");
     }
     
     public function testIsMethodActive()
