@@ -12,6 +12,7 @@ use \Magento\Framework\View\Element\UiComponentFactory;
 use \Magento\Ui\Component\Listing\Columns\Column;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Config;
+use \Ebizmarts\SagePaySuite\Helper\AdditionalInformation;
 
 class Fraud extends Column
 {
@@ -36,6 +37,11 @@ class Fraud extends Column
      */
     private $suiteLogger;
 
+    /**
+     * @var AdditionalInformation
+     */
+    private $serialize;
+
     public function __construct(
         Logger $suiteLogger,
         ContextInterface $context,
@@ -43,13 +49,15 @@ class Fraud extends Column
         OrderRepositoryInterface $orderRepository,
         Repository $assetRepository,
         RequestInterface $requestInterface,
+        AdditionalInformation $serialize,
         array $components = [],
         array $data = []
     ) {
-        $this->suiteLogger = $suiteLogger;
-        $this->orderRepository = $orderRepository;
-        $this->assetRepository = $assetRepository;
+        $this->suiteLogger      = $suiteLogger;
+        $this->orderRepository  = $orderRepository;
+        $this->assetRepository  = $assetRepository;
         $this->requestInterface = $requestInterface;
+        $this->serialize        = $serialize;
         parent::__construct($context, $uiComponentFactory, $components, $data);
     }
 
@@ -74,9 +82,14 @@ class Fraud extends Column
 
                     if ($payment !== null) {
                         $additional = $payment->getAdditionalInformation();
-                        $image = $this->getImage($additional);
-                        $url = $this->assetRepository->getUrlWithParams($image, $params);
-                        $item[$fieldName . '_src'] = $url;
+                        if (is_string($additional)) {
+                            $additional = $this->serialize->getUnserializedData($additional);
+                        }
+                        if (is_array($additional) && !empty($additional)) {
+                            $image = $this->getImage($additional);
+                            $url = $this->assetRepository->getUrlWithParams($image, $params);
+                            $item[$fieldName . '_src'] = $url;
+                        }
                     }
                 }
             }
