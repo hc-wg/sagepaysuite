@@ -13,6 +13,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
+use \Ebizmarts\SagePaySuite\Helper\AdditionalInformation;
 
 class FraudTest extends \PHPUnit\Framework\TestCase
 {
@@ -101,6 +102,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $uiComponentFactoryMock = $this->createMock(UiComponentFactory::class);
         $requestMock = $this->createMock(RequestInterface::class);
         $assetRepositoryMock = $this->createMock(Repository::class);
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -111,6 +113,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
                 [],
                 []
             ])
@@ -142,6 +145,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $uiComponentFactoryMock = $this->createMock(UiComponentFactory::class);
         $requestMock = $this->createMock(RequestInterface::class);
         $assetRepositoryMock = $this->createMock(Repository::class);
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -152,6 +156,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
                 [],
                 []
             ])
@@ -172,7 +177,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $suiteLoggerMock = $this->createMock(Logger::class);
         $suiteLoggerMock->expects($this->once())->method('logException')->with(
             $inputException,
-            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 67]
+            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 75]
         );
         return $suiteLoggerMock;
     }
@@ -182,7 +187,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $suiteLoggerMock = $this->createMock(Logger::class);
         $suiteLoggerMock->expects($this->once())->method('logException')->with(
             $noSuchEntityException,
-            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 70]
+            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 78]
         );
         return $suiteLoggerMock;
     }
@@ -203,7 +208,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $orderMock = $this->createMock(OrderInterface::class);
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn(null);
-
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -214,6 +219,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
                 [],
                 []
             ])
@@ -254,7 +260,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -265,6 +271,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
                 [],
                 []
             ])
@@ -317,7 +324,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -328,6 +335,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
                 [],
                 []
             ])
@@ -380,7 +388,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -391,6 +399,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
                 [],
                 []
             ])
@@ -443,7 +452,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -454,6 +463,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
                 [],
                 []
             ])
@@ -507,7 +517,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -518,6 +528,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
                 [],
                 []
             ])
@@ -570,7 +581,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -581,6 +592,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
                 [],
                 []
             ])
@@ -633,7 +645,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -644,6 +656,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
                 [],
                 []
             ])
@@ -696,7 +709,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -707,6 +720,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serilize' => $serializeMock,
                 [],
                 []
             ])
@@ -759,7 +773,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -770,6 +784,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
                 [],
                 []
             ])
@@ -828,6 +843,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -838,6 +854,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
                 [],
                 []
             ])
@@ -874,6 +891,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $uiComponentFactoryMock = $this->createMock(UiComponentFactory::class);
         $requestMock = $this->createMock(RequestInterface::class);
         $assetRepositoryMock = $this->createMock(Repository::class);
+        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
         $fraudColumnMock = $this->getMockBuilder(Fraud::class)
@@ -884,6 +902,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                 'orderRepository' => $orderRepositoryMock,
                 'assetRepository' => $assetRepositoryMock,
                 'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
                 [],
                 []
             ])
@@ -913,5 +932,238 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         ];
 
         $this->assertEquals($expectedResponse, $fraudColumnMock->prepareDataSource($dataSource));
+    }
+
+    public function testAdditionalInformationIsString()
+    {
+        $orderTest = "String";
+
+        $suiteLoggerMock = $this
+            ->getMockBuilder(Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderRepositoryMock = $this
+            ->getMockBuilder(OrderRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $contextMock = $this
+            ->getMockBuilder(ContextInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $uiComponentFactoryMock = $this
+            ->getMockBuilder(UiComponentFactory::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $requestMock = $this
+            ->getMockBuilder(RequestInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $requestMock
+            ->expects($this->once())
+            ->method('isSecure')
+            ->willReturn(true);
+
+        $assetRepositoryMock = $this
+            ->getMockBuilder(Repository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $assetRepositoryMock
+            ->expects($this->never())
+            ->method('getUrlWithParams')
+            ->with(
+                'Ebizmarts_SagePaySuite::images/waiting.png',
+                [
+                    '_secure' => true
+                ]
+            )
+            ->willReturn(self::IMAGE_URL_WAITING);
+
+        $orderMock = $this
+            ->getMockBuilder(OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock = $this
+            ->getMockBuilder(OrderPaymentInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderRepositoryMock
+            ->expects($this->once())
+            ->method('get')
+            ->with(self::ENTITY_ID)
+            ->willReturn($orderMock);
+
+        $orderMock
+            ->expects($this->once())
+            ->method('getPayment')
+            ->willReturn($paymentMock);
+
+        $paymentMock
+            ->expects($this->once())
+            ->method('getAdditionalInformation')
+            ->willReturn($orderTest);
+
+        $serializeMock = $this
+            ->createMock(AdditionalInformation::class);
+
+        /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
+        $fraudColumnMock = $this->getMockBuilder(Fraud::class)
+            ->setConstructorArgs([
+                'suiteLogger' => $suiteLoggerMock,
+                'context' => $contextMock,
+                'uiComponentFactory' => $uiComponentFactoryMock,
+                'orderRepository' => $orderRepositoryMock,
+                'assetRepository' => $assetRepositoryMock,
+                'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
+                [],
+                []
+            ])
+            ->setMethods(['getImageNameRed', 'getFieldName'])
+            ->getMock();
+
+        $dataSource = self::DATA_SOURCE;
+
+        $response = $fraudColumnMock->prepareDataSource($dataSource);
+
+        $expectedResponse = [
+            'data' => [
+                'items' => [
+                    [
+                        'entity_id' => self::ENTITY_ID,
+                        'payment_method' => "sagepaysuite"
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $response);
+    }
+
+    public function testAdditionalInformationIsSerialized()
+    {
+        $orderTest = ['fraudcode' => 30, 'fraudrules' => 'rule'];
+        $serializedOrderTest = 'a:2:{s:9:"fraudcode";i:30;s:10:"fraudrules";s:4:"rule";}';
+
+        $suiteLoggerMock = $this
+            ->getMockBuilder(Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderRepositoryMock = $this
+            ->getMockBuilder(OrderRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $contextMock = $this
+            ->getMockBuilder(ContextInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $uiComponentFactoryMock = $this
+            ->getMockBuilder(UiComponentFactory::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $requestMock = $this
+            ->getMockBuilder(RequestInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $requestMock
+            ->expects($this->once())
+            ->method('isSecure')
+            ->willReturn(true);
+
+        $assetRepositoryMock = $this
+            ->getMockBuilder(Repository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $assetRepositoryMock
+            ->expects($this->once())
+            ->method('getUrlWithParams')
+            ->with(
+                self::IMAGE_PATH . 'zebra.png',
+                [
+                    '_secure' => true
+                ]
+            )
+            ->willReturn(self::IMAGE_URL_ZEBRA);
+
+        $orderMock = $this
+            ->getMockBuilder(OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock = $this
+            ->getMockBuilder(OrderPaymentInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderRepositoryMock
+            ->expects($this->once())
+            ->method('get')
+            ->with(self::ENTITY_ID)
+            ->willReturn($orderMock);
+
+        $orderMock
+            ->expects($this->once())
+            ->method('getPayment')
+            ->willReturn($paymentMock);
+        $paymentMock
+            ->expects($this->once())
+            ->method('getAdditionalInformation')
+            ->willReturn($serializedOrderTest);
+
+        $serializeMock = $this
+            ->getMockBuilder(AdditionalInformation::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $serializeMock
+            ->expects($this->once())
+            ->method('getUnserializedData')
+            ->with($serializedOrderTest)
+            ->willReturn($orderTest);
+
+        /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
+        $fraudColumnMock = $this->getMockBuilder(Fraud::class)
+            ->setConstructorArgs([
+                'suiteLogger' => $suiteLoggerMock,
+                'context' => $contextMock,
+                'uiComponentFactory' => $uiComponentFactoryMock,
+                'orderRepository' => $orderRepositoryMock,
+                'assetRepository' => $assetRepositoryMock,
+                'requestInterface' => $requestMock,
+                'serialize' => $serializeMock,
+                [],
+                []
+            ])
+            ->setMethods(['getImageNameRed', 'getFieldName'])
+            ->getMock();
+
+        $fraudColumnMock->expects($this->never())->method('getImageNameRed');
+        $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
+
+        $dataSource = self::DATA_SOURCE;
+
+        $response = $fraudColumnMock->prepareDataSource($dataSource);
+
+        $expectedResponse = [
+            'data' => [
+                'items' => [
+                    [
+                        'entity_id' => self::ENTITY_ID,
+                        'sagepay_fraud_src' => self::IMAGE_URL_ZEBRA,
+                        'payment_method' => "sagepaysuite"
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $response);
     }
 }
