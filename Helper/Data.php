@@ -115,10 +115,8 @@ class Data extends AbstractHelper
      */
     private function localSignature($checkoutHostName, $moduleMajorAndMinorVersionNumber)
     {
-        // @codingStandardsIgnoreStart
-        $md5    = md5("Ebizmarts_SagePaySuite2" . $moduleMajorAndMinorVersionNumber . $checkoutHostName);
-        // @codingStandardsIgnoreEnd
-        $key    = hash('sha1', $md5 . 'EbizmartsV2');
+        $md5    = hash("md5", "Ebizmarts_SagePaySuite2" . $moduleMajorAndMinorVersionNumber . $checkoutHostName);
+        $key    = hash("sha1", $md5 . "EbizmartsV2");
 
         return $key;
     }
