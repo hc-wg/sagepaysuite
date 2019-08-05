@@ -1,3 +1,16 @@
+## [1.2.16] - 2019-08-07
+### Added
+- Setting to set max tokens per customer
+
+### Changed
+- Hide Add New Card when reached max tokens
+
+### Fixed
+- Label and Checkbox from first token being shown when press add new card
+- Send 000 post code when field is left empty for Ireland or Hong Kong (SERVER and FORM)
+- PI always sending 000 post code for Ireland and Hong Kong even if the customer entered a post code
+- Module breaks Sales -> Order when the payment additional information is serialized
+
 ## [1.2.15] - 2019-06-19
 ### Added
 - PI DropIn compatibility with OneStepCheckout
