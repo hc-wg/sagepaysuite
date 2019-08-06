@@ -10,6 +10,7 @@
 - Send 000 post code when field is left empty for Ireland or Hong Kong (SERVER and FORM)
 - PI always sending 000 post code for Ireland and Hong Kong even if the customer entered a post code
 - Module breaks Sales -> Order when the payment additional information is serialized
+- Multi Currency refunds using Base Currency amount (FORM, SERVER, PayPal)
 
 ## [1.2.15] - 2019-06-19
 ### Added
