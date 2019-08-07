@@ -11,6 +11,7 @@
 - PI always sending 000 post code for Ireland and Hong Kong even if the customer entered a post code
 - Module breaks Sales -> Order when the payment additional information is serialized
 - Multi Currency refunds using Base Currency amount (FORM, SERVER, PayPal)
+- Change excluding minification strategy
 
 ## [1.3.6] - 2019-06-19
 ### Added
