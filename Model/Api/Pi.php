@@ -51,17 +51,21 @@ class Pi implements PaymentOperations
         $transaction = $this->reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
 
         $txStateId = (int)$transaction->txstateid;
-        if ($txStateId === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
-            $result = $this->piRestApi->release($vpsTxId, $amount);
-        } else {
-            if ($txStateId === PaymentOperations::SUCCESSFULLY_AUTHORISED) {
-                $data                 = [];
-                $data['VendorTxCode'] = $this->suiteHelper->generateVendorTxCode('', Config::ACTION_REPEAT_PI);
-                $data['Description']  = 'REPEAT deferred transaction from Magento.';
-                $data['Currency']     = (string)$transaction->currency;
-                $data['Amount']       = $amount * 100;
-                $result               = $this->repeatTransaction($vpsTxId, $data, $order, Config::ACTION_REPEAT_PI);
+        if (property_exists($transaction, "txstateid")) {
+            if ($txStateId === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
+                $result = $this->piRestApi->release($vpsTxId, $amount);
+            } else {
+                if ($txStateId === PaymentOperations::SUCCESSFULLY_AUTHORISED) {
+                    $data = [];
+                    $data['VendorTxCode'] = $this->suiteHelper->generateVendorTxCode('', Config::ACTION_REPEAT_PI);
+                    $data['Description'] = 'REPEAT deferred transaction from Magento.';
+                    $data['Currency'] = (string)$transaction->currency;
+                    $data['Amount'] = $amount * 100;
+                    $result = $this->repeatTransaction($vpsTxId, $data, $order, Config::ACTION_REPEAT_PI);
+                }
             }
+        } else {
+            $result = null;
         }
 
         return $result;
