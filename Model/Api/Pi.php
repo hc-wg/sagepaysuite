@@ -27,6 +27,9 @@ class Pi implements PaymentOperations
     /** @var \Ebizmarts\SagePaySuite\Model\Api\PIRest */
     private $piRestApi;
 
+    /** @var Logger */
+    private $suiteLogger;
+
     /**
      * Pi constructor.
      * @param Data $suiteHelper
@@ -36,11 +39,13 @@ class Pi implements PaymentOperations
     public function __construct(
         Data $suiteHelper,
         PIRest $piRestApi,
-        Reporting $reportingApi
+        Reporting $reportingApi,
+        Logger $suiteLogger
     ) {
         $this->suiteHelper         = $suiteHelper;
         $this->piRestApi           = $piRestApi;
         $this->reportingApi        = $reportingApi;
+        $this->suiteLogger         = $suiteLogger;
     }
 
     public function captureDeferredTransaction($vpsTxId, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
@@ -51,7 +56,7 @@ class Pi implements PaymentOperations
         $transaction = $this->reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
 
         $txStateId = (int)$transaction->txstateid;
-        if (property_exists($transaction, "txstateid")) {
+        try {
             if ($txStateId === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
                 $result = $this->piRestApi->release($vpsTxId, $amount);
             } else {
@@ -64,7 +69,8 @@ class Pi implements PaymentOperations
                     $result = $this->repeatTransaction($vpsTxId, $data, $order, Config::ACTION_REPEAT_PI);
                 }
             }
-        } else {
+        } catch (ApiException $apiException) {
+            $this->suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
             $result = null;
         }
 
