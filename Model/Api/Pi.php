@@ -12,6 +12,7 @@ use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 use Ebizmarts\SagePaySuite\Model\Api\Reporting;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\Phrase;
 
 /**
  * Sage Pay Pi API
@@ -27,9 +28,6 @@ class Pi implements PaymentOperations
     /** @var \Ebizmarts\SagePaySuite\Model\Api\PIRest */
     private $piRestApi;
 
-    /** @var Logger */
-    private $suiteLogger;
-
     /**
      * Pi constructor.
      * @param Data $suiteHelper
@@ -39,13 +37,11 @@ class Pi implements PaymentOperations
     public function __construct(
         Data $suiteHelper,
         PIRest $piRestApi,
-        Reporting $reportingApi,
-        Logger $suiteLogger
+        Reporting $reportingApi
     ) {
         $this->suiteHelper         = $suiteHelper;
         $this->piRestApi           = $piRestApi;
         $this->reportingApi        = $reportingApi;
-        $this->suiteLogger         = $suiteLogger;
     }
 
     public function captureDeferredTransaction($vpsTxId, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
@@ -55,23 +51,21 @@ class Pi implements PaymentOperations
         $vpsTxId = $this->suiteHelper->clearTransactionId($vpsTxId);
         $transaction = $this->reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
 
+        if (!property_exists($transaction, "txstateid")) {
+            throw new ApiException(__('txstateid is empty.'));
+        }
         $txStateId = (int)$transaction->txstateid;
-        try {
-            if ($txStateId === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
-                $result = $this->piRestApi->release($vpsTxId, $amount);
-            } else {
-                if ($txStateId === PaymentOperations::SUCCESSFULLY_AUTHORISED) {
-                    $data = [];
-                    $data['VendorTxCode'] = $this->suiteHelper->generateVendorTxCode('', Config::ACTION_REPEAT_PI);
-                    $data['Description'] = 'REPEAT deferred transaction from Magento.';
-                    $data['Currency'] = (string)$transaction->currency;
-                    $data['Amount'] = $amount * 100;
-                    $result = $this->repeatTransaction($vpsTxId, $data, $order, Config::ACTION_REPEAT_PI);
-                }
+        if ($txStateId === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
+            $result = $this->piRestApi->release($vpsTxId, $amount);
+        } else {
+            if ($txStateId === PaymentOperations::SUCCESSFULLY_AUTHORISED) {
+                $data                 = [];
+                $data['VendorTxCode'] = $this->suiteHelper->generateVendorTxCode('', Config::ACTION_REPEAT_PI);
+                $data['Description']  = 'REPEAT deferred transaction from Magento.';
+                $data['Currency']     = (string)$transaction->currency;
+                $data['Amount']       = $amount * 100;
+                $result               = $this->repeatTransaction($vpsTxId, $data, $order, Config::ACTION_REPEAT_PI);
             }
-        } catch (ApiException $apiException) {
-            $this->suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
-            $result = null;
         }
 
         return $result;
