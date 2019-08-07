@@ -186,3 +186,21 @@
 ## [1.2.0] - 2017-09-28
 ### Added
 - First release with Magento 2.2.0 compatibility.
+
+[1.2.16]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.16
+[1.2.15]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.15
+[1.2.14]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.14
+[1.2.13]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.13
+[1.2.12]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.12
+[1.2.11]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.11
+[1.2.10]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.10
+[1.2.9]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.9
+[1.2.8]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.8
+[1.2.7]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.7
+[1.2.6]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.6
+[1.2.5]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.5
+[1.2.4]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.4
+[1.2.3]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.3
+[1.2.2]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.2.2
+[1.2.1]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.2.1
+[1.2.0]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.2.0
