@@ -5,6 +5,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponse;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface;
 use Ebizmarts\SagePaySuite\Helper\Data as SagePayHelper;
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\Pi;
 use Ebizmarts\SagePaySuite\Model\Api\Shared;
 use Ebizmarts\SagePaySuite\Model\Config;
@@ -119,6 +120,10 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
         $sut->capture($paymentMock, $testAmount);
     }
 
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     * @expectedExceptionMessage txstateid is empty
+     */
     public function testCaptureDeferredPiTransactionTxStateIdNull()
     {
         $testAmount  = 377.68;
@@ -133,7 +138,7 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('captureDeferredTransaction')
             ->with($testVpsTxId, $testAmount)
-            ->willReturn(null);
+            ->willThrowException(new ApiException(__('txstateid is empty')));
 
         /** @var Payment $sut */
         $sut = $this->makeObjectManager()->getObject(
