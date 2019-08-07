@@ -119,6 +119,43 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
         $sut->capture($paymentMock, $testAmount);
     }
 
+    public function testCaptureDeferredPiTransactionTxStateIdNull()
+    {
+        $testAmount  = 377.68;
+        $testVpsTxId = 'ABCD-1234';
+
+        $piApiMock = $this
+            ->getMockBuilder(Pi::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $piApiMock
+            ->expects($this->once())
+            ->method('captureDeferredTransaction')
+            ->with($testVpsTxId, $testAmount)
+            ->willReturn(null);
+
+        /** @var Payment $sut */
+        $sut = $this->makeObjectManager()->getObject(
+            Payment::class,
+            [
+                'config' => $this->makeConfigMockPiDeferredAction()
+            ]
+        );
+
+        $sut->setApi($piApiMock);
+
+        $orderMock = $this->makeOrderMockPendingState();
+
+        $paymentMock = $this->makePaymentMock($orderMock);
+        $paymentMock->expects($this->once())->method('getLastTransId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->never())->method('setParentTransactionId');
+        $paymentMock->expects($this->once())->method('getParentTransactionId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->never())->method('setTransactionId');
+
+        $sut->capture($paymentMock, $testAmount);
+    }
+
     public function testCaptureDeferredPiMultiCurrencyTransaction()
     {
         $testAmount  = 377.68;
@@ -464,9 +501,14 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
      */
     private function makePiApiMock($testVpsTxId, $testAmount, $resultMock)
     {
-        $piApiMock = $this->getMockBuilder(Pi::class)->disableOriginalConstructor()->getMock();
+        $piApiMock = $this
+            ->getMockBuilder(Pi::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $piApiMock->expects($this->once())->method('captureDeferredTransaction')
+        $piApiMock
+            ->expects($this->once())
+            ->method('captureDeferredTransaction')
             ->with($testVpsTxId, $testAmount)->willReturn($resultMock);
 
         return $piApiMock;
