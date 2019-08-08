@@ -101,7 +101,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $contextMock = $this->getMockBuilder(ContextInterface::class)->disableOriginalConstructor()->getMock();
         $contextMock->expects($this->once())->method('getProcessor')->willReturn(
             $this->getMockBuilder(Processor::class)
-            ->disableOriginalConstructor()->getMock()
+                ->disableOriginalConstructor()->getMock()
         );
 
         $uiComponentFactoryMock = $this->getMockBuilder(UiComponentFactory::class)->disableOriginalConstructor()->getMock();
@@ -183,7 +183,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $suiteLoggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $suiteLoggerMock->expects($this->once())->method('logException')->with(
             $inputException,
-            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 68]
+            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 67]
         );
         return $suiteLoggerMock;
     }
@@ -193,7 +193,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $suiteLoggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $suiteLoggerMock->expects($this->once())->method('logException')->with(
             $noSuchEntityException,
-            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 71]
+            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 70]
         );
         return $suiteLoggerMock;
     }
@@ -260,10 +260,12 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'check.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'check.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_CHECK);
 
 
@@ -328,10 +330,12 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'cross.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'cross.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_CROSS);
 
 
@@ -396,10 +400,12 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'zebra.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'zebra.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_ZEBRA);
 
 
@@ -464,10 +470,12 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'outline.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'outline.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_NOTCHECKED);
 
 
@@ -533,10 +541,12 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'check.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'check.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_CHECK);
 
         $orderMock = $this->getMockBuilder(OrderInterface::class)->disableOriginalConstructor()->getMock();
@@ -600,10 +610,12 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'zebra.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'zebra.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_ZEBRA);
 
         $orderMock = $this->getMockBuilder(OrderInterface::class)->disableOriginalConstructor()->getMock();
@@ -667,10 +679,12 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . 'cross.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'cross.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_CROSS);
 
         $orderMock = $this->getMockBuilder(OrderInterface::class)->disableOriginalConstructor()->getMock();
@@ -734,10 +748,12 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(self::IMAGE_PATH . '',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . '',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_INVALID);
 
         $orderMock = $this->getMockBuilder(OrderInterface::class)->disableOriginalConstructor()->getMock();
@@ -801,10 +817,12 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with('Ebizmarts_SagePaySuite::images/test.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            'Ebizmarts_SagePaySuite::images/test.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_TEST);
 
         $orderMock = $this->getMockBuilder(OrderInterface::class)->disableOriginalConstructor()->getMock();
@@ -868,10 +886,12 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
         $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with('Ebizmarts_SagePaySuite::images/waiting.png',
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            'Ebizmarts_SagePaySuite::images/waiting.png',
             [
                 '_secure' => true
-            ])
+            ]
+        )
             ->willReturn(self::IMAGE_URL_WAITING);
 
         $orderMock = $this->getMockBuilder(OrderInterface::class)->disableOriginalConstructor()->getMock();
@@ -968,5 +988,178 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         ];
 
         $this->assertEquals($expectedResponse, $fraudColumnMock->prepareDataSource($dataSource));
+    }
+
+    public function testAdditionalInformationIsString()
+    {
+        $orderTest = "String";
+
+        $suiteLoggerMock = $this
+            ->getMockBuilder(Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderRepositoryMock = $this
+            ->getMockBuilder(OrderRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $contextMock = $this
+            ->getMockBuilder(ContextInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $contextMock
+            ->expects($this->once())
+            ->method('getProcessor')
+            ->willReturn(
+                $this
+                    ->getMockBuilder(Processor::class)
+                    ->disableOriginalConstructor()
+                    ->getMock()
+            );
+
+        $uiComponentFactoryMock = $this
+            ->getMockBuilder(UiComponentFactory::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $requestMock = $this
+            ->getMockBuilder(RequestInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $requestMock
+            ->expects($this->once())
+            ->method('isSecure')
+            ->willReturn(true);
+
+        $assetRepositoryMock = $this
+            ->getMockBuilder(Repository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $assetRepositoryMock
+            ->expects($this->never())
+            ->method('getUrlWithParams')
+            ->with(
+                'Ebizmarts_SagePaySuite::images/waiting.png',
+                [
+                    '_secure' => true
+                ]
+            )
+            ->willReturn(self::IMAGE_URL_WAITING);
+
+        $orderMock = $this
+            ->getMockBuilder(OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock = $this
+            ->getMockBuilder(OrderPaymentInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
+        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
+        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
+
+        /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
+        $fraudColumnMock = $this->getMockBuilder(Fraud::class)
+            ->setConstructorArgs([
+                'suiteLogger' => $suiteLoggerMock,
+                'context' => $contextMock,
+                'uiComponentFactory' => $uiComponentFactoryMock,
+                'orderRepository' => $orderRepositoryMock,
+                'assetRepository' => $assetRepositoryMock,
+                'requestInterface' => $requestMock,
+                [],
+                []
+            ])
+            ->setMethods(['getImageNameRed', 'getFieldName'])
+            ->getMock();
+
+        $dataSource = self::DATA_SOURCE;
+
+        $response = $fraudColumnMock->prepareDataSource($dataSource);
+
+        $expectedResponse = [
+            'data' => [
+                'items' => [
+                    [
+                        'entity_id' => self::ENTITY_ID,
+                        'payment_method' => "sagepaysuite"
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $response);
+    }
+
+    public function testAdditionalInformationIsSerialized()
+    {
+        $orderTest = ['fraudcode' => 30, 'fraudrules' => 'rule'];
+        $serializedOrderTest = serialize($orderTest); //@codingStandardsIgnoreLine
+
+        $suiteLoggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
+        $orderRepositoryMock = $this->getMockBuilder(OrderRepositoryInterface::class)->disableOriginalConstructor()->getMock();
+        $contextMock = $this->getMockBuilder(ContextInterface::class)->disableOriginalConstructor()->getMock();
+        $contextMock->expects($this->once())->method('getProcessor')->willReturn(
+            $this->getMockBuilder(Processor::class)
+                ->disableOriginalConstructor()->getMock()
+        );
+        $uiComponentFactoryMock = $this->getMockBuilder(UiComponentFactory::class)->disableOriginalConstructor()->getMock();
+        $requestMock = $this->getMockBuilder(RequestInterface::class)->disableOriginalConstructor()->getMock();
+        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
+
+        $assetRepositoryMock = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
+        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
+            self::IMAGE_PATH . 'zebra.png',
+            [
+                '_secure' => true
+            ]
+        )
+            ->willReturn(self::IMAGE_URL_ZEBRA);
+
+        $orderMock = $this->getMockBuilder(OrderInterface::class)->disableOriginalConstructor()->getMock();
+
+        $paymentMock = $this->getMockBuilder(OrderPaymentInterface::class)->disableOriginalConstructor()->getMock();
+        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
+        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
+        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($serializedOrderTest);
+
+
+        /** @var  Fraud|PHPUnit_Framework_MockObject_MockObject $fraudColumnMock */
+        $fraudColumnMock = $this->getMockBuilder(Fraud::class)
+            ->setConstructorArgs([
+                'suiteLogger' => $suiteLoggerMock,
+                'context' => $contextMock,
+                'uiComponentFactory' => $uiComponentFactoryMock,
+                'orderRepository' => $orderRepositoryMock,
+                'assetRepository' => $assetRepositoryMock,
+                'requestInterface' => $requestMock,
+                [],
+                []
+            ])
+            ->setMethods(['getImageNameRed', 'getFieldName'])
+            ->getMock();
+
+        $fraudColumnMock->expects($this->never())->method('getImageNameRed');
+        $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
+
+        $dataSource = self::DATA_SOURCE;
+
+        $response = $fraudColumnMock->prepareDataSource($dataSource);
+
+        $expectedResponse = [
+            'data' => [
+                'items' => [
+                    [
+                        'entity_id' => self::ENTITY_ID,
+                        'sagepay_fraud_src' => self::IMAGE_URL_ZEBRA,
+                        'payment_method' => "sagepaysuite"
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $response);
     }
 }

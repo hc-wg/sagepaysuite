@@ -45,8 +45,7 @@ class Fraud extends Column
         RequestInterface $requestInterface,
         array $components = [],
         array $data = []
-    )
-    {
+    ) {
         $this->suiteLogger = $suiteLogger;
         $this->orderRepository = $orderRepository;
         $this->assetRepository = $assetRepository;
@@ -75,9 +74,14 @@ class Fraud extends Column
 
                     if ($payment !== null) {
                         $additional = $payment->getAdditionalInformation();
-                        $image = $this->getImage($additional);
-                        $url = $this->assetRepository->getUrlWithParams($image, $params);
-                        $item[$fieldName . '_src'] = $url;
+                        if (is_string($additional)) {
+                            $additional = @unserialize($additional); //@codingStandardsIgnoreLine
+                        }
+                        if (is_array($additional)) {
+                            $image = $this->getImage($additional);
+                            $url = $this->assetRepository->getUrlWithParams($image, $params);
+                            $item[$fieldName . '_src'] = $url;
+                        }
                     }
                 }
             }
@@ -140,7 +144,7 @@ class Fraud extends Column
      */
     public function getWaitingImage()
     {
-       return 'Ebizmarts_SagePaySuite::images/waiting.png';
+        return 'Ebizmarts_SagePaySuite::images/waiting.png';
     }
 
     /**
@@ -181,6 +185,4 @@ class Fraud extends Column
     {
         return isset($additional["mode"]) && $additional["mode"] === Config::MODE_TEST;
     }
-
-
 }

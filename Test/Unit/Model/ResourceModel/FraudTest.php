@@ -96,7 +96,9 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->expects($this->exactly(2))
             ->method('getTable')
             ->withConsecutive(
-                ["sales_order"], ["sales_order_payment"])
+                ["sales_order"],
+                ["sales_order_payment"]
+            )
             ->willReturnOnConsecutiveCalls("sales_order", "sales_order_payment");
 
         $this->assertEquals([198], $fraudModelMock->getOrderIdsToCancel());

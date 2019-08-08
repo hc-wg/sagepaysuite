@@ -349,7 +349,8 @@ class FormTest extends \PHPUnit_Framework_TestCase
                     'resource' => null,
                     'resourceCollection' => null,
                     'data' => [],
-                ])
+                ]
+            )
             ->setMethods(['capture'])
             ->getMock();
 
@@ -386,7 +387,8 @@ class FormTest extends \PHPUnit_Framework_TestCase
                     'resource' => null,
                     'resourceCollection' => null,
                     'data' => [],
-                ])
+                ]
+            )
             ->setMethods(['capture'])
             ->getMock();
 

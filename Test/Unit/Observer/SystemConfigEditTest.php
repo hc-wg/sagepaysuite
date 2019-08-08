@@ -231,5 +231,4 @@ class SystemConfigEditTest extends \PHPUnit_Framework_TestCase
     {
         $eventMock->expects($this->once())->method('__call')->with($this->equalTo('getRequest'))->willReturn($this->makeRequestMock('payment'));
     }
-
 }

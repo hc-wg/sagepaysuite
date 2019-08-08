@@ -125,7 +125,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
                         'licensed' => null,
                         'token_enabled' => false,
                         'tokens' => null,
-                        'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER,
+                        'max_tokens' => $this->configMock->getMaxTokenPerCustomer(),
                         'mode' => null,
                         'low_profile' => '1'
                     ]
@@ -163,7 +163,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
                         'tokens' => [
                             "token_id" => 1
                         ],
-                        'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER,
+                        'max_tokens' => $this->configMock->getMaxTokenPerCustomer(),
                         'mode' => null,
                         'low_profile' => '1'
                     ]
@@ -212,7 +212,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
                         'licensed' => null,
                         'token_enabled' => false,
                         'tokens' => null,
-                        'max_tokens' => \Ebizmarts\SagePaySuite\Model\Config::MAX_TOKENS_PER_CUSTOMER,
+                        'max_tokens' => $this->configMock->getMaxTokenPerCustomer(),
                         'mode' => null,
                         'low_profile' => '1'
                     ]

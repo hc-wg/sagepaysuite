@@ -85,5 +85,4 @@ class PaypalTest extends \PHPUnit_Framework_TestCase
 
         $this->assertContains('ERROR: Invalid response from PayPal', $htmlResult);
     }
-
 }

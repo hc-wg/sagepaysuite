@@ -145,11 +145,6 @@ class Config
     const BASKETFORMAT_XML      = 'xml';
     const BASKETFORMAT_DISABLED = 'Disabled';
 
-    /*
-     * Max tokens per customer
-     */
-    const MAX_TOKENS_PER_CUSTOMER = 3;
-
     /**
      * Current payment method code
      *
@@ -250,6 +245,16 @@ class Config
         $path = $this->getGlobalConfigPath($key);
 
         return $this->scopeConfig->getValue($path, $this->configurationScope, $resolvedConfigurationScopeId);
+    }
+
+    public function getAdvancedValue($key)
+    {
+        $config_value = $this->scopeConfig->getValue(
+            $this->getAdvancedConfigPath($key),
+            $this->configurationScope,
+            $this->configurationScopeId
+        );
+        return $config_value;
     }
 
     /**
@@ -464,11 +469,7 @@ class Config
      */
     public function getAvsCvc()
     {
-        $configValue = $this->scopeConfig->getValue(
-            $this->getAdvancedConfigPath("avscvc"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
+        $configValue = $this->getAdvancedValue("avscvc");
 
         if ($this->methodCode != self::METHOD_PI) {
             $configValue = $this->getAvsCvcLegacyIntegrations($configValue);
@@ -479,22 +480,12 @@ class Config
 
     public function getAutoInvoiceFraudPassed()
     {
-        $config_value = $this->scopeConfig->getValue(
-            $this->getAdvancedConfigPath("fraud_autoinvoice"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
-        return $config_value;
+        return $this->getAdvancedValue("fraud_autoinvoice");
     }
 
     public function getNotifyFraudResult()
     {
-        $config_value = $this->scopeConfig->getValue(
-            $this->getAdvancedConfigPath("fraud_notify"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
-        return $config_value;
+        return $this->getAdvancedValue("fraud_notify");
     }
 
     public function getPaypalBillingAgreement()
@@ -578,12 +569,7 @@ class Config
 
     public function getBasketFormat()
     {
-        $config_value = $this->scopeConfig->getValue(
-            $this->getAdvancedConfigPath("basket_format"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
-        return $config_value;
+        return $this->getAdvancedValue("basket_format");
     }
 
     public function isPaypalForceXml()
@@ -593,12 +579,7 @@ class Config
 
     public function isGiftAidEnabled()
     {
-        $config_value = $this->scopeConfig->getValue(
-            $this->getAdvancedConfigPath("giftaid"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
-        return $config_value;
+        return $this->getAdvancedValue("giftaid");
     }
 
     public function isServerLowProfileEnabled()
@@ -699,11 +680,11 @@ class Config
 
     public function getInvoiceConfirmationNotification()
     {
-        $config_value = $this->scopeConfig->getValue(
-            $this->getAdvancedConfigPath("invoice_confirmation_notification"),
-            $this->configurationScope,
-            $this->configurationScopeId
-        );
-        return $config_value;
+        return $this->getAdvancedValue("invoice_confirmation_notification");
+    }
+
+    public function getMaxTokenPerCustomer()
+    {
+        return $this->getAdvancedValue("max_token");
     }
 }

@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use Ebizmarts\SagePaySuite\Model\Config;
+
 class TokenTest extends \PHPUnit_Framework_TestCase
 {
     private $objectManagerHelper;
@@ -24,6 +26,11 @@ class TokenTest extends \PHPUnit_Framework_TestCase
      */
     private $resourceMock;
 
+    /**
+     * @var \Ebizmarts\SagePaySuite\Model\Config
+     */
+    private $configMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -36,8 +43,8 @@ class TokenTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $configMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
+        $this->configMock = $this
+            ->getMockBuilder(Config::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -50,7 +57,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
             'Ebizmarts\SagePaySuite\Model\Token',
             [
                 'resource' => $this->resourceMock,
-                "config"   => $configMock,
+                "config"   => $this->configMock,
                 "postApi"  => $this->postApiMock
             ]
         );
@@ -300,12 +307,18 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     public function testIsCustomerUsingMaxTokenSlots()
     {
+        $usingMaxToken = true;
+
+        if ($this->configMock->getMaxTokenPerCustomer() > 1) {
+            $usingMaxToken = false;
+        }
+
         $this->resourceMock->expects($this->once())
             ->method('getCustomerTokens')
             ->will($this->returnValue([]));
 
         $this->assertEquals(
-            false,
+            $usingMaxToken,
             $this->tokenModel->isCustomerUsingMaxTokenSlots(1, 'testebizmarts')
         );
     }

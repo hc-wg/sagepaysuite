@@ -42,8 +42,7 @@ class Request extends AbstractHelper
         ObjectManager $objectManager,
         \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory $transactionAmountFactory,
         \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPostFactory $transactionAmountPostFactory
-    )
-    {
+    ) {
         $this->sagepaySuiteConfig = $config;
         $this->objectManager      = $objectManager;
         $this->transactionAmountFactory  = $transactionAmountFactory;
@@ -82,6 +81,14 @@ class Request extends AbstractHelper
         //only send state if US due to Sage Pay 2 char restriction
         if ($data['BillingCountry'] == 'US') {
             $data['BillingState'] = substr($billing_address->getRegionCode(), 0, 2);
+        } else {
+            if ($data['BillingCountry'] == 'IE' && $data['BillingPostCode'] == '') {
+                $data['BillingPostCode'] = "000";
+            } else {
+                if ($data['BillingCountry'] == 'HK' && $data['BillingPostCode'] == '') {
+                    $data['BillingPostCode'] = "000";
+                }
+            }
         }
 
         $data['BillingPhone'] = substr($billing_address->getTelephone(), 0, 20);
@@ -97,6 +104,14 @@ class Request extends AbstractHelper
         //only send state if US due to Sage Pay 2 char restriction
         if ($data['DeliveryCountry'] == 'US') {
             $data['DeliveryState'] = substr($shipping_address->getRegionCode(), 0, 2);
+        } else {
+            if ($data['DeliveryCountry'] == 'IE' && $data['DeliveryPostCode'] == '') {
+                $data['DeliveryPostCode'] = "000";
+            } else {
+                if ($data['DeliveryCountry'] == 'HK' && $data['DeliveryPostCode'] == '') {
+                    $data['DeliveryPostCode'] = "000";
+                }
+            }
         }
 
         $data['DeliveryPhone'] = substr($shipping_address->getTelephone(), 0, 20);
@@ -304,10 +319,11 @@ class Request extends AbstractHelper
      * @param object $parent
      *   Element that the CDATA child should be attached too.
      */
-    private function addChildCData($name, $value, &$parent) {
+    private function addChildCData($name, $value, &$parent)
+    {
         $child = $parent->addChild($name);
 
-        if ($child !== NULL) {
+        if ($child !== null) {
             $child_node = dom_import_simplexml($child);
             $child_owner = $child_node->ownerDocument;
             $child_node->appendChild($child_owner->createCDATASection($value));
@@ -382,14 +398,14 @@ class Request extends AbstractHelper
             //<recipientAdd1>
             $address1 = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getStreetLine(1)), 0, 100));
             if (!empty($address1)) {
-                $this->addChildCData('recipientAdd1', $address1,$node);
+                $this->addChildCData('recipientAdd1', $address1, $node);
             }
 
             //<recipientAdd2>
             if ($shippingAdd->getStreet(2)) {
                 $recipientAdd2 = $this->stringToSafeXMLChar(substr(trim($shippingAdd->getStreetLine(2)), 0, 100));
                 if (!empty($recipientAdd2)) {
-                    $this->addChildCData('recipientAdd2', $recipientAdd2,$node);
+                    $this->addChildCData('recipientAdd2', $recipientAdd2, $node);
                 }
             }
 

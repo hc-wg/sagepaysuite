@@ -44,7 +44,7 @@ $payment = $block->getPayment();
             <?php } ?>
             <?php if ($payment->getAdditionalInformation("statusDetail")) {
                 $statusDetail = $payment->getAdditionalInformation("statusDetail");
-                if (strrpos($payment->getAdditionalInformation("statusDetail"), " : ") !== FALSE) {
+                if (strrpos($payment->getAdditionalInformation("statusDetail"), " : ") !== false) {
                     $statusDetail = explode(" : ", $statusDetail);
                     $statusDetail = $statusDetail[1];
                 }
@@ -55,7 +55,7 @@ $payment = $block->getPayment();
                 </tr>
             <?php } ?>
             <?php $statusCode = $payment->getAdditionalInformation("statusCode"); ?>
-            <?php if ($this->isThreeDRedirect($statusCode)): ?>
+            <?php if ($this->isThreeDRedirect($statusCode)) : ?>
                 <tr>
                     <td colspan="2">
                         <div align="left" class="message message-info">
@@ -119,33 +119,33 @@ $payment = $block->getPayment();
             ) { ?>
                 <tr>
                     <td colspan="2">
-                        <?php echo $block->escapeHtml(__('Not enough information.')); ?>
+                            <?php echo $block->escapeHtml(__('Not enough information.')); ?>
                     </td>
                 </tr>
             <?php } else { ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('Fraud Recommendation')); ?>:</th>
                     <td><?php $html = $payment->getAdditionalInformation("fraudscreenrecommendation");
-                        switch ($html) {
-                            case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_CHALLENGE:
-                            case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD:
-                                $html = '<span style="color:orange;">' . $html . '</span>';
-                                break;
-                            case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY:
-                            case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT:
-                                $html = '<span style="color:red;">' . $html . '</span>';
-                                break;
-                        }
+                    switch ($html) {
+                        case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_CHALLENGE:
+                        case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD:
+                            $html = '<span style="color:orange;">' . $html . '</span>';
+                            break;
+                        case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY:
+                        case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT:
+                            $html = '<span style="color:red;">' . $html . '</span>';
+                            break;
+                    }
                         echo $html;
-                        ?>
+                    ?>
                     </td>
                 </tr>
                 <?php if (!empty($payment->getAdditionalInformation("fraudprovidername"))) { ?>
                     <tr>
                         <th><?php echo $block->escapeHtml(__('Provider')); ?>:</th>
-                        <td><?php if($payment->getAdditionalInformation("fraudprovidername") == "ReD"){
+                        <td><?php if ($payment->getAdditionalInformation("fraudprovidername") == "ReD") {
                                 $html = '<img style="height: 20px;" src="' . $block->getViewFileUrl('Ebizmarts_SagePaySuite::images/red_logo.png') . '">';
-                            }else{
+                            } else {
                                 $html = '<span><img style="height: 20px;vertical-align: text-top;" src="' . $block->getViewFileUrl('Ebizmarts_SagePaySuite::images/t3m_logo.png') . '"> T3M</span>';
                             }
                             echo $html;

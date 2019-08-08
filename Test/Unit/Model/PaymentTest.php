@@ -225,7 +225,11 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
     {
         $testAmount  = 963.80;
         $testVpsTxId = 'D55E2CC0-168C-F770-6862-C28D0CAD0755';
-        $orderMock = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
+
+        $orderMock = $this
+            ->getMockBuilder(Order::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $sharedApiMock = $this
             ->getMockBuilder(Shared::class)
@@ -237,7 +241,14 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
             ->with($testVpsTxId, $testAmount, $orderMock)
             ->willReturn($this->makeRefundResponseMock());
 
-        $configMock = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
+        $configMock = $this
+            ->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock
+            ->expects($this->once())
+            ->method('getCurrencyConfig')
+            ->willReturn(Config::CURRENCY_BASE);
 
         /** @var Payment $sut */
         $sut = $this->makeObjectManager()->getObject(
@@ -249,11 +260,74 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
             ]
         );
 
-        $paymentMock = $this->makePaymentMock($orderMock);
+        $paymentMock = $this->getMockBuilder(OrderPayment::class)->disableOriginalConstructor()->getMock();
         $paymentMock->expects($this->once())->method('getParentTransactionId')->willReturn($testVpsTxId);
         $paymentMock->expects($this->once())->method('setIsTransactionClosed')->with(1);
         $paymentMock->expects($this->once())->method('setShouldCloseParentTransaction')->with(1);
-        $paymentMock->expects($this->once())->method('getOrder')->willReturn($orderMock);
+        $paymentMock->expects($this->exactly(2))->method('getOrder')->willReturn($orderMock);
+        $this->checkSetTransactionAdditionalCorrectRefund($paymentMock);
+
+        $sut->refund($paymentMock, $testAmount);
+    }
+
+    public function testRefundMultiCurrencyTransaction()
+    {
+        $testAmount  = 963.80;
+        $rate = 1.09;
+        $testRefundTransaction = $testAmount * $rate;
+        $testVpsTxId = 'D55E2CC0-168C-F770-6862-C28D0CAD0755';
+
+        $orderMock = $this
+            ->getMockBuilder(Order::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock
+            ->expects($this->once())
+            ->method('getOrderCurrencyCode')
+            ->willReturn('EUR');
+        $orderMock
+            ->expects($this->once())
+            ->method('getBaseCurrencyCode')
+            ->willReturn('GBP');
+        $orderMock
+            ->expects($this->once())
+            ->method('getBaseToOrderRate')
+            ->willReturn($rate);
+
+        $sharedApiMock = $this
+            ->getMockBuilder(Shared::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sharedApiMock
+            ->expects($this->once())
+            ->method('refundTransaction')
+            ->with($testVpsTxId, $testRefundTransaction, $orderMock)
+            ->willReturn($this->makeRefundResponseMock());
+
+        $configMock = $this
+            ->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock
+            ->expects($this->once())
+            ->method('getCurrencyConfig')
+            ->willReturn(Config::CURRENCY_SWITCHER);
+
+        /** @var Payment $sut */
+        $sut = $this->makeObjectManager()->getObject(
+            Payment::class,
+            [
+                'sharedApi'   => $sharedApiMock,
+                'config'      => $configMock,
+                'suiteHelper' => $this->makeSagePayHelperDataMock()
+            ]
+        );
+
+        $paymentMock = $this->getMockBuilder(OrderPayment::class)->disableOriginalConstructor()->getMock();
+        $paymentMock->expects($this->once())->method('getParentTransactionId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->once())->method('setIsTransactionClosed')->with(1);
+        $paymentMock->expects($this->once())->method('setShouldCloseParentTransaction')->with(1);
+        $paymentMock->expects($this->exactly(2))->method('getOrder')->willReturn($orderMock);
         $this->checkSetTransactionAdditionalCorrectRefund($paymentMock);
 
         $sut->refund($paymentMock, $testAmount);
@@ -437,5 +511,4 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
                 ['BankAuthCode', '999777']
             );
     }
-
 }
