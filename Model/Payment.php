@@ -61,7 +61,10 @@ class Payment
                     $result = $this->sharedApi->captureDeferredTransaction($transactionId, $amount, $order);
                 } elseif ($this->isAuthenticateAction($paymentAction)) {
                     $action = 'authorizing';
-                    $result = $this->sharedApi->authorizeTransaction($transactionId, $amount, $order);
+                    if ($this->config->getCurrencyConfig() === CONFIG::CURRENCY_SWITCHER) {
+                        $amount = $this->calculateAmount($amount, $order);
+                    }
+                    $result = $this->api->authorizeTransaction($transactionId, $amount, $order);
                 }
 
                 if (is_array($result) && array_key_exists('data', $result)) {
