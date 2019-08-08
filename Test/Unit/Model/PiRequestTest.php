@@ -135,7 +135,7 @@ class PiRequestTest extends \PHPUnit\Framework\TestCase
         $billingAddressMock->expects($this->once())->method('getStreetLine')->with(1)->willReturn('50-51 Patrick Street');
         $billingAddressMock->expects($this->once())->method('getCity')->willReturn('Dun Laoghaireinternational long cityrt56123');
         $billingAddressMock->expects($this->once())->method('getCountryId')->willReturn('IE');
-        $billingAddressMock->expects($this->once())->method('getPostcode')->willReturn('super long 1234 post  code');
+        $billingAddressMock->expects($this->once())->method('getPostcode')->willReturn('');
 
         $deliveryAddressMock = $this->getMockBuilder(\Magento\Quote\Model\Quote\Address::class)
             ->disableOriginalConstructor()
@@ -147,7 +147,7 @@ class PiRequestTest extends \PHPUnit\Framework\TestCase
             'Dun Laoghaire over 40- chDun Laoghaire over 40 chars'
         );
         $deliveryAddressMock->expects($this->once())->method('getCountryId')->willReturn('IE');
-        $deliveryAddressMock->expects($this->once())->method('getPostcode')->willReturn('delivery long9823 code');
+        $deliveryAddressMock->expects($this->once())->method('getPostcode')->willReturn('');
 
         $requestHelperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Request::class)
             ->disableOriginalConstructor()

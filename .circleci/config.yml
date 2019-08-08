@@ -37,7 +37,7 @@ jobs:
            name: Install PHP extensions
            command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
 
-        - run: sudo apt-get install -y mysql-client
+        - run: sudo apt-get install -y mariadb-client
 
         # Prepare Apache env
         - run: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
@@ -75,8 +75,9 @@ jobs:
         - run: /home/circleci/magento2/phpunit-6.2.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
 
         # Run code checks
-        - run: composer create-project --repository=https://repo.magento.com magento/marketplace-eqp 2.0.0
-        - run: cd 2.0.0 && vendor/bin/phpcs ../app/code/Ebizmarts/SagePaySuite/* --standard=MEQP2,PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
+        - run: composer require --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard
+        - run: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
+        - run: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
 
     run_php70:
       docker:
@@ -153,8 +154,9 @@ jobs:
         - run: /home/circleci/magento2/phpunit-6.2.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
 
         # Run code checks
-        - run: composer create-project --repository=https://repo.magento.com magento/marketplace-eqp 2.0.0
-        - run: cd 2.0.0 && vendor/bin/phpcs ../app/code/Ebizmarts/SagePaySuite/* --standard=MEQP2,PSR1,PSR2 --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
+        - run: composer require --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard
+        - run: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
+        - run: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
 
 workflows:
   version: 2

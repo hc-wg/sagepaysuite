@@ -155,7 +155,7 @@ class RepeatTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('refund')
             ->with($paymentMock, 100)
-            ->willThrowException($exceptionMock);;
+            ->willThrowException($exceptionMock);
 
         $this->repeatModel->refund($paymentMock, 100);
     }

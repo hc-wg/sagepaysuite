@@ -148,10 +148,10 @@ class Notify extends Action
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
                 $payment->setAdditionalInformation('statusDetail', $statusDetail);
                 $payment->setAdditionalInformation('threeDStatus', $this->postData->{'3DSecureStatus'});
-                if(isset($this->postData->{'BankAuthCode'})){
+                if (isset($this->postData->{'BankAuthCode'})) {
                     $payment->setAdditionalInformation('bankAuthCode', $this->postData->{'BankAuthCode'});
                 }
-                if(isset($this->postData->{'TxAuthNo'})){
+                if (isset($this->postData->{'TxAuthNo'})) {
                     $payment->setAdditionalInformation('txAuthNo', $this->postData->{'TxAuthNo'});
                 }
                 $payment->setCcType($this->postData->CardType);
@@ -166,7 +166,6 @@ class Notify extends Action
             $this->persistToken($order);
 
             if ($status == "ABORT") { //Transaction canceled by customer
-
                 //cancel pending payment order
                 $this->cancelOrder($order);
                 return $this->returnAbort($this->quote->getId());
@@ -190,7 +189,6 @@ class Notify extends Action
 
                 return $this->returnOk();
             } else { //Transaction failed with NOTAUTHED, REJECTED or ERROR
-
                 //cancel pending payment order
                 $this->cancelOrder($order);
 
