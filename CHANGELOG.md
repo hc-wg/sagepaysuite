@@ -1,3 +1,17 @@
+## [1.1.28] - 2019-08-07
+### Added
+- Setting to set max tokens per customer
+
+### Changed
+- Hide Add New Card when reached max tokens
+
+### Fixed
+- Label and Checkbox from first token being shown when press add new card
+- Send 000 post code when field is left empty for Ireland or Hong Kong (SERVER and FORM)
+- PI always sending 000 post code for Ireland and Hong Kong even if the customer entered a post code
+- Module breaks Sales -> Order when the payment additional information is serialized
+- Multi Currency refunds using Base Currency amount (FORM, SERVER, PayPal)
+
 ## [1.1.27] - 2019-06-19
 ### Fixed
 - Module breaks Sales -> Order
@@ -306,3 +320,33 @@
    - FORM integration (frontend)
    - PI integration (frontend)
    - Online Refunds
+   
+[1.1.28]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.28
+[1.1.27]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.27
+[1.1.26]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.26
+[1.1.25]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.25
+[1.1.24]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.24
+[1.1.23]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.23
+[1.1.22]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.22
+[1.1.21]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.21
+[1.1.20]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.20
+[1.1.19]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.19
+[1.1.18]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.18
+[1.1.17]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.17
+[1.1.16]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.16
+[1.1.15]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.15
+[1.1.14]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.14
+[1.1.13]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.13
+[1.1.12]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.12
+[1.1.11]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.11
+[1.1.10]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.10
+[1.1.9]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.9
+[1.1.8]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.8
+[1.1.7]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.7
+[1.1.6.0]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.6.0
+[1.1.5.2]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.5.2
+[1.1.5]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.5
+[1.1.4]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.4
+[1.1.2]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.2
+[1.1.0]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.1.0
+[1.0.6]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/v1.0.6
