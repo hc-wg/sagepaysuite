@@ -25,7 +25,8 @@ class Version extends Template implements RendererInterface
      * @param Context $context
      * @param array $data
      */
-    public function __construct(ModuleVersion $moduleVersion, Context $context, array $data = []) {
+    public function __construct(ModuleVersion $moduleVersion, Context $context, array $data = [])
+    {
         $this->moduleVersion = $moduleVersion;
         parent::__construct($context, $data);
     }

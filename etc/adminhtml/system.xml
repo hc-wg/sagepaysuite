@@ -92,6 +92,11 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>sagepaysuite/advanced/invoice_confirmation_notification</config_path>
                     </field>
+                    <field id="max_token" translate="label" type="text" sortOrder="32" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>Max amount of tokens per customer</label>
+                        <can_be_empty>0</can_be_empty>
+                        <config_path>sagepaysuite/advanced/max_token</config_path>
+                    </field>
                 </group>
                 <group id="sagepaysuiteform" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sage Pay FORM Integration</label>

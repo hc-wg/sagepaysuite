@@ -59,4 +59,9 @@ class TokenList extends \Magento\Framework\View\Element\Template
         }
         return $this->getUrl('customer/account/');
     }
+
+    public function getMaxTokenPerCustomer()
+    {
+        return $this->_config->getMaxTokenPerCustomer();
+    }
 }
