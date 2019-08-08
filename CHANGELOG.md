@@ -1,3 +1,18 @@
+## [1.3.7] - 2019-08-07
+### Added
+- Setting to set max tokens per customer
+
+### Changed
+- Hide Add New Card when reached max tokens
+
+### Fixed
+- Label and Checkbox from first token being shown when press add new card
+- Send 000 post code when field is left empty for Ireland or Hong Kong (SERVER and FORM)
+- PI always sending 000 post code for Ireland and Hong Kong even if the customer entered a post code
+- Module breaks Sales -> Order when the payment additional information is serialized
+- Multi Currency refunds using Base Currency amount (FORM, SERVER, PayPal)
+- Change excluding minification strategy
+
 ## [1.3.6] - 2019-06-19
 ### Added
 - PI DropIn compatibility with OneStepCheckout
@@ -71,3 +86,12 @@
 ### Fixed
 - Magento not running schema updates. Switching to Schema patches
 - New CSRF checks rejecting callbacks
+
+[1.3.7]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.7
+[1.3.6]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.6
+[1.3.5]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.5
+[1.3.4]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.4
+[1.3.3]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.3
+[1.3.2]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.2
+[1.3.1]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.1
+[1.3.0]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.0
