@@ -64,7 +64,7 @@ class Payment
                     if ($this->config->getCurrencyConfig() === CONFIG::CURRENCY_SWITCHER) {
                         $amount = $this->calculateAmount($amount, $order);
                     }
-                    $result = $this->api->authorizeTransaction($transactionId, $amount, $order);
+                    $result = $this->sharedApi->authorizeTransaction($transactionId, $amount, $order);
                 }
 
                 if (is_array($result) && array_key_exists('data', $result)) {
