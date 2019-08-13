@@ -250,12 +250,11 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
         $sut = $this->makeObjectManager()->getObject(
             Payment::class,
             [
-                'config'      => $configMock,
-                'suiteHelper' => $this->makeSagePayHelperDataMock()
+                'sharedApi'   => $sharedApiMock,
+                'suiteHelper' => $this->makeSagePayHelperDataMock(),
+                'config'      => $configMock
             ]
         );
-
-        $sut->setApi($sharedApiMock);
 
         $orderMock = $this->makeOrderMockPendingState();
         $orderMock
