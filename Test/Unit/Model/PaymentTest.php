@@ -246,6 +246,72 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
         $sut->capture($paymentMock, $testAmount);
     }
 
+    public function testCaptureMultiCurrencyAuthenticateForm()
+    {
+        $testAmount  = 963.80;
+        $rate = 1.09;
+        $testInvioceTransaction = $testAmount * $rate;
+        $testVpsTxId = 'D55E2CC0-168C-F770-6862-C28D0CAD0755';
+
+        $sharedApiMock = $this
+            ->getMockBuilder(Shared::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sharedApiMock
+            ->expects($this->once())->method('authorizeTransaction')
+            ->with($testVpsTxId, $testInvioceTransaction)
+            ->willReturn($this->makeAuthoriseResponseMock());
+
+        $configMock = $this
+            ->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock
+            ->expects($this->once())
+            ->method('getCurrencyConfig')
+            ->willReturn(Config::CURRENCY_SWITCHER);
+
+        /** @var Payment $sut */
+        $sut = $this->makeObjectManager()->getObject(
+            Payment::class,
+            [
+                'config'      => $configMock,
+                'suiteHelper' => $this->makeSagePayHelperDataMock()
+            ]
+        );
+
+        $sut->setApi($sharedApiMock);
+
+        $orderMock = $this->makeOrderMockPendingState();
+        $orderMock
+            ->expects($this->once())
+            ->method('getOrderCurrencyCode')
+            ->willReturn('EUR');
+        $orderMock
+            ->expects($this->once())
+            ->method('getBaseCurrencyCode')
+            ->willReturn('GBP');
+        $orderMock
+            ->expects($this->once())
+            ->method('getBaseToOrderRate')
+            ->willReturn($rate);
+
+
+        $paymentMock = $this->makePaymentMock($orderMock);
+        $paymentMock
+            ->expects($this->exactly(2))
+            ->method('getAdditionalInformation')
+            ->with('paymentAction')
+            ->willReturn('AUTHENTICATE');
+        $paymentMock->expects($this->once())->method('getLastTransId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->once())->method('setParentTransactionId')->with($testVpsTxId);
+        $paymentMock->expects($this->exactly(2))->method('getParentTransactionId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->once())->method('setTransactionId')->with('D1C98A42-E2F2-F7BB-631C-B439303A5EC5');
+        $this->checkSetTransactionAdditionalCorrect($paymentMock);
+
+        $sut->capture($paymentMock, $testAmount);
+    }
+
     public function testRefundTransaction()
     {
         $testAmount  = 963.80;
