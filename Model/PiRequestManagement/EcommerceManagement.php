@@ -21,6 +21,7 @@ use Magento\Framework\Validator\Exception as ValidatorException;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
 use Magento\Sales\Model\Order\Payment\TransactionFactory;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Magento\Sales\Api\PaymentFailuresInterface;
 
 class EcommerceManagement extends RequestManagement
 {
@@ -43,6 +44,9 @@ class EcommerceManagement extends RequestManagement
     /** @var Config */
     private $config;
 
+    /** @var PaymentFailuresInterface */
+    private $paymentFailures;
+
     public function __construct(
         Checkout $checkoutHelper,
         PIRest $piRestApi,
@@ -56,7 +60,8 @@ class EcommerceManagement extends RequestManagement
         TransactionFactory $transactionFactory,
         \Magento\Quote\Model\QuoteValidator $quoteValidator,
         InvoiceSender $invoiceEmailSender,
-        Config $config
+        Config $config,
+        PaymentFailuresInterface $paymentFailures
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -72,7 +77,8 @@ class EcommerceManagement extends RequestManagement
         $this->transactionFactory = $transactionFactory;
         $this->quoteValidator     = $quoteValidator;
         $this->invoiceEmailSender = $invoiceEmailSender;
-        $this->config = $config;
+        $this->config             = $config;
+        $this->paymentFailures    = $paymentFailures;
     }
 
     /**
@@ -195,6 +201,13 @@ class EcommerceManagement extends RequestManagement
                 $this->getPiRestApi()->void($this->getPayResult()->getTransactionId());
             } catch (ApiException $apiException) {
                 $this->sagePaySuiteLogger->logException($exceptionObject);
+            }
+        } else {
+            if ($this->getPayResult() !== null && $this->getPayResult()->getStatusCode() !== "0000") {
+                $this->paymentFailures->handle(
+                    (int)$this->getQuote()->getId(),
+                    $this->getPayResult()->getStatusDetail()
+                );
             }
         }
     }
