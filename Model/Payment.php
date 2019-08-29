@@ -6,6 +6,7 @@ use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\PaymentOperations;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Payment\Model\InfoInterface;
 use Magento\Sales\Model\Order;
 
 class Payment
@@ -42,12 +43,12 @@ class Payment
     }
 
     /**
-     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param InfoInterface $payment
      * @param $amount
      * @return $this
      * @throws LocalizedException
      */
-    public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
+    public function capture(InfoInterface $payment, $amount)
     {
         try {
             $transactionId = "-1";
@@ -68,6 +69,9 @@ class Payment
                     $result = $this->api->captureDeferredTransaction($transactionId, $amount, $order);
                 } elseif ($this->isAuthenticateAction($paymentAction)) {
                     $action = 'authorizing';
+                    if ($this->config->getCurrencyConfig() === CONFIG::CURRENCY_SWITCHER) {
+                        $amount = $this->calculateAmount($amount, $order);
+                    }
                     $result = $this->api->authorizeTransaction($transactionId, $amount, $order);
                 }
 
@@ -103,15 +107,20 @@ class Payment
     }
 
     /**
-     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param InfoInterface $payment
      * @param float $amount
      * @return $this
      * @throws LocalizedException
      */
-    public function refund(\Magento\Payment\Model\InfoInterface $payment, $amount)
+    public function refund(InfoInterface $payment, $amount)
     {
+        $order = $payment->getOrder();
         $transactionId = $this->suiteHelper->clearTransactionId($payment->getParentTransactionId());
+
         try {
+            if ($this->config->getCurrencyConfig() === CONFIG::CURRENCY_SWITCHER) {
+                $amount = $this->calculateAmount($amount, $order);
+            }
             $this->tryRefund($payment, $transactionId, $amount);
         } catch (ApiException $apiException) {
             $this->logger->logException($apiException);
@@ -127,12 +136,12 @@ class Payment
     }
 
     /**
-     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param InfoInterface $payment
      * @param $transactionId
      * @param $amount
      * @return mixed
      */
-    private function tryRefund(\Magento\Payment\Model\InfoInterface $payment, $transactionId, $amount)
+    private function tryRefund(InfoInterface $payment, $transactionId, $amount)
     {
         $result = $this->api->refundTransaction($transactionId, $amount, $payment->getOrder());
 
@@ -145,7 +154,7 @@ class Payment
     }
 
     /**
-     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param InfoInterface $payment
      * @param string $paymentAction
      * @param \Magento\Framework\DataObject $stateObject
      */
@@ -173,10 +182,10 @@ class Payment
     }
 
     /**
-     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param InfoInterface $payment
      * @param $result
      */
-    private function addAdditionalInformationToTransaction(\Magento\Payment\Model\InfoInterface $payment, $result)
+    private function addAdditionalInformationToTransaction(InfoInterface $payment, $result)
     {
         if (\is_array($result) && array_key_exists('data', $result)) {
             foreach ($result['data'] as $name => $value) {
@@ -206,20 +215,20 @@ class Payment
     }
 
     /**
-     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param InfoInterface $payment
      * @param $order
      * @return bool
      */
-    private function canCaptureAuthorizedTransaction(\Magento\Payment\Model\InfoInterface $payment, $order)
+    private function canCaptureAuthorizedTransaction(InfoInterface $payment, $order)
     {
         return $payment->getLastTransId() && $order->getState() != Order::STATE_PENDING_PAYMENT;
     }
 
     /**
-     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param InfoInterface $payment
      * @return mixed|null|string
      */
-    private function getTransactionPaymentAction(\Magento\Payment\Model\InfoInterface $payment)
+    private function getTransactionPaymentAction(InfoInterface $payment)
     {
         $paymentAction = $this->config->getSagepayPaymentAction();
         if ($payment->getAdditionalInformation('paymentAction')) {
@@ -241,8 +250,8 @@ class Payment
 
         if ($baseCurrencyCode !== $orderCurrencyCode) {
             $rate = $order->getBaseToOrderRate();
-            $invoiceAmount = $amount * $rate;
-            $amount = $invoiceAmount;
+            $currencySwitcherAmount = $amount * $rate;
+            $amount = $currencySwitcherAmount;
         }
         return $amount;
     }
