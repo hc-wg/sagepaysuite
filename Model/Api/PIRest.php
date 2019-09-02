@@ -26,6 +26,7 @@ use Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory;
 use Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Store\Model\ScopeInterface;
+use stdClass;
 use function property_exists;
 
 /**
@@ -314,10 +315,10 @@ class PIRest
     }
 
     /**
-     * @param string $resultData
+     * @param \stdClass $resultData
      * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
-    private function validateThreeDSubmit(string $resultData)
+    private function validateThreeDSubmit(\stdClass $resultData)
     {
         if (!property_exists($resultData, 'status')) {
             throw new ApiException(__('Invalid 3D secure response.'));
@@ -328,7 +329,7 @@ class PIRest
      * @param string $resultData
      * @return PiTransactionResultThreeDInterface
      */
-    private function threeDSecureSubmitSetResultStatus(string $resultData): PiTransactionResultThreeDInterface
+    private function threeDSecureSubmitSetResultStatus(\stdClass $resultData): PiTransactionResultThreeDInterface
     {
         /** @var PiTransactionResultThreeD $response */
         $response = $this->threedStatusResultFactory->create();
