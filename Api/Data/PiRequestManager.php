@@ -123,4 +123,21 @@ class PiRequestManager extends \Ebizmarts\SagePaySuite\Api\Data\PiRequest implem
     {
         return $this->_get(self::TRANSACTION_ID);
     }
+
+    /**
+     * @return string
+     */
+    public function getCres()
+    {
+        return $this->_get(self::CRES);
+    }
+
+    /**
+     * @param string $parEs
+     * @return void
+     */
+    public function setCres($cRes)
+    {
+        $this->setData(self::CRES, $cRes);
+    }
 }
