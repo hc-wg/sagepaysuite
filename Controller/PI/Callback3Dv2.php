@@ -6,10 +6,13 @@ use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
+use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
+use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 
@@ -27,6 +30,14 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
     /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager */
     private $piRequestManagerDataFactory;
 
+    /** @var Session */
+    private $checkoutSession;
+
+    /**
+     * @var OrderRepositoryInterface
+     */
+    private $orderRepository;
+
     /**
      * Callback3D constructor.
      * @param Context $context
@@ -40,12 +51,16 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
         Config $config,
         LoggerInterface $logger,
         ThreeDSecureCallbackManagement $requester,
-        PiRequestManagerFactory $piReqManagerFactory
+        PiRequestManagerFactory $piReqManagerFactory,
+        Session $checkoutSession,
+        OrderRepositoryInterface $orderRepository
     ) {
         parent::__construct($context);
         $this->config = $config;
         $this->config->setMethodCode(Config::METHOD_PI);
         $this->logger = $logger;
+        $this->checkoutSession    = $checkoutSession;
+        $this->orderRepository = $orderRepository;
 
         $this->requester = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
@@ -53,18 +68,23 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
 
     public function execute()
     {
-        //WIP TODO.
-
         try {
+            $orderId = (int)$this->checkoutSession->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
+            $order = $this->orderRepository->get($orderId);
+
+            $payment = $order->getPayment();
+
             /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
             $data = $this->piRequestManagerDataFactory->create();
-            $data->setTransactionId($this->getRequest()->getParam("transactionId"));
-            $data->setParEs($this->getRequest()->getPost('PaRes'));
+            $data->setTransactionId($payment->getLastTransId());
+            $data->setCres($this->getRequest()->getPost('cres'));
             $data->setVendorName($this->config->getVendorname());
             $data->setMode($this->config->getMode());
             $data->setPaymentAction($this->config->getSagepayPaymentAction());
 
             $this->requester->setRequestData($data);
+
+            $this->setRequestParamsForConfirmPayment($orderId, $order);
 
             $response = $this->requester->placeOrder();
 
@@ -121,5 +141,17 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
     public function validateForCsrf(RequestInterface $request): ?bool
     {
         return true;
+    }
+
+    /**
+     * @param int $orderId
+     * @param \Magento\Sales\Api\Data\OrderInterface $order
+     */
+    private function setRequestParamsForConfirmPayment(int $orderId, \Magento\Sales\Api\Data\OrderInterface $order)
+    {
+        $this->getRequest()->setParams([
+                'orderId' => $orderId,
+                'quoteId' => $order->getQuoteId()
+            ]);
     }
 }
