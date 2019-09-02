@@ -17,6 +17,7 @@ interface PiTransactionResultInterface
     const THREED_SECURE       = 'threed_secure';
     const ACS_URL             = 'acs_url';
     const PAR_EQ              = 'par_eq';
+    const C_REQ              = 'c_req';
     const TX_AUTH_NO          = 'tx_auth_no';
     const AVS_CVC_CHECK       = 'avs_cvc_check';
 
@@ -191,6 +192,17 @@ interface PiTransactionResultInterface
      * @return string
      */
     public function getParEq();
+
+    /**
+     * @param $creq
+     * @return void
+     */
+    public function setCReq($creq);
+
+    /**
+     * @return string
+     */
+    public function getCReq();
 
     /**
      * @param $pareq
