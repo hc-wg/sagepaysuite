@@ -18,11 +18,11 @@ class Protocol implements ArrayInterface
     {
         return [
             [
-                'value' => '3.00',
-                'label' => __('3.00'),
+                'value' => \Ebizmarts\SagePaySuite\Model\Config::VPS_PROTOCOL,
+                'label' => __(\Ebizmarts\SagePaySuite\Model\Config::VPS_PROTOCOL),
             ],
             [
-                'value' => '4.00',
+                'value' => \Ebizmarts\SagePaySuite\Model\Config::VPS_PROTOCOL_FOUR,
                 'label' => __('4.00 (3Dv2)')
             ]
         ];
