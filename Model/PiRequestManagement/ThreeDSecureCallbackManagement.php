@@ -95,11 +95,19 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         $payResult = $this->payResultFactory->create();
         $this->setPayResult($payResult);
 
-        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $submit3DResult */
-        $submit3DResult = $this->getPiRestApi()->submit3D(
-            $this->getRequestData()->getParEs(),
-            $this->getRequestData()->getTransactionId()
-        );
+        if ($this->config->shouldUse3dV2()) {
+            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $submit3Dv2Result */
+            $submit3DResult = $this->getPiRestApi()->submit3Dv2(
+                $this->getRequestData()->getCres(),
+                $this->getRequestData()->getTransactionId()
+            );
+        } else {
+            /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $submit3DResult */
+            $submit3DResult = $this->getPiRestApi()->submit3D(
+                $this->getRequestData()->getParEs(),
+                $this->getRequestData()->getTransactionId()
+            );
+        }
 
         $this->getPayResult()->setStatus($submit3DResult->getStatus());
 
@@ -129,7 +137,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
             $this->confirmPayment($transactionDetailsResult);
 
             //remove order pre-saved flag from checkout
-            $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
+            $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
         } else {
             $this->getResult()->setErrorMessage("Invalid 3D secure authentication.");
         }
