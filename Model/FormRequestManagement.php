@@ -143,7 +143,7 @@ class FormRequestManagement implements FormManagementInterface
             $order = $this->checkoutHelper->placeOrder();
             if ($order->getEntityId()) {
                 //set pre-saved order flag in checkout session
-                $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", $order->getId());
+                $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, $order->getId());
 
                 //set payment data
                 $payment = $order->getPayment();
