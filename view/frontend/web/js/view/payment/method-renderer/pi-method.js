@@ -57,6 +57,9 @@ define(
             dropInEnabled: function () {
                 return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.dropin == 1;
             },
+            scaEnabled: function () {
+                return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.sca == 1;
+            },
             isActive: function () {
                 return true;
             },
@@ -320,8 +323,6 @@ define(
 
                 var callbackUrl = url.build('sagepaysuite/pi/callback3D');
 
-                var callbackUrlv2 = url.build('sagepaysuite/pi/callback3Dv2');
-
                 var sagePayRequestData = {
                     "merchant_session_key": self.merchantSessionKey,
                     "card_identifier": self.cardIdentifier,
@@ -348,7 +349,6 @@ define(
                     JSON.stringify(payload)
                 ).done(
                     function (response) {
-
                         if (self.dropInEnabled()) {
                             fullScreenLoader.stopLoader();
                         }
@@ -379,42 +379,36 @@ define(
                                 /**
                                  * 3D secure authentication required
                                  */
+                                if (self.scaEnabled()) {
+                                    var form3Dv2 = document.getElementById(self.getCode() + '-3DsecureV2-form');
+                                    form3Dv2.setAttribute('action', response.acs_url);
+                                    form3Dv2.elements[0].setAttribute('value', response.creq);
 
-                                //add transactionId param to callback
-                                callbackUrl += "?transactionId=" + response.transaction_id +
-                                    "&orderId=" + response.order_id +
-                                    "&quoteId=" + response.quote_id;
+                                    if (!self.sagePayIsMobile()) {
+                                        self.open3DModal();
+                                        form3Dv2.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
+                                    }
+                                    form3Dv2.submit();
+                                } else {
+                                    //add transactionId param to callback
+                                    callbackUrl += "?transactionId=" + response.transaction_id +
+                                        "&orderId=" + response.order_id +
+                                        "&quoteId=" + response.quote_id;
 
-                                //add transactionId param to callback v2
-                                callbackUrlv2 += "?transactionId=" + response.transaction_id +
-                                    "&orderId=" + response.order_id +
-                                    "&quoteId=" + response.quote_id;
+                                    //Build 3D form.
+                                    var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
+                                    form3D.setAttribute('action', response.acs_url);
+                                    form3D.elements[0].setAttribute('value', response.par_eq);
+                                    form3D.elements[1].setAttribute('value', callbackUrl);
+                                    form3D.elements[2].setAttribute('value', response.transaction_id);
 
-                                //Build 3D form.
-                                var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
-                                form3D.setAttribute('action', response.acs_url);
-                                form3D.elements[0].setAttribute('value', response.par_eq);
-                                form3D.elements[1].setAttribute('value', callbackUrl);
-                                form3D.elements[2].setAttribute('value', response.transaction_id);
+                                    if (!self.sagePayIsMobile()) {
+                                        self.open3DModal();
+                                        form3D.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
+                                    }
 
-                                if (!self.sagePayIsMobile()) {
-                                    self.open3DModal();
-                                    form3D.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
+                                    form3D.submit();
                                 }
-
-                                form3D.submit();
-
-                                var form3Dv2 = document.getElementById(self.getCode() + '-3DsecureV2-form');
-                                form3Dv2.setAttribute('action', response.acs_url);
-                                form3Dv2.elements[0].setAttribute('value', response.par_eq);
-                                form3Dv2.elements[1].setAttribute('value', callbackUrlv2);
-                                form3Dv2.elements[2].setAttribute('value', response.transaction_id);
-
-                                if (!self.sagePayIsMobile()) {
-                                    self.open3DModal();
-                                    form3Dv2.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
-                                }
-                                //form3Dv2.submit();
 
                                 if (!self.dropInEnabled()) {
                                     fullScreenLoader.stopLoader();
