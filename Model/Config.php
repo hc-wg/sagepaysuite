@@ -121,6 +121,7 @@ class Config
      */
     const SUCCESS_STATUS         = '0000';
     const AUTH3D_REQUIRED_STATUS = '2007';
+    const AUTH3D_V2_REQUIRED_STATUS = '2021';
 
     /**
      * SagePay Third Man Score Statuses
