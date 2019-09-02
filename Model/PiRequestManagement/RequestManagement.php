@@ -4,6 +4,7 @@ namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Validator\Exception as ValidatorException;
+use function in_array;
 
 abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderPlaceInterface
 {
@@ -35,6 +36,12 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
 
     /** @var \Magento\Quote\Api\Data\CartInterface */
     private $quote;
+
+    private $okStatuses = [
+        Config::SUCCESS_STATUS,
+        Config::AUTH3D_REQUIRED_STATUS,
+        Config::AUTH3D_V2_REQUIRED_STATUS
+    ];
 
     public function __construct(
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
@@ -246,6 +253,6 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
      */
     private function isSuccessOrThreedAuth()
     {
-        return $this->getPayResult()->getStatusCode() == Config::SUCCESS_STATUS || $this->getPayResult()->getStatusCode() == Config::AUTH3D_REQUIRED_STATUS;
+        return in_array($this->getPayResult()->getStatusCode(), $this->okStatuses, true);
     }
 }
