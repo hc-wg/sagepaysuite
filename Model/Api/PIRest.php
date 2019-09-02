@@ -12,6 +12,7 @@ use Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyRequestFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponseFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureV2RequestFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory;
@@ -19,11 +20,13 @@ use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFacto
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheck;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheckFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDInterface;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory;
 use Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Store\Model\ScopeInterface;
+use function property_exists;
 
 /**
  * Sage Pay PI REST API
@@ -36,6 +39,7 @@ class PIRest
     const ACTION_TRANSACTIONS             = 'transactions';
     const ACTION_TRANSACTION_INSTRUCTIONS = 'transactions/%s/instructions';
     const ACTION_SUBMIT_3D                = '3d-secure';
+    const ACTION_SUBMIT_3Dv2              = '3d-secure-challenge';
     const ACTION_TRANSACTION_DETAILS      = 'transaction_details';
 
     /** @var Config */
@@ -53,7 +57,7 @@ class PIRest
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardInterface */
     private $cardResultFactory;
 
-    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDInterface */
+    /** @var PiTransactionResultThreeDInterface */
     private $threedStatusResultFactory;
 
     /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheck */
@@ -70,6 +74,9 @@ class PIRest
 
     /** @var PiThreeDSecureRequestFactory */
     private $threedRequest;
+
+    /** @var PiThreeDSecureV2RequestFactory */
+    private $threedv2Request;
 
     /** @var PiRefundRequestFactory */
     private $refundRequest;
@@ -112,6 +119,7 @@ class PIRest
         PiMerchantSessionKeyResponseFactory $mskResponse,
         PiMerchantSessionKeyRequestFactory $mskRequest,
         PiThreeDSecureRequestFactory $threeDRequest,
+        PiThreeDSecureV2RequestFactory $threeDV2Request,
         PiRefundRequestFactory $refundRequest,
         PiInstructionRequestFactory $instructionRequest,
         PiInstructionResponseFactory $instructionResponse,
@@ -128,6 +136,7 @@ class PIRest
         $this->mskResponse                = $mskResponse;
         $this->mskRequest                 = $mskRequest;
         $this->threedRequest              = $threeDRequest;
+        $this->threedv2Request            = $threeDV2Request;
         $this->refundRequest              = $refundRequest;
         $this->instructionRequest         = $instructionRequest;
         $this->instructionResponse        = $instructionResponse;
@@ -181,6 +190,7 @@ class PIRest
                 $endpoint = "transactions/$vpsTxId";
                 break;
             case self::ACTION_SUBMIT_3D:
+            case self::ACTION_SUBMIT_3Dv2:
                 $endpoint = "transactions/$vpsTxId/$action";
                 break;
             case self::ACTION_TRANSACTION_INSTRUCTIONS:
@@ -259,17 +269,69 @@ class PIRest
         $request = $this->threedRequest->create();
         $request->setParEs($paRes);
 
+<<<<<<< HEAD
         $jsonBody   = json_encode($request->__toArray());
         $result     = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
         $resultData = $this->processResponse($result);
 
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $response */
         $response = $this->threedStatusResultFactory->create();
+=======
+        $resultData = $this->threeDSecureSubmit($request, self::ACTION_SUBMIT_3D, $vpsTxId);
 
+        $this->validateThreeDSubmit($resultData);
+
+        return $this->threeDSecureSubmitSetResultStatus($resultData);
+    }
+
+    /**
+     * Submit 3D result via POST
+     *
+     * @param string $paRes
+     * @param string $vpsTxId
+     * @return PiTransactionResultThreeD
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     */
+    public function submit3Dv2($cRes, $vpsTxId)
+    {
+        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureV2Request $request */
+        $request = $this->threedv2Request->create();
+        $request->setCres($cRes);
+
+        $resultData = $this->threeDSecureSubmit($request, self::ACTION_SUBMIT_3Dv2, $vpsTxId);
+
+        $this->validateThreeDSubmit($resultData);
+>>>>>>> 33f754ed... refactor repeated code in submit3D and submit3Dv2
+
+        return $this->threeDSecureSubmitSetResultStatus($resultData);
+    }
+
+    private function threeDSecureSubmit(\Magento\Framework\Api\AbstractExtensibleObject $request, $url, $vpsTxId)
+    {
+        $jsonBody   = json_encode($request->__toArray());
+        $result     = $this->executePostRequest($this->getServiceUrl($url, $vpsTxId), $jsonBody);
+        return $this->processResponse($result);
+    }
+
+    /**
+     * @param string $resultData
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     */
+    private function validateThreeDSubmit(string $resultData)
+    {
         if (!property_exists($resultData, 'status')) {
             throw new ApiException(__('Invalid 3D secure response.'));
         }
+    }
 
+    /**
+     * @param string $resultData
+     * @return PiTransactionResultThreeDInterface
+     */
+    private function threeDSecureSubmitSetResultStatus(string $resultData): PiTransactionResultThreeDInterface
+    {
+        /** @var PiTransactionResultThreeD $response */
+        $response = $this->threedStatusResultFactory->create();
         $response->setStatus($resultData->status);
 
         return $response;
@@ -408,7 +470,12 @@ class PIRest
 
         if ($captureResult->status == '3DAuth') {
             $transaction->setAcsUrl($captureResult->acsUrl);
-            $transaction->setParEq($captureResult->paReq);
+
+            if (property_exists($captureResult, 'paReq') === true) {
+                $transaction->setParEq($captureResult->paReq);
+            } else {
+                $transaction->setCReq($captureResult->cReq); //3Dv2
+            }
         } else {
             $transaction->setTransactionType($captureResult->transactionType);
 
