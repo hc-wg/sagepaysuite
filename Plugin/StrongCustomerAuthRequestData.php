@@ -38,6 +38,10 @@ class StrongCustomerAuthRequestData
      */
     public function afterGetRequestData($subject, array $result) : array
     {
+        if (!$this->sagepayConfig->shouldUse3dV2()) {
+            return $result;
+        }
+
         /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequest $data */
         $data = $subject->getRequest();
 
