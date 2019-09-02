@@ -9,6 +9,7 @@ interface PiResultInterface extends ResultInterface
     const QUOTE_ID       = 'quote_id';
     const ACS_URL        = 'acs_url';
     const PAR_EQ         = 'par_eq';
+    const CREQ         = 'creq';
 
     /**
      * @return string
@@ -75,4 +76,15 @@ interface PiResultInterface extends ResultInterface
      * @return void
      */
     public function setParEq($pareq);
+
+    /**
+     * @return string
+     */
+    public function getCreq();
+
+    /**
+     * @param $creq
+     * @return void
+     */
+    public function setCreq($creq);
 }
