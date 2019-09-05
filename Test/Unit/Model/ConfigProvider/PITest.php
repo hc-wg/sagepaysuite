@@ -61,6 +61,11 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->willReturn(true);
 
         $this->configMock
+            ->expects($this->once())
+            ->method('shouldUse3dV2')
+            ->willReturn(true);
+
+        $this->configMock
             ->expects($this->exactly(2))
             ->method('setMethodCode')
             ->with('sagepaysuitepi')
@@ -83,7 +88,8 @@ class PITest extends \PHPUnit\Framework\TestCase
                     'ebizmarts_sagepaysuitepi' => [
                         'licensed' => true,
                         'mode'     => 'test',
-                        'dropin'   => true
+                        'dropin'   => true,
+                        'sca'      => true
                     ],
                 ]
             ],
