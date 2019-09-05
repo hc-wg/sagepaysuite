@@ -51,8 +51,8 @@ class Pi implements PaymentOperations
         $vpsTxId = $this->suiteHelper->clearTransactionId($vpsTxId);
         $transaction = $this->reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
 
-        if (!property_exists($transaction, "txstateid")) {
-            throw new ApiException(__('txstateid is empty.'));
+        if ($this->validateTxStateId($transaction)) {
+            throw new ApiException(__('Cannot capture deferred transaction, transaction state is invalid.'));
         }
         $txStateId = (int)$transaction->txstateid;
         if ($txStateId === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
@@ -90,5 +90,14 @@ class Pi implements PaymentOperations
     public function refundTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
         throw new \Exception("not implented.");
+    }
+
+    /**
+     * @param $transaction
+     * @return bool
+     */
+    private function validateTxStateId($transaction)
+    {
+        return !property_exists($transaction, "txstateid");
     }
 }
