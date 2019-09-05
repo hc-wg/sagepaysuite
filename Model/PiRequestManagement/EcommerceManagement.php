@@ -196,14 +196,14 @@ class EcommerceManagement extends RequestManagement
         $this->getResult()->setSuccess(false);
         $this->getResult()->setErrorMessage(__("Something went wrong: %1", $exceptionObject->getMessage()));
 
-        if ($this->getPayResult() !== null && $this->getPayResult()->getStatusCode() == "0000") {
+        if ($this->getPayResult() !== null && $this->isPaymentSuccessful()) {
             try {
                 $this->getPiRestApi()->void($this->getPayResult()->getTransactionId());
             } catch (ApiException $apiException) {
                 $this->sagePaySuiteLogger->logException($exceptionObject);
             }
         } else {
-            if ($this->getPayResult() !== null && $this->getPayResult()->getStatusCode() !== "0000") {
+            if ($this->getPayResult() !== null && !$this->isPaymentSuccessful()) {
                 $this->paymentFailures->handle(
                     (int)$this->getQuote()->getId(),
                     $this->getPayResult()->getStatusDetail()
@@ -237,5 +237,13 @@ class EcommerceManagement extends RequestManagement
     private function invoiceConfirmationIsEnable()
     {
         return (string)$this->config->getInvoiceConfirmationNotification() === "1";
+    }
+
+    /**
+     * @return bool
+     */
+    private function isPaymentSuccessful()
+    {
+        return $this->getPayResult()->getStatusCode() == Config::SUCCESS_STATUS;
     }
 }
