@@ -5,9 +5,11 @@ namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Payment;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Magento\Sales\Api\PaymentFailuresInterface;
 
 class ThreeDSecureCallbackManagement extends RequestManagement
 {
@@ -40,6 +42,9 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     /** @var Config */
     private $config;
 
+    /** @var PaymentFailuresInterface */
+    private $paymentFailures;
+
     public function __construct(
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Model\Api\PIRest $piRestApi,
@@ -54,7 +59,8 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         ClosedForActionFactory $actionFactory,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         InvoiceSender $invoiceEmailSender,
-        Config $config
+        Config $config,
+        PaymentFailuresInterface $paymentFailures
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -72,7 +78,8 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         $this->actionFactory      = $actionFactory;
         $this->orderRepository    = $orderRepository;
         $this->invoiceEmailSender = $invoiceEmailSender;
-        $this->config = $config;
+        $this->config             = $config;
+        $this->paymentFailures    = $paymentFailures;
     }
 
     public function getPayment()
@@ -165,10 +172,10 @@ class ThreeDSecureCallbackManagement extends RequestManagement
      */
     private function confirmPayment(PiTransactionResultInterface $response)
     {
+        $quoteId = $this->httpRequest->getParam("quoteId");
 
         if ($response->getStatusCode() === Config::SUCCESS_STATUS) {
             $orderId = $this->httpRequest->getParam("orderId");
-            $quoteId = $this->httpRequest->getParam("quoteId");
             $this->order   = $this->orderRepository->get($orderId);
 
             if ($this->order !== null) {
@@ -235,6 +242,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
                 throw new ValidatorException(__('Unable to save Sage Pay order'));
             }
         } else {
+            $this->paymentFailures->handle((int)$quoteId, $response->getStatusDetail());
             throw new ValidatorException(__('Invalid Sage Pay response: %1', $response->getStatusDetail()));
         }
     }
