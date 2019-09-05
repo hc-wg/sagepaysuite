@@ -122,7 +122,7 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @expectedException \Magento\Framework\Exception\LocalizedException
-     * @expectedExceptionMessage txstateid is empty
+     * @expectedExceptionMessage Cannot capture deferred transaction, transaction state is invalid.
      */
     public function testCaptureDeferredPiTransactionTxStateIdNull()
     {
@@ -138,7 +138,7 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('captureDeferredTransaction')
             ->with($testVpsTxId, $testAmount)
-            ->willThrowException(new ApiException(__('txstateid is empty')));
+            ->willThrowException(new ApiException(__('Cannot capture deferred transaction, transaction state is invalid.')));
 
         /** @var Payment $sut */
         $sut = $this->makeObjectManager()->getObject(
