@@ -595,7 +595,11 @@ class Request extends AbstractHelper
      */
     public function floatsEqual($f1, $f2)
     {
-        return abs(($f1-$f2)/$f2) < 0.00001;
+        $floatsValue = $f1;
+        if ($f2 > 0) {
+            $floatsValue = abs(($f1-$f2)/$f2);
+        }
+        return $floatsValue < 0.00001;
     }
 
     /**
