@@ -1374,6 +1374,50 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     <shippingFaxNo>1234567890</shippingFaxNo>
                     <dinerCustomerRef>123123123</dinerCustomerRef>       
                 </basket>'
+            ],
+            'Two products, one with value 0' => [
+                82.80,
+                '<basket>
+                    <item>
+                        <description>Fusion Backpack</description>
+                        <productSku>24-MB02</productSku>
+                        <productCode>6</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>59.00</unitNetAmount>
+                        <unitTaxAmount>11.80</unitTaxAmount>
+                        <unitGrossAmount>70.80</unitGrossAmount>
+                        <totalGrossAmount>70.80</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientPhone>01518283930</recipientPhone>
+                        <recipientAdd1>25  South Street</recipientAdd1>
+                        <recipientAdd2>MOOR CRICHEL</recipientAdd2>
+                        <recipientCity>MOOR CRICHEL</recipientCity>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>BH21 5BJ</recipientPostCode>
+                    </item>
+                    <item>
+                        <description>Joust Duffle Bag</description>
+                        <productSku>24-MB01</productSku>
+                        <productCode>1</productCode>
+                        <quantity>1</quantity>
+                        <unitNetAmount>0.00</unitNetAmount>
+                        <unitTaxAmount>0.00</unitTaxAmount>
+                        <unitGrossAmount>0.00</unitGrossAmount>
+                        <totalGrossAmount>0.00</totalGrossAmount>
+                        <recipientFName>firstname</recipientFName>
+                        <recipientLName>lastname</recipientLName>
+                        <recipientPhone>01518283930</recipientPhone>
+                        <recipientAdd1>25  South Street</recipientAdd1>
+                        <recipientAdd2>MOOR CRICHEL</recipientAdd2>
+                        <recipientCity>MOOR CRICHEL</recipientCity>
+                        <recipientCountry>GB</recipientCountry>
+                        <recipientPostCode>BH21 5BJ</recipientPostCode>
+                    </item>
+                    <deliveryNetAmount>10.00</deliveryNetAmount>
+                    <deliveryTaxAmount>2.00</deliveryTaxAmount>
+                    <deliveryGrossAmount>12.00</deliveryGrossAmount>
+                </basket>'
             ]
         ];
     }
