@@ -9,6 +9,7 @@ interface PiRequestManagerInterface extends PiRequestInterface
     const VENDOR_TX_CODE = 'vendor_tx_code';
     const PAYMENT_ACTION = 'payment_action';
     const PAR_ES         = 'par_es';
+    const CRES           = 'cres';
     const TRANSACTION_ID = 'transaction_id';
 
     /**
@@ -21,6 +22,17 @@ interface PiRequestManagerInterface extends PiRequestInterface
      * @return void
      */
     public function setParEs($parEs);
+
+    /**
+     * @return string
+     */
+    public function getCres();
+
+    /**
+     * @param string $parEs
+     * @return void
+     */
+    public function setCres($cRes);
 
     /**
      * @param string $transactionId

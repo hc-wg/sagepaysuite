@@ -252,4 +252,21 @@ class PiTransactionResult extends AbstractExtensibleObject implements PiTransact
     {
         $this->setData(self::THREED_SECURE, $threed);
     }
+
+    /**
+     * @param $creq
+     * @return void
+     */
+    public function setCReq($creq)
+    {
+        $this->setData(self::C_REQ, $creq);
+    }
+
+    /**
+     * @return string
+     */
+    public function getCReq()
+    {
+        return $this->_get(self::C_REQ);
+    }
 }
