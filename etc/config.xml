@@ -11,7 +11,7 @@
         <dev>
             <js>
                 <minify_exclude>
-                    <sagepaysuitepi>api/v1/js/sagepay.js</sagepaysuitepi>
+                    <sagepaysuitepi>sagepay</sagepaysuitepi>
                 </minify_exclude>
             </js>
         </dev>
