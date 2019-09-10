@@ -19,7 +19,6 @@ use Ebizmarts\SagePaySuite\Model\PiRequestManagement\EcommerceManagement;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForAction;
-use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteValidator;
 use Magento\Sales\Model\Order;
@@ -660,10 +659,10 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
         $quoteMock->expects($this->once())->method('getId')->willReturn($quoteId);
 
-        $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManagerInterface::class);
+        $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManager::class);
 
         $payResultMock = $this->makeMockDisabledConstructor(PiTransactionResultInterface::class);
-        $payResultMock->expects($this->exactly(4))->method('getStatusCode')->willReturn(0004);
+        $payResultMock->expects($this->exactly(3))->method('getStatusCode')->willReturn(0004);
         $payResultMock->expects($this->exactly(2))->method('getStatusDetail')->willReturn('Test error');
 
         $piRestApiMock = $this->makeMockDisabledConstructor(PIRest::class);
@@ -677,6 +676,7 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $piRequestMock->expects($this->once())->method('setCardIdentifier')->willReturnSelf();
         $piRequestMock->expects($this->once())->method('setVendorTxCode')->willReturnSelf();
         $piRequestMock->expects($this->once())->method('setIsMoto')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setRequest')->willReturnSelf();
         $piRequestMock->expects($this->once())->method('getRequestData')->willReturn(
             ['transactionType' => $paymentAction]
         );
