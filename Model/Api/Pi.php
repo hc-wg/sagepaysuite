@@ -12,6 +12,7 @@ use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 use Ebizmarts\SagePaySuite\Model\Api\Reporting;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\Phrase;
 
 /**
  * Sage Pay Pi API
@@ -50,6 +51,9 @@ class Pi implements PaymentOperations
         $vpsTxId = $this->suiteHelper->clearTransactionId($vpsTxId);
         $transaction = $this->reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
 
+        if ($this->validateTxStateId($transaction)) {
+            throw new ApiException(__('Cannot capture deferred transaction, transaction state is invalid.'));
+        }
         $txStateId = (int)$transaction->txstateid;
         if ($txStateId === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
             $result = $this->piRestApi->release($vpsTxId, $amount);
@@ -86,5 +90,14 @@ class Pi implements PaymentOperations
     public function refundTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
         throw new \Exception("not implented.");
+    }
+
+    /**
+     * @param $transaction
+     * @return bool
+     */
+    private function validateTxStateId($transaction)
+    {
+        return !property_exists($transaction, "txstateid");
     }
 }

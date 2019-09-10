@@ -26,15 +26,24 @@ class ServerRegisterTransactionTest extends WebapiAbstract
     /** @var \Ebizmarts\SagePaySuite\Model\Api\Reporting */
     private $reporting;
 
+    /** @var  \Ebizmarts\SagePaySuite\Test\Api\Helper */
+    private $helper;
+
     /** @var \Magento\Framework\HTTP\Adapter\Curl */
     private $curl;
 
     protected function setUp()
     {
         $this->objectManager = Bootstrap::getObjectManager();
+
+        $this->helper = $this->objectManager->create("Ebizmarts\SagePaySuite\Test\Api\Helper");
+
         $this->config = $this->objectManager->create('Magento\Config\Model\Config');
 
         $this->curl = $this->objectManager->create("Magento\Framework\HTTP\Adapter\Curl");
+
+        $this->helper->saveReportingApiUser();
+        $this->helper->saveReportingApiPassword();
 
         /** @var \Ebizmarts\SagePaySuite\Model\Api\Reporting */
         $this->reporting = $this->objectManager->create('Ebizmarts\SagePaySuite\Model\Api\Reporting');
