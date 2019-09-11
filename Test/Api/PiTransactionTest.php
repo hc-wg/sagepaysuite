@@ -168,7 +168,16 @@ class PiTransactionTest extends WebapiAbstract
                 "cc_exp_year"          => substr(self::TEST_CC_EXPIRY, -2),
                 "cc_last_four"         => substr(self::TEST_CC_NUMBER, -4),
                 "cc_type"              => self::TEST_CC_TYPE,
-                "merchant_session_key" => $merchantSessionKey
+                "merchant_session_key" => $merchantSessionKey,
+                "javascript_enabled"   => 1,
+                'accept_headers' => 'Accept headers.',
+                'language' => "en-US",
+                'user_agent' => "morcilla firefox",
+                'java_enabled' => 1,
+                'color_depth' => 32,
+                'screen_width' => 1024,
+                'screen_height' => 768,
+                'timezone' => 180
             ]
         ];
 
