@@ -3,15 +3,15 @@ namespace Ebizmarts\SagePaySuite\Api\Data;
 
 interface PiScaRequestInterface
 {
-    public const JS_ENABLED = 'javascript_enabled';
-    public const ACCEPT_HEADERS = 'accept_headers';
-    public const LANGUAGE = 'language';
-    public const USER_AGENT = 'user_agent';
-    public const JAVA_ENABLED = 'java_enabled';
-    public const COLOR_DEPTH = 'color_depth';
-    public const SCREEN_WIDTH = 'screen_width';
-    public const SCREEN_HEIGHT = 'screen_height';
-    public const TIMEZONE = 'timezone';
+    const JS_ENABLED = 'javascript_enabled';
+    const ACCEPT_HEADERS = 'accept_headers';
+    const LANGUAGE = 'language';
+    const USER_AGENT = 'user_agent';
+    const JAVA_ENABLED = 'java_enabled';
+    const COLOR_DEPTH = 'color_depth';
+    const SCREEN_WIDTH = 'screen_width';
+    const SCREEN_HEIGHT = 'screen_height';
+    const TIMEZONE = 'timezone';
 
     /**
      * @return int
