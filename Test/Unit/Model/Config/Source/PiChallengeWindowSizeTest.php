@@ -11,7 +11,7 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 
 class PiChallengeWindowSizeTest extends \PHPUnit\Framework\TestCase
 {
-    private const CHALLENGE_WINDOW_SIZE_OPTIONS_COUNT = 5;
+    const CHALLENGE_WINDOW_SIZE_OPTIONS_COUNT = 5;
 
     public function testToOptionArray() : void
     {
