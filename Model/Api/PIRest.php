@@ -270,14 +270,6 @@ class PIRest
         $request = $this->threedRequest->create();
         $request->setParEs($paRes);
 
-<<<<<<< HEAD
-        $jsonBody   = json_encode($request->__toArray());
-        $result     = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_SUBMIT_3D, $vpsTxId), $jsonBody);
-        $resultData = $this->processResponse($result);
-
-        /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $response */
-        $response = $this->threedStatusResultFactory->create();
-=======
         $resultData = $this->threeDSecureSubmit($request, self::ACTION_SUBMIT_3D, $vpsTxId);
 
         $this->validateThreeDSubmit($resultData);
@@ -302,7 +294,6 @@ class PIRest
         $resultData = $this->threeDSecureSubmit($request, self::ACTION_SUBMIT_3Dv2, $vpsTxId);
 
         $this->validateThreeDSubmit($resultData);
->>>>>>> 33f754ed... refactor repeated code in submit3D and submit3Dv2
 
         return $this->threeDSecureSubmitSetResultStatus($resultData);
     }
