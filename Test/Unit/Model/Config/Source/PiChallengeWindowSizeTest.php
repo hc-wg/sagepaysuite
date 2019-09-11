@@ -13,7 +13,7 @@ class PiChallengeWindowSizeTest extends \PHPUnit\Framework\TestCase
 {
     const CHALLENGE_WINDOW_SIZE_OPTIONS_COUNT = 5;
 
-    public function testToOptionArray() : void
+    public function testToOptionArray()
     {
         $objectManagerHelper = new ObjectManager($this);
         $challengeWindowSize = $objectManagerHelper->getObject(PiChallengeWindowSize::class);
