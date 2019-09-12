@@ -320,7 +320,7 @@ class PIRest
      * @param string $resultData
      * @return PiTransactionResultThreeDInterface
      */
-    private function threeDSecureSubmitSetResultStatus(\stdClass $resultData): PiTransactionResultThreeDInterface
+    private function threeDSecureSubmitSetResultStatus(\stdClass $resultData)
     {
         /** @var PiTransactionResultThreeD $response */
         $response = $this->threedStatusResultFactory->create();
