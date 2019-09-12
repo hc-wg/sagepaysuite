@@ -9,7 +9,7 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHe
 use Magento\Framework\UrlInterface;
 use PHPUnit\Framework\TestCase;
 
-class StrongCustomerAuthRequestDataTest extends TestCase
+class StrongCustomerAuthRequestDataTest extends \PHPUnit_Framework_TestCase
 {
     const STRONG_CUSTOMER_AUTHENTICATION_KEY = 'strongCustomerAuthentication';
     const USER_AGENT = "Mozilla\/5.0 (Macintosh; Intel Mac OS X 10.14; rv:68.0) Gecko\/20100101 Firefox\/68.0";

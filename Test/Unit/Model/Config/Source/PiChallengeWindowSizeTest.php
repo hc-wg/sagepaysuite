@@ -9,7 +9,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Config\Source;
 use Ebizmarts\SagePaySuite\Model\Config\Source\PiChallengeWindowSize;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 
-class PiChallengeWindowSizeTest extends \PHPUnit\Framework\TestCase
+class PiChallengeWindowSizeTest extends \PHPUnit_Framework_TestCase
 {
     const CHALLENGE_WINDOW_SIZE_OPTIONS_COUNT = 5;
 
