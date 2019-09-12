@@ -80,13 +80,13 @@ class EcommerceManagementTest extends \PHPUnit_Framework_TestCase
 
         $piRequestMock = $this->makeMockDisabledConstructor(PiRequest::class);
 
-        $piRequestMock->expects($this->exactly(2))->method('setCart')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setMerchantSessionKey')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setCardIdentifier')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setVendorTxCode')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setIsMoto')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setRequest')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('getRequestData')->willReturn(
+        $piRequestMock->expects($this->once())->method('setCart')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setMerchantSessionKey')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setCardIdentifier')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setVendorTxCode')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setIsMoto')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setRequest')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('getRequestData')->willReturn(
             ['transactionType' => $paymentAction]
         );
 
@@ -271,13 +271,13 @@ class EcommerceManagementTest extends \PHPUnit_Framework_TestCase
 
         $piRequestMock = $this->makeMockDisabledConstructor(PiRequest::class);
 
-        $piRequestMock->expects($this->exactly(2))->method('setCart')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setMerchantSessionKey')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setCardIdentifier')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setVendorTxCode')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setIsMoto')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('setRequest')->willReturnSelf();
-        $piRequestMock->expects($this->exactly(2))->method('getRequestData')->willReturn(
+        $piRequestMock->expects($this->once())->method('setCart')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setMerchantSessionKey')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setCardIdentifier')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setVendorTxCode')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setIsMoto')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setRequest')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('getRequestData')->willReturn(
             ['transactionType' => Config::ACTION_PAYMENT_PI]
         );
 

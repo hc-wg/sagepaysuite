@@ -76,7 +76,7 @@ class MotoManagementTest extends \PHPUnit_Framework_TestCase
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
 
         $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManager::class);
-        $requestDataMock->expects($this->exactly(4))->method('getPaymentAction')->willReturn($paymentAction);
+        $requestDataMock->expects($this->exactly(3))->method('getPaymentAction')->willReturn($paymentAction);
 
         $payResultMock = $this->makeMockDisabledConstructor(PiTransactionResultInterface::class);
         $payResultMock->expects($this->exactly(2))->method('getStatusCode')->willReturn(Config::SUCCESS_STATUS);
@@ -241,7 +241,7 @@ class MotoManagementTest extends \PHPUnit_Framework_TestCase
         $quoteMock->expects($this->never())->method('reserveOrderId');
 
         $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManager::class);
-        $requestDataMock->expects($this->exactly(4))->method('getPaymentAction')->willReturn(Config::ACTION_PAYMENT_PI);
+        $requestDataMock->expects($this->exactly(3))->method('getPaymentAction')->willReturn(Config::ACTION_PAYMENT_PI);
 
         $payResultMock = $this->makeMockDisabledConstructor(PiTransactionResultInterface::class);
         $payResultMock->expects($this->exactly(2))->method('getStatusCode')->willReturn(Config::SUCCESS_STATUS);
