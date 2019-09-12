@@ -16,108 +16,108 @@ interface PiScaRequestInterface
     /**
      * @return int
      */
-    public function getJavascriptEnabled() : int;
+    public function getJavascriptEnabled();
 
     /**
      * Boolean that represents the ability of the cardholder browser to execute JavaScript.
      * @param int $enabled
      * @return void
      */
-    public function setJavascriptEnabled(int $enabled) : void;
+    public function setJavascriptEnabled(int $enabled) ;
 
     /**
      * @return string
      */
-    public function getAcceptHeaders() : string;
+    public function getAcceptHeaders();
 
     /**
      * Exact content of the HTTP accept headers as sent to the 3DS Requestor from the Cardholder’s browser.
      * @param string $headers
      * @return void
      */
-    public function setAcceptHeaders(string $headers) : void;
+    public function setAcceptHeaders(string $headers);
 
     /**
      * @return string
      */
-    public function getLanguage() : string;
+    public function getLanguage();
 
     /**
      * Value representing the browser language as defined in IETF BCP47. Returned from navigator.language property.
      * @param string $language
      * @return void
      */
-    public function setLanguage(string $language) : void;
+    public function setLanguage(string $language);
 
     /**
      * @return string
      */
-    public function getUserAgent() : string;
+    public function getUserAgent();
 
     /**
      * Exact content of the HTTP user-agent header.
      * @param string $userAgent
      * @return void
      */
-    public function setUserAgent(string $userAgent) : void;
+    public function setUserAgent(string $userAgent);
 
     /**
      * @return int
      */
-    public function getJavaEnabled() : int;
+    public function getJavaEnabled();
 
     /**
      * Boolean that represents the ability of the cardholder browser to execute Java.
      * @param int $javaEnabled
      * @return void
      */
-    public function setJavaEnabled(int $javaEnabled) : void;
+    public function setJavaEnabled(int $javaEnabled) ;
 
     /**
      * @return int
      */
-    public function getColorDepth() : int;
+    public function getColorDepth();
 
     /**
      * Exact content of the HTTP user-agent header.
      * @param int $colorDepth
      * @return void
      */
-    public function setColorDepth(int $colorDepth) : void;
+    public function setColorDepth(int $colorDepth);
 
     /**
      * @return int
      */
-    public function getScreenWidth() : int;
+    public function getScreenWidth();
 
     /**
      * Exact content of the HTTP user-agent header.
      * @param int $screenWidth
      * @return void
      */
-    public function setScreenWidth(int $screenWidth) : void;
+    public function setScreenWidth(int $screenWidth);
 
     /**
      * @return int
      */
-    public function getScreenHeight() : int;
+    public function getScreenHeight();
 
     /**
      * Exact content of the HTTP user-agent header.
      * @param int $screenHeight
      * @return void
      */
-    public function setScreenHeight(int $screenHeight) : void;
+    public function setScreenHeight(int $screenHeight);
 
     /**
      * @return int
      */
-    public function getTimezone() : int;
+    public function getTimezone();
 
     /**
      * Exact content of the HTTP user-agent header.
      * @param int $timezone
      * @return void
      */
-    public function setTimezone(int $timezone) : void;
+    public function setTimezone(int $timezone);
 }

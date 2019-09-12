@@ -116,7 +116,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     /**
      * @return int
      */
-    public function getJavascriptEnabled(): int
+    public function getJavascriptEnabled()
     {
         return $this->_get(self::JS_ENABLED);
     }
@@ -126,7 +126,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
      * @param int $enabled
      * @return void
      */
-    public function setJavascriptEnabled(int $enabled): void
+    public function setJavascriptEnabled(int $enabled)
     {
         $this->setData(self::JS_ENABLED, $enabled);
     }
@@ -134,7 +134,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     /**
      * @return string
      */
-    public function getAcceptHeaders(): string
+    public function getAcceptHeaders()
     {
         return $this->_get(self::ACCEPT_HEADERS);
     }
@@ -144,7 +144,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
      * @param string $headers
      * @return void
      */
-    public function setAcceptHeaders(string $headers): void
+    public function setAcceptHeaders(string $headers)
     {
         $this->setData(self::ACCEPT_HEADERS, $headers);
     }
@@ -152,7 +152,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     /**
      * @return string
      */
-    public function getLanguage(): string
+    public function getLanguage()
     {
         return $this->_get(self::LANGUAGE);
     }
@@ -162,7 +162,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
      * @param string $language
      * @return void
      */
-    public function setLanguage(string $language): void
+    public function setLanguage(string $language)
     {
         $this->setData(self::LANGUAGE, $language);
     }
@@ -170,7 +170,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     /**
      * @return string
      */
-    public function getUserAgent(): string
+    public function getUserAgent()
     {
         return $this->_get(self::USER_AGENT);
     }
@@ -180,7 +180,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
      * @param string $userAgent
      * @return void
      */
-    public function setUserAgent(string $userAgent): void
+    public function setUserAgent(string $userAgent)
     {
         $this->setData(self::USER_AGENT, $userAgent);
     }
@@ -188,7 +188,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     /**
      * @return int
      */
-    public function getJavaEnabled(): int
+    public function getJavaEnabled()
     {
         return $this->_get(self::JAVA_ENABLED);
     }
@@ -198,7 +198,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
      * @param int $javaEnabled
      * @return void
      */
-    public function setJavaEnabled(int $javaEnabled): void
+    public function setJavaEnabled(int $javaEnabled)
     {
         $this->setData(self::JAVA_ENABLED, $javaEnabled);
     }
@@ -206,7 +206,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     /**
      * @return int
      */
-    public function getColorDepth(): int
+    public function getColorDepth()
     {
         return $this->_get(self::COLOR_DEPTH);
     }
@@ -216,7 +216,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
      * @param int $colorDepth
      * @return void
      */
-    public function setColorDepth(int $colorDepth): void
+    public function setColorDepth(int $colorDepth)
     {
         $this->setData(self::COLOR_DEPTH, $colorDepth);
     }
@@ -224,7 +224,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     /**
      * @return int
      */
-    public function getScreenWidth(): int
+    public function getScreenWidth()
     {
         return $this->_get(self::SCREEN_WIDTH);
     }
@@ -234,7 +234,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
      * @param int $screenWidth
      * @return void
      */
-    public function setScreenWidth(int $screenWidth): void
+    public function setScreenWidth(int $screenWidth)
     {
         $this->setData(self::SCREEN_WIDTH, $screenWidth);
     }
@@ -242,7 +242,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     /**
      * @return int
      */
-    public function getScreenHeight(): int
+    public function getScreenHeight()
     {
         return $this->_get(self::SCREEN_HEIGHT);
     }
@@ -252,7 +252,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
      * @param int $screenHeight
      * @return void
      */
-    public function setScreenHeight(int $screenHeight): void
+    public function setScreenHeight(int $screenHeight)
     {
         $this->setData(self::SCREEN_HEIGHT, $screenHeight);
     }
@@ -260,7 +260,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     /**
      * @return int
      */
-    public function getTimezone(): int
+    public function getTimezone()
     {
         return $this->_get(self::TIMEZONE);
     }
@@ -270,7 +270,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
      * @param int $timezone
      * @return void
      */
-    public function setTimezone(int $timezone): void
+    public function setTimezone(int $timezone)
     {
         $this->setData(self::TIMEZONE, $timezone);
     }
