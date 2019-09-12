@@ -301,7 +301,7 @@ class PIRest
     private function threeDSecureSubmit(\Magento\Framework\Api\AbstractExtensibleObject $request, $url, $vpsTxId)
     {
         $jsonBody   = json_encode($request->__toArray());
-        $result     = $this->executePostRequest($this->getServiceUrl($url, $vpsTxId), $jsonBody);
+        $result     = $this->_executePostRequest($this->_getServiceUrl($url, $vpsTxId), $jsonBody);
         return $this->processResponse($result);
     }
 
