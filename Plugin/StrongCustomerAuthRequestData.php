@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 namespace Ebizmarts\SagePaySuite\Plugin;
 
 use Ebizmarts\SagePaySuite\Api\Data\ScaTransType as TransactionType;
@@ -36,7 +34,7 @@ class StrongCustomerAuthRequestData
      * @param string[] $result
      * @return string[]
      */
-    public function afterGetRequestData($subject, array $result) : array
+    public function afterGetRequestData($subject, array $result)
     {
         if (!$this->sagepayConfig->shouldUse3dV2()) {
             return $result;
