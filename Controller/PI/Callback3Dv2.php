@@ -11,12 +11,10 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\InvalidRequestException;
-use Magento\Framework\App\RequestInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\App\CsrfAwareActionInterface;
 
-class Callback3Dv2 extends Action implements CsrfAwareActionInterface
+class Callback3Dv2 extends Action
 {
     /** @var Config */
     private $config;
@@ -115,32 +113,6 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
                 . $this->_url->getUrl($url, ['_secure' => true])
                 . '";</script>'
             );
-    }
-
-    /**
-     * Create exception in case CSRF validation failed.
-     * Return null if default exception will suffice.
-     *
-     * @param RequestInterface $request
-     *
-     * @return InvalidRequestException|null
-     */
-    public function createCsrfValidationException(RequestInterface $request)
-    {
-        return null;
-    }
-
-    /**
-     * Perform custom request validation.
-     * Return null if default validation is needed.
-     *
-     * @param RequestInterface $request
-     *
-     * @return bool|null
-     */
-    public function validateForCsrf(RequestInterface $request)
-    {
-        return true;
     }
 
     /**
