@@ -156,4 +156,3 @@ workflows:
     jobs:
       - run_php56
       - run_php70
-      - run_php71
