@@ -15,7 +15,7 @@ class PiChallengeWindowSize implements OptionSourceInterface
      *
      * @return array Format: array(array('value' => '<value>', 'label' => '<label>'), ...)
      */
-    public function toOptionArray() : array
+    public function toOptionArray()
     {
         return [
             [
