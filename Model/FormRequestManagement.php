@@ -7,7 +7,6 @@ use Ebizmarts\SagePaySuite\Api\FormManagementInterface;
 use Ebizmarts\SagePaySuite\Helper\Checkout;
 use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Helper\Request;
-use Ebizmarts\SagePaySuite\Model\FormCrypt;
 use Magento\Checkout\Model\Session;
 use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\Encryption\EncryptorInterface;
