@@ -94,7 +94,7 @@ class StrongCustomerAuthRequestDataTest extends \PHPUnit_Framework_TestCase
     /**
      * @return array
      */
-    private function getExpectedScaParameters(): array
+    private function getExpectedScaParameters()
     {
         return [
             'browserJavascriptEnabled' => 1,
