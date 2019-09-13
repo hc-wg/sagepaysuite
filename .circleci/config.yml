@@ -130,7 +130,7 @@ jobs:
       - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento216-PreCompiled.tar.gz
       - run: tar xpvf Magento216-PreCompiled.tar.gz
       - run: mv magento2/* .
-      - run: mysqldump -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
+      - run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
       - run: chmod +x bin/magento
 
       # Install API
