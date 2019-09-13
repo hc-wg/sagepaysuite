@@ -116,7 +116,7 @@ class EcommerceManagement extends RequestManagement
 
         if ($order !== null) {
             //set pre-saved order flag in checkout session
-            $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", $order->getId());
+            $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, $order->getId());
 
             $payment = $order->getPayment();
             $payment->setTransactionId($this->getPayResult()->getTransactionId());
@@ -136,8 +136,9 @@ class EcommerceManagement extends RequestManagement
         $this->getResult()->setOrderId($order->getId());
         $this->getResult()->setQuoteId($this->getQuote()->getId());
 
-        if ($this->getPayResult()->getStatusCode() == Config::AUTH3D_REQUIRED_STATUS) {
+        if ($this->isThreeDResponse()) {
             $this->getResult()->setParEq($this->getPayResult()->getParEq());
+            $this->getResult()->setCreq($this->getPayResult()->getCReq());
             $this->getResult()->setAcsUrl($this->getPayResult()->getAcsUrl());
         }
     }
@@ -245,5 +246,11 @@ class EcommerceManagement extends RequestManagement
     private function isPaymentSuccessful()
     {
         return $this->getPayResult()->getStatusCode() == Config::SUCCESS_STATUS;
+    }
+
+    private function isThreeDResponse()
+    {
+        return $this->getPayResult()->getStatusCode() == Config::AUTH3D_REQUIRED_STATUS ||
+            $this->getPayResult()->getStatusCode() == Config::AUTH3D_V2_REQUIRED_STATUS;
     }
 }

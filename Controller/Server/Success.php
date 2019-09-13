@@ -91,7 +91,7 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->_checkoutSession->setLastOrderStatus($order->getStatus());
 
             //remove order pre-saved flag from checkout
-            $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
+            $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             $this->messageManager->addError(__('An error ocurred.'));

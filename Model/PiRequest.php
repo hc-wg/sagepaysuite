@@ -29,6 +29,9 @@ class PiRequest
     /** @var bool */
     private $isMoto;
 
+    /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequest */
+    private $requestInfo;
+
     public function __construct(
         \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
         \Ebizmarts\SagePaySuite\Model\Config $sagepayConfig
@@ -113,10 +116,27 @@ class PiRequest
             }
         }
 
+
+
         //populate payment amount information
         $data = array_merge($data, $this->requestHelper->populatePaymentAmountAndCurrency($this->getCart(), true));
 
         return $data;
+    }
+
+    /**
+     * @param \Ebizmarts\SagePaySuite\Api\Data\PiRequest $data
+     * @return $this
+     */
+    public function setRequest(\Ebizmarts\SagePaySuite\Api\Data\PiRequest $data)
+    {
+        $this->requestInfo = $data;
+        return $this;
+    }
+
+    public function getRequest()
+    {
+        return $this->requestInfo;
     }
 
     /**

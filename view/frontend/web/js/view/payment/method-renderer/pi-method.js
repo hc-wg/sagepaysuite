@@ -57,6 +57,9 @@ define(
             dropInEnabled: function () {
                 return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.dropin == 1;
             },
+            scaEnabled: function () {
+                return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.sca == 1;
+            },
             isActive: function () {
                 return true;
             },
@@ -320,16 +323,20 @@ define(
 
                 var callbackUrl = url.build('sagepaysuite/pi/callback3D');
 
+                var sagePayRequestData = {
+                    "merchant_session_key": self.merchantSessionKey,
+                    "card_identifier": self.cardIdentifier,
+                    "cc_type": self.creditCardType,
+                    "cc_exp_month": self.creditCardExpMonth,
+                    "cc_exp_year": self.creditCardExpYear,
+                    "cc_last_four": self.creditCardLast4
+                };
+
+                $.extend(sagePayRequestData, self.scaParams());
+
                 var payload = {
                     "cartId": quote.getQuoteId(),
-                    "requestData": {
-                        "merchant_session_key": self.merchantSessionKey,
-                        "card_identifier": self.cardIdentifier,
-                        "cc_type": self.creditCardType,
-                        "cc_exp_month": self.creditCardExpMonth,
-                        "cc_exp_year": self.creditCardExpYear,
-                        "cc_last_four": self.creditCardLast4
-                    }
+                    "requestData": sagePayRequestData
                 };
 
                 if (self.dropInEnabled()) {
@@ -342,7 +349,6 @@ define(
                     JSON.stringify(payload)
                 ).done(
                     function (response) {
-
                         if (self.dropInEnabled()) {
                             fullScreenLoader.stopLoader();
                         }
@@ -373,25 +379,36 @@ define(
                                 /**
                                  * 3D secure authentication required
                                  */
+                                if (self.scaEnabled()) {
+                                    var form3Dv2 = document.getElementById(self.getCode() + '-3DsecureV2-form');
+                                    form3Dv2.setAttribute('action', response.acs_url);
+                                    form3Dv2.elements[0].setAttribute('value', response.creq);
 
-                                //add transactionId param to callback
-                                callbackUrl += "?transactionId=" + response.transaction_id +
-                                    "&orderId=" + response.order_id +
-                                    "&quoteId=" + response.quote_id;
+                                    if (!self.sagePayIsMobile()) {
+                                        self.open3DModal();
+                                        form3Dv2.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
+                                    }
+                                    form3Dv2.submit();
+                                } else {
+                                    //add transactionId param to callback
+                                    callbackUrl += "?transactionId=" + response.transaction_id +
+                                        "&orderId=" + response.order_id +
+                                        "&quoteId=" + response.quote_id;
 
-                                //Build 3D form.
-                                var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
-                                form3D.setAttribute('action', response.acs_url);
-                                form3D.elements[0].setAttribute('value', response.par_eq);
-                                form3D.elements[1].setAttribute('value', callbackUrl);
-                                form3D.elements[2].setAttribute('value', response.transaction_id);
+                                    //Build 3D form.
+                                    var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
+                                    form3D.setAttribute('action', response.acs_url);
+                                    form3D.elements[0].setAttribute('value', response.par_eq);
+                                    form3D.elements[1].setAttribute('value', callbackUrl);
+                                    form3D.elements[2].setAttribute('value', response.transaction_id);
 
-                                if (!self.sagePayIsMobile()) {
-                                    self.open3DModal();
-                                    form3D.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
+                                    if (!self.sagePayIsMobile()) {
+                                        self.open3DModal();
+                                        form3D.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
+                                    }
+
+                                    form3D.submit();
                                 }
-
-                                form3D.submit();
 
                                 if (!self.dropInEnabled()) {
                                     fullScreenLoader.stopLoader();
@@ -452,7 +469,19 @@ define(
                     }
                 };
             },
-
+            scaParams: function () {
+                return {
+                    'javascript_enabled' : 1,
+                    'accept_headers' : 'Accept headers.',
+                    'language' : navigator.language,
+                    'user_agent' : navigator.userAgent,
+                    'java_enabled' : navigator.javaEnabled() ? 1 : 0,
+                    'color_depth' : screen.colorDepth,
+                    'screen_width' : screen.width,
+                    'screen_height' : screen.height,
+                    'timezone' : (new Date()).getTimezoneOffset()
+                }
+            },
             /**
              * Place order.
              */
