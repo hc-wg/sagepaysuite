@@ -128,7 +128,7 @@ jobs:
 
       # Install Magento
       #- run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.1.6_sample_data.tar.gz && tar xzf Magento-EE-2.1.6_sample_data.tar.gz
-      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento216-PreCompiled.tar.gz && tar xvzf Magento216-PreCompiled.tar.gz
+      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento216-PreCompiled.tar.gz && tar xpvzf Magento216-PreCompiled.tar.gz --strip-components=1 magento2
       - run: mysqldump -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
       #- run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
       - run: chmod +x bin/magento
