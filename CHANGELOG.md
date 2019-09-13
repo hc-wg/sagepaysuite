@@ -1,3 +1,14 @@
+## [1.3.8] - 2019-09-18
+### Added
+- PI support for PSD2 and SCA
+- Payment Failed Emails impelentation for PI
+
+### Fixed
+- Fix DropIn not working with Minify js
+- Stop the order for try to being captured if txstateid empty
+- 0.00 cost products breaks PayPal
+- Fix Multi Currency Authenticate invoice using Base Currency amount
+
 ## [1.3.7] - 2019-08-07
 ### Added
 - Setting to set max tokens per customer
@@ -15,6 +26,7 @@
 
 ## [1.3.6] - 2019-06-19
 ### Added
+- SERVER and FORM support for PSD2 and SCA
 - PI DropIn compatibility with OneStepCheckout
 
 ### Fixed
@@ -87,6 +99,7 @@
 - Magento not running schema updates. Switching to Schema patches
 - New CSRF checks rejecting callbacks
 
+[1.3.8]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.8
 [1.3.7]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.7
 [1.3.6]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.6
 [1.3.5]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.5
