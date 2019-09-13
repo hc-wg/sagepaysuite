@@ -58,7 +58,7 @@ class CheckoutCartIndex implements ObserverInterface
         /**
          * Reload quote and cancel order if it was pre-saved but not completed
          */
-        $presavedOrderId = $this->checkoutSession->getData("sagepaysuite_presaved_order_pending_payment");
+        $presavedOrderId = $this->checkoutSession->getData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY);
 
         if (!empty($presavedOrderId)) {
             $order = $this->orderFactory->create()->load($presavedOrderId);

@@ -164,7 +164,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
 
             if ($order) {
                 //set pre-saved order flag in checkout session
-                $this->_checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", $order->getId());
+                $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, $order->getId());
 
                 //set payment data
                 $payment = $order->getPayment();

@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\PiRequestManagement;
 
+use Ebizmarts\SagePaySuite\Api\Data\PiRequestManager;
 use Ebizmarts\SagePaySuite\Api\Data\PiResultInterface;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface;
 use Ebizmarts\SagePaySuite\Helper\Checkout;
@@ -18,7 +19,6 @@ use Ebizmarts\SagePaySuite\Model\PiRequestManagement\EcommerceManagement;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForAction;
-use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteValidator;
 use Magento\Sales\Model\Order;
@@ -70,7 +70,7 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $quoteMock->expects($this->exactly(2))->method('collectTotals')->willReturnSelf();
         $quoteMock->expects($this->exactly(2))->method('reserveOrderId')->willReturnSelf();
 
-        $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManagerInterface::class);
+        $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManager::class);
         $requestDataMock->expects($this->any())->method('getPaymentAction')->willReturn($paymentAction);
 
         $payResultMock = $this->makeMockDisabledConstructor(PiTransactionResultInterface::class);
@@ -90,6 +90,7 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $piRequestMock->expects($this->exactly(2))->method('setCardIdentifier')->willReturnSelf();
         $piRequestMock->expects($this->exactly(2))->method('setVendorTxCode')->willReturnSelf();
         $piRequestMock->expects($this->exactly(2))->method('setIsMoto')->willReturnSelf();
+        $piRequestMock->expects($this->exactly(2))->method('setRequest')->willReturnSelf();
         $piRequestMock->expects($this->exactly(2))->method('getRequestData')->willReturn(
             ['transactionType' => $paymentAction]
         );
@@ -261,7 +262,7 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $quoteMock->expects($this->exactly(5))->method('getReservedOrderId')->willReturn('000000083');
         $quoteMock->expects($this->never())->method('reserveOrderId');
 
-        $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManagerInterface::class);
+        $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManager::class);
         $requestDataMock->expects($this->any())->method('getPaymentAction')->willReturn(Config::ACTION_PAYMENT_PI);
 
         $payResultMock = $this->makeMockDisabledConstructor(PiTransactionResultInterface::class);
@@ -279,6 +280,7 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $piRequestMock->expects($this->exactly(2))->method('setCardIdentifier')->willReturnSelf();
         $piRequestMock->expects($this->exactly(2))->method('setVendorTxCode')->willReturnSelf();
         $piRequestMock->expects($this->exactly(2))->method('setIsMoto')->willReturnSelf();
+        $piRequestMock->expects($this->exactly(2))->method('setRequest')->willReturnSelf();
         $piRequestMock->expects($this->exactly(2))->method('getRequestData')->willReturn(
             ['transactionType' => Config::ACTION_PAYMENT_PI]
         );
@@ -409,7 +411,7 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $quoteMock->expects($this->once())->method('collectTotals')->willReturnSelf();
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
 
-        $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManagerInterface::class);
+        $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManager::class);
         $requestDataMock->expects($this->once())->method('getPaymentAction')->willReturn($paymentAction);
 
         $payResultMock = $this->makeMockDisabledConstructor(PiTransactionResultInterface::class);
@@ -433,6 +435,7 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $piRequestMock->expects($this->once())->method('setCardIdentifier')->willReturnSelf();
         $piRequestMock->expects($this->once())->method('setVendorTxCode')->willReturnSelf();
         $piRequestMock->expects($this->once())->method('setIsMoto')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setRequest')->willReturnSelf();
         $piRequestMock->expects($this->once())->method('getRequestData')->willReturn(
             ['transactionType' => $paymentAction]
         );
@@ -557,7 +560,7 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
 
         $quoteMock = $this->makeMockDisabledConstructor(Quote::class);
 
-        $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManagerInterface::class);
+        $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManager::class);
 
         $piRestApiMock = $this->makeMockDisabledConstructor(PIRest::class);
         $piRestApiMock->expects($this->never())->method('void');
@@ -656,10 +659,10 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
         $quoteMock->expects($this->once())->method('getId')->willReturn($quoteId);
 
-        $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManagerInterface::class);
+        $requestDataMock = $this->makeMockDisabledConstructor(PiRequestManager::class);
 
         $payResultMock = $this->makeMockDisabledConstructor(PiTransactionResultInterface::class);
-        $payResultMock->expects($this->exactly(4))->method('getStatusCode')->willReturn(0004);
+        $payResultMock->expects($this->exactly(3))->method('getStatusCode')->willReturn(0004);
         $payResultMock->expects($this->exactly(2))->method('getStatusDetail')->willReturn('Test error');
 
         $piRestApiMock = $this->makeMockDisabledConstructor(PIRest::class);
@@ -673,6 +676,7 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $piRequestMock->expects($this->once())->method('setCardIdentifier')->willReturnSelf();
         $piRequestMock->expects($this->once())->method('setVendorTxCode')->willReturnSelf();
         $piRequestMock->expects($this->once())->method('setIsMoto')->willReturnSelf();
+        $piRequestMock->expects($this->once())->method('setRequest')->willReturnSelf();
         $piRequestMock->expects($this->once())->method('getRequestData')->willReturn(
             ['transactionType' => $paymentAction]
         );
