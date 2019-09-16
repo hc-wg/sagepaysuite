@@ -8,7 +8,7 @@ use Ebizmarts\SagePaySuite\Helper\Checkout;
 use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Helper\Request;
 use Ebizmarts\SagePaySuite\Model\FormCrypt;
-use Magento\Checkout\Model\Session;
+use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\UrlInterface;
@@ -49,7 +49,7 @@ class FormRequestManagement implements FormManagementInterface
     private $requestHelper;
 
     /**
-     * @var Session
+     * @var CheckoutSession
      */
     private $checkoutSession;
 
@@ -92,7 +92,7 @@ class FormRequestManagement implements FormManagementInterface
         Request $requestHelper,
         FormResultInterface $result,
         Checkout $checkoutHelper,
-        Session $checkoutSession,
+        CheckoutSession $checkoutSession,
         CustomerSession $customerSession,
         CartRepositoryInterface $quoteRepository,
         QuoteIdMaskFactory $quoteIdMaskFactory,
