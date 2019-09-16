@@ -156,9 +156,11 @@ class PIRest
     {
         /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpRest $rest */
         $rest = $this->httpRestFactory->create();
+        $rest->getLogger()->sageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST, $url, [__METHOD__, __LINE__]);
         $rest->setBasicAuth($this->config->getPIKey(), $this->config->getPIPassword());
         $rest->setUrl($url);
         $response = $rest->executePost($body);
+
         return $response;
     }
 
