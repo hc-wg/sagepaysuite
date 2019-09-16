@@ -23,7 +23,7 @@ interface PiScaRequestInterface
      * @param int $enabled
      * @return void
      */
-    public function setJavascriptEnabled(int $enabled) ;
+    public function setJavascriptEnabled($enabled) ;
 
     /**
      * @return string
@@ -35,7 +35,7 @@ interface PiScaRequestInterface
      * @param string $headers
      * @return void
      */
-    public function setAcceptHeaders(string $headers);
+    public function setAcceptHeaders($headers);
 
     /**
      * @return string
@@ -47,7 +47,7 @@ interface PiScaRequestInterface
      * @param string $language
      * @return void
      */
-    public function setLanguage(string $language);
+    public function setLanguage($language);
 
     /**
      * @return string
@@ -59,7 +59,7 @@ interface PiScaRequestInterface
      * @param string $userAgent
      * @return void
      */
-    public function setUserAgent(string $userAgent);
+    public function setUserAgent($userAgent);
 
     /**
      * @return int
@@ -71,7 +71,7 @@ interface PiScaRequestInterface
      * @param int $javaEnabled
      * @return void
      */
-    public function setJavaEnabled(int $javaEnabled) ;
+    public function setJavaEnabled($javaEnabled) ;
 
     /**
      * @return int
@@ -83,7 +83,7 @@ interface PiScaRequestInterface
      * @param int $colorDepth
      * @return void
      */
-    public function setColorDepth(int $colorDepth);
+    public function setColorDepth($colorDepth);
 
     /**
      * @return int
@@ -95,7 +95,7 @@ interface PiScaRequestInterface
      * @param int $screenWidth
      * @return void
      */
-    public function setScreenWidth(int $screenWidth);
+    public function setScreenWidth($screenWidth);
 
     /**
      * @return int
@@ -107,7 +107,7 @@ interface PiScaRequestInterface
      * @param int $screenHeight
      * @return void
      */
-    public function setScreenHeight(int $screenHeight);
+    public function setScreenHeight($screenHeight);
 
     /**
      * @return int
@@ -119,5 +119,5 @@ interface PiScaRequestInterface
      * @param int $timezone
      * @return void
      */
-    public function setTimezone(int $timezone);
+    public function setTimezone($timezone);
 }
