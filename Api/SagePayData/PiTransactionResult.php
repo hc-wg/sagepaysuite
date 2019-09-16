@@ -253,6 +253,7 @@ class PiTransactionResult extends AbstractExtensibleObject implements PiTransact
     }
 
     /**
+<<<<<<< HEAD
      * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheckInterface
      */
     public function getAvsCvcCheck()
@@ -267,5 +268,22 @@ class PiTransactionResult extends AbstractExtensibleObject implements PiTransact
     public function setAvsCvcCheck($avsCvcCheck)
     {
         $this->setData(self::AVS_CVC_CHECK, $avsCvcCheck);
+    }
+
+    /**
+     * @param $creq
+     * @return void
+     */
+    public function setCReq($creq)
+    {
+        $this->setData(self::C_REQ, $creq);
+    }
+
+    /**
+     * @return string
+     */
+    public function getCReq()
+    {
+        return $this->_get(self::C_REQ);
     }
 }

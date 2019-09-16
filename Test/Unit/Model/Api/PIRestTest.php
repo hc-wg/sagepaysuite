@@ -733,18 +733,12 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $pi3dRequestFactoryMock->expects($this->once())->method('create')->willReturn($pi3dRequestMock);
 
-        $piTransactionResult3DMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $piTransactionResult3DMock->expects($this->never())->method('setStatus');
-
         $piTransactionResult3DFactoryMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory::class)
-            ->setMethods(["create"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $piTransactionResult3DFactoryMock->expects($this->once())->method('create')->willReturn($piTransactionResult3DMock);
+        ->getMockBuilder(PiTransactionResultThreeDFactory::class)
+        ->setMethods(["create"])
+        ->disableOriginalConstructor()
+        ->getMock();
+        $piTransactionResult3DFactoryMock->expects($this->never())->method('create');
 
         $this->httpRestMock
             ->expects($this->once())

@@ -116,7 +116,7 @@ class Failure extends Action
 
             $statusDetail = $this->extractStatusDetail($response);
 
-            $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
+            $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
 
             $this->messageManager->addError($response["Status"] . ": " . $statusDetail);
             return $this->_redirect('checkout/cart');

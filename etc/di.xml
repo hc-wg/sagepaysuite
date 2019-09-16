@@ -7,6 +7,16 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
 
+    <!-- 3Dv2 -->
+    <type name="\Ebizmarts\SagePaySuite\Model\PiRequest">
+        <plugin name="strongCustomerAuthentication"
+                type="Ebizmarts\SagePaySuite\Plugin\StrongCustomerAuthRequestData"
+                sortOrder="1"
+                disabled="false"
+        />
+    </type>
+    <!-- 3Dv2 -->
+
     <type name="Magento\Framework\View\Asset\Minification">
         <plugin name="preventPiRemoteJsMinification" type="Ebizmarts\SagePaySuite\Plugin\ExcludeFilesFromMinification" />
     </type>

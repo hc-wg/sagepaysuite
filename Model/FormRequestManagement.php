@@ -8,7 +8,7 @@ use Ebizmarts\SagePaySuite\Helper\Checkout;
 use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Helper\Request;
 use Ebizmarts\SagePaySuite\Model\FormCrypt;
-use Magento\Checkout\Model\Session;
+use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\UrlInterface;
@@ -49,7 +49,7 @@ class FormRequestManagement implements FormManagementInterface
     private $requestHelper;
 
     /**
-     * @var Session
+     * @var CheckoutSession
      */
     private $checkoutSession;
 
@@ -92,7 +92,7 @@ class FormRequestManagement implements FormManagementInterface
         Request $requestHelper,
         FormResultInterface $result,
         Checkout $checkoutHelper,
-        Session $checkoutSession,
+        CheckoutSession $checkoutSession,
         CustomerSession $customerSession,
         CartRepositoryInterface $quoteRepository,
         QuoteIdMaskFactory $quoteIdMaskFactory,
@@ -143,7 +143,7 @@ class FormRequestManagement implements FormManagementInterface
             $order = $this->checkoutHelper->placeOrder();
             if ($order->getEntityId()) {
                 //set pre-saved order flag in checkout session
-                $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", $order->getId());
+                $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, $order->getId());
 
                 //set payment data
                 $payment = $order->getPayment();
