@@ -255,18 +255,38 @@ define([
             token_form.elements[4].setAttribute('value', document.getElementById(self.getCode() + '_cc_cid').value);
         },
         placeTansactionRequest: function () {
-
             var self = this;
 
             var serviceUrl = this.options.url.request;
 
             var formData = jQuery("#edit_form").serialize();
-            formData += "&merchant_session_key=" + self.merchantSessionKey;
-            formData += "&card_identifier=" + self.cardIdentifier;
-            formData += "&card_type=" + self.creditCardType;
-            formData += "&card_exp_month=" + self.creditCardExpMonth;
-            formData += "&card_exp_year=" + self.creditCardExpYear;
-            formData += "&card_last4=" + self.creditCardLast4;
+
+            var baseParams = {
+                merchant_session_key: self.merchantSessionKey,
+                card_identifier: self.cardIdentifier,
+                card_type: self.creditCardType,
+                card_exp_month: self.creditCardExpMonth,
+                card_exp_year: self.creditCardExpYear,
+                card_last4: self.creditCardLast4
+            };
+
+            var scaParams = {
+                javascript_enabled: 1,
+                accept_headers: 'Accept headers placeholder.',
+                language: navigator.language,
+                user_agent: navigator.userAgent,
+                java_enabled: navigator.javaEnabled() ? 1 : 0,
+                color_depth: screen.colorDepth,
+                screen_width: 1,
+                screen_height: 1,
+                timezone: 1
+            };
+
+            $.extend(baseParams, scaParams);
+
+            var query = $.param(baseParams);
+            formData += "&";
+            formData += query;
 
             $.ajax({
                 url: serviceUrl,
