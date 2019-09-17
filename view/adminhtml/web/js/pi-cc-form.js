@@ -277,9 +277,9 @@ define([
                 user_agent: navigator.userAgent,
                 java_enabled: navigator.javaEnabled() ? 1 : 0,
                 color_depth: screen.colorDepth,
-                screen_width: 1,
-                screen_height: 1,
-                timezone: 1
+                screen_width: screen.width,
+                screen_height: screen.height,
+                timezone: (new Date()).getTimezoneOffset()
             };
 
             $.extend(baseParams, scaParams);
