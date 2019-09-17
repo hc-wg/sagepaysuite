@@ -431,9 +431,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->piRequestController->execute();
     }
 
-    private function setRequestAsserts(): void
+    private function setRequestAsserts()
     {
-        $this->requestMock->expects($this->any())->method('getPost')->withConsecutive(['merchant_session_key'],
+        $this->requestMock->expects($this->exactly(15))->method('getPost')->withConsecutive(['merchant_session_key'],
                 ['card_identifier'], ['card_exp_month'], ['card_exp_year'], ['card_last4'], ['card_type'],
                 ['javascript_enabled'], ['accept_headers'], ['language'], ['user_agent'], ['java_enabled'],
                 ['color_depth'], ['screen_width'], ['screen_height'],
