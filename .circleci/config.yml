@@ -56,11 +56,12 @@ jobs:
       - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
 
       # Install Magento
-      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.2_sample_data.tar.gz && tar xzf Magento-EE-2.3.2_sample_data.tar.gz
+      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento232EE-PreCompiled.tar.gz
+      - run: tar xpf Magento232EE-PreCompiled.tar.gz
+      - run: mv magento2/* .
+      - run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
       - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
       - run: chmod +x bin/magento
-      - run: composer install --prefer-source --no-interaction
-      - run: bin/magento setup:install --base-url=http://magento2.dev:8080/ --db-host=$MYSQL_HOST --db-name=$MYSQL_DATABASE --db-user=$MYSQL_USER --db-password=$MYSQL_PASSWORD --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1 --cleanup-database --use-sample-data
 
       # Install API
       - checkout:
@@ -148,11 +149,12 @@ jobs:
       - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
 
       # Install Magento
-      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.2_sample_data.tar.gz && tar xzf Magento-EE-2.3.2_sample_data.tar.gz
+      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento232EE-PreCompiled.tar.gz
+      - run: tar xpf Magento232EE-PreCompiled.tar.gz
+      - run: mv magento2/* .
+      - run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
       - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
       - run: chmod +x bin/magento
-      - run: composer install --prefer-source --no-interaction
-      - run: bin/magento setup:install --base-url=http://magento2.dev:8080/ --db-host=$MYSQL_HOST --db-name=$MYSQL_DATABASE --db-user=$MYSQL_USER --db-password=$MYSQL_PASSWORD --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1 --cleanup-database --use-sample-data
 
       # Install API
       - checkout:
