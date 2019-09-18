@@ -73,6 +73,15 @@ class Request extends \Magento\Backend\App\AbstractAction
         $data->setCcExpYear($this->getRequest()->getPost('card_exp_year'));
         $data->setCcLastFour($this->getRequest()->getPost('card_last4'));
         $data->setCcType($this->getRequest()->getPost('card_type'));
+        $data->setJavascriptEnabled($this->getRequest()->getPost('javascript_enabled'));
+        $data->setAcceptHeaders($this->getRequest()->getPost('accept_headers'));
+        $data->setLanguage($this->getRequest()->getPost('language'));
+        $data->setUserAgent($this->getRequest()->getPost('user_agent'));
+        $data->setJavaEnabled($this->getRequest()->getPost('java_enabled'));
+        $data->setColorDepth($this->getRequest()->getPost('color_depth'));
+        $data->setScreenWidth($this->getRequest()->getPost('screen_width'));
+        $data->setScreenHeight($this->getRequest()->getPost('screen_height'));
+        $data->setTimezone($this->getRequest()->getPost('timezone'));
 
         $this->requester->setRequestData($data);
         $this->requester->setQuote($this->quote);
