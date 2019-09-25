@@ -97,7 +97,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
         $xmlData = \file_get_contents($configFilePath); //@codingStandardsIgnoreLine
         $xml = new \SimpleXMLElement($xmlData);
         $this->assertObjectHasAttribute('dev', $xml->default);
-        $this->assertEquals($xml->default->dev->js->minify_exclude->sagepaysuitepi, "api/v1/js/sagepay.js");
+        $this->assertEquals($xml->default->dev->js->minify_exclude->sagepaysuitepi, "sagepay");
     }
     
     public function testIsMethodActive()
