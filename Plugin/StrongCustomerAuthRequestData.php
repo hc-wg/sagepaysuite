@@ -45,8 +45,8 @@ class StrongCustomerAuthRequestData
 
         /** @var $subject \Ebizmarts\SagePaySuite\Model\PiRequest */
         $result['strongCustomerAuthentication'] = [
-            'browserJavascriptEnabled' => 1,
-            'browserJavaEnabled'       => $data->getJavaEnabled(),
+            'browserJavascriptEnabled' => true,
+            'browserJavaEnabled'       => (bool)$data->getJavaEnabled(),
             'browserColorDepth'        => $data->getColorDepth(),
             'browserScreenHeight'      => $data->getScreenHeight(),
             'browserScreenWidth'       => $data->getScreenWidth(),
