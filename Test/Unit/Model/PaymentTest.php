@@ -5,6 +5,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiInstructionResponse;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface;
 use Ebizmarts\SagePaySuite\Helper\Data as SagePayHelper;
+use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\Pi;
 use Ebizmarts\SagePaySuite\Model\Api\Shared;
 use Ebizmarts\SagePaySuite\Model\Config;
@@ -97,6 +98,47 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
             ->getMock();
 
         $piApiMock = $this->makePiApiMock($testVpsTxId, $testAmount, $resultMock);
+
+        /** @var Payment $sut */
+        $sut = $this->makeObjectManager()->getObject(
+            Payment::class,
+            [
+                'config' => $this->makeConfigMockPiDeferredAction()
+            ]
+        );
+
+        $sut->setApi($piApiMock);
+
+        $orderMock = $this->makeOrderMockPendingState();
+
+        $paymentMock = $this->makePaymentMock($orderMock);
+        $paymentMock->expects($this->once())->method('getLastTransId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->never())->method('setParentTransactionId');
+        $paymentMock->expects($this->once())->method('getParentTransactionId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->never())->method('setTransactionId');
+
+        $sut->capture($paymentMock, $testAmount);
+    }
+
+    /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     * @expectedExceptionMessage Cannot capture deferred transaction, transaction state is invalid.
+     */
+    public function testCaptureDeferredPiTransactionTxStateIdNull()
+    {
+        $testAmount  = 377.68;
+        $testVpsTxId = 'ABCD-1234';
+
+        $piApiMock = $this
+            ->getMockBuilder(Pi::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $piApiMock
+            ->expects($this->once())
+            ->method('captureDeferredTransaction')
+            ->with($testVpsTxId, $testAmount)
+            ->willThrowException(new ApiException(__('Cannot capture deferred transaction, transaction state is invalid.')));
 
         /** @var Payment $sut */
         $sut = $this->makeObjectManager()->getObject(
@@ -229,6 +271,72 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
         $sut->setApi($sharedApiMock);
 
         $orderMock = $this->makeOrderMockPendingState();
+
+        $paymentMock = $this->makePaymentMock($orderMock);
+        $paymentMock
+            ->expects($this->exactly(2))
+            ->method('getAdditionalInformation')
+            ->with('paymentAction')
+            ->willReturn('AUTHENTICATE');
+        $paymentMock->expects($this->once())->method('getLastTransId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->once())->method('setParentTransactionId')->with($testVpsTxId);
+        $paymentMock->expects($this->exactly(2))->method('getParentTransactionId')->willReturn($testVpsTxId);
+        $paymentMock->expects($this->once())->method('setTransactionId')->with('D1C98A42-E2F2-F7BB-631C-B439303A5EC5');
+        $this->checkSetTransactionAdditionalCorrect($paymentMock);
+
+        $sut->capture($paymentMock, $testAmount);
+    }
+
+    public function testCaptureMultiCurrencyAuthenticateForm()
+    {
+        $testAmount  = 963.80;
+        $rate = 1.09;
+        $testInvioceTransaction = $testAmount * $rate;
+        $testVpsTxId = 'D55E2CC0-168C-F770-6862-C28D0CAD0755';
+
+        $sharedApiMock = $this
+            ->getMockBuilder(Shared::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sharedApiMock
+            ->expects($this->once())->method('authorizeTransaction')
+            ->with($testVpsTxId, $testInvioceTransaction)
+            ->willReturn($this->makeAuthoriseResponseMock());
+
+        $configMock = $this
+            ->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock
+            ->expects($this->once())
+            ->method('getCurrencyConfig')
+            ->willReturn(Config::CURRENCY_SWITCHER);
+
+        /** @var Payment $sut */
+        $sut = $this->makeObjectManager()->getObject(
+            Payment::class,
+            [
+                'config'      => $configMock,
+                'suiteHelper' => $this->makeSagePayHelperDataMock()
+            ]
+        );
+
+        $sut->setApi($sharedApiMock);
+
+        $orderMock = $this->makeOrderMockPendingState();
+        $orderMock
+            ->expects($this->once())
+            ->method('getOrderCurrencyCode')
+            ->willReturn('EUR');
+        $orderMock
+            ->expects($this->once())
+            ->method('getBaseCurrencyCode')
+            ->willReturn('GBP');
+        $orderMock
+            ->expects($this->once())
+            ->method('getBaseToOrderRate')
+            ->willReturn($rate);
+
 
         $paymentMock = $this->makePaymentMock($orderMock);
         $paymentMock
@@ -397,9 +505,14 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
      */
     private function makePiApiMock($testVpsTxId, $testAmount, $resultMock)
     {
-        $piApiMock = $this->getMockBuilder(Pi::class)->disableOriginalConstructor()->getMock();
+        $piApiMock = $this
+            ->getMockBuilder(Pi::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $piApiMock->expects($this->once())->method('captureDeferredTransaction')
+        $piApiMock
+            ->expects($this->once())
+            ->method('captureDeferredTransaction')
             ->with($testVpsTxId, $testAmount)->willReturn($resultMock);
 
         return $piApiMock;

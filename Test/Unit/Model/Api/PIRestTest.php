@@ -160,6 +160,19 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->with('{"vendorName":"testvendorname"}')
             ->willReturn($this->httpResponseMock);
 
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($loggerMock);
+
         $mskResponseMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiMerchantSessionKeyResponse::class)
             ->disableOriginalConstructor()
@@ -250,6 +263,19 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->method('executePost')
             ->with('{"vendorName":""}')
             ->willReturn($this->httpResponseMock);
+
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($loggerMock);
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new Phrase("Missing mandatory field: vendorName"),
@@ -401,6 +427,19 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
                 )
             );
 
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($loggerMock);
+
         $requestArray = [
             "transactionType" => "Payment",
             "paymentMethod" => [
@@ -483,6 +522,19 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
                 )
             );
 
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($loggerMock);
+
         $apiExceptionObj = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new Phrase("Contains invalid value: paymentMethod.card.merchantSessionKey"),
             new LocalizedException(
@@ -542,6 +594,19 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
                     '
                 )
             );
+
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($loggerMock);
 
         $apiExceptionObj = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new Phrase("No card provided."),
@@ -613,6 +678,19 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->method('getResponseData')
             ->willReturn(json_decode('{"status": "OK"}'));
 
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($loggerMock);
+
         $this->pirestApiModel  = $this->objectManager->getObject(
             self::PI_REST,
             [
@@ -650,18 +728,12 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $pi3dRequestFactoryMock->expects($this->once())->method('create')->willReturn($pi3dRequestMock);
 
-        $piTransactionResult3DMock = $this
-            ->getMockBuilder(PiTransactionResultThreeD::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $piTransactionResult3DMock->expects($this->never())->method('setStatus');
-
         $piTransactionResult3DFactoryMock = $this
         ->getMockBuilder(PiTransactionResultThreeDFactory::class)
         ->setMethods(["create"])
         ->disableOriginalConstructor()
         ->getMock();
-        $piTransactionResult3DFactoryMock->expects($this->once())->method('create')->willReturn($piTransactionResult3DMock);
+        $piTransactionResult3DFactoryMock->expects($this->never())->method('create');
 
         $this->httpRestMock
             ->expects($this->once())
@@ -675,6 +747,19 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('getResponseData')
             ->willReturn(json_decode('{}'));
+
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($loggerMock);
 
         $this->pirestApiModel  = $this->objectManager->getObject(
             self::PI_REST,
@@ -734,6 +819,19 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('getResponseData')
             ->willReturn(json_decode('{"errors": [{"description": "Contains invalid characters","property": "paRes","code": 1005}]}'));
+
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($loggerMock);
 
         $apiException = new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
             new Phrase("Contains invalid characters: paRes"),
@@ -892,6 +990,19 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->method('getResponseData')
             ->willReturn(json_decode('{"instructionType": "void","date": "2015-08-11T11:45:16.285+01:00"}'));
 
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($loggerMock);
+
         $this->pirestApiModel  = $this->objectManager->getObject(
             self::PI_REST,
             [
@@ -949,6 +1060,19 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('getResponseData')
             ->willReturn(json_decode('{"instructionType": "abort","date": "2015-08-11T11:45:16.285+01:00"}'));
+
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($loggerMock);
 
         $this->pirestApiModel  = $this->objectManager->getObject(
             self::PI_REST,
@@ -1009,6 +1133,19 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->method('getResponseData')
             ->willReturn(json_decode('{"instructionType": "release","date": "2015-08-11T11:45:16.285+01:00"}'));
 
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($loggerMock);
+
         $this->pirestApiModel  = $this->objectManager->getObject(
             self::PI_REST,
             [
@@ -1047,6 +1184,19 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->method('executePost')
             ->with($this->getRepeatRequestPostJsonString())
             ->willReturn($this->httpResponseMock);
+
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($loggerMock);
 
         $piTransactionResult = $this->makeTransactionResultMockOk();
         $piTransactionResult->expects($this->once())->method('setTransactionId')
@@ -1151,6 +1301,19 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->method('executePost')
             ->with('{"vendorName":"testvendorname"}')
             ->willReturn($this->httpResponseMock);
+
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
+        $this->httpRestMock
+            ->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($loggerMock);
 
         $piTransactionResult = $this
             ->getMockBuilder(PiTransactionResult::class)
