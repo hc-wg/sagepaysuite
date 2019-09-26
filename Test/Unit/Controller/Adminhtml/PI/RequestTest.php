@@ -332,6 +332,15 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $piRequestManagerMock->expects($this->once())->method('setCcExpYear');
         $piRequestManagerMock->expects($this->once())->method('setCcLastFour');
         $piRequestManagerMock->expects($this->once())->method('setCcType');
+        $piRequestManagerMock->expects($this->once())->method('setJavascriptEnabled');
+        $piRequestManagerMock->expects($this->once())->method('setAcceptHeaders');
+        $piRequestManagerMock->expects($this->once())->method('setLanguage');
+        $piRequestManagerMock->expects($this->once())->method('setUserAgent');
+        $piRequestManagerMock->expects($this->once())->method('setJavaEnabled');
+        $piRequestManagerMock->expects($this->once())->method('setColorDepth');
+        $piRequestManagerMock->expects($this->once())->method('setScreenWidth');
+        $piRequestManagerMock->expects($this->once())->method('setScreenHeight');
+        $piRequestManagerMock->expects($this->once())->method('setTimezone');
 
         $piRequestManagerFactoryMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory::class)
@@ -350,6 +359,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 "response" => "https://example.com/admin/sales/order/view/order_id/888"
             ]
         );
+
+        $this->setRequestAsserts();
 
         $requesterMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PiRequestManagement\MotoManagement::class)
             ->disableOriginalConstructor()
@@ -389,6 +400,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase("INVALID"))
         );
 
+        $this->setRequestAsserts();
+
         $requesterMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PiRequestManagement\MotoManagement::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -416,5 +429,17 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->piRequestController->execute();
+    }
+
+    private function setRequestAsserts()
+    {
+        $this->requestMock->expects($this->exactly(15))->method('getPost')->withConsecutive(
+                ['merchant_session_key'],
+                ['card_identifier'], ['card_exp_month'], ['card_exp_year'], ['card_last4'], ['card_type'],
+                ['javascript_enabled'], ['accept_headers'], ['language'], ['user_agent'], ['java_enabled'],
+                ['color_depth'], ['screen_width'], ['screen_height'],
+                ['timezone'])->willReturnOnConsecutiveCalls('1B436F04-E6B5-4785-A5B9-B28E9DDC1B92',
+                '74D926FD-5E87-451A-A089-7F6B4D1A76C9', '', '', '', '', 1, '*/*', 'en-US', 'Mozilla\/5.0', 0, 24, 1024,
+                768, 180);
     }
 }

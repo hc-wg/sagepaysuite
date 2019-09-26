@@ -105,4 +105,21 @@ class PiResult extends Result implements PiResultInterface
     {
         $this->setData(self::PAR_EQ, $pareq);
     }
+
+    /**
+     * @return string
+     */
+    public function getCreq()
+    {
+        return $this->_get(self::CREQ);
+    }
+
+    /**
+     * @param $creq
+     * @return void
+     */
+    public function setCreq($creq)
+    {
+        $this->setData(self::CREQ, $creq);
+    }
 }

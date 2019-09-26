@@ -21,6 +21,9 @@
 
 `bin/magento setup:upgrade`
 
+##Token expired and it's causing problems.
+If your token expired and it's causing problems when you run composer update. 
+You can renew your support to get a new token or simply run `composer config --unset repositories.ebizmarts`
 
 ## Manual installation
 

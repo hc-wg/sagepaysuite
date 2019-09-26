@@ -21,7 +21,8 @@ class Config
     /**
      * SagePay VPS protocol
      */
-    const VPS_PROTOCOL = '3.00';
+    const VPS_PROTOCOL      = '3.00';
+    const VPS_PROTOCOL_FOUR = '4.00';
 
     /**
      * SagePaySuite Integration codes
@@ -121,6 +122,7 @@ class Config
      */
     const SUCCESS_STATUS         = '0000';
     const AUTH3D_REQUIRED_STATUS = '2007';
+    const AUTH3D_V2_REQUIRED_STATUS = '2021';
 
     /**
      * SagePay Third Man Score Statuses
@@ -412,6 +414,19 @@ class Config
     public function getMode()
     {
         return $this->getGlobalValue("mode");
+    }
+
+    /**
+     * @return string 3.00|4.00
+     */
+    public function getProtocolVersion()
+    {
+        return $this->getGlobalValue("protocol");
+    }
+
+    public function shouldUse3dV2()
+    {
+        return self::VPS_PROTOCOL_FOUR === $this->getProtocolVersion();
     }
 
     public function isTokenEnabled()
