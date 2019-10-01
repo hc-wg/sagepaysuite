@@ -1,3 +1,12 @@
+## [1.1.29] - 2019-09-23
+### Added
+- PI support for PSD2 and SCA
+
+### Fixed
+- Stop the order for try to being captured if txstateid empty
+- 0.00 cost products breaks PayPal
+- Fix Multi Currency Authenticate invoice using Base Currency amount
+
 ## [1.1.28] - 2019-08-07
 ### Added
 - Setting to set max tokens per customer
