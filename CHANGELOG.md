@@ -1,3 +1,13 @@
+## [1.2.17] - 2019-09-18
+### Added
+- PI support for PSD2 and SCA
+- Payment Failed Emails implementation for PI
+
+### Fixed
+- Stop the order for try to being captured if txstateid empty
+- 0.00 cost products breaks PayPal
+- Fix Multi Currency Authenticate invoice using Base Currency amount
+
 ## [1.2.16] - 2019-08-07
 ### Added
 - Setting to set max tokens per customer
@@ -187,6 +197,7 @@
 ### Added
 - First release with Magento 2.2.0 compatibility.
 
+[1.2.17]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.17
 [1.2.16]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.16
 [1.2.15]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.15
 [1.2.14]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.14
