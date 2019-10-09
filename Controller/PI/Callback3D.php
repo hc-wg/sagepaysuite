@@ -139,6 +139,6 @@ class Callback3D extends Action implements CsrfAwareActionInterface
      */
     public function sanitizePares($pares)
     {
-        return preg_replace("/[\n\r]/", "", $pares);
+        return preg_replace("/[\n\s]/", "", $pares);
     }
 }
