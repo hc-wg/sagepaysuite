@@ -68,7 +68,8 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
             $data = $this->piRequestManagerDataFactory->create();
             $data->setTransactionId($this->getRequest()->getParam("transactionId"));
-            $data->setParEs($this->getRequest()->getPost('PaRes'));
+            $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
+            $data->setParEs($sanitizedPares);
             $data->setVendorName($this->config->getVendorname());
             $data->setMode($this->config->getMode());
             $data->setPaymentAction($this->config->getSagepayPaymentAction());
@@ -130,5 +131,14 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     public function validateForCsrf(RequestInterface $request): ?bool
     {
         return true;
+    }
+
+    /**
+     * @param $pares
+     * @return string
+     */
+    public function sanitizePares($pares)
+    {
+        return preg_replace("/[\n\s]/", "", $pares);
     }
 }
