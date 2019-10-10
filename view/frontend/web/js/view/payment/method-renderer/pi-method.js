@@ -66,9 +66,9 @@ define(
             sagepaySetForm: function () {
                 var self = this;
                 if (document.getElementById('sagepaysuitepi').checked) {
-                    this.selectPaymentMethod();
+                    self.selectPaymentMethod();
                 }
-                self.defaultStateForm();
+                self.preparePayment();
             },
             isOneStepCheckout: function () {
                 return ($('#iosc-summary').length > 0);
@@ -147,10 +147,8 @@ define(
 
                 self.destroyInstanceSagePay();
 
-                self.resetPaymentErrors();
-
                 //validations
-                if (!this.validate() || !additionalValidators.validate()) {
+                if (!self.validate() || !additionalValidators.validate() || self.getCode() != self.isChecked()) {
                     return false;
                 }
 
@@ -203,14 +201,7 @@ define(
                 self.isPlaceOrderActionAllowed(true);
                 $("#submit_dropin_payment").css("display", "none");
             },
-            defaultStateForm: function () {
-                $("#payment-iframe").css("display", "none");
-                $("#sp-container").css("display", "none");
-                $("#load-dropin-form-button").css("display", "block");
-                $("#submit_dropin_payment").css("display", "none");
-            },
             isPlaceOrderActionAllowed: function (allowedParam) {
-                var self = this;
                 if (typeof allowedParam  === 'undefined') {
                     return quote.billingAddress() != null;
                 }
@@ -224,6 +215,12 @@ define(
                     if (merchant_session_key) {
                         self.isPlaceOrderActionAllowed(false);
                         self.merchantSessionKey = merchant_session_key;
+
+                        if (self.dropInInstance !== null) {
+                            self.dropInInstance.destroy();
+                            self.dropInInstance = null;
+                        }
+
                         self.dropInInstance = sagepayCheckout({
                                 merchantSessionKey: merchant_session_key,
                                 onTokenise: function (tokenisationResult) {
@@ -258,7 +255,14 @@ define(
                         $("#submit_dropin_payment").css("display", "block");
                         $("#load-dropin-form-button").css("display", "none");
                         $("#billing-address-same-as-shipping-sagepaysuitepi").change(function () {
-                             self.defaultStateForm();
+                            if ($("#billing-address-same-as-shipping-sagepaysuitepi").is(':checked')) {
+                                self.resetPaymentErrors();
+                                self.preparePayment();
+                            }
+                        });
+                        $(".action-update").click(function () {
+                            self.resetPaymentErrors();
+                            self.preparePayment();
                         });
                     }
                 } else {
@@ -530,7 +534,7 @@ define(
                 span.style.display = "block";
 
                 fullScreenLoader.stopLoader();
-                self.defaultStateForm();
+                self.preparePayment();
             },
             resetPaymentErrors: function () {
                 var span = document.getElementById('sagepaysuitepi-payment-errors');
