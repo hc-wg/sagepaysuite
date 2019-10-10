@@ -201,6 +201,11 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/sagepaysuitepi/use_dropin</config_path>
                     </field>
+                    <field id="threed_new_window" translate="label" type="select" sortOrder="19" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Open 3D verification in new window</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/sagepaysuitepi/threed_new_window</config_path>
+                    </field>
                     <field id="challengewindowsize" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Challenge Window Size</label>
                         <comment>Dimensions of the challenge window that has been displayed to the Cardholder.</comment>
