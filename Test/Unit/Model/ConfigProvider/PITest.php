@@ -71,6 +71,11 @@ class PITest extends \PHPUnit_Framework_TestCase
             ->with('sagepaysuitepi')
             ->willReturnSelf();
 
+        $this->configMock
+            ->expects($this->once())
+            ->method('get3dNewWindow')
+            ->willReturn(true);
+
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $this->piConfigProviderModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\ConfigProvider\PI',
@@ -86,10 +91,11 @@ class PITest extends \PHPUnit_Framework_TestCase
             [
                 'payment' => [
                     'ebizmarts_sagepaysuitepi' => [
-                        'licensed' => true,
-                        'mode'     => 'test',
-                        'dropin'   => true,
-                        'sca'      => true
+                        'licensed'  => true,
+                        'mode'      => 'test',
+                        'dropin'    => true,
+                        'sca'       => true,
+                        'newWindow' => true
                     ],
                 ]
             ],

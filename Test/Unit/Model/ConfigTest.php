@@ -998,4 +998,23 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             $this->configModel->getMaxTokenPerCustomer()
         );
     }
+
+    public function testGet3dNewWindow()
+    {
+        $this->configModel->setMethodCode('sagepaysuitepi');
+        $this->configModel->setConfigurationScope(ScopeInterface::SCOPE_WEBSITE);
+        $this->scopeConfigMock->expects($this->any())
+            ->method('getValue')
+            ->with(
+                'payment/sagepaysuitepi/threed_new_window',
+                ScopeInterface::SCOPE_WEBSITE,
+                1
+            )
+            ->willReturn(true);
+
+        $this->assertEquals(
+            true,
+            $this->configModel->get3dNewWindow()
+        );
+    }
 }
