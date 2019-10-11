@@ -702,9 +702,4 @@ class Config
     {
         return $this->getAdvancedValue("max_token");
     }
-
-    public function get3dNewWindow()
-    {
-        return $this->getValue("threed_new_window");
-    }
 }

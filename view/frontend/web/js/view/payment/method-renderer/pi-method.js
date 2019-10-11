@@ -57,9 +57,6 @@ define(
             dropInEnabled: function () {
                 return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.dropin == 1;
             },
-            threeDNewWindowEnabled: function () {
-                return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.newWindow == 1;
-            },
             scaEnabled: function () {
                 return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.sca == 1;
             },
@@ -371,7 +368,7 @@ define(
                                     form3Dv2.setAttribute('action', response.acs_url);
                                     form3Dv2.elements[0].setAttribute('value', response.creq);
 
-                                    if (!self.sagePayIsMobile() && !self.threeDNewWindowEnabled()) {
+                                    if (!self.sagePayIsMobile()) {
                                         self.open3DModal();
                                         form3Dv2.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
                                     }
@@ -389,7 +386,7 @@ define(
                                     form3D.elements[1].setAttribute('value', callbackUrl);
                                     form3D.elements[2].setAttribute('value', response.transaction_id);
 
-                                    if (!self.sagePayIsMobile() && !self.threeDNewWindowEnabled()) {
+                                    if (!self.sagePayIsMobile()) {
                                         self.open3DModal();
                                         form3D.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
                                     }
