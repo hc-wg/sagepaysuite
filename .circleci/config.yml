@@ -63,7 +63,7 @@ jobs:
       - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
 
       # Install Magento
-      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento232EE-PreCompiled.tar.gz
+      - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.3_sample_data.tar.gz
       - run: tar xpf Magento232EE-PreCompiled.tar.gz
       - run: mv magento2/* .
       - run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
