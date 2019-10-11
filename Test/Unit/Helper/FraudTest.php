@@ -348,6 +348,11 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ]
         );
 
+        $invoiceInterfaceMock = $this
+            ->getMockBuilder('\Magento\Sales\Api\Data\InvoiceInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $invoiceServiceMock = $this
             ->getMockBuilder('Magento\Sales\Model\Service\InvoiceService')
             ->disableOriginalConstructor()
@@ -355,7 +360,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $invoiceServiceMock
             ->expects($this->exactly(1))
             ->method('prepareInvoice')
-            ->willReturn(null);
+            ->willReturn($invoiceInterfaceMock);
 
         $invoiceServiceFactoryMock
             ->expects($this->exactly(1))
