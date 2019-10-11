@@ -54,7 +54,8 @@ class Callback3D extends Action
             /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
             $data = $this->piRequestManagerDataFactory->create();
             $data->setTransactionId($this->getRequest()->getParam("transactionId"));
-            $data->setParEs($this->getRequest()->getPost('PaRes'));
+            $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
+            $data->setParEs($sanitizedPares);
             $data->setVendorName($this->config->getVendorname());
             $data->setMode($this->config->getMode());
             $data->setPaymentAction($this->config->getSagepayPaymentAction());
@@ -90,5 +91,14 @@ class Callback3D extends Action
                 . $this->_url->getUrl($url, ['_secure' => true])
                 . '";</script>'
             );
+    }
+
+    /**
+     * @param $pares
+     * @return string
+     */
+    public function sanitizePares($pares)
+    {
+        return preg_replace("/[\n\s]/", "", $pares);
     }
 }
