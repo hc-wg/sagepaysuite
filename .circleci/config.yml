@@ -65,8 +65,8 @@ jobs:
       # Install Magento
       - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.3_sample_data.tar.gz
       - run: tar xpf Magento-EE-2.3.3_sample_data.tar.gz
-      - run: mv magento2/* .
-      #- run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
+      #precompiled- run: mv magento2/* .
+      #precompiled- run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
       - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
       - run: chmod +x bin/magento
       - run: composer install --prefer-source --no-interaction
