@@ -94,4 +94,4 @@ workflows:
   version: 2
   build_test_dist:
     jobs:
-      - run_php72
+      - run_php73
