@@ -73,7 +73,7 @@ class PITest extends \PHPUnit_Framework_TestCase
 
         $this->configMock
             ->expects($this->once())
-            ->method('getThreeDNewWindow')
+            ->method('get3dNewWindow')
             ->willReturn(true);
 
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
