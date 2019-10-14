@@ -999,7 +999,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testGet3dNewWindow()
+    public function testGetThreeDNewWindow()
     {
         $this->configModel->setMethodCode('sagepaysuitepi');
         $this->configModel->setConfigurationScope(ScopeInterface::SCOPE_WEBSITE);
@@ -1014,7 +1014,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             true,
-            $this->configModel->get3dNewWindow()
+            $this->configModel->getThreeDNewWindow()
         );
     }
 }
