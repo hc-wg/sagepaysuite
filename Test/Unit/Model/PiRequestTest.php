@@ -247,7 +247,9 @@ class PiRequestTest extends \PHPUnit_Framework_TestCase
         return [
             ['EC1V 4AB', 'GB', 'EC1V 4AB'],
             ['', 'IE', '000'],
+            ['12345', 'IE', '12345'],
             ['', 'HK', '000'],
+            ['12345', 'HK', '12345'],
             ['*2770', 'DK', '2770']
         ];
     }
