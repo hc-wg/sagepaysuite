@@ -6,12 +6,12 @@
 
 namespace Ebizmarts\SagePaySuite\Helper;
 
-use \Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Config\ModuleVersion;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Magento\Framework\Module\ModuleList\Loader;
 use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Store\Model\StoreManagerInterface;
 
 class Data extends AbstractHelper
 {
@@ -31,22 +31,30 @@ class Data extends AbstractHelper
     private $moduleVersion;
 
     /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+
+    /**
      * Data constructor.
      * @param Context $context
      * @param Config $config
      * @param DateTime $dateTime
      * @param ModuleVersion $moduleVersion
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Context $context,
         Config $config,
         DateTime $dateTime,
-        ModuleVersion $moduleVersion
+        ModuleVersion $moduleVersion,
+        StoreManagerInterface $storeManager
     ) {
         parent::__construct($context);
         $this->sagePaySuiteConfig = $config;
         $this->dateTime           = $dateTime;
         $this->moduleVersion      = $moduleVersion;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -94,14 +102,15 @@ class Data extends AbstractHelper
     // @codingStandardsIgnoreStart
     public function verify()
     {
-        $this->sagePaySuiteConfig->setConfigurationScopeId($this->obtainConfigurationScopeIdFromRequest());
-        $this->sagePaySuiteConfig->setConfigurationScope($this->obtainConfigurationScopeCodeFromRequest());
+        $this->sagePaySuiteConfig->setConfigurationScopeId($this->getStoreId());
+        $this->sagePaySuiteConfig->setConfigurationScope($this->getStoreCode());
 
         $versionNumberToCheck = $this->obtainMajorAndMinorVersionFromVersionNumber(
             $this->moduleVersion->getModuleVersion('Ebizmarts_SagePaySuite')
         );
         $localSignature = $this->localSignature(
-            $this->extractHostFromCurrentConfigScopeStoreCheckoutUrl(), $versionNumberToCheck
+            $this->extractHostFromCurrentConfigScopeStoreCheckoutUrl(),
+            $versionNumberToCheck
         );
 
         return ($localSignature == $this->sagePaySuiteConfig->getLicense());
@@ -266,5 +275,15 @@ class Data extends AbstractHelper
     private function isConfigurationScopeWebsite($configurationScope)
     {
         return $configurationScope == $this->websiteScopeCode();
+    }
+
+    public function getStoreId()
+    {
+        return $this->storeManager->getStore()->getId();
+    }
+
+    public function getStoreCode()
+    {
+        return $this->storeManager->getStore()->getCode();
     }
 }
