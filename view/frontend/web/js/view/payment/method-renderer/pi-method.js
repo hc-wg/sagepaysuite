@@ -148,36 +148,38 @@ define(
             preparePayment: function () {
                 var self = this;
 
-                self.destroyInstanceSagePay();
+                if (self.dropInEnabled()) {
+                    self.destroyInstanceSagePay();
 
-                //validations
-                if (!self.validate() || !additionalValidators.validate() || self.getCode() != self.isChecked()) {
-                    return false;
+                    //validations
+                    if (!self.validate() || !additionalValidators.validate() || self.getCode() != self.isChecked()) {
+                        return false;
+                    }
+
+                    fullScreenLoader.startLoader();
+
+                    var serviceUrl = self.getPostCartsUrl();
+
+                    var payload = {
+                        cartId: quote.getQuoteId(),
+                        address: quote.billingAddress()
+                    };
+
+                    requirejs([self.getRemoteJsName() + self.getConfiguredMode()], function () {
+                        storage.post(
+                            serviceUrl,
+                            JSON.stringify(payload)
+                        ).done(
+                            function () {
+                                self.savePaymentInfo();
+                            }
+                        ).fail(
+                            function (response) {
+                                self.showPaymentError("Unable to save billing address.");
+                            }
+                        );
+                    });
                 }
-
-                fullScreenLoader.startLoader();
-
-                var serviceUrl = self.getPostCartsUrl();
-
-                var payload = {
-                    cartId: quote.getQuoteId(),
-                    address: quote.billingAddress()
-                };
-
-                requirejs([self.getRemoteJsName() + self.getConfiguredMode()], function () {
-                    storage.post(
-                        serviceUrl,
-                        JSON.stringify(payload)
-                    ).done(
-                        function () {
-                            self.savePaymentInfo();
-                        }
-                    ).fail(
-                        function (response) {
-                            self.showPaymentError("Unable to save billing address.");
-                        }
-                    );
-                });
 
                 return false;
             },
