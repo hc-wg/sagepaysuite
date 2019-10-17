@@ -10,6 +10,7 @@ use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Config\ModuleVersion;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\State;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -36,25 +37,33 @@ class Data extends AbstractHelper
     private $storeManager;
 
     /**
+     * @var State
+     */
+    private $state;
+
+    /**
      * Data constructor.
      * @param Context $context
      * @param Config $config
      * @param DateTime $dateTime
      * @param ModuleVersion $moduleVersion
      * @param StoreManagerInterface $storeManager
+     * @param State $state
      */
     public function __construct(
         Context $context,
         Config $config,
         DateTime $dateTime,
         ModuleVersion $moduleVersion,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        State $state
     ) {
         parent::__construct($context);
         $this->sagePaySuiteConfig = $config;
         $this->dateTime           = $dateTime;
         $this->moduleVersion      = $moduleVersion;
-        $this->storeManager = $storeManager;
+        $this->storeManager       = $storeManager;
+        $this->state              = $state;
     }
 
     /**
@@ -102,8 +111,8 @@ class Data extends AbstractHelper
     // @codingStandardsIgnoreStart
     public function verify()
     {
-        $this->sagePaySuiteConfig->setConfigurationScopeId($this->getStoreId());
-        $this->sagePaySuiteConfig->setConfigurationScope($this->getStoreCode());
+        $this->sagePaySuiteConfig->setConfigurationScopeId($this->obtainConfigurationScopeIdFromRequest());
+        $this->sagePaySuiteConfig->setConfigurationScope($this->obtainConfigurationScopeCodeFromRequest());
 
         $versionNumberToCheck = $this->obtainMajorAndMinorVersionFromVersionNumber(
             $this->moduleVersion->getModuleVersion('Ebizmarts_SagePaySuite')
@@ -146,19 +155,10 @@ class Data extends AbstractHelper
      */
     public function obtainConfigurationScopeIdFromRequest()
     {
-        $configurationScopeId = \Magento\Store\Model\Store::DEFAULT_STORE_ID;
-
-        /** @var $requestObject \Magento\Framework\App\RequestInterface */
-        $requestObject = $this->_getRequest();
-
-        $configurationScope = $this->obtainConfigurationScopeCodeFromRequest();
-        if ($this->isConfigurationScopeStore($configurationScope)) {
-            $configurationScopeId = $requestObject->getParam('store');
-        } elseif ($this->isConfigurationScopeWebsite($configurationScope)) {
-            $configurationScopeId = $requestObject->getParam('website');
+        if ($this->getAreaCode() === "frontend") {
+            return $this->getStoreId();
         }
-
-        return $configurationScopeId;
+        return $this->obtainConfigurationScopeIdFromRequestAdmin();
     }
 
     /**
@@ -166,22 +166,10 @@ class Data extends AbstractHelper
      */
     public function obtainConfigurationScopeCodeFromRequest()
     {
-        $configurationScope = $this->defaultScopeCode();
-
-        /** @var $requestObject \Magento\Framework\App\RequestInterface */
-        $requestObject = $this->_getRequest();
-
-        $storeParameter = $requestObject->getParam('store');
-        if ($storeParameter !== null) {
-            $configurationScope = $this->storeScopeCode();
-        } else {
-            $websiteParameter = $requestObject->getParam('website');
-            if ($websiteParameter !== null) {
-                $configurationScope = $this->websiteScopeCode();
-            }
+        if ($this->getAreaCode() === "frontend") {
+            return $this->storeScopeCode();
         }
-
-        return $configurationScope;
+        return $this->obtainConfigurationScopeCodeFromRequestAdmin();
     }
 
     /**
@@ -282,8 +270,51 @@ class Data extends AbstractHelper
         return $this->storeManager->getStore()->getId();
     }
 
-    public function getStoreCode()
+    private function getAreaCode()
     {
-        return $this->storeManager->getStore()->getCode();
+        return $this->state->getAreaCode();
+    }
+
+    /**
+     * @return string
+     */
+    public function obtainConfigurationScopeCodeFromRequestAdmin()
+    {
+        $configurationScope = $this->defaultScopeCode();
+
+        /** @var $requestObject \Magento\Framework\App\RequestInterface */
+        $requestObject = $this->_getRequest();
+
+        $storeParameter = $requestObject->getParam('store');
+        if ($storeParameter !== null) {
+            $configurationScope = $this->storeScopeCode();
+        } else {
+            $websiteParameter = $requestObject->getParam('website');
+            if ($websiteParameter !== null) {
+                $configurationScope = $this->websiteScopeCode();
+            }
+        }
+
+        return $configurationScope;
+    }
+
+    /**
+     * @return int
+     */
+    public function obtainConfigurationScopeIdFromRequestAdmin()
+    {
+        $configurationScopeId = \Magento\Store\Model\Store::DEFAULT_STORE_ID;
+
+        /** @var $requestObject \Magento\Framework\App\RequestInterface */
+        $requestObject = $this->_getRequest();
+
+        $configurationScope = $this->obtainConfigurationScopeCodeFromRequest();
+        if ($this->isConfigurationScopeStore($configurationScope)) {
+            $configurationScopeId = $requestObject->getParam('store');
+        } elseif ($this->isConfigurationScopeWebsite($configurationScope)) {
+            $configurationScopeId = $requestObject->getParam('website');
+        }
+
+        return $configurationScopeId;
     }
 }
