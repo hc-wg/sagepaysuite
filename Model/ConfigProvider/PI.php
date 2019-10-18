@@ -82,7 +82,8 @@ class PI extends CcGenericConfigProvider
                     'licensed' => $this->_suiteHelper->verify(),
                     'mode'     => $this->_config->getMode(),
                     'sca'      => $this->_config->shouldUse3dV2(),
-                    'dropin'   => $this->_config->setMethodCode($this->methodCode)->dropInEnabled()
+                    'dropin'   => $this->_config->setMethodCode($this->methodCode)->dropInEnabled(),
+                    'newWindow'=> $this->_config->get3dNewWindow()
                 ]
             ]
         ];
