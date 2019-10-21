@@ -236,7 +236,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    public function testObtainConfigurationScopeCodeFromRequestAdminDefault()
+    public function testObtainAdminConfigurationScopeCodeFromRequestDefault()
     {
         $requestObjectMock = $this
             ->getMockBuilder(RequestInterface::class)
@@ -262,11 +262,11 @@ class DataTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-            $dataHelperMock->obtainConfigurationScopeCodeFromRequestAdmin()
+            $dataHelperMock->obtainAdminConfigurationScopeCodeFromRequest()
         );
     }
 
-    public function testObtainConfigurationScopeCodeFromRequestAdminWebsite()
+    public function testObtainAdminConfigurationScopeCodeFromRequestWebsite()
     {
         $requestObjectMock = $this
             ->getMockBuilder(RequestInterface::class)
@@ -292,11 +292,11 @@ class DataTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             ScopeInterface::SCOPE_WEBSITE,
-            $dataHelperMock->obtainConfigurationScopeCodeFromRequestAdmin()
+            $dataHelperMock->obtainAdminConfigurationScopeCodeFromRequest()
         );
     }
 
-    public function testObtainConfigurationScopeCodeFromRequestAdminStore()
+    public function testObtainAdminConfigurationScopeCodeFromRequestStore()
     {
         $requestObjectMock = $this
             ->getMockBuilder(RequestInterface::class)
@@ -322,14 +322,14 @@ class DataTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             ScopeInterface::SCOPE_STORE,
-            $dataHelperMock->obtainConfigurationScopeCodeFromRequestAdmin()
+            $dataHelperMock->obtainAdminConfigurationScopeCodeFromRequest()
         );
     }
 
     /**
      * @dataProvider adminScopeIdProvider
      */
-    public function testObtainConfigurationScopeIdFromRequestAdmin($data)
+    public function testObtainAdminConfigurationScopeIdFromRequest($data)
     {
         $requestObjectMock = $this
             ->getMockBuilder(RequestInterface::class)
@@ -379,7 +379,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             $data['scopeId'],
-            $dataHelperMock->obtainConfigurationScopeIdFromRequestAdmin()
+            $dataHelperMock->obtainAdminConfigurationScopeIdFromRequest()
         );
     }
 
