@@ -6,7 +6,16 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
+use Ebizmarts\SagePaySuite\Helper\Data;
 use \Ebizmarts\SagePaySuite\Model\Config\ModuleVersion;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\State;
+use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\Store;
+use Magento\Store\Model\StoreManagerInterface;
 
 class DataTest extends \PHPUnit\Framework\TestCase
 {
@@ -232,5 +241,95 @@ class DataTest extends \PHPUnit\Framework\TestCase
             [false, 'sagepaydirectpro'],
             [false, 'sagepaysuitepi']
         ];
+    }
+
+    public function testObtainConfigurationScopeCodeFromRequestAdminDefault()
+    {
+        $requestObjectMock = $this
+            ->getMockBuilder(RequestInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $requestObjectMock
+            ->expects($this->exactly(2))
+            ->method('getParam')
+            ->withConsecutive(['store'], ['website'])
+            ->willReturnOnConsecutiveCalls(null, null);
+
+        $dataHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->setMethods(['getStoreId', 'getRequest'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('getRequest')
+            ->willReturn($requestObjectMock);
+
+        $this->assertEquals(
+            ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+            $dataHelperMock->obtainConfigurationScopeCodeFromRequestAdmin()
+        );
+    }
+
+    public function testObtainConfigurationScopeCodeFromRequestAdminWebsite()
+    {
+        $requestObjectMock = $this
+            ->getMockBuilder(RequestInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $requestObjectMock
+            ->expects($this->exactly(2))
+            ->method('getParam')
+            ->withConsecutive(['store'], ['website'])
+            ->willReturnOnConsecutiveCalls(null, 'website');
+
+        $dataHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->setMethods(['getStoreId', 'getRequest'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('getRequest')
+            ->willReturn($requestObjectMock);
+
+        $this->assertEquals(
+            ScopeInterface::SCOPE_WEBSITE,
+            $dataHelperMock->obtainConfigurationScopeCodeFromRequestAdmin()
+        );
+    }
+
+    public function testObtainConfigurationScopeCodeFromRequestAdminStore()
+    {
+        $requestObjectMock = $this
+            ->getMockBuilder(RequestInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $requestObjectMock
+            ->expects($this->once())
+            ->method('getParam')
+            ->withConsecutive(['store'])
+            ->willReturnOnConsecutiveCalls('store');
+
+        $dataHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->setMethods(['getStoreId', 'getRequest'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('getRequest')
+            ->willReturn($requestObjectMock);
+
+        $this->assertEquals(
+            ScopeInterface::SCOPE_STORE,
+            $dataHelperMock->obtainConfigurationScopeCodeFromRequestAdmin()
+        );
     }
 }
