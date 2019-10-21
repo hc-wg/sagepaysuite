@@ -251,7 +251,7 @@ class Data extends AbstractHelper
      * @param $configurationScope
      * @return bool
      */
-    private function isConfigurationScopeStore($configurationScope)
+    public function isConfigurationScopeStore($configurationScope)
     {
         return $configurationScope == $this->storeScopeCode();
     }
@@ -260,7 +260,7 @@ class Data extends AbstractHelper
      * @param $configurationScope
      * @return bool
      */
-    private function isConfigurationScopeWebsite($configurationScope)
+    public function isConfigurationScopeWebsite($configurationScope)
     {
         return $configurationScope == $this->websiteScopeCode();
     }
@@ -283,7 +283,7 @@ class Data extends AbstractHelper
         $configurationScope = $this->defaultScopeCode();
 
         /** @var $requestObject \Magento\Framework\App\RequestInterface */
-        $requestObject = $this->_getRequest();
+        $requestObject = $this->getRequest();
 
         $storeParameter = $requestObject->getParam('store');
         if ($storeParameter !== null) {
@@ -303,10 +303,10 @@ class Data extends AbstractHelper
      */
     public function obtainConfigurationScopeIdFromRequestAdmin()
     {
-        $configurationScopeId = \Magento\Store\Model\Store::DEFAULT_STORE_ID;
+        $configurationScopeId = $this->getDefaultStoreId();
 
         /** @var $requestObject \Magento\Framework\App\RequestInterface */
-        $requestObject = $this->_getRequest();
+        $requestObject = $this->getRequest();
 
         $configurationScope = $this->obtainConfigurationScopeCodeFromRequest();
         if ($this->isConfigurationScopeStore($configurationScope)) {
@@ -316,5 +316,21 @@ class Data extends AbstractHelper
         }
 
         return $configurationScopeId;
+    }
+
+    /**
+     * @return \Magento\Framework\App\RequestInterface
+     */
+    public function getRequest()
+    {
+        return $this->_getRequest();
+    }
+
+    /**
+     * @return int
+     */
+    public function getDefaultStoreId()
+    {
+        return \Magento\Store\Model\Store::DEFAULT_STORE_ID;
     }
 }
