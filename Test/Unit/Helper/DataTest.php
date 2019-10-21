@@ -9,13 +9,9 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 use Ebizmarts\SagePaySuite\Helper\Data;
 use \Ebizmarts\SagePaySuite\Model\Config\ModuleVersion;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\RequestInterface;
-use Magento\Framework\App\State;
-use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
-use Magento\Store\Model\StoreManagerInterface;
 
 class DataTest extends \PHPUnit\Framework\TestCase
 {
