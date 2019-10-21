@@ -159,7 +159,7 @@ class Data extends AbstractHelper
         if ($this->getAreaCode() === self::FRONTEND) {
             return $this->getStoreId();
         }
-        return $this->obtainConfigurationScopeIdFromRequestAdmin();
+        return $this->obtainAdminConfigurationScopeIdFromRequest();
     }
 
     /**
@@ -170,7 +170,7 @@ class Data extends AbstractHelper
         if ($this->getAreaCode() === self::FRONTEND) {
             return $this->storeScopeCode();
         }
-        return $this->obtainConfigurationScopeCodeFromRequestAdmin();
+        return $this->obtainAdminConfigurationScopeCodeFromRequest();
     }
 
     /**
@@ -279,7 +279,7 @@ class Data extends AbstractHelper
     /**
      * @return string
      */
-    public function obtainConfigurationScopeCodeFromRequestAdmin()
+    public function obtainAdminConfigurationScopeCodeFromRequest()
     {
         $configurationScope = $this->defaultScopeCode();
 
@@ -302,7 +302,7 @@ class Data extends AbstractHelper
     /**
      * @return int
      */
-    public function obtainConfigurationScopeIdFromRequestAdmin()
+    public function obtainAdminConfigurationScopeIdFromRequest()
     {
         $configurationScopeId = $this->getDefaultStoreId();
 
