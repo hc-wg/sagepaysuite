@@ -17,6 +17,8 @@ use Magento\Store\Model\StoreManagerInterface;
 class Data extends AbstractHelper
 {
     const FRONTEND = "frontend";
+    const ADMIN = 'adminhtml';
+
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
@@ -271,7 +273,7 @@ class Data extends AbstractHelper
         return $this->storeManager->getStore()->getId();
     }
 
-    private function getAreaCode()
+    public function getAreaCode()
     {
         return $this->state->getAreaCode();
     }

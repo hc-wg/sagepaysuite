@@ -428,4 +428,26 @@ class DataTest extends \PHPUnit\Framework\TestCase
             ]
         ];
     }
+
+    public function testObtainConfigurationScopeCodeFromRequest() {
+        $dataHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->setMethods(
+                [
+                    'getAreaCode'
+                ]
+            )
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('getAreaCode')
+            ->willReturn(Data::FRONTEND);
+
+        $this->assertEquals(
+            ScopeInterface::SCOPE_STORE,
+            $dataHelperMock->obtainConfigurationScopeCodeFromRequest()
+        );
+    }
 }
