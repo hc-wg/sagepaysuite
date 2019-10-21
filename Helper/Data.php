@@ -16,6 +16,7 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class Data extends AbstractHelper
 {
+    const FRONTEND = "frontend";
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
@@ -155,7 +156,7 @@ class Data extends AbstractHelper
      */
     public function obtainConfigurationScopeIdFromRequest()
     {
-        if ($this->getAreaCode() === "frontend") {
+        if ($this->getAreaCode() === self::FRONTEND) {
             return $this->getStoreId();
         }
         return $this->obtainConfigurationScopeIdFromRequestAdmin();
@@ -166,7 +167,7 @@ class Data extends AbstractHelper
      */
     public function obtainConfigurationScopeCodeFromRequest()
     {
-        if ($this->getAreaCode() === "frontend") {
+        if ($this->getAreaCode() === self::FRONTEND) {
             return $this->storeScopeCode();
         }
         return $this->obtainConfigurationScopeCodeFromRequestAdmin();
