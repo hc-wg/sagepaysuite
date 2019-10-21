@@ -443,4 +443,32 @@ class DataTest extends \PHPUnit_Framework_TestCase
             $dataHelperMock->obtainConfigurationScopeCodeFromRequest()
         );
     }
+
+    public function testObtainConfigurationScopeIdFromRequest() {
+        $dataHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->setMethods(
+                [
+                    'getAreaCode',
+                    'getStoreId'
+                ]
+            )
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('getAreaCode')
+            ->willReturn(Data::FRONTEND);
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(1);
+
+        $this->assertEquals(
+            1,
+            $dataHelperMock->obtainConfigurationScopeIdFromRequest()
+        );
+    }
 }
