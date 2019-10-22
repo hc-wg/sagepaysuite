@@ -1,3 +1,17 @@
+## [1.2.18] - 2019-09-18
+### Added
+- Compatibility with Magento 2.2.10
+- Setting to open 3D verification in new window for PI
+
+### Changed
+- Sanitize Post Code on PI
+- Remove spaces from paRes
+- Remove "Load secure credit card form" PI button
+
+### Fixed
+- Frontend using Default Config values instead of Store values on Frontend
+- Multiple 3D responses problem
+
 ## [1.2.17] - 2019-09-18
 ### Added
 - PI support for PSD2 and SCA
@@ -197,6 +211,7 @@
 ### Added
 - First release with Magento 2.2.0 compatibility.
 
+[1.2.18]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.18
 [1.2.17]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.17
 [1.2.16]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.16
 [1.2.15]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.15
