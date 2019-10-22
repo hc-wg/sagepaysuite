@@ -77,7 +77,7 @@ class PiRequest
         $data['billingAddress'] = [
             'address1'      => substr(trim($billingAddress->getStreetLine(1)), 0, 100),
             'city'          => substr(trim($billingAddress->getCity()), 0, 40),
-            'postalCode'    => substr(trim($billingAddress->getPostcode()), 0, 10),
+            'postalCode'    => substr(trim($this->sanitizePostcode($billingAddress->getPostcode())), 0, 10),
             'country'       => substr(trim($billingAddress->getCountryId()), 0, 2)
         ];
         if ($data['billingAddress']['country'] == 'US') {
@@ -99,7 +99,7 @@ class PiRequest
             'recipientLastName'  => substr(trim($shippingAddress->getLastname()), 0, 20),
             'shippingAddress1'   => substr(trim($shippingAddress->getStreetLine(1)), 0, 100),
             'shippingCity'       => substr(trim($shippingAddress->getCity()), 0, 40),
-            'shippingPostalCode' => substr(trim($shippingAddress->getPostcode()), 0, 10),
+            'shippingPostalCode' => substr(trim($this->sanitizePostcode($shippingAddress->getPostcode())), 0, 10),
             'shippingCountry'    => substr(trim($shippingAddress->getCountryId()), 0, 2)
         ];
         if ($data['shippingDetails']['shippingCountry'] == 'US') {
@@ -227,5 +227,14 @@ class PiRequest
     {
         $this->cart = $cart;
         return $this;
+    }
+
+    /**
+     * @param $text
+     * @return string
+     */
+    private function sanitizePostcode($postCode)
+    {
+        return preg_replace("/[^a-zA-Z0-9-\s]/", "", $postCode);
     }
 }
