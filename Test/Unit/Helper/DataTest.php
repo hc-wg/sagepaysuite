@@ -6,7 +6,12 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
+use Ebizmarts\SagePaySuite\Helper\Data;
 use \Ebizmarts\SagePaySuite\Model\Config\ModuleVersion;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\RequestInterface;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\Store;
 
 class DataTest extends \PHPUnit_Framework_TestCase
 {
@@ -225,5 +230,241 @@ class DataTest extends \PHPUnit_Framework_TestCase
             [false, 'sagepaydirectpro'],
             [false, 'sagepaysuitepi']
         ];
+    }
+
+    public function testObtainAdminConfigurationScopeCodeFromRequestDefault()
+    {
+        $requestObjectMock = $this
+            ->getMockBuilder(RequestInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $requestObjectMock
+            ->expects($this->exactly(2))
+            ->method('getParam')
+            ->withConsecutive(['store'], ['website'])
+            ->willReturnOnConsecutiveCalls(null, null);
+
+        $dataHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->setMethods(['getStoreId', 'getRequest'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('getRequest')
+            ->willReturn($requestObjectMock);
+
+        $this->assertEquals(
+            ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+            $dataHelperMock->obtainAdminConfigurationScopeCodeFromRequest()
+        );
+    }
+
+    public function testObtainAdminConfigurationScopeCodeFromRequestWebsite()
+    {
+        $requestObjectMock = $this
+            ->getMockBuilder(RequestInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $requestObjectMock
+            ->expects($this->exactly(2))
+            ->method('getParam')
+            ->withConsecutive(['store'], ['website'])
+            ->willReturnOnConsecutiveCalls(null, 'website');
+
+        $dataHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->setMethods(['getStoreId', 'getRequest'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('getRequest')
+            ->willReturn($requestObjectMock);
+
+        $this->assertEquals(
+            ScopeInterface::SCOPE_WEBSITE,
+            $dataHelperMock->obtainAdminConfigurationScopeCodeFromRequest()
+        );
+    }
+
+    public function testObtainAdminConfigurationScopeCodeFromRequestStore()
+    {
+        $requestObjectMock = $this
+            ->getMockBuilder(RequestInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $requestObjectMock
+            ->expects($this->once())
+            ->method('getParam')
+            ->withConsecutive(['store'])
+            ->willReturnOnConsecutiveCalls('store');
+
+        $dataHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->setMethods(['getStoreId', 'getRequest'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('getRequest')
+            ->willReturn($requestObjectMock);
+
+        $this->assertEquals(
+            ScopeInterface::SCOPE_STORE,
+            $dataHelperMock->obtainAdminConfigurationScopeCodeFromRequest()
+        );
+    }
+
+    /**
+     * @dataProvider adminScopeIdProvider
+     */
+    public function testObtainAdminConfigurationScopeIdFromRequest($data)
+    {
+        $requestObjectMock = $this
+            ->getMockBuilder(RequestInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dataHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->setMethods(
+                [
+                    'getStoreId',
+                    'getRequest',
+                    'obtainConfigurationScopeCodeFromRequest',
+                    'isConfigurationScopeStore',
+                    'isConfigurationScopeWebsite'
+                ]
+            )
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('getRequest')
+            ->willReturn($requestObjectMock);
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('obtainConfigurationScopeCodeFromRequest')
+            ->willReturn($data['scopeCode']);
+
+        $dataHelperMock
+            ->expects($this->exactly($data['expectsIsConfigurationScopeStore']))
+            ->method('isConfigurationScopeStore')
+            ->with($data['scopeCode'])
+            ->willReturn($data['isConfigurationScopeStore']);
+
+        $dataHelperMock
+            ->expects($this->exactly($data['expectsIsConfigurationScopeWebsite']))
+            ->method('isConfigurationScopeWebsite')
+            ->with($data['scopeCode'])
+            ->willReturn($data['isConfigurationScopeWebsite']);
+
+        $requestObjectMock
+            ->expects($this->exactly($data['expectsGetParam']))
+            ->method('getParam')
+            ->willReturn($data['scopeId']);
+
+        $this->assertEquals(
+            $data['scopeId'],
+            $dataHelperMock->obtainAdminConfigurationScopeIdFromRequest()
+        );
+    }
+
+    public function adminScopeIdProvider()
+    {
+        return [
+            'test default config' => [
+                [
+                    'scopeCode' => ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+                    'expectsIsConfigurationScopeStore' => 1,
+                    'expectsIsConfigurationScopeWebsite' => 1,
+                    'expectsGetParam' => 0,
+                    'scopeId' => Store::DEFAULT_STORE_ID,
+                    'isConfigurationScopeStore' => false,
+                    'isConfigurationScopeWebsite' => false
+                ]
+            ],
+            'test store' => [
+                [
+                    'scopeCode' => ScopeInterface::SCOPE_STORE,
+                    'expectsIsConfigurationScopeStore' => 1,
+                    'expectsIsConfigurationScopeWebsite' => 0,
+                    'expectsGetParam' => 1,
+                    'scopeId' => 1,
+                    'isConfigurationScopeStore' => true,
+                    'isConfigurationScopeWebsite' => false
+                ]
+            ],
+            'test website' => [
+                [
+                    'scopeCode' => ScopeInterface::SCOPE_WEBSITE,
+                    'expectsIsConfigurationScopeStore' => 1,
+                    'expectsIsConfigurationScopeWebsite' => 1,
+                    'expectsGetParam' => 1,
+                    'scopeId' => 1,
+                    'isConfigurationScopeStore' => false,
+                    'isConfigurationScopeWebsite' => true
+                ]
+            ]
+        ];
+    }
+
+    public function testObtainConfigurationScopeCodeFromRequest() {
+        $dataHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->setMethods(
+                [
+                    'getAreaCode'
+                ]
+            )
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('getAreaCode')
+            ->willReturn(Data::FRONTEND);
+
+        $this->assertEquals(
+            ScopeInterface::SCOPE_STORE,
+            $dataHelperMock->obtainConfigurationScopeCodeFromRequest()
+        );
+    }
+
+    public function testObtainConfigurationScopeIdFromRequest() {
+        $dataHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->setMethods(
+                [
+                    'getAreaCode',
+                    'getStoreId'
+                ]
+            )
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('getAreaCode')
+            ->willReturn(Data::FRONTEND);
+
+        $dataHelperMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(1);
+
+        $this->assertEquals(
+            1,
+            $dataHelperMock->obtainConfigurationScopeIdFromRequest()
+        );
     }
 }
