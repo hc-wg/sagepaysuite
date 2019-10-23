@@ -8,6 +8,8 @@ use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
 class Callback3D extends Action
@@ -24,6 +26,9 @@ class Callback3D extends Action
     /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager */
     private $piRequestManagerDataFactory;
 
+    /** @var OrderRepositoryInterface */
+    private $orderRepository;
+
     /**
      * Callback3D constructor.
      * @param Context $context
@@ -37,12 +42,14 @@ class Callback3D extends Action
         Config $config,
         LoggerInterface $logger,
         ThreeDSecureCallbackManagement $requester,
-        PiRequestManagerFactory $piReqManagerFactory
+        PiRequestManagerFactory $piReqManagerFactory,
+        OrderRepositoryInterface $orderRepository
     ) {
         parent::__construct($context);
         $this->config = $config;
         $this->config->setMethodCode(Config::METHOD_PI);
-        $this->logger = $logger;
+        $this->logger          = $logger;
+        $this->orderRepository = $orderRepository;
 
         $this->requester = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
@@ -51,6 +58,11 @@ class Callback3D extends Action
     public function execute()
     {
         try {
+            $order = $this->orderRepository->get($this->getRequest()->getParam("orderId"));
+            if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
+                $this->javascriptRedirect('checkout/onepage/success');
+                return;
+            }
             /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
             $data = $this->piRequestManagerDataFactory->create();
             $data->setTransactionId($this->getRequest()->getParam("transactionId"));
