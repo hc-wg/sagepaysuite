@@ -1,3 +1,12 @@
+## [1.1.30] - 2019-10-24
+### Changed
+- Sanitize Post Code on PI
+- Remove spaces from paRes
+
+### Fixed
+- Frontend using Default Config values instead of Store values on Frontend
+- Multiple 3D responses problem
+
 ## [1.1.29] - 2019-09-23
 ### Added
 - PI support for PSD2 and SCA
@@ -330,6 +339,8 @@
    - PI integration (frontend)
    - Online Refunds
    
+[1.1.30]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.30
+[1.1.29]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.29
 [1.1.28]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.28
 [1.1.27]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.27
 [1.1.26]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.26
