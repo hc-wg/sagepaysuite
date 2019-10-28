@@ -55,17 +55,8 @@
             </div>
             <div class="actions-toolbar">
                 <div class="primary">
-                    <button id="load-dropin-form-button" class="action primary checkout"
-                            type="submit"
-                            data-bind="
-                            click: preparePayment,
-                            attr: {title: $t('Load secure credit card form')},
-                            css: {disabled: !isPlaceOrderActionAllowed()},
-                            enable: (getCode() == isChecked())
-                            "
-                            disabled>
-                        <span data-bind="text: $t('Load secure credit card form')"></span>
-                    </button>
+                    <div id="dropin-form" class="action checkout" style="display:none;"
+                         data-bind="afterRender: sagepaySetForm()"></div>
                 </div>
             </div>
         <!-- /ko -->

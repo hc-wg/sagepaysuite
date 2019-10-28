@@ -48,6 +48,7 @@
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>
                 <allowspecific>0</allowspecific>
                 <use_dropin>1</use_dropin>
+                <threed_new_window>0</threed_new_window>
                 <password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
             </sagepaysuitepi>
             <sagepaysuiteserver>

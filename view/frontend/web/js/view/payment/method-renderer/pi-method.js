@@ -57,6 +57,9 @@ define(
             dropInEnabled: function () {
                 return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.dropin == 1;
             },
+            threeDNewWindowEnabled: function () {
+                return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.newWindow == 1;
+            },
             scaEnabled: function () {
                 return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.sca == 1;
             },
@@ -65,10 +68,33 @@ define(
             },
             sagepaySetForm: function () {
                 var self = this;
-                if (document.getElementById('sagepaysuitepi').checked) {
-                    this.selectPaymentMethod();
-                }
-                self.defaultStateForm();
+
+                self.addShippingUpdateEvent();
+                self.loadDropInForm();
+                self.addBillingUpdateEvents();
+            },
+            addShippingUpdateEvent: function () {
+                var self = this;
+
+                $(".button.action.continue.primary").on('click', function () {
+                    self.resetPaymentErrors();
+                    self.loadDropInForm();
+                });
+            },
+            addBillingUpdateEvents: function () {
+                var self = this;
+
+                $("#billing-address-same-as-shipping-sagepaysuitepi").on('change', function () {
+                    if ($("#billing-address-same-as-shipping-sagepaysuitepi").is(':checked')) {
+                        self.resetPaymentErrors();
+                        self.loadDropInForm();
+                    }
+                });
+
+                $(".action.action-update").on('click', function () {
+                    self.resetPaymentErrors();
+                    self.loadDropInForm();
+                });
             },
             isOneStepCheckout: function () {
                 return ($('#iosc-summary').length > 0);
@@ -147,10 +173,8 @@ define(
 
                 self.destroyInstanceSagePay();
 
-                self.resetPaymentErrors();
-
                 //validations
-                if (!this.validate() || !additionalValidators.validate()) {
+                if (!self.validate() || !additionalValidators.validate() || self.getCode() != self.isChecked()) {
                     return false;
                 }
 
@@ -180,11 +204,23 @@ define(
 
                 return false;
             },
+            loadDropInForm: function () {
+                var self = this;
+
+                if (document.getElementById('sagepaysuitepi').checked) {
+                    self.selectPaymentMethod();
+                }
+
+                if (self.dropInEnabled()) {
+                    self.preparePayment();
+                }
+            },
             tokenisationAuthenticationFailed: function (tokenisationResult) {
                 return tokenisationResult.error.errorCode === 1002;
             },
             tokenise: function () {
                 var self = this;
+
                 if (self.dropInInstance !== null) {
                     self.dropInInstance.tokenise();
                 }
@@ -203,15 +239,8 @@ define(
                 self.isPlaceOrderActionAllowed(true);
                 $("#submit_dropin_payment").css("display", "none");
             },
-            defaultStateForm: function () {
-                $("#payment-iframe").css("display", "none");
-                $("#sp-container").css("display", "none");
-                $("#load-dropin-form-button").css("display", "block");
-                $("#submit_dropin_payment").css("display", "none");
-            },
             isPlaceOrderActionAllowed: function (allowedParam) {
-                var self = this;
-                if (typeof allowedParam  === 'undefined') {
+                if (typeof allowedParam === 'undefined') {
                     return quote.billingAddress() != null;
                 }
                 return allowedParam;
@@ -224,32 +253,38 @@ define(
                     if (merchant_session_key) {
                         self.isPlaceOrderActionAllowed(false);
                         self.merchantSessionKey = merchant_session_key;
+
+                        if (self.dropInInstance !== null) {
+                            self.dropInInstance.destroy();
+                            self.dropInInstance = null;
+                        }
+
                         self.dropInInstance = sagepayCheckout({
-                                merchantSessionKey: merchant_session_key,
-                                onTokenise: function (tokenisationResult) {
-                                    if (tokenisationResult.success) {
-                                        self.cardIdentifier     = tokenisationResult.cardIdentifier;
-                                        self.creditCardType     = "";
-                                        self.creditCardExpYear  = 0;
-                                        self.creditCardExpMonth = 0;
-                                        self.creditCardLast4    = 0;
-                                        try {
-                                            self.placeTransaction();
-                                        } catch (err) {
-                                            console.log(err);
-                                            self.showPaymentError("Unable to initialize Sage Pay payment method, please use another payment method.");
-                                        }
+                            merchantSessionKey: merchant_session_key,
+                            onTokenise: function (tokenisationResult) {
+                                if (tokenisationResult.success) {
+                                    self.cardIdentifier = tokenisationResult.cardIdentifier;
+                                    self.creditCardType = "";
+                                    self.creditCardExpYear = 0;
+                                    self.creditCardExpMonth = 0;
+                                    self.creditCardLast4 = 0;
+                                    try {
+                                        self.placeTransaction();
+                                    } catch (err) {
+                                        console.log(err);
+                                        self.showPaymentError("Unable to initialize Sage Pay payment method, please use another payment method.");
+                                    }
+                                } else {
+                                    //Check if it is "Authentication failed"
+                                    if (self.tokenisationAuthenticationFailed(tokenisationResult)) {
+                                        self.destroyInstanceSagePay();
+                                        self.resetPaymentErrors();
                                     } else {
-                                        //Check if it is "Authentication failed"
-                                        if (self.tokenisationAuthenticationFailed(tokenisationResult)) {
-                                            self.destroyInstanceSagePay();
-                                            self.resetPaymentErrors();
-                                        } else {
-                                            self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
-                                        }
+                                        self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
                                     }
                                 }
-                            });
+                            }
+                        });
                         self.dropInInstance.form();
                         fullScreenLoader.stopLoader();
 
@@ -257,9 +292,6 @@ define(
                         $("#sp-container").css("display", "block");
                         $("#submit_dropin_payment").css("display", "block");
                         $("#load-dropin-form-button").css("display", "none");
-                        $("#billing-address-same-as-shipping-sagepaysuitepi").change(function () {
-                             self.defaultStateForm();
-                        });
                     }
                 } else {
                     if (merchant_session_key) {
@@ -279,12 +311,12 @@ define(
                             Sagepay.tokeniseCardDetails(token_form, function (status, response) {
 
                                 if (status === 201) {
-                                    self.creditCardType     = response.cardType;
-                                    self.creditCardExpYear  = document.getElementById(self.getCode() + '_expiration_yr').value;
+                                    self.creditCardType = response.cardType;
+                                    self.creditCardExpYear = document.getElementById(self.getCode() + '_expiration_yr').value;
                                     self.creditCardExpMonth = document.getElementById(self.getCode() + '_expiration').value;
-                                    self.creditCardLast4    = document.getElementById(self.getCode() + '_cc_number').value.slice(-4);
+                                    self.creditCardLast4 = document.getElementById(self.getCode() + '_cc_number').value.slice(-4);
                                     self.merchantSessionKey = merchant_session_key;
-                                    self.cardIdentifier     = response.cardIdentifier;
+                                    self.cardIdentifier = response.cardIdentifier;
 
                                     try {
                                         self.placeTransaction();
@@ -384,7 +416,7 @@ define(
                                     form3Dv2.setAttribute('action', response.acs_url);
                                     form3Dv2.elements[0].setAttribute('value', response.creq);
 
-                                    if (!self.sagePayIsMobile()) {
+                                    if (!self.sagePayIsMobile() && !self.threeDNewWindowEnabled()) {
                                         self.open3DModal();
                                         form3Dv2.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
                                     }
@@ -402,7 +434,7 @@ define(
                                     form3D.elements[1].setAttribute('value', callbackUrl);
                                     form3D.elements[2].setAttribute('value', response.transaction_id);
 
-                                    if (!self.sagePayIsMobile()) {
+                                    if (!self.sagePayIsMobile() && !self.threeDNewWindowEnabled()) {
                                         self.open3DModal();
                                         form3D.setAttribute('target', self.getCode() + '-3Dsecure-iframe');
                                     }
@@ -446,12 +478,12 @@ define(
                 this.modal.modal('openModal');
             },
             sagePayIsMobile: function () {
-            return (navigator.userAgent.match(/BlackBerry/i) ||
-                navigator.userAgent.match(/webOS/i) ||
-                navigator.userAgent.match(/Android/i) ||
-                navigator.userAgent.match(/iPhone/i) ||
-                navigator.userAgent.match(/iPod/i) ||
-                navigator.userAgent.match(/iPad/i));
+                return (navigator.userAgent.match(/BlackBerry/i) ||
+                    navigator.userAgent.match(/webOS/i) ||
+                    navigator.userAgent.match(/Android/i) ||
+                    navigator.userAgent.match(/iPhone/i) ||
+                    navigator.userAgent.match(/iPod/i) ||
+                    navigator.userAgent.match(/iPad/i));
             },
             /**
              * @override
@@ -471,15 +503,15 @@ define(
             },
             scaParams: function () {
                 return {
-                    'javascript_enabled' : 1,
-                    'accept_headers' : 'Accept headers.',
-                    'language' : navigator.language,
-                    'user_agent' : navigator.userAgent,
-                    'java_enabled' : navigator.javaEnabled() ? 1 : 0,
-                    'color_depth' : screen.colorDepth,
-                    'screen_width' : screen.width,
-                    'screen_height' : screen.height,
-                    'timezone' : (new Date()).getTimezoneOffset()
+                    'javascript_enabled': 1,
+                    'accept_headers': 'Accept headers.',
+                    'language': navigator.language,
+                    'user_agent': navigator.userAgent,
+                    'java_enabled': navigator.javaEnabled() ? 1 : 0,
+                    'color_depth': screen.colorDepth,
+                    'screen_width': screen.width,
+                    'screen_height': screen.height,
+                    'timezone': (new Date()).getTimezoneOffset()
                 }
             },
             /**
@@ -530,7 +562,8 @@ define(
                 span.style.display = "block";
 
                 fullScreenLoader.stopLoader();
-                self.defaultStateForm();
+
+                self.loadDropInForm();
             },
             resetPaymentErrors: function () {
                 var span = document.getElementById('sagepaysuitepi-payment-errors');
@@ -538,7 +571,7 @@ define(
                 if (null !== span) {
                     span.style.display = "none";
                 }
-            }
+            },
         });
     }
 );
