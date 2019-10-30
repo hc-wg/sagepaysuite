@@ -199,7 +199,7 @@ class Fraud extends Column
      * @param array $additional
      * @return bool
      */
-    public function checkIfRed(array $additional): bool
+    public function checkIfRed(array $additional)
     {
         return isset($additional['fraudcode']);
     }
