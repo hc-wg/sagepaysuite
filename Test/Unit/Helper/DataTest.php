@@ -180,6 +180,13 @@ class DataTest extends \PHPUnit_Framework_TestCase
                     'action'   => 'REPEATDEFERRED',
                     'expected' => 'RT000000004-2016-02-25-0855551456419355'
                 ]
+            ],
+            'test PAYMENT with prefix' => [
+                [
+                    'order_id' => 'EBIZ#10=0+0.0-0_0{0}010',
+                    'action'   => \Ebizmarts\SagePaySuite\Model\Config::ACTION_PAYMENT,
+                    'expected' => 'EBIZ1000.0-0_0{0}010-2016-02-25-08555514'
+                ]
             ]
         ];
     }
