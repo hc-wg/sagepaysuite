@@ -22,6 +22,7 @@ use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
 use Magento\Sales\Model\Order\Payment\TransactionFactory;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Api\PaymentFailuresInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 
 class EcommerceManagement extends RequestManagement
 {
@@ -47,6 +48,9 @@ class EcommerceManagement extends RequestManagement
     /** @var PaymentFailuresInterface */
     private $paymentFailures;
 
+    /** @var EncryptorInterface */
+    private $encryptor;
+
     public function __construct(
         Checkout $checkoutHelper,
         PIRest $piRestApi,
@@ -61,7 +65,8 @@ class EcommerceManagement extends RequestManagement
         \Magento\Quote\Model\QuoteValidator $quoteValidator,
         InvoiceSender $invoiceEmailSender,
         Config $config,
-        PaymentFailuresInterface $paymentFailures
+        PaymentFailuresInterface $paymentFailures,
+        EncryptorInterface $encryptor
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -79,6 +84,7 @@ class EcommerceManagement extends RequestManagement
         $this->invoiceEmailSender = $invoiceEmailSender;
         $this->config             = $config;
         $this->paymentFailures    = $paymentFailures;
+        $this->encryptor          = $encryptor;
     }
 
     /**
@@ -133,8 +139,10 @@ class EcommerceManagement extends RequestManagement
         $this->getResult()->setStatus($this->getPayResult()->getStatus());
 
         //additional details required for callback URL
-        $this->getResult()->setOrderId($order->getId());
-        $this->getResult()->setQuoteId($this->getQuote()->getId());
+        $orderId = urlencode($this->encryptor->encrypt($order->getId()));
+        $this->getResult()->setOrderId($orderId);
+        $quoteId = urlencode($this->encryptor->encrypt($this->getQuote()->getId()));
+        $this->getResult()->setQuoteId($quoteId);
 
         if ($this->isThreeDResponse()) {
             $this->getResult()->setParEq($this->getPayResult()->getParEq());
