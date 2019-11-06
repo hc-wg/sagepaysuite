@@ -189,8 +189,8 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         $quoteId = $this->encryptor->decrypt($this->httpRequest->getParam("quoteId"));
 
         if ($response->getStatusCode() === Config::SUCCESS_STATUS) {
-            $orderId = $orderId = $this->encryptor->decrypt($this->httpRequest->getParam("orderId"));
-            $this->order   = $this->orderRepository->get($orderId);
+            $orderId = $this->encryptor->decrypt($this->httpRequest->getParam("orderId"));
+            $this->order = $this->orderRepository->get($orderId);
 
             if ($this->order !== null) {
                 $this->getPayResult()->setPaymentMethod($response->getPaymentMethod());
