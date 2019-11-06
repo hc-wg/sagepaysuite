@@ -10,6 +10,7 @@ use Magento\Framework\Validator\Exception as ValidatorException;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Api\PaymentFailuresInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 
 class ThreeDSecureCallbackManagement extends RequestManagement
 {
@@ -45,6 +46,9 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     /** @var PaymentFailuresInterface */
     private $paymentFailures;
 
+    /** @var EncryptorInterface */
+    private $encryptor;
+
     public function __construct(
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Model\Api\PIRest $piRestApi,
@@ -60,7 +64,8 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         InvoiceSender $invoiceEmailSender,
         Config $config,
-        PaymentFailuresInterface $paymentFailures
+        PaymentFailuresInterface $paymentFailures,
+        EncryptorInterface $encryptor
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -80,6 +85,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         $this->invoiceEmailSender = $invoiceEmailSender;
         $this->config             = $config;
         $this->paymentFailures    = $paymentFailures;
+        $this->encryptor          = $encryptor;
     }
 
     public function getPayment()
@@ -180,10 +186,10 @@ class ThreeDSecureCallbackManagement extends RequestManagement
      */
     private function confirmPayment(PiTransactionResultInterface $response)
     {
-        $quoteId = $this->httpRequest->getParam("quoteId");
+        $quoteId = $this->encryptor->decrypt($this->httpRequest->getParam("quoteId"));
 
         if ($response->getStatusCode() === Config::SUCCESS_STATUS) {
-            $orderId = $this->httpRequest->getParam("orderId");
+            $orderId = $orderId = $this->encryptor->decrypt($this->httpRequest->getParam("orderId"));
             $this->order   = $this->orderRepository->get($orderId);
 
             if ($this->order !== null) {

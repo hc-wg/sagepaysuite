@@ -13,6 +13,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 
 class Callback3D extends Action implements CsrfAwareActionInterface
 {
@@ -31,6 +32,9 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     /** @var OrderRepositoryInterface */
     private $orderRepository;
 
+    /** @var EncryptorInterface */
+    private $encryptor;
+
     /**
      * Callback3D constructor.
      * @param Context $context
@@ -38,6 +42,8 @@ class Callback3D extends Action implements CsrfAwareActionInterface
      * @param LoggerInterface $logger
      * @param ThreeDSecureCallbackManagement $requester
      * @param PiRequestManagerFactory $piReqManagerFactory
+     * @param OrderRepositoryInterface $orderRepository
+     * @param EncryptorInterface $encryptor
      */
     public function __construct(
         Context $context,
@@ -45,7 +51,8 @@ class Callback3D extends Action implements CsrfAwareActionInterface
         LoggerInterface $logger,
         ThreeDSecureCallbackManagement $requester,
         PiRequestManagerFactory $piReqManagerFactory,
-        OrderRepositoryInterface $orderRepository
+        OrderRepositoryInterface $orderRepository,
+        EncryptorInterface $encryptor
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -55,12 +62,15 @@ class Callback3D extends Action implements CsrfAwareActionInterface
 
         $this->requester = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
+
+        $this->encryptor = $encryptor;
     }
 
     public function execute()
     {
         try {
-            $order = $this->orderRepository->get($this->getRequest()->getParam("orderId"));
+            $orderId = $this->encryptor->decrypt($this->getRequest()->getParam("orderId"));
+            $order = $this->orderRepository->get($orderId);
             if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
                 $this->javascriptRedirect('checkout/onepage/success');
                 return;
