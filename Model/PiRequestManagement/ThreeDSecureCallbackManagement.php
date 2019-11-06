@@ -174,7 +174,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     private function _confirmPayment(PiTransactionResultInterface $response)
     {
         if ($response->getStatusCode() == Config::SUCCESS_STATUS) {
-            $orderId = $orderId = $this->encryptor->decrypt($this->httpRequest->getParam("orderId"));
+            $orderId = $this->encryptor->decrypt($this->httpRequest->getParam("orderId"));
             $quoteId = $this->encryptor->decrypt($this->httpRequest->getParam("quoteId"));
             $this->order   = $this->orderFactory->create()->load($orderId);
 
