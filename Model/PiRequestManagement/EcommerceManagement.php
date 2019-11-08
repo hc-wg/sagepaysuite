@@ -17,12 +17,13 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\PiRequest;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Url\EncoderInterface;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
 use Magento\Sales\Model\Order\Payment\TransactionFactory;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Api\PaymentFailuresInterface;
-use Magento\Framework\Encryption\EncryptorInterface;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 class EcommerceManagement extends RequestManagement
 {
@@ -51,6 +52,9 @@ class EcommerceManagement extends RequestManagement
     /** @var EncryptorInterface */
     private $encryptor;
 
+    /** @var CryptAndCodeData */
+    private $cryptAndCode;
+
     public function __construct(
         Checkout $checkoutHelper,
         PIRest $piRestApi,
@@ -66,7 +70,7 @@ class EcommerceManagement extends RequestManagement
         InvoiceSender $invoiceEmailSender,
         Config $config,
         PaymentFailuresInterface $paymentFailures,
-        EncryptorInterface $encryptor
+        CryptAndCodeData $cryptAndCode
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -84,7 +88,8 @@ class EcommerceManagement extends RequestManagement
         $this->invoiceEmailSender = $invoiceEmailSender;
         $this->config             = $config;
         $this->paymentFailures    = $paymentFailures;
-        $this->encryptor          = $encryptor;
+        $this->paymentFailures    = $paymentFailures;
+        $this->cryptAndCode       = $cryptAndCode;
     }
 
     /**
@@ -139,9 +144,9 @@ class EcommerceManagement extends RequestManagement
         $this->getResult()->setStatus($this->getPayResult()->getStatus());
 
         //additional details required for callback URL
-        $orderId = urlencode($this->encryptor->encrypt($order->getId()));
+        $orderId = $this->cryptAndCode->encryptAndEncode($order->getId());
         $this->getResult()->setOrderId($orderId);
-        $quoteId = urlencode($this->encryptor->encrypt($this->getQuote()->getId()));
+        $quoteId = $this->cryptAndCode->encryptAndEncode($this->getQuote()->getId());
         $this->getResult()->setQuoteId($quoteId);
 
         if ($this->isThreeDResponse()) {
