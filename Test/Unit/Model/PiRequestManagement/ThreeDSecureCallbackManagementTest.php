@@ -6,8 +6,8 @@ use Ebizmarts\SagePaySuite\Api\Data\PiRequestManager;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForAction;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Ebizmarts\SagePaySuite\Model\PI;
-use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Payment\Model\MethodInterface;
 use Magento\Quote\Model\Quote;
@@ -30,13 +30,17 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
 
     const CONFIG_CLOSED_FOR_ACTION_FACTORY = '\Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory';
 
-    const QUOTE_ID1 = '42';
+    const QUOTE_ID1 = '50';
 
-    const ENCRYPTED_QUOTE_ID1 = '0:3:I5Jf5QW1Qp3mQxxX0YR5qzZaFZX08ndRrwpH8Ydx';
+    const ENCRYPTED_QUOTE_ID1 = '0:3:slozTfXK0r1J23OPKHZkGsqJqT4wudHXPZJXxE9S';
 
-    const QUOTE_ID2 = '43';
+    const ENCODED_QUOTE_ID1 = 'MDozOiswMXF3V0l1WFRLTDRra0wxUCtYSGgyQVdORUdWaXNPN3N5RUNEbzE,';
 
-    const ENCRYPTED_QUOTE_ID2 = '0:3:/RAwBHpbJhHjyarJ1gi7TT2p7OvQXThRxGr8DQyq';
+    const QUOTE_ID2 = '51';
+
+    const ENCRYPTED_QUOTE_ID2 = '0:3:hm2arLCQeFcC1C0kU6CEoy06RnjtBZ1jzMomH3+A';
+
+    CONST ENCODED_QUOTE_ID2 = 'MDozOlBxWWxwSHdsUklEa3dLY0Q2TlVJTE9YOEZjYjNCbWY2VUVaT1QrN2U,';
 
     /** @var InvoiceSender|\PHPUnit_Framework_MockObject_MockObject */
     private $invoiceEmailSenderMock;
@@ -178,15 +182,16 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $httpRequestMock
             ->expects($this->exactly(2))
             ->method('getParam')
-            ->willReturnOnConsecutiveCalls(self::ENCRYPTED_QUOTE_ID1, self::ENCRYPTED_QUOTE_ID2);
+            ->willReturnOnConsecutiveCalls(self::ENCODED_QUOTE_ID1, self::ENCODED_QUOTE_ID2);
 
-        $encryptorMock = $this
-            ->getMockBuilder(EncryptorInterface::class)
+        $cryptAndCodeMock = $this
+            ->getMockBuilder(CryptAndCodeData::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $encryptorMock
+        $cryptAndCodeMock
             ->expects($this->exactly(2))
-            ->method('decrypt')
+            ->method('decodeAndDecrypt')
+            ->withConsecutive([self::ENCODED_QUOTE_ID1], [self::ENCODED_QUOTE_ID2])
             ->willReturnOnConsecutiveCalls(self::QUOTE_ID1, self::QUOTE_ID2);
 
         $actionFactoryMock = $this->getMockBuilder(self::CONFIG_CLOSED_FOR_ACTION_FACTORY)
@@ -256,7 +261,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
                 'transactionFactory' => $transactionFactoryMock,
                 'invoiceEmailSender' => $this->invoiceEmailSenderMock,
                 'config'             => $this->configMock,
-                'encryptor'          => $encryptorMock
+                'cryptAndCode'       => $cryptAndCodeMock
             ]
         );
 
@@ -385,15 +390,16 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $httpRequestMock
             ->expects($this->once())
             ->method('getParam')
-            ->willReturn(self::ENCRYPTED_QUOTE_ID1);
+            ->willReturn(self::ENCODED_QUOTE_ID1);
 
-        $encryptorMock = $this
-            ->getMockBuilder(EncryptorInterface::class)
+        $cryptAndCodeMock = $this
+            ->getMockBuilder(CryptAndCodeData::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $encryptorMock
+        $cryptAndCodeMock
             ->expects($this->once())
-            ->method('decrypt')
+            ->method('decodeAndDecrypt')
+            ->with(self::ENCODED_QUOTE_ID1)
             ->willReturn(self::QUOTE_ID1);
 
         $actionFactoryMock = $this
@@ -442,7 +448,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
                 'invoiceEmailSender' => $this->invoiceEmailSenderMock,
                 'config'             => $this->configMock,
                 'paymentFailures'    => $paymentFailuresMock,
-                'encryptor'          => $encryptorMock
+                'cryptAndCode'       => $cryptAndCodeMock
             ]
         );
 
