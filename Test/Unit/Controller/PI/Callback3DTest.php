@@ -9,7 +9,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\PI;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Magento\Framework\Encryption\EncryptorInterface;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 class Callback3DTest extends \PHPUnit_Framework_TestCase
 {
@@ -19,8 +19,9 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
      * Sage Pay Transaction ID
      */
     const TEST_VPSTXID = 'F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F';
-    const ORDER_ID = '34';
-    const ENCRYPTED_ORDER_ID = '0:3:HWzTli64jKDwmUnY02LMRJI7lIogWacjolk1r99A';
+    const ORDER_ID = '50';
+    const ENCRYPTED_ORDER_ID = '0:3:slozTfXK0r1J23OPKHZkGsqJqT4wudHXPZJXxE9S';
+    const ENCODED_ORDER_ID = 'MDozOiswMXF3V0l1WFRLTDRra0wxUCtYSGgyQVdORUdWaXNPN3N5RUNEbzE,';
 
     /**
      * @var /Ebizmarts\SagePaySuite\Controller\PI\Callback3D
@@ -46,11 +47,6 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
      * @var \Magento\Framework\UrlInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $urlBuilderMock;
-
-    /**
-     * @var EncryptorInterface
-     */
-    private $encryptorMock;
 
     // @codingStandardsIgnoreStart
     protected function setUp()
@@ -96,13 +92,14 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
         $this->makeRequestMock($pares);
 
-        $encryptorMock = $this
-            ->getMockBuilder(EncryptorInterface::class)
+        $cryptAndCodeMock = $this
+            ->getMockBuilder(CryptAndCodeData::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $encryptorMock
+        $cryptAndCodeMock
             ->expects($this->once())
-            ->method('decrypt')
+            ->method('decodeAndDecrypt')
+            ->with(self::ENCODED_ORDER_ID)
             ->willReturn(self::ORDER_ID);
 
         $this->redirectMock = $this
@@ -143,7 +140,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
                 'piRequestManagerDataFactory' => $piRequestManagerDataFactoryMock,
                 'requester'                   => $threeDCallbackManagementMock,
                 'orderRepository'             => $orderRepositoryMock,
-                'encryptor'                   => $encryptorMock
+                'cryptAndCode'                => $cryptAndCodeMock
             ]
         );
 
@@ -196,13 +193,14 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
         $this->makeRequestMock($pares);
 
-        $encryptorMock = $this
-            ->getMockBuilder(EncryptorInterface::class)
+        $cryptAndCodeMock = $this
+            ->getMockBuilder(CryptAndCodeData::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $encryptorMock
+        $cryptAndCodeMock
             ->expects($this->once())
-            ->method('decrypt')
+            ->method('decodeAndDecrypt')
+            ->with(self::ENCODED_ORDER_ID)
             ->willReturn(self::ORDER_ID);
 
         $this->redirectMock = $this
@@ -243,7 +241,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
                 'piRequestManagerDataFactory' => $piRequestManagerDataFactoryMock,
                 'requester'                   => $threeDCallbackManagementMock,
                 'orderRepository'             => $orderRepositoryMock,
-                'encryptor'                   => $encryptorMock
+                'cryptAndCodeMock'            => $cryptAndCodeMock
             ]
         );
 
@@ -297,15 +295,16 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getParam')
             ->with('orderId')
-            ->willReturn(self::ENCRYPTED_ORDER_ID);
+            ->willReturn(self::ENCODED_ORDER_ID);
 
-        $encryptorMock = $this
-            ->getMockBuilder(EncryptorInterface::class)
+        $cryptAndCodeMock = $this
+            ->getMockBuilder(CryptAndCodeData::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $encryptorMock
+        $cryptAndCodeMock
             ->expects($this->once())
-            ->method('decrypt')
+            ->method('decodeAndDecrypt')
+            ->with(self::ENCODED_ORDER_ID)
             ->willReturn(self::ORDER_ID);
 
         $this->redirectMock = $this
@@ -341,7 +340,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
                 'piRequestManagerDataFactory' => $piRequestManagerDataFactoryMock,
                 'requester'                   => $threeDCallbackManagementMock,
                 'orderRepository'             => $orderRepositoryMock,
-                'encryptor'                   => $encryptorMock
+                'cryptAndCode'                => $cryptAndCodeMock
             ]
         );
 
@@ -391,13 +390,14 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
         $this->makeRequestMock($pares);
 
-        $encryptorMock = $this
-            ->getMockBuilder(EncryptorInterface::class)
+        $cryptAndCodeMock = $this
+            ->getMockBuilder(CryptAndCodeData::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $encryptorMock
+        $cryptAndCodeMock
             ->expects($this->once())
-            ->method('decrypt')
+            ->method('decodeAndDecrypt')
+            ->with(self::ENCODED_ORDER_ID)
             ->willReturn(self::ORDER_ID);
 
         $this->redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
@@ -439,7 +439,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
                 'piRequestManagerDataFactory' => $piRequestManagerDataFactoryMock,
                 'requester'                   => $threeDCallbackManagementMock,
                 'orderRepository'             => $orderRepositoryMock,
-                'encryptor'                   => $encryptorMock
+                'cryptAndCode'                => $cryptAndCodeMock
             ]
         );
         $this->expectSetBody(
@@ -481,13 +481,14 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $encryptorMock = $this
-            ->getMockBuilder(EncryptorInterface::class)
+        $cryptAndCodeMock = $this
+            ->getMockBuilder(CryptAndCodeData::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $encryptorMock
+        $cryptAndCodeMock
             ->expects($this->once())
-            ->method('decrypt')
+            ->method('decodeAndDecrypt')
+            ->with(self::ENCODED_ORDER_ID)
             ->willReturn(self::ORDER_ID);
 
         $orderRepositoryMock
@@ -549,7 +550,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
                 'piRequestManagerDataFactory' => $piRequestManagerDataFactoryMock,
                 'requester'                   => $threeDCallbackManagementMock,
                 'orderRepository'             => $orderRepositoryMock,
-                'encryptor'                   => $encryptorMock
+                'cryptAndCode'                => $cryptAndCodeMock
             ]
         );
 
@@ -622,7 +623,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
             ->method('getParam')
             ->withConsecutive(['orderId'], ['transactionId'])
             ->willReturnOnConsecutiveCalls(
-                self::ENCRYPTED_ORDER_ID,
+                self::ENCODED_ORDER_ID,
                 $this->returnValue(self::TEST_VPSTXID)
             );
         $this->requestMock
