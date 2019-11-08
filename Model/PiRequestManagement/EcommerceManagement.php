@@ -20,7 +20,7 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Ebizmarts\SagePaySuite\Model\Config;
-use Magento\Framework\Encryption\EncryptorInterface;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 class EcommerceManagement extends RequestManagement
 {
@@ -41,6 +41,9 @@ class EcommerceManagement extends RequestManagement
     /** @var EncryptorInterface */
     private $encryptor;
 
+    /** @var CryptAndCodeData */
+    private $cryptAndCode;
+
     public function __construct(
         Checkout $checkoutHelper,
         PIRest $piRestApi,
@@ -53,7 +56,7 @@ class EcommerceManagement extends RequestManagement
         \Magento\Quote\Model\QuoteValidator $quoteValidator,
         InvoiceSender $invoiceEmailSender,
         Config $config,
-        EncryptorInterface $encryptor
+        CryptAndCodeData $cryptAndCode
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -68,7 +71,7 @@ class EcommerceManagement extends RequestManagement
         $this->quoteValidator     = $quoteValidator;
         $this->invoiceEmailSender = $invoiceEmailSender;
         $this->config             = $config;
-        $this->encryptor          = $encryptor;
+        $this->cryptAndCode       = $cryptAndCode;
     }
 
     /**
@@ -123,9 +126,9 @@ class EcommerceManagement extends RequestManagement
         $this->getResult()->setStatus($this->getPayResult()->getStatus());
 
         //additional details required for callback URL
-        $orderId = urlencode($this->encryptor->encrypt($order->getId()));
+        $orderId = $this->cryptAndCode->encryptAndEncode($order->getId());
         $this->getResult()->setOrderId($orderId);
-        $quoteId = urlencode($this->encryptor->encrypt($this->getQuote()->getId()));
+        $quoteId = $this->cryptAndCode->encryptAndEncode($this->getQuote()->getId());
         $this->getResult()->setQuoteId($quoteId);
 
         if ($this->isThreeDResponse()) {

@@ -7,7 +7,7 @@ use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
-use Magento\Framework\Encryption\EncryptorInterface;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 class ThreeDSecureCallbackManagement extends RequestManagement
 {
@@ -39,8 +39,8 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     /** @var Config */
     private $config;
 
-    /** @var EncryptorInterface */
-    private $encryptor;
+    /** @var CryptAndCodeData */
+    private $cryptAndCode;
 
     public function __construct(
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
@@ -56,7 +56,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $payResultFactory,
         InvoiceSender $invoiceEmailSender,
         Config $config,
-        EncryptorInterface $encryptor
+        CryptAndCodeData $cryptAndCode
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -74,7 +74,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         $this->payResultFactory   = $payResultFactory;
         $this->invoiceEmailSender = $invoiceEmailSender;
         $this->config             = $config;
-        $this->encryptor          = $encryptor;
+        $this->cryptAndCode       = $cryptAndCode;
     }
 
     public function getPayment()
@@ -174,8 +174,8 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     private function _confirmPayment(PiTransactionResultInterface $response)
     {
         if ($response->getStatusCode() == Config::SUCCESS_STATUS) {
-            $orderId = $this->encryptor->decrypt($this->httpRequest->getParam("orderId"));
-            $quoteId = $this->encryptor->decrypt($this->httpRequest->getParam("quoteId"));
+            $orderId = $this->cryptAndCode->decodeAndDecrypt($this->httpRequest->getParam("orderId"));
+            $quoteId = $this->cryptAndCode->decodeAndDecrypt($this->httpRequest->getParam("quoteId"));
             $this->order   = $this->orderFactory->create()->load($orderId);
 
             if (!empty($this->order)) {

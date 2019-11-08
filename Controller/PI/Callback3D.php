@@ -11,7 +11,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\Encryption\EncryptorInterface;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 class Callback3D extends Action
 {
@@ -30,8 +30,8 @@ class Callback3D extends Action
     /** @var OrderRepositoryInterface */
     private $orderRepository;
 
-    /** @var EncryptorInterface */
-    private $encryptor;
+    /** @var CryptAndCodeData */
+    private $cryptAndCode;
 
     /**
      * Callback3D constructor.
@@ -50,24 +50,22 @@ class Callback3D extends Action
         ThreeDSecureCallbackManagement $requester,
         PiRequestManagerFactory $piReqManagerFactory,
         OrderRepositoryInterface $orderRepository,
-        EncryptorInterface $encryptor
+        CryptAndCodeData $cryptAndCode
     ) {
         parent::__construct($context);
         $this->config = $config;
         $this->config->setMethodCode(Config::METHOD_PI);
-        $this->logger          = $logger;
-        $this->orderRepository = $orderRepository;
-
-        $this->requester = $requester;
+        $this->logger                      = $logger;
+        $this->orderRepository             = $orderRepository;
+        $this->requester                   = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
-
-        $this->encryptor = $encryptor;
+        $this->cryptAndCode                = $cryptAndCode;
     }
 
     public function execute()
     {
         try {
-            $orderId = $this->encryptor->decrypt($this->getRequest()->getParam("orderId"));
+            $orderId = $this->cryptAndCode->decodeAndDecrypt($this->getRequest()->getParam("orderId"));
             $order = $this->orderRepository->get($orderId);
             if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
                 $this->javascriptRedirect('checkout/onepage/success');
