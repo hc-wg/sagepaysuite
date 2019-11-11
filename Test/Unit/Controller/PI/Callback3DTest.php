@@ -241,7 +241,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
                 'piRequestManagerDataFactory' => $piRequestManagerDataFactoryMock,
                 'requester'                   => $threeDCallbackManagementMock,
                 'orderRepository'             => $orderRepositoryMock,
-                'cryptAndCodeMock'            => $cryptAndCodeMock
+                'cryptAndCode'                => $cryptAndCodeMock
             ]
         );
 
@@ -252,6 +252,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->piCallback3DController->execute();
+
     }
 
     public function testExecuteOrderStateNotPendingPayment()

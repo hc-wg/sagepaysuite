@@ -41,7 +41,7 @@ class Callback3D extends Action
      * @param ThreeDSecureCallbackManagement $requester
      * @param PiRequestManagerFactory $piReqManagerFactory
      * @param OrderRepositoryInterface $orderRepository
-     * @param EncryptorInterface $encryptor
+     * @param CryptAndCodeData $cryptAndCode
      */
     public function __construct(
         Context $context,
