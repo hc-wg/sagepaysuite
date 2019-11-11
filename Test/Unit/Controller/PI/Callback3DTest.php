@@ -252,7 +252,6 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
         );
 
         $this->piCallback3DController->execute();
-
     }
 
     public function testExecuteOrderStateNotPendingPayment()
