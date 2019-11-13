@@ -126,6 +126,9 @@ class Callback extends Action implements CsrfAwareActionInterface
      */
     public function execute()
     {
+        $this->loadQuoteFromDataSource();
+        $order = $this->loadOrderFromDataSource();
+
         try {
             //get POST data
             $this->postData = $this->getRequest()->getPost();
@@ -134,10 +137,6 @@ class Callback extends Action implements CsrfAwareActionInterface
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->postData, [__METHOD__, __LINE__]);
 
             $this->validatePostDataStatusAndStatusDetail();
-
-            $this->loadQuoteFromDataSource();
-
-            $order = $this->loadOrderFromDataSource();
 
             $completionResponse = $this->sendCompletionPost()["data"];
 
@@ -164,6 +163,7 @@ class Callback extends Action implements CsrfAwareActionInterface
 
             return;
         } catch (\Exception $e) {
+            $this->recoverCart($order);
             $this->suiteLogger->logException($e);
             $this->redirectToCartAndShowError('We can\'t place the order: ' . $e->getMessage());
         }
@@ -270,6 +270,7 @@ class Callback extends Action implements CsrfAwareActionInterface
         }
     }
 
+
     /**
      * Create exception in case CSRF validation failed.
      * Return null if default exception will suffice.
@@ -294,5 +295,27 @@ class Callback extends Action implements CsrfAwareActionInterface
     public function validateForCsrf(RequestInterface $request): ?bool
     {
         return true;
+    }
+
+    private function recoverCart($order)
+    {
+        if($order !== null && $order->getId() !== null
+            && $order->getState() == \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
+            /** @var \Magento\Checkout\Model\Cart $cart */
+            $cart = $this->_objectManager->get("Magento\Checkout\Model\Cart");
+            $cart->setQuote($this->checkoutSession->getQuote());
+            $items = $order->getItemsCollection();
+            foreach ($items as $item) {
+                try {
+                    $cart->addOrderItem($item);
+                } catch (\Exception $e) {
+                    $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
+                }
+            }
+
+            $order->cancel()->save();
+
+            $cart->save();
+        }
     }
 }
