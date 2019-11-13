@@ -113,6 +113,8 @@ class Cancel extends Action
 
         $this->inactivateQuote($this->quote);
 
+        $order->cancel()->save();
+
         $this
             ->getResponse()
             ->setBody(
