@@ -11,6 +11,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 class Callback3D extends Action
 {
@@ -29,6 +30,9 @@ class Callback3D extends Action
     /** @var OrderRepositoryInterface */
     private $orderRepository;
 
+    /** @var CryptAndCodeData */
+    private $cryptAndCode;
+
     /**
      * Callback3D constructor.
      * @param Context $context
@@ -36,6 +40,8 @@ class Callback3D extends Action
      * @param LoggerInterface $logger
      * @param ThreeDSecureCallbackManagement $requester
      * @param PiRequestManagerFactory $piReqManagerFactory
+     * @param OrderRepositoryInterface $orderRepository
+     * @param CryptAndCodeData $cryptAndCode
      */
     public function __construct(
         Context $context,
@@ -43,22 +49,24 @@ class Callback3D extends Action
         LoggerInterface $logger,
         ThreeDSecureCallbackManagement $requester,
         PiRequestManagerFactory $piReqManagerFactory,
-        OrderRepositoryInterface $orderRepository
+        OrderRepositoryInterface $orderRepository,
+        CryptAndCodeData $cryptAndCode
     ) {
         parent::__construct($context);
         $this->config = $config;
         $this->config->setMethodCode(Config::METHOD_PI);
-        $this->logger          = $logger;
-        $this->orderRepository = $orderRepository;
-
-        $this->requester = $requester;
+        $this->logger                      = $logger;
+        $this->orderRepository             = $orderRepository;
+        $this->requester                   = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
+        $this->cryptAndCode                = $cryptAndCode;
     }
 
     public function execute()
     {
         try {
-            $order = $this->orderRepository->get($this->getRequest()->getParam("orderId"));
+            $orderId = $this->cryptAndCode->decodeAndDecrypt($this->getRequest()->getParam("orderId"));
+            $order = $this->orderRepository->get($orderId);
             if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
                 $this->javascriptRedirect('checkout/onepage/success');
                 return;
