@@ -270,7 +270,6 @@ class FraudTest extends \PHPUnit_Framework_TestCase
 
 
         $orderMock = $this->getMockBuilder(OrderInterface::class)->disableOriginalConstructor()->getMock();
-        $orderMock = $this->createMock(OrderInterface::class);
 
         $paymentMock = $this->getMockBuilder(OrderPaymentInterface::class)->disableOriginalConstructor()->getMock();
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
@@ -290,7 +289,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameThirdman', 'getFieldName'])
+            ->setMethods(['checkIfRed', 'checkIfThirdMan', 'getImageNameThirdman', 'getFieldName'])
             ->getMock();
 
         $fraudColumnMock
@@ -371,7 +370,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameThirdman', 'getFieldName'])
+            ->setMethods(['checkIfRed', 'checkIfThirdMan', 'getImageNameThirdman', 'getFieldName'])
             ->getMock();
 
         $fraudColumnMock
@@ -452,7 +451,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameThirdman', 'getFieldName'])
+            ->setMethods(['checkIfRed', 'checkIfThirdMan', 'getImageNameThirdman', 'getFieldName'])
             ->getMock();
 
         $fraudColumnMock
@@ -533,7 +532,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameThirdman', 'getFieldName'])
+            ->setMethods(['checkIfRed', 'checkIfThirdMan', 'getImageNameThirdman', 'getFieldName'])
             ->getMock();
 
         $fraudColumnMock
@@ -614,7 +613,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameRed', 'getFieldName'])
+            ->setMethods(['checkIfThirdMan','getImageNameRed', 'getFieldName'])
             ->getMock();
 
         $fraudColumnMock
@@ -689,7 +688,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameRed', 'getFieldName'])
+            ->setMethods(['checkIfThirdMan','getImageNameRed', 'getFieldName'])
             ->getMock();
 
         $fraudColumnMock
@@ -764,7 +763,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameRed', 'getFieldName'])
+            ->setMethods(['checkIfThirdMan', 'getImageNameRed', 'getFieldName'])
             ->getMock();
 
         $fraudColumnMock
@@ -839,7 +838,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameRed', 'getFieldName'])
+            ->setMethods(['checkIfThirdMan', 'getImageNameRed', 'getFieldName'])
             ->getMock();
 
         $fraudColumnMock
