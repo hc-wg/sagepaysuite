@@ -66,6 +66,10 @@ class ThreeDSecure extends Column
         parent::__construct($context, $uiComponentFactory, $components, $data);
     }
 
+    /**
+     * @param array $dataSource
+     * @return array
+     */
     public function prepareDataSource(array $dataSource)
     {
         if (isset($dataSource['data']['items'])) {
@@ -150,6 +154,9 @@ class ThreeDSecure extends Column
         return self::IMAGE_PATH . $threeDStatus;
     }
 
+    /**
+     * @return string
+     */
     public function getFieldName()
     {
         return $this->getData('name');
