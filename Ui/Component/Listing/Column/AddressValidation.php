@@ -66,6 +66,10 @@ class AddressValidation extends Column
         parent::__construct($context, $uiComponentFactory, $components, $data);
     }
 
+    /**
+     * @param array $dataSource
+     * @return array
+     */
     public function prepareDataSource(array $dataSource)
     {
         if (isset($dataSource['data']['items'])) {
@@ -107,6 +111,10 @@ class AddressValidation extends Column
         return $dataSource;
     }
 
+    /**
+     * @param string $status
+     * @return string
+     */
     public function getAddressResult($status)
     {
         $status = strtoupper($status);
@@ -131,6 +139,9 @@ class AddressValidation extends Column
         return self::IMAGE_PATH . $addressResult;
     }
 
+    /**
+     * @return string
+     */
     public function getFieldName()
     {
         return $this->getData('name');
