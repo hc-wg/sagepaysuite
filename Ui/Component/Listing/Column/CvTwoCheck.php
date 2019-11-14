@@ -66,6 +66,10 @@ class CvTwoCheck extends Column
         parent::__construct($context, $uiComponentFactory, $components, $data);
     }
 
+    /**
+     * @param array $dataSource
+     * @return array
+     */
     public function prepareDataSource(array $dataSource)
     {
         if (isset($dataSource['data']['items'])) {
@@ -107,6 +111,10 @@ class CvTwoCheck extends Column
         return $dataSource;
     }
 
+    /**
+     * @param $status
+     * @return string
+     */
     public function getCvTwoCheck($status)
     {
         $status = strtoupper($status);
@@ -131,6 +139,9 @@ class CvTwoCheck extends Column
         return self::IMAGE_PATH . $cvTwoCheck;
     }
 
+    /**
+     * @return string
+     */
     public function getFieldName()
     {
         return $this->getData('name');
