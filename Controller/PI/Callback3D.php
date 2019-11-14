@@ -48,6 +48,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
      * @param PiRequestManagerFactory $piReqManagerFactory
      * @param OrderRepositoryInterface $orderRepository
      * @param CryptAndCodeData $cryptAndCode
+     * @param RecoverCartAndCancelOrder $recoverCartAndCancelOrder
      */
     public function __construct(
         Context $context,
