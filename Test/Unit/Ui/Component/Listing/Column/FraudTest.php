@@ -253,7 +253,6 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->with(self::IMAGE_PATH . 'check.png', ['_secure' => true])
             ->willReturn(self::IMAGE_URL_CHECK);
 
-
         $orderMock = $this->createMock(OrderInterface::class);
 
         $paymentMock = $this->createMock(OrderPaymentInterface::class);
@@ -277,6 +276,17 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ])
             ->setMethodsExcept(['getImageNameRed', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
+
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(false);
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfRed')
+            ->with($orderTest)
+            ->willReturn(true);
 
         $fraudColumnMock->expects($this->never())->method('getImageNameThirdman');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
@@ -342,6 +352,17 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->setMethodsExcept(['getImageNameRed', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
 
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(false);
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfRed')
+            ->with($orderTest)
+            ->willReturn(true);
+
         $fraudColumnMock->expects($this->never())->method('getImageNameThirdman');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
 
@@ -406,6 +427,17 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->setMethodsExcept(['getImageNameRed', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
 
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(false);
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfRed')
+            ->with($orderTest)
+            ->willReturn(true);
+
         $fraudColumnMock->expects($this->never())->method('getImageNameThirdman');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
 
@@ -469,6 +501,17 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ])
             ->setMethodsExcept(['getImageNameRed', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
+
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(false);
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfRed')
+            ->with($orderTest)
+            ->willReturn(true);
 
         $fraudColumnMock->expects($this->never())->method('getImageNameThirdman');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
@@ -535,6 +578,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->setMethodsExcept(['getImageNameThirdman', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
 
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(true);
+
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
 
@@ -598,6 +647,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ])
             ->setMethodsExcept(['getImageNameThirdman', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
+
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(true);
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
@@ -663,6 +718,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->setMethodsExcept(['getImageNameThirdman', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
 
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(true);
+
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
 
@@ -726,6 +787,12 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ])
             ->setMethodsExcept(['getImageNameThirdman', 'prepareDataSource', 'getImage', 'getFraudImage'])
             ->getMock();
+
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(true);
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
