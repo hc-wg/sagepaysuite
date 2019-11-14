@@ -100,10 +100,11 @@ class Data extends AbstractHelper
                 break;
         }
 
+        $sanitizedOrderId = $this->sanitizeOrderId($order_id);
         $date = $this->dateTime->gmtDate('Y-m-d-His');
         $time = $this->dateTime->gmtTimestamp();
 
-        return substr($prefix . $order_id . "-" . $date . $time, 0, 40);
+        return substr($prefix . $sanitizedOrderId . "-" . $date . $time, 0, 40);
     }
 
     /**
@@ -334,5 +335,14 @@ class Data extends AbstractHelper
     public function getDefaultStoreId()
     {
         return \Magento\Store\Model\Store::DEFAULT_STORE_ID;
+    }
+
+    /**
+     * @param $text
+     * @return string
+     */
+    private function sanitizeOrderId($text)
+    {
+        return preg_replace("/[^a-zA-Z0-9-\-\{\}\_\.]/", "", $text);
     }
 }
