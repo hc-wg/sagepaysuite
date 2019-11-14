@@ -37,7 +37,7 @@ class CvTwoCheckTest extends \PHPUnit\Framework\TestCase
         ]
     ];
 
-    public function testAddressValidationMatched()
+    public function testCvTwoMatched()
     {
         $orderTest = ['avsCvcCheckSecurityCode' => 'MATCHED'];
 
@@ -101,7 +101,7 @@ class CvTwoCheckTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expectedResponse, $response);
     }
 
-    public function testAddressValidationNotchecked()
+    public function testCvTwoNotchecked()
     {
         $orderTest = ['avsCvcCheckSecurityCode' => 'NOTCHECKED'];
 
@@ -165,7 +165,7 @@ class CvTwoCheckTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expectedResponse, $response);
     }
 
-    public function testAddressValidationNotProvided()
+    public function testCvTwoNotProvided()
     {
         $orderTest = ['avsCvcCheckSecurityCode' => 'NOTPROVIDED'];
 
@@ -229,7 +229,7 @@ class CvTwoCheckTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expectedResponse, $response);
     }
 
-    public function testAddressValidationNotMatched()
+    public function testCvTwoNotMatched()
     {
         $orderTest = ['avsCvcCheckSecurityCode' => 'NOTMATCHED'];
 
@@ -293,7 +293,7 @@ class CvTwoCheckTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expectedResponse, $response);
     }
 
-    public function testAddressValidationPartial()
+    public function testCvTwoPartial()
     {
         $orderTest = ['avsCvcCheckSecurityCode' => 'PARTIAL'];
 
