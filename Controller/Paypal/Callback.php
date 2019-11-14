@@ -21,6 +21,7 @@ use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
 
 class Callback extends Action
 {
@@ -73,6 +74,9 @@ class Callback extends Action
      */
     private $encryptor;
 
+    /** @var RecoverCartAndCancelOrder */
+    private $recoverCartAndCancelOrder;
+
     /**
      * Callback constructor.
      * @param Context $context
@@ -86,6 +90,7 @@ class Callback extends Action
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
      * @param EncryptorInterface $encryptor
+     * @param RecoverCartAndCancelOrder $recoverCartAndCancelOrder
      */
     public function __construct(
         Context $context,
@@ -98,20 +103,22 @@ class Callback extends Action
         QuoteFactory $quoteFactory,
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
-        EncryptorInterface $encryptor
+        EncryptorInterface $encryptor,
+        RecoverCartAndCancelOrder $recoverCartAndCancelOrder
     ) {
     
         parent::__construct($context);
-        $this->config              = $config;
-        $this->checkoutSession     = $checkoutSession;
-        $this->suiteLogger         = $suiteLogger;
-        $this->postApi             = $postApi;
-        $this->quote               = $quote;
-        $this->orderFactory        = $orderFactory;
-        $this->quoteFactory        = $quoteFactory;
-        $this->updateOrderCallback = $updateOrderCallback;
-        $this->suiteHelper         = $suiteHelper;
-        $this->encryptor           = $encryptor;
+        $this->config                      = $config;
+        $this->checkoutSession             = $checkoutSession;
+        $this->suiteLogger                 = $suiteLogger;
+        $this->postApi                     = $postApi;
+        $this->quote                       = $quote;
+        $this->orderFactory                = $orderFactory;
+        $this->quoteFactory                = $quoteFactory;
+        $this->updateOrderCallback         = $updateOrderCallback;
+        $this->suiteHelper                 = $suiteHelper;
+        $this->encryptor                   = $encryptor;
+        $this->recoverCartAndCancelOrder   = $recoverCartAndCancelOrder;
 
         $this->config->setMethodCode(Config::METHOD_PAYPAL);
     }
@@ -123,9 +130,6 @@ class Callback extends Action
      */
     public function execute()
     {
-        $this->loadQuoteFromDataSource();
-        $order = $this->loadOrderFromDataSource();
-
         try {
             //get POST data
             $this->postData = $this->getRequest()->getPost();
@@ -134,6 +138,10 @@ class Callback extends Action
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->postData, [__METHOD__, __LINE__]);
 
             $this->validatePostDataStatusAndStatusDetail();
+
+            $this->loadQuoteFromDataSource();
+
+            $order = $this->loadOrderFromDataSource();
 
             $completionResponse = $this->sendCompletionPost()["data"];
 
@@ -160,7 +168,7 @@ class Callback extends Action
 
             return;
         } catch (\Exception $e) {
-            $this->recoverCart($order);
+            $this->recoverCartAndCancelOrder->execute();
             $this->suiteLogger->logException($e);
             $this->redirectToCartAndShowError('We can\'t place the order: ' . $e->getMessage());
         }
@@ -264,28 +272,6 @@ class Callback extends Action
             $payment->save();
         } else {
             throw new ValidatorException(__('Invalid transaction id'));
-        }
-    }
-
-    private function recoverCart($order)
-    {
-        if($order !== null && $order->getId() !== null
-            && $order->getState() == \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
-            /** @var \Magento\Checkout\Model\Cart $cart */
-            $cart = $this->_objectManager->get("Magento\Checkout\Model\Cart");
-            $cart->setQuote($this->checkoutSession->getQuote());
-            $items = $order->getItemsCollection();
-            foreach ($items as $item) {
-                try {
-                    $cart->addOrderItem($item);
-                } catch (\Exception $e) {
-                    $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
-                }
-            }
-
-            $order->cancel()->save();
-
-            $cart->save();
         }
     }
 }
