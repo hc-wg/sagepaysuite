@@ -47,6 +47,18 @@ class AddressValidation extends Column
      */
     private $serialize;
 
+    /**
+     * AddressValidation constructor.
+     * @param Logger $suiteLogger
+     * @param ContextInterface $context
+     * @param UiComponentFactory $uiComponentFactory
+     * @param OrderRepositoryInterface $orderRepository
+     * @param Repository $assetRepository
+     * @param RequestInterface $requestInterface
+     * @param AdditionalInformation $serialize
+     * @param array $components
+     * @param array $data
+     */
     public function __construct(
         Logger $suiteLogger,
         ContextInterface $context,
