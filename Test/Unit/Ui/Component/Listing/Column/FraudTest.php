@@ -289,8 +289,19 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameThirdman', 'getFieldName'])
+            ->setMethods(['checkIfRed', 'checkIfThirdMan', 'getImageNameThirdman', 'getFieldName'])
             ->getMock();
+
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(false);
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfRed')
+            ->with($orderTest)
+            ->willReturn(true);
 
         $fraudColumnMock->expects($this->never())->method('getImageNameThirdman');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
@@ -359,8 +370,19 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameThirdman', 'getFieldName'])
+            ->setMethods(['checkIfRed', 'checkIfThirdMan', 'getImageNameThirdman', 'getFieldName'])
             ->getMock();
+
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(false);
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfRed')
+            ->with($orderTest)
+            ->willReturn(true);
 
         $fraudColumnMock->expects($this->never())->method('getImageNameThirdman');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
@@ -429,8 +451,19 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameThirdman', 'getFieldName'])
+            ->setMethods(['checkIfRed', 'checkIfThirdMan', 'getImageNameThirdman', 'getFieldName'])
             ->getMock();
+
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(false);
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfRed')
+            ->with($orderTest)
+            ->willReturn(true);
 
         $fraudColumnMock->expects($this->never())->method('getImageNameThirdman');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
@@ -499,8 +532,19 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameThirdman', 'getFieldName'])
+            ->setMethods(['checkIfRed', 'checkIfThirdMan', 'getImageNameThirdman', 'getFieldName'])
             ->getMock();
+
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(false);
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfRed')
+            ->with($orderTest)
+            ->willReturn(true);
 
         $fraudColumnMock->expects($this->never())->method('getImageNameThirdman');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
@@ -569,8 +613,14 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameRed', 'getFieldName'])
+            ->setMethods(['checkIfThirdMan','getImageNameRed', 'getFieldName'])
             ->getMock();
+
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(true);
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
@@ -638,8 +688,14 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameRed', 'getFieldName'])
+            ->setMethods(['checkIfThirdMan','getImageNameRed', 'getFieldName'])
             ->getMock();
+
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(true);
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
@@ -707,8 +763,14 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameRed', 'getFieldName'])
+            ->setMethods(['checkIfThirdMan', 'getImageNameRed', 'getFieldName'])
             ->getMock();
+
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(true);
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
@@ -776,8 +838,14 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                 [],
                 []
             ])
-            ->setMethods(['getImageNameRed', 'getFieldName'])
+            ->setMethods(['checkIfThirdMan', 'getImageNameRed', 'getFieldName'])
             ->getMock();
+
+        $fraudColumnMock
+            ->expects($this->once())
+            ->method('checkIfThirdMan')
+            ->with($orderTest)
+            ->willReturn(true);
 
         $fraudColumnMock->expects($this->never())->method('getImageNameRed');
         $fraudColumnMock->expects($this->once())->method('getFieldName')->willReturn('sagepay_fraud');
