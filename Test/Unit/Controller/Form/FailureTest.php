@@ -32,12 +32,21 @@ class FailureTest extends \PHPUnit\Framework\TestCase
             ->method('decodeSagePayResponse')
             ->will($this->returnValue($responseData));
 
+        $recoverCartAndCancelOrderMock = $this
+            ->getMockBuilder(RecoverCartAndCancelOrder::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $recoverCartAndCancelOrderMock
+            ->expects($this->once())
+            ->method('execute');
+
         $objectManagerHelper = new ObjectManagerHelper($this);
         $formFailureController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Form\Failure',
             [
-                'context'      => $contextMock,
-                'formModel'    => $formModelMock,
+                'context'                   => $contextMock,
+                'formModel'                 => $formModelMock,
+                'recoverCartAndCancelOrder' => $recoverCartAndCancelOrderMock
             ]
         );
 
@@ -94,14 +103,14 @@ class FailureTest extends \PHPUnit\Framework\TestCase
         $loggerMock->expects($this->once())->method('critical')->with(
             new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay'))
         );
-
+        
         $objectManagerHelper = new ObjectManagerHelper($this);
         $formFailureController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Form\Failure',
             [
-                'context'   => $contextMock,
-                'formModel' => $formModelMock,
-                'logger'    => $loggerMock
+                'context'                   => $contextMock,
+                'formModel'                 => $formModelMock,
+                'logger'                    => $loggerMock,
             ]
         );
 
