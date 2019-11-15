@@ -4,18 +4,16 @@
  * See LICENSE.txt for license details.
  */
 
-namespace Ebizmarts\SagePaySuite\Test\Unit\Observer;
+namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
 class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @var \Ebizmarts\SagePaySuite\Observer\CheckoutCartIndex
-     */
-    private $checkoutCartIndexObserver;
+    /** @var RecoverCartAndCancelOrder */
+    private $recoverCartAndCancelOrder;
 
-    // @codingStandardsIgnoreStart
     protected function setUp()
     {
         $checkoutSessionMock = $this
@@ -75,19 +73,18 @@ class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($orderMock));
 
         $objectManagerHelper = new ObjectManagerHelper($this);
-        $this->checkoutCartIndexObserver = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Observer\CheckoutCartIndex',
+        $this->recoverCartAndCancelOrder = $objectManagerHelper->getObject(
+            '\Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder',
             [
-                'orderFactory' => $orderFactoryMock,
-                'quoteFactory' => $quoteFactoryMock,
+                'orderFactory'    => $orderFactoryMock,
+                'quoteFactory'    => $quoteFactoryMock,
                 'checkoutSession' => $checkoutSessionMock,
             ]
         );
     }
-    // @codingStandardsIgnoreEnd
 
     public function testExecute()
     {
-        $this->checkoutCartIndexObserver->execute(new \Magento\Framework\Event\Observer);
+        $this->recoverCartAndCancelOrder->execute();
     }
 }
