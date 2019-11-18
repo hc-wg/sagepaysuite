@@ -15,6 +15,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 class Callback3Dv2 extends Action implements CsrfAwareActionInterface
 {
@@ -33,10 +34,11 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
     /** @var Session */
     private $checkoutSession;
 
-    /**
-     * @var OrderRepositoryInterface
-     */
+    /** @var OrderRepositoryInterface */
     private $orderRepository;
+
+    /** @var CryptAndCodeData */
+    private $cryptAndCode;
 
     /**
      * Callback3D constructor.
@@ -53,17 +55,18 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
         ThreeDSecureCallbackManagement $requester,
         PiRequestManagerFactory $piReqManagerFactory,
         Session $checkoutSession,
-        OrderRepositoryInterface $orderRepository
+        OrderRepositoryInterface $orderRepository,
+        CryptAndCodeData $cryptAndCode
     ) {
         parent::__construct($context);
         $this->config = $config;
         $this->config->setMethodCode(Config::METHOD_PI);
-        $this->logger = $logger;
-        $this->checkoutSession    = $checkoutSession;
-        $this->orderRepository = $orderRepository;
-
-        $this->requester = $requester;
+        $this->logger                      = $logger;
+        $this->checkoutSession             = $checkoutSession;
+        $this->orderRepository             = $orderRepository;
+        $this->requester                   = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
+        $this->cryptAndCode                = $cryptAndCode;
     }
 
     public function execute()
@@ -149,9 +152,11 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
      */
     private function setRequestParamsForConfirmPayment(int $orderId, \Magento\Sales\Api\Data\OrderInterface $order)
     {
+        $orderId = $this->cryptAndCode->encryptAndEncode((string)$orderId);
+        $quoteId = $this->cryptAndCode->encryptAndEncode((string)$order->getQuoteId());
         $this->getRequest()->setParams([
                 'orderId' => $orderId,
-                'quoteId' => $order->getQuoteId()
+                'quoteId' => $quoteId
             ]);
     }
 }
