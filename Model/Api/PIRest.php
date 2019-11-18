@@ -182,12 +182,17 @@ class PIRest
 
     /**
      * Returns url for each enviroment according the configuration.
+     *
      * @param $action
-     * @param null $vpsTxId
+     * @param null|string $vpsTxId
+     * @param null|string $vpsProtocol
      * @return string
      */
     private function _getServiceUrl($action, $vpsTxId = null)
     {
+        $vpsProtocol = $this->config->getProtocolVersion();
+        $apiBaseUrl = $this->_getApiBaseUrl($vpsProtocol);
+
         switch ($action) {
             case self::ACTION_TRANSACTION_DETAILS:
                 $endpoint = "transactions/$vpsTxId";
@@ -204,11 +209,29 @@ class PIRest
                 break;
         }
 
-        if ($this->config->getMode() == Config::MODE_LIVE) {
-            return Config::URL_PI_API_LIVE . $endpoint;
-        } else {
-            return Config::URL_PI_API_TEST . $endpoint;
+        $serviceUrl = $apiBaseUrl . $endpoint;
+
+        return $serviceUrl;
+    }
+
+    /**
+     * @param null|string $vpsProtocol
+     * @return string
+     */
+    private function _getApiBaseUrl($vpsProtocol)
+    {
+        $protocol = 'PROTOCOL_THREE';
+        if ($vpsProtocol === Config::VPS_PROTOCOL_FOUR) {
+            $protocol = 'PROTOCOL_FOUR';
         }
+
+        if ($this->config->getMode() == Config::MODE_LIVE) {
+            $const = 'URL_PI_API_LIVE_' . $protocol;
+        } else {
+            $const = 'URL_PI_API_TEST_' . $protocol;
+        }
+
+        return constant("Ebizmarts\SagePaySuite\Model\Config::$const");
     }
 
     /**
