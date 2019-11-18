@@ -14,6 +14,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 class Callback3Dv2 extends Action
 {
@@ -32,13 +33,14 @@ class Callback3Dv2 extends Action
     /** @var Session */
     private $checkoutSession;
 
-    /**
-     * @var OrderRepositoryInterface
-     */
+    /** @var OrderRepositoryInterface */
     private $orderRepository;
 
     /** @var RecoverCartAndCancelOrder */
     private $recoverCartAndCancelOrder;
+
+    /** @var CryptAndCodeData */
+    private $cryptAndCode;
 
     /**
      * Callback3Dv2 constructor.
@@ -59,7 +61,8 @@ class Callback3Dv2 extends Action
         PiRequestManagerFactory $piReqManagerFactory,
         Session $checkoutSession,
         OrderRepositoryInterface $orderRepository,
-        RecoverCartAndCancelOrder $recoverCartAndCancelOrder
+        RecoverCartAndCancelOrder $recoverCartAndCancelOrder,
+        CryptAndCodeData $cryptAndCode
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -70,6 +73,7 @@ class Callback3Dv2 extends Action
         $this->requester                   = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
         $this->recoverCartAndCancelOrder   = $recoverCartAndCancelOrder;
+        $this->cryptAndCode                = $cryptAndCode;
     }
 
     public function execute()
@@ -131,9 +135,11 @@ class Callback3Dv2 extends Action
      */
     private function setRequestParamsForConfirmPayment(int $orderId, \Magento\Sales\Api\Data\OrderInterface $order)
     {
+        $orderId = $this->cryptAndCode->encryptAndEncode((string)$orderId);
+        $quoteId = $this->cryptAndCode->encryptAndEncode((string)$order->getQuoteId());
         $this->getRequest()->setParams([
                 'orderId' => $orderId,
-                'quoteId' => $order->getQuoteId()
+                'quoteId' => $quoteId
             ]);
     }
 }
