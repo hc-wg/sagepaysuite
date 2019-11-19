@@ -270,6 +270,10 @@ class EcommerceManagement extends RequestManagement
         return $this->getPayResult()->getStatusCode() == Config::SUCCESS_STATUS;
     }
 
+    /**
+     * @param $data
+     * @return string
+     */
     public function encryptAndEncode($data)
     {
         return $this->cryptAndCode->encryptAndEncode($data);
