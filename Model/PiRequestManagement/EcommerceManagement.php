@@ -270,6 +270,10 @@ class EcommerceManagement extends RequestManagement
             $this->getPayResult()->getStatusCode() == Config::AUTH3D_V2_REQUIRED_STATUS;
     }
 
+    /**
+     * @param $data
+     * @return string
+     */
     public function encryptAndEncode($data)
     {
         return $this->cryptAndCode->encryptAndEncode($data);
