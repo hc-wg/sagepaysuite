@@ -16,7 +16,7 @@ use Magento\Sales\Model\Order\Payment;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 
-class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
+class Callback3Dv2Test extends \PHPUnit_Framework_TestCase
 {
     private $objectManagerHelper;
 
