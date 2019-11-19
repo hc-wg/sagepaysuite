@@ -39,12 +39,15 @@ class Callback3Dv2 extends Action
     private $cryptAndCode;
 
     /**
-     * Callback3D constructor.
+     * Callback3Dv2 constructor.
      * @param Context $context
      * @param Config $config
      * @param LoggerInterface $logger
      * @param ThreeDSecureCallbackManagement $requester
      * @param PiRequestManagerFactory $piReqManagerFactory
+     * @param Session $checkoutSession
+     * @param OrderRepositoryInterface $orderRepository
+     * @param CryptAndCodeData $cryptAndCode
      */
     public function __construct(
         Context $context,
