@@ -126,9 +126,12 @@ class EcommerceManagement extends RequestManagement
         $this->getResult()->setStatus($this->getPayResult()->getStatus());
 
         //additional details required for callback URL
-        $orderId = $this->cryptAndCode->encryptAndEncode($order->getId());
+        $orderId = $order->getId();
+        $orderId = $this->encryptAndEncode($orderId);
         $this->getResult()->setOrderId($orderId);
-        $quoteId = $this->cryptAndCode->encryptAndEncode($this->getQuote()->getId());
+
+        $quoteId = $this->getQuote()->getId();
+        $quoteId = $this->encryptAndEncode($quoteId);
         $this->getResult()->setQuoteId($quoteId);
 
         if ($this->isThreeDResponse()) {
@@ -216,5 +219,10 @@ class EcommerceManagement extends RequestManagement
     {
         return $this->getPayResult()->getStatusCode() == Config::AUTH3D_REQUIRED_STATUS ||
             $this->getPayResult()->getStatusCode() == Config::AUTH3D_V2_REQUIRED_STATUS;
+    }
+
+    public function encryptAndEncode($data)
+    {
+        return $this->cryptAndCode->encryptAndEncode($data);
     }
 }
