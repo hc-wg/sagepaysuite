@@ -52,6 +52,7 @@ class Callback3Dv2 extends Action
      * @param Session $checkoutSession
      * @param OrderRepositoryInterface $orderRepository
      * @param RecoverCartAndCancelOrder $recoverCartAndCancelOrder
+     * @param CryptAndCodeData $cryptAndCode
      */
     public function __construct(
         Context $context,
