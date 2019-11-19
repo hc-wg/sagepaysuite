@@ -65,7 +65,8 @@ class Callback3D extends Action
     public function execute()
     {
         try {
-            $orderId = $this->cryptAndCode->decodeAndDecrypt($this->getRequest()->getParam("orderId"));
+            $orderId = $this->getRequest()->getParam("orderId");
+            $orderId = $this->decodeAndDecrypt($orderId);
             $order = $this->orderRepository->get($orderId);
             if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
                 $this->javascriptRedirect('checkout/onepage/success');
@@ -120,5 +121,14 @@ class Callback3D extends Action
     public function sanitizePares($pares)
     {
         return preg_replace("/[\n\s]/", "", $pares);
+    }
+
+    /**
+     * @param $data
+     * @return string
+     */
+    public function decodeAndDecrypt($data)
+    {
+        return $this->cryptAndCode->decodeAndDecrypt($data);
     }
 }
