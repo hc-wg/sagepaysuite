@@ -13,7 +13,6 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
-use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
 
 class Callback3Dv2 extends Action
 {
@@ -37,19 +36,13 @@ class Callback3Dv2 extends Action
      */
     private $orderRepository;
 
-    /** @var RecoverCartAndCancelOrder */
-    private $recoverCartAndCancelOrder;
-
     /**
-     * Callback3Dv2 constructor.
+     * Callback3D constructor.
      * @param Context $context
      * @param Config $config
      * @param LoggerInterface $logger
      * @param ThreeDSecureCallbackManagement $requester
      * @param PiRequestManagerFactory $piReqManagerFactory
-     * @param Session $checkoutSession
-     * @param OrderRepositoryInterface $orderRepository
-     * @param RecoverCartAndCancelOrder $recoverCartAndCancelOrder
      */
     public function __construct(
         Context $context,
@@ -58,18 +51,17 @@ class Callback3Dv2 extends Action
         ThreeDSecureCallbackManagement $requester,
         PiRequestManagerFactory $piReqManagerFactory,
         Session $checkoutSession,
-        OrderRepositoryInterface $orderRepository,
-        RecoverCartAndCancelOrder $recoverCartAndCancelOrder
+        OrderRepositoryInterface $orderRepository
     ) {
         parent::__construct($context);
         $this->config = $config;
         $this->config->setMethodCode(Config::METHOD_PI);
-        $this->logger                      = $logger;
-        $this->checkoutSession             = $checkoutSession;
-        $this->orderRepository             = $orderRepository;
-        $this->requester                   = $requester;
+        $this->logger = $logger;
+        $this->checkoutSession    = $checkoutSession;
+        $this->orderRepository = $orderRepository;
+
+        $this->requester = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
-        $this->recoverCartAndCancelOrder   = $recoverCartAndCancelOrder;
     }
 
     public function execute()
@@ -101,12 +93,10 @@ class Callback3Dv2 extends Action
                 $this->javascriptRedirect('checkout/cart');
             }
         } catch (ApiException $apiException) {
-            $this->recoverCartAndCancelOrder->execute();
             $this->logger->critical($apiException);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
-            $this->recoverCartAndCancelOrder->execute();
             $this->logger->critical($e);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
