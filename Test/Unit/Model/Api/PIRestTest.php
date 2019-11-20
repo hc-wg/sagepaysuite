@@ -121,7 +121,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         $this->httpRestMock
             ->expects($this->once())
             ->method('setUrl')
-            ->with("https://test.sagepay.com/api/v1/merchant-session-keys");
+            ->with("https://pi-test.sagepay.com/api/v1/merchant-session-keys");
 
         $this->httpResponseMock
             ->expects($this->once())
@@ -225,7 +225,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         $this->httpRestMock
             ->expects($this->once())
             ->method('setUrl')
-            ->with("https://test.sagepay.com/api/v1/merchant-session-keys");
+            ->with("https://pi-test.sagepay.com/api/v1/merchant-session-keys");
 
         $this->httpResponseMock
             ->expects($this->exactly(2))
@@ -387,7 +387,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         $this->httpRestMock
             ->expects($this->once())
             ->method('setUrl')
-            ->with("https://test.sagepay.com/api/v1/transactions");
+            ->with("https://pi-live.sagepay.com/api/v1/transactions");
 
         $this->httpResponseMock
             ->expects($this->once())
