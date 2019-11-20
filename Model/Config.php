@@ -90,10 +90,8 @@ class Config
      */
     const URL_FORM_REDIRECT_LIVE         = 'https://live.sagepay.com/gateway/service/vspform-register.vsp';
     const URL_FORM_REDIRECT_TEST         = 'https://test.sagepay.com/gateway/service/vspform-register.vsp';
-    const URL_PI_API_LIVE_PROTOCOL_THREE = 'https://live.sagepay.com/api/v1/';
-    const URL_PI_API_TEST_PROTOCOL_THREE = 'https://test.sagepay.com/api/v1/';
-    const URL_PI_API_LIVE_PROTOCOL_FOUR  = 'https://pi-live.sagepay.com/api/v1/';
-    const URL_PI_API_TEST_PROTOCOL_FOUR  = 'https://pi-test.sagepay.com/api/v1/';
+    const URL_PI_API_LIVE                = 'https://pi-live.sagepay.com/api/v1/';
+    const URL_PI_API_TEST                = 'https://pi-test.sagepay.com/api/v1/';
     const URL_REPORTING_API_TEST         = 'https://test.sagepay.com/access/access.htm';
     const URL_REPORTING_API_LIVE         = 'https://live.sagepay.com/access/access.htm';
     const URL_SHARED_VOID_TEST           = 'https://test.sagepay.com/gateway/service/void.vsp';
