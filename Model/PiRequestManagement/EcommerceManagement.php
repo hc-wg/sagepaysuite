@@ -144,9 +144,12 @@ class EcommerceManagement extends RequestManagement
         $this->getResult()->setStatus($this->getPayResult()->getStatus());
 
         //additional details required for callback URL
-        $orderId = $this->cryptAndCode->encryptAndEncode($order->getId());
+        $orderId = $order->getId();
+        $orderId = $this->encryptAndEncode($orderId);
         $this->getResult()->setOrderId($orderId);
-        $quoteId = $this->cryptAndCode->encryptAndEncode($this->getQuote()->getId());
+
+        $quoteId = $this->getQuote()->getId();
+        $quoteId = $this->encryptAndEncode($quoteId);
         $this->getResult()->setQuoteId($quoteId);
 
         if ($this->isThreeDResponse()) {
@@ -265,5 +268,14 @@ class EcommerceManagement extends RequestManagement
     private function isPaymentSuccessful()
     {
         return $this->getPayResult()->getStatusCode() == Config::SUCCESS_STATUS;
+    }
+
+    /**
+     * @param $data
+     * @return string
+     */
+    public function encryptAndEncode($data)
+    {
+        return $this->cryptAndCode->encryptAndEncode($data);
     }
 }
