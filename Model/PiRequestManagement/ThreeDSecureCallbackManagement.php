@@ -186,10 +186,12 @@ class ThreeDSecureCallbackManagement extends RequestManagement
      */
     private function confirmPayment(PiTransactionResultInterface $response)
     {
-        $quoteId = $this->cryptAndCode->decodeAndDecrypt($this->httpRequest->getParam("quoteId"));
+        $quoteId = $this->httpRequest->getParam("quoteId");
+        $quoteId = $this->decodeAndDecrypt($quoteId);
 
         if ($response->getStatusCode() === Config::SUCCESS_STATUS) {
-            $orderId = $this->cryptAndCode->decodeAndDecrypt($this->httpRequest->getParam("orderId"));
+            $orderId = $this->httpRequest->getParam("orderId");
+            $orderId = $this->decodeAndDecrypt($orderId);
             $this->order = $this->orderRepository->get($orderId);
 
             if ($this->order !== null) {
@@ -285,5 +287,14 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     private function invoiceConfirmationIsEnable()
     {
         return (string)$this->config->getInvoiceConfirmationNotification() === "1";
+    }
+
+    /**
+     * @param $data
+     * @return string
+     */
+    public function decodeAndDecrypt($data)
+    {
+        return $this->cryptAndCode->decodeAndDecrypt($data);
     }
 }
