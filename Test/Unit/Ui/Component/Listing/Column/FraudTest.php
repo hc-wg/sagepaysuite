@@ -183,7 +183,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $suiteLoggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $suiteLoggerMock->expects($this->once())->method('logException')->with(
             $inputException,
-            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 67]
+            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 79]
         );
         return $suiteLoggerMock;
     }
@@ -193,7 +193,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $suiteLoggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $suiteLoggerMock->expects($this->once())->method('logException')->with(
             $noSuchEntityException,
-            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 70]
+            ['Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud::prepareDataSource', 82]
         );
         return $suiteLoggerMock;
     }
