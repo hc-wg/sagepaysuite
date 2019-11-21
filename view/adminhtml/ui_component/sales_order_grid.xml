@@ -9,7 +9,51 @@
                     <item name="sortable" xsi:type="boolean">false</item>
                     <item name="altField" xsi:type="string">Sage Pay Fraud Score</item>
                     <item name="label" xsi:type="string" translate="true">Sage Pay Fraud</item>
-                    <item name="sortOrder" xsi:type="number">20</item>
+                    <item name="sortOrder" xsi:type="number">23</item>
+                </item>
+            </argument>
+        </column>
+        <column name="sagepay_threeDSecure" class="\Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\ThreeDSecure">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/thumbnail</item>
+                    <item name="sortable" xsi:type="boolean">false</item>
+                    <item name="altField" xsi:type="string">Sage Pay 3D Secure Result</item>
+                    <item name="label" xsi:type="string" translate="true">Sage Pay 3D Secure</item>
+                    <item name="sortOrder" xsi:type="number">24</item>
+                </item>
+            </argument>
+        </column>
+        <column name="sagepay_addressValidation" class="\Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\AddressValidation">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/thumbnail</item>
+                    <item name="sortable" xsi:type="boolean">false</item>
+                    <item name="altField" xsi:type="string">Sage Pay Address Validation</item>
+                    <item name="label" xsi:type="string" translate="true">Sage Pay Address Validation</item>
+                    <item name="sortOrder" xsi:type="number">25</item>
+                </item>
+            </argument>
+        </column>
+        <column name="sagepay_postcodeCheck" class="\Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\PostCodeCheck">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/thumbnail</item>
+                    <item name="sortable" xsi:type="boolean">false</item>
+                    <item name="altField" xsi:type="string">Sage Pay Postcode Check</item>
+                    <item name="label" xsi:type="string" translate="true">Sage Pay Postcode Check</item>
+                    <item name="sortOrder" xsi:type="number">26</item>
+                </item>
+            </argument>
+        </column>
+        <column name="sagepay_cvTwoCheck" class="\Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\CvTwoCheck">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/thumbnail</item>
+                    <item name="sortable" xsi:type="boolean">false</item>
+                    <item name="altField" xsi:type="string">Sage Pay CV2 Check</item>
+                    <item name="label" xsi:type="string" translate="true">Sage Pay CV2 Check</item>
+                    <item name="sortOrder" xsi:type="number">27</item>
                 </item>
             </argument>
         </column>
