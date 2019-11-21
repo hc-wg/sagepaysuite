@@ -13,7 +13,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
-use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 class Callback3Dv2 extends Action
 {
@@ -32,16 +32,14 @@ class Callback3Dv2 extends Action
     /** @var Session */
     private $checkoutSession;
 
-    /**
-     * @var OrderRepositoryInterface
-     */
+    /** @var OrderRepositoryInterface */
     private $orderRepository;
 
-    /** @var RecoverCartAndCancelOrder */
-    private $recoverCartAndCancelOrder;
+    /** @var CryptAndCodeData */
+    private $cryptAndCode;
 
     /**
-     * Callback3Dv2 constructor.
+     * Callback3D constructor.
      * @param Context $context
      * @param Config $config
      * @param LoggerInterface $logger
@@ -49,7 +47,7 @@ class Callback3Dv2 extends Action
      * @param PiRequestManagerFactory $piReqManagerFactory
      * @param Session $checkoutSession
      * @param OrderRepositoryInterface $orderRepository
-     * @param RecoverCartAndCancelOrder $recoverCartAndCancelOrder
+     * @param CryptAndCodeData $cryptAndCode
      */
     public function __construct(
         Context $context,
@@ -59,17 +57,18 @@ class Callback3Dv2 extends Action
         PiRequestManagerFactory $piReqManagerFactory,
         Session $checkoutSession,
         OrderRepositoryInterface $orderRepository,
-        RecoverCartAndCancelOrder $recoverCartAndCancelOrder
+        CryptAndCodeData $cryptAndCode
     ) {
         parent::__construct($context);
         $this->config = $config;
         $this->config->setMethodCode(Config::METHOD_PI);
-        $this->logger                      = $logger;
-        $this->checkoutSession             = $checkoutSession;
-        $this->orderRepository             = $orderRepository;
-        $this->requester                   = $requester;
+        $this->logger = $logger;
+        $this->checkoutSession    = $checkoutSession;
+        $this->orderRepository = $orderRepository;
+
+        $this->requester = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
-        $this->recoverCartAndCancelOrder   = $recoverCartAndCancelOrder;
+        $this->cryptAndCode                = $cryptAndCode;
     }
 
     public function execute()
@@ -101,12 +100,10 @@ class Callback3Dv2 extends Action
                 $this->javascriptRedirect('checkout/cart');
             }
         } catch (ApiException $apiException) {
-            $this->recoverCartAndCancelOrder->execute();
             $this->logger->critical($apiException);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
-            $this->recoverCartAndCancelOrder->execute();
             $this->logger->critical($e);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
@@ -131,9 +128,21 @@ class Callback3Dv2 extends Action
      */
     private function setRequestParamsForConfirmPayment(int $orderId, \Magento\Sales\Api\Data\OrderInterface $order)
     {
+        $orderId = $this->encryptAndEncode((string)$orderId);
+        $quoteId = $this->encryptAndEncode((string)$order->getQuoteId());
+
         $this->getRequest()->setParams([
                 'orderId' => $orderId,
-                'quoteId' => $order->getQuoteId()
+                'quoteId' => $quoteId
             ]);
+    }
+
+    /**
+     * @param $data
+     * @return string
+     */
+    public function encryptAndEncode($data)
+    {
+        return $this->cryptAndCode->encryptAndEncode($data);
     }
 }
