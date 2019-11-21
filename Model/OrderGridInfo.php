@@ -142,14 +142,13 @@ class OrderGridInfo
             case 'ATTEMPTONLY':
             case 'NOTAVAILABLE':
             case 'INCOMPLETE':
+            default:
                 $threeDStatus = 'outline.png';
                 break;
             case 'ERROR':
             case 'MALFORMEDORINVALID':
                 $threeDStatus = 'cross.png';
                 break;
-            default:
-                $threeDStatus = 'outline.png';
         }
         return self::IMAGE_PATH . $threeDStatus;
     }
@@ -161,13 +160,13 @@ class OrderGridInfo
     public function getStatusImage($status)
     {
         $status = strtoupper($status);
-        $imageUrl = '';
         switch($status){
             case 'MATCHED':
                 $imageUrl = 'check.png';
                 break;
             case 'NOTCHECKED':
             case 'NOTPROVIDED':
+            default:
                 $imageUrl = 'outline.png';
                 break;
             case 'NOTMATCHED':
