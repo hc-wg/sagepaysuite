@@ -1,4 +1,18 @@
-## [1.3.9] - 2019-09-18
+## [1.3.10] - 2019-09-18
+### Added
+- Show Fraud information on order grid (3D, Post Code, Address, CV2)
+
+### Changed
+- New PI endpoint
+
+### Fixed
+- Order failing if using special characters on order id prefix
+- Fraud flag showing no flag when 3rd Man and there's no Fraud Rule
+
+### Security
+- Encrypt PI callback URL
+
+## [1.3.9] - 2019-10-28
 ### Added
 - Compatibility with Magento 2.3.3 and 2.3.2-p2
 - Setting to open 3D verification in new window for PI
@@ -12,7 +26,7 @@
 - Frontend using Default Config values instead of Store values on Frontend
 - Multiple 3D responses problem
 
-## [1.3.8] - 2019-09-18
+## [1.3.8] - 2019-10-01
 ### Added
 - PI support for PSD2 and SCA
 - Payment Failed Emails impelentation for PI
@@ -23,12 +37,13 @@
 - 0.00 cost products breaks PayPal
 - Fix Multi Currency Authenticate invoice using Base Currency amount
 
-## [1.3.7] - 2019-08-07
+## [1.3.7] - 2019-08-08
 ### Added
 - Setting to set max tokens per customer
 
 ### Changed
 - Hide Add New Card when reached max tokens
+- Change excluding minification strategy
 
 ### Fixed
 - Label and Checkbox from first token being shown when press add new card
@@ -36,9 +51,8 @@
 - PI always sending 000 post code for Ireland and Hong Kong even if the customer entered a post code
 - Module breaks Sales -> Order when the payment additional information is serialized
 - Multi Currency refunds using Base Currency amount (FORM, SERVER, PayPal)
-- Change excluding minification strategy
 
-## [1.3.6] - 2019-06-19
+## [1.3.6] - 2019-06-24
 ### Added
 - SERVER and FORM support for PSD2 and SCA
 - PI DropIn compatibility with OneStepCheckout
@@ -113,6 +127,7 @@
 - Magento not running schema updates. Switching to Schema patches
 - New CSRF checks rejecting callbacks
 
+[1.3.10]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.10
 [1.3.9]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.9
 [1.3.8]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.8
 [1.3.7]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.7
