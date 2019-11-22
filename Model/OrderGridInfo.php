@@ -12,7 +12,6 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Asset\Repository;
 use \Magento\Sales\Api\OrderRepositoryInterface;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use \Ebizmarts\SagePaySuite\Helper\AdditionalInformation;
 
 class OrderGridInfo
 {
@@ -22,11 +21,6 @@ class OrderGridInfo
      * @var RequestInterface
      */
     protected $requestInterface;
-
-    /**
-     * @var AdditionalInformation
-     */
-    private $serialize;
 
     /**
      * @var OrderRepositoryInterface
@@ -47,20 +41,17 @@ class OrderGridInfo
     /**
      * OrderGridInfo constructor.
      * @param RequestInterface $requestInterface
-     * @param AdditionalInformation $serialize
      * @param OrderRepositoryInterface $orderRepository
      * @param Logger $suiteLogger
      * @param Repository $assetRepository
      */
     public function __construct(
         RequestInterface $requestInterface,
-        AdditionalInformation $serialize,
         OrderRepositoryInterface $orderRepository,
         Logger $suiteLogger,
         Repository $assetRepository
     ) {
         $this->requestInterface = $requestInterface;
-        $this->serialize = $serialize;
         $this->orderRepository = $orderRepository;
         $this->suiteLogger = $suiteLogger;
         $this->assetRepository = $assetRepository;
@@ -93,7 +84,7 @@ class OrderGridInfo
                     if ($payment !== null) {
                         $additional = $payment->getAdditionalInformation();
                         if (is_string($additional)) {
-                            $additional = $this->serialize->getUnserializedData($additional);
+                            $additional = @unserialize($additional); //@codingStandardsIgnoreLine
                         }
                         if (is_array($additional) && !empty($additional)) {
                             $status = $this->getStatus($additional, $index);
