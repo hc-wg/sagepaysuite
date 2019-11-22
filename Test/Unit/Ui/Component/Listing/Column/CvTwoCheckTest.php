@@ -11,9 +11,10 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Ui\Component\Listing\Column;
 use Ebizmarts\SagePaySuite\Model\OrderGridInfo;
 use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\CvTwoCheck;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
+use Magento\Framework\View\Element\UiComponent\Processor;
 use Magento\Framework\View\Element\UiComponentFactory;
 
-class CvTwoCheckTest extends \PHPUnit\Framework\TestCase
+class CvTwoCheckTest extends \PHPUnit_Framework_TestCase
 {
     const FIELD_NAME = "sagepay_cvTwoCheck";
     const INDEX = "avsCvcCheckSecurityCode";
@@ -35,8 +36,22 @@ class CvTwoCheckTest extends \PHPUnit\Framework\TestCase
 
     public function testPrepareDataSource()
     {
-        $contextMock = $this->createMock(ContextInterface::class);
-        $uiComponentFactoryMock = $this->createMock(UiComponentFactory::class);
+        $contextMock = $this
+            ->getMockBuilder(ContextInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $contextMock->expects($this->once())
+            ->method('getProcessor')
+            ->willReturn(
+                $this
+                    ->getMockBuilder(Processor::class)
+                    ->disableOriginalConstructor()
+                    ->getMock()
+            );
+        $uiComponentFactoryMock = $this
+            ->getMockBuilder(UiComponentFactory::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $orderGridInfoMock = $this
             ->getMockBuilder(OrderGridInfo::class)
             ->disableOriginalConstructor()
