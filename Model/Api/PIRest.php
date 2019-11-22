@@ -192,6 +192,7 @@ class PIRest
 
     /**
      * Returns url for each enviroment according the configuration.
+     *
      * @param $action
      * @param null $vpsTxId
      * @return string
@@ -409,8 +410,10 @@ class PIRest
      * Make release request.
      *
      * @param string $transactionId
-     * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
-     * @throws ApiException
+     * @param $amount
+     * @param string $vpsProtocol
+     * @return PiInstructionResponse
+     * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
     public function release(string $transactionId, $amount)
     {
