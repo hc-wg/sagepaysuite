@@ -1,3 +1,17 @@
+## [1.1.31] - 2019-11-26
+### Added
+- Show Fraud information on order grid (3D, Post Code, Address, CV2)
+
+### Changed
+- New PI endpoint
+
+### Fixed
+- Order failing if using special characters on order id prefix
+- Fraud flag showing no flag when 3rd Man and there's no Fraud Rule
+
+### Security
+- Encrypt PI callback URL
+
 ## [1.1.30] - 2019-10-24
 ### Changed
 - Sanitize Post Code on PI
@@ -339,6 +353,7 @@
    - PI integration (frontend)
    - Online Refunds
    
+[1.1.31]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.31
 [1.1.30]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.30
 [1.1.29]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.29
 [1.1.28]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.28
