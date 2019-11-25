@@ -6,6 +6,7 @@ use Ebizmarts\SagePaySuite\Api\Data\PiRequestManager;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForAction;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Ebizmarts\SagePaySuite\Model\PI;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Payment\Model\MethodInterface;
@@ -21,12 +22,6 @@ use Ebizmarts\SagePaySuite\Model\Config;
 
 class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
 {
-    /** @var InvoiceSender|\PHPUnit_Framework_MockObject_MockObject */
-    private $invoiceEmailSenderMock;
-
-    /** @var Config|\PHPUnit_Framework_MockObject_MockObject */
-    private $configMock;
-
     const THREE_D_SECURE_CALLBACK_MANAGEMENT = "Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement";
 
     const PI_TRANSACTION_RESULT_FACTORY = "Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory";
@@ -34,6 +29,24 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
     const PI_TRANSACTION_RESULT = "Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult";
 
     const CONFIG_CLOSED_FOR_ACTION_FACTORY = '\Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory';
+
+    const QUOTE_ID1 = '50';
+
+    const ENCRYPTED_QUOTE_ID1 = '0:3:slozTfXK0r1J23OPKHZkGsqJqT4wudHXPZJXxE9S';
+
+    const ENCODED_QUOTE_ID1 = 'MDozOiswMXF3V0l1WFRLTDRra0wxUCtYSGgyQVdORUdWaXNPN3N5RUNEbzE,';
+
+    const QUOTE_ID2 = '51';
+
+    const ENCRYPTED_QUOTE_ID2 = '0:3:hm2arLCQeFcC1C0kU6CEoy06RnjtBZ1jzMomH3+A';
+
+    CONST ENCODED_QUOTE_ID2 = 'MDozOlBxWWxwSHdsUklEa3dLY0Q2TlVJTE9YOEZjYjNCbWY2VUVaT1QrN2U,';
+
+    /** @var InvoiceSender|\PHPUnit_Framework_MockObject_MockObject */
+    private $invoiceEmailSenderMock;
+
+    /** @var Config|\PHPUnit_Framework_MockObject_MockObject */
+    private $configMock;
 
     public function testIsNotMotoTransaction()
     {
@@ -162,11 +175,24 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $orderRepositoryMock->expects($this->once())->method('save')->with($orderMock)->willReturnSelf();
         $orderRepositoryMock->expects($this->once())->method('get')->willReturn($orderMock);
 
-        $httpRequestMock = $this->getMockBuilder(\Magento\Framework\App\RequestInterface::class)
+        $httpRequestMock = $this
+            ->getMockBuilder(\Magento\Framework\App\RequestInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $httpRequestMock->expects($this->exactly(2))
-            ->method('getParam')->willReturnOnConsecutiveCalls(50, 51);
+        $httpRequestMock
+            ->expects($this->exactly(2))
+            ->method('getParam')
+            ->willReturnOnConsecutiveCalls(self::ENCODED_QUOTE_ID1, self::ENCODED_QUOTE_ID2);
+
+        $cryptAndCodeMock = $this
+            ->getMockBuilder(CryptAndCodeData::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $cryptAndCodeMock
+            ->expects($this->exactly(2))
+            ->method('decodeAndDecrypt')
+            ->withConsecutive([self::ENCODED_QUOTE_ID1], [self::ENCODED_QUOTE_ID2])
+            ->willReturnOnConsecutiveCalls(self::QUOTE_ID1, self::QUOTE_ID2);
 
         $actionFactoryMock = $this->getMockBuilder(self::CONFIG_CLOSED_FOR_ACTION_FACTORY)
             ->disableOriginalConstructor()
@@ -234,7 +260,8 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
                 'actionFactory'      => $actionFactoryMock,
                 'transactionFactory' => $transactionFactoryMock,
                 'invoiceEmailSender' => $this->invoiceEmailSenderMock,
-                'config'             => $this->configMock
+                'config'             => $this->configMock,
+                'cryptAndCode'       => $cryptAndCodeMock
             ]
         );
 
@@ -322,8 +349,6 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
      */
     public function testSendTransactionFailedEmail()
     {
-        $quoteId = 50;
-
         $objectManagerHelper = new ObjectManager($this);
 
         $checkoutHelperMock = $this
@@ -365,7 +390,17 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $httpRequestMock
             ->expects($this->once())
             ->method('getParam')
-            ->willReturn($quoteId);
+            ->willReturn(self::ENCODED_QUOTE_ID1);
+
+        $cryptAndCodeMock = $this
+            ->getMockBuilder(CryptAndCodeData::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $cryptAndCodeMock
+            ->expects($this->once())
+            ->method('decodeAndDecrypt')
+            ->with(self::ENCODED_QUOTE_ID1)
+            ->willReturn(self::QUOTE_ID1);
 
         $actionFactoryMock = $this
             ->getMockBuilder(self::CONFIG_CLOSED_FOR_ACTION_FACTORY)
@@ -397,7 +432,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $paymentFailuresMock
             ->expects($this->once())
             ->method('handle')
-            ->with($quoteId, 'Test error')
+            ->with(self::QUOTE_ID1, 'Test error')
             ->willReturnSelf();
 
         /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement $model */
@@ -412,7 +447,8 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
                 'transactionFactory' => $transactionFactoryMock,
                 'invoiceEmailSender' => $this->invoiceEmailSenderMock,
                 'config'             => $this->configMock,
-                'paymentFailures'    => $paymentFailuresMock
+                'paymentFailures'    => $paymentFailuresMock,
+                'cryptAndCode'       => $cryptAndCodeMock
             ]
         );
 
