@@ -1,4 +1,18 @@
-## [1.2.18] - 2019-09-18
+## [1.2.19] - 2019-11-26
+### Added
+- Show Fraud information on order grid (3D, Post Code, Address, CV2)
+
+### Changed
+- New PI endpoint
+
+### Fixed
+- Order failing if using special characters on order id prefix
+- Fraud flag showing no flag when 3rd Man and there's no Fraud Rule
+
+### Security
+- Encrypt PI callback URL
+
+## [1.2.18] - 2019-10-28
 ### Added
 - Compatibility with Magento 2.2.10
 - Setting to open 3D verification in new window for PI
