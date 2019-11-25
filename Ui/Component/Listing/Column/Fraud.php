@@ -1,4 +1,8 @@
 <?php
+/**
+ * Copyright © 2017 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
 
 namespace Ebizmarts\SagePaySuite\Ui\Component\Listing\Column;
 
@@ -175,9 +179,9 @@ class Fraud extends Column
      */
     public function getFraudImage(array $additional)
     {
-        if (isset($additional['fraudrules'], $additional['fraudcode'])) {
+        if ($this->checkIfThirdMan($additional)) {
             $image = $this->getImageNameThirdman($additional['fraudcode']);
-        } elseif (isset($additional['fraudcode'])) {
+        } elseif ($this->checkIfRed($additional)) {
             $image = $this->getImageNameRed($additional['fraudcode']);
         } else {
             $image = $this->getWaitingImage();
@@ -192,5 +196,23 @@ class Fraud extends Column
     public function checkTestModeConfiguration(array $additional)
     {
         return isset($additional["mode"]) && $additional["mode"] === Config::MODE_TEST;
+    }
+
+    /**
+     * @param array $additional
+     * @return bool
+     */
+    public function checkIfThirdMan(array $additional)
+    {
+        return isset($additional['fraudcode']) && is_numeric($additional['fraudcode']);
+    }
+
+    /**
+     * @param array $additional
+     * @return bool
+     */
+    public function checkIfRed(array $additional)
+    {
+        return isset($additional['fraudcode']);
     }
 }
