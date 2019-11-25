@@ -7,6 +7,7 @@ use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 class ThreeDSecureCallbackManagement extends RequestManagement
 {
@@ -38,6 +39,9 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     /** @var Config */
     private $config;
 
+    /** @var CryptAndCodeData */
+    private $cryptAndCode;
+
     public function __construct(
         \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
         \Ebizmarts\SagePaySuite\Model\Api\PIRest $piRestApi,
@@ -51,7 +55,8 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
         \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $payResultFactory,
         InvoiceSender $invoiceEmailSender,
-        Config $config
+        Config $config,
+        CryptAndCodeData $cryptAndCode
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -68,7 +73,8 @@ class ThreeDSecureCallbackManagement extends RequestManagement
         $this->transactionFactory = $transactionFactory;
         $this->payResultFactory   = $payResultFactory;
         $this->invoiceEmailSender = $invoiceEmailSender;
-        $this->config = $config;
+        $this->config             = $config;
+        $this->cryptAndCode       = $cryptAndCode;
     }
 
     public function getPayment()
@@ -167,10 +173,13 @@ class ThreeDSecureCallbackManagement extends RequestManagement
      */
     private function _confirmPayment(PiTransactionResultInterface $response)
     {
-
         if ($response->getStatusCode() == Config::SUCCESS_STATUS) {
             $orderId = $this->httpRequest->getParam("orderId");
+            $orderId = $this->decodeAndDecrypt($orderId);
+
             $quoteId = $this->httpRequest->getParam("quoteId");
+            $quoteId = $this->decodeAndDecrypt($quoteId);
+
             $this->order   = $this->orderFactory->create()->load($orderId);
 
             if (!empty($this->order)) {
@@ -240,5 +249,14 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     private function invoiceConfirmationIsEnable()
     {
         return (string)$this->config->getInvoiceConfirmationNotification() === "1";
+    }
+
+    /**
+     * @param $data
+     * @return string
+     */
+    public function decodeAndDecrypt($data)
+    {
+        return $this->cryptAndCode->decodeAndDecrypt($data);
     }
 }

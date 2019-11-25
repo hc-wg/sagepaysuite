@@ -20,6 +20,7 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 class EcommerceManagement extends RequestManagement
 {
@@ -37,6 +38,12 @@ class EcommerceManagement extends RequestManagement
     /** @var Config */
     private $config;
 
+    /** @var EncryptorInterface */
+    private $encryptor;
+
+    /** @var CryptAndCodeData */
+    private $cryptAndCode;
+
     public function __construct(
         Checkout $checkoutHelper,
         PIRest $piRestApi,
@@ -48,7 +55,8 @@ class EcommerceManagement extends RequestManagement
         Logger $sagePaySuiteLogger,
         \Magento\Quote\Model\QuoteValidator $quoteValidator,
         InvoiceSender $invoiceEmailSender,
-        Config $config
+        Config $config,
+        CryptAndCodeData $cryptAndCode
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -62,7 +70,8 @@ class EcommerceManagement extends RequestManagement
         $this->sagePaySuiteLogger = $sagePaySuiteLogger;
         $this->quoteValidator     = $quoteValidator;
         $this->invoiceEmailSender = $invoiceEmailSender;
-        $this->config = $config;
+        $this->config             = $config;
+        $this->cryptAndCode       = $cryptAndCode;
     }
 
     /**
@@ -117,8 +126,13 @@ class EcommerceManagement extends RequestManagement
         $this->getResult()->setStatus($this->getPayResult()->getStatus());
 
         //additional details required for callback URL
-        $this->getResult()->setOrderId($order->getId());
-        $this->getResult()->setQuoteId($this->getQuote()->getId());
+        $orderId = $order->getId();
+        $orderId = $this->encryptAndEncode($orderId);
+        $this->getResult()->setOrderId($orderId);
+
+        $quoteId = $this->getQuote()->getId();
+        $quoteId = $this->encryptAndEncode($quoteId);
+        $this->getResult()->setQuoteId($quoteId);
 
         if ($this->isThreeDResponse()) {
             $this->getResult()->setParEq($this->getPayResult()->getParEq());
@@ -205,5 +219,14 @@ class EcommerceManagement extends RequestManagement
     {
         return $this->getPayResult()->getStatusCode() == Config::AUTH3D_REQUIRED_STATUS ||
             $this->getPayResult()->getStatusCode() == Config::AUTH3D_V2_REQUIRED_STATUS;
+    }
+
+    /**
+     * @param $data
+     * @return string
+     */
+    public function encryptAndEncode($data)
+    {
+        return $this->cryptAndCode->encryptAndEncode($data);
     }
 }

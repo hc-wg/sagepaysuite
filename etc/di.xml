@@ -84,4 +84,32 @@
             </argument>
         </arguments>
     </virtualType>
+    <virtualType name="Magento\Sales\Model\ResourceModel\Order\Grid" type="Magento\Sales\Model\ResourceModel\Grid">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="sagepay_threeDSecure" xsi:type="object">sales_grid.sagepay_threeDSecure</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\Sales\Model\ResourceModel\Order\Grid" type="Magento\Sales\Model\ResourceModel\Grid">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="sagepay_addressValidation" xsi:type="object">sales_grid.sagepay_addressValidation</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\Sales\Model\ResourceModel\Order\Grid" type="Magento\Sales\Model\ResourceModel\Grid">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="sagepay_postcodeCheck" xsi:type="object">sales_grid.sagepay_postcodeCheck</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\Sales\Model\ResourceModel\Order\Grid" type="Magento\Sales\Model\ResourceModel\Grid">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="sagepay_cvTwoCheckT" xsi:type="object">sales_grid.sagepay_cvTwoCheck</item>
+            </argument>
+        </arguments>
+    </virtualType>
 </config>

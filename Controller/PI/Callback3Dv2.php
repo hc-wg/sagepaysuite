@@ -13,6 +13,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 class Callback3Dv2 extends Action
 {
@@ -31,18 +32,22 @@ class Callback3Dv2 extends Action
     /** @var Session */
     private $checkoutSession;
 
-    /**
-     * @var OrderRepositoryInterface
-     */
+    /** @var OrderRepositoryInterface */
     private $orderRepository;
 
+    /** @var CryptAndCodeData */
+    private $cryptAndCode;
+
     /**
-     * Callback3D constructor.
+     * Callback3Dv2 constructor.
      * @param Context $context
      * @param Config $config
      * @param LoggerInterface $logger
      * @param ThreeDSecureCallbackManagement $requester
      * @param PiRequestManagerFactory $piReqManagerFactory
+     * @param Session $checkoutSession
+     * @param OrderRepositoryInterface $orderRepository
+     * @param CryptAndCodeData $cryptAndCode
      */
     public function __construct(
         Context $context,
@@ -51,17 +56,18 @@ class Callback3Dv2 extends Action
         ThreeDSecureCallbackManagement $requester,
         PiRequestManagerFactory $piReqManagerFactory,
         Session $checkoutSession,
-        OrderRepositoryInterface $orderRepository
+        OrderRepositoryInterface $orderRepository,
+        CryptAndCodeData $cryptAndCode
     ) {
         parent::__construct($context);
         $this->config = $config;
         $this->config->setMethodCode(Config::METHOD_PI);
-        $this->logger = $logger;
-        $this->checkoutSession    = $checkoutSession;
-        $this->orderRepository = $orderRepository;
-
-        $this->requester = $requester;
+        $this->logger                      = $logger;
+        $this->checkoutSession             = $checkoutSession;
+        $this->orderRepository             = $orderRepository;
+        $this->requester                   = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
+        $this->cryptAndCode                = $cryptAndCode;
     }
 
     public function execute()
@@ -119,11 +125,23 @@ class Callback3Dv2 extends Action
      * @param int $orderId
      * @param \Magento\Sales\Api\Data\OrderInterface $order
      */
-    private function setRequestParamsForConfirmPayment(int $orderId, \Magento\Sales\Api\Data\OrderInterface $order)
+    private function setRequestParamsForConfirmPayment($orderId, \Magento\Sales\Api\Data\OrderInterface $order)
     {
+        $orderId = $this->encryptAndEncode((string)$orderId);
+        $quoteId = $this->encryptAndEncode((string)$order->getQuoteId());
+
         $this->getRequest()->setParams([
                 'orderId' => $orderId,
-                'quoteId' => $order->getQuoteId()
+                'quoteId' => $quoteId
             ]);
+    }
+
+    /**
+     * @param $data
+     * @return string
+     */
+    public function encryptAndEncode($data)
+    {
+        return $this->cryptAndCode->encryptAndEncode($data);
     }
 }

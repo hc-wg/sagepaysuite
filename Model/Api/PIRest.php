@@ -182,6 +182,7 @@ class PIRest
 
     /**
      * Returns url for each enviroment according the configuration.
+     *
      * @param $action
      * @param null $vpsTxId
      * @return string
