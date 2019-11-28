@@ -9,40 +9,39 @@ namespace Ebizmarts\SagePaySuite\Ui\Component\Listing\Column;
 use \Magento\Framework\View\Element\UiComponent\ContextInterface;
 use \Magento\Framework\View\Element\UiComponentFactory;
 use \Magento\Ui\Component\Listing\Columns\Column;
-use \Ebizmarts\SagePaySuite\Model\OrderGridInfo;
 
 class Fraud extends Column
 {
     const IMAGE_PATH = 'Ebizmarts_SagePaySuite::images/icon-shield-';
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\OrderGridInfo
+     * @var \Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\FraudColumn
      */
-    private $orderGridInfo;
+    private $fraudColumn;
 
     /**
      * Fraud constructor.
-     * @param OrderGridInfo $orderGridInfo
+     * @param FraudColumn $fraudColumn
      * @param ContextInterface $context
      * @param UiComponentFactory $uiComponentFactory
      * @param array $components
      * @param array $data
      */
     public function __construct(
-        OrderGridInfo $orderGridInfo,
+        FraudColumn $fraudColumn,
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
         array $components = [],
         array $data = []
     ) {
-        $this->orderGridInfo = $orderGridInfo;
+        $this->fraudColumn = $fraudColumn;
         parent::__construct($context, $uiComponentFactory, $components, $data);
     }
 
     public function prepareDataSource(array $dataSource)
     {
         $fieldName = $this->getFieldName();
-        return $this->orderGridInfo->prepareColumn($dataSource, "fraudcode", $fieldName);
+        return $this->fraudColumn->prepareColumn($dataSource, "fraudcode", $fieldName);
     }
 
     public function getFieldName()
