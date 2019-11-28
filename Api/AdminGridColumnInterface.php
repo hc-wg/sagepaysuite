@@ -4,10 +4,12 @@ namespace Ebizmarts\SagePaySuite\Api;
 
 interface AdminGridColumnInterface
 {
+
     /**
-     * @param array $additional
-     * @param string $index
+     * @param array $dataSource
+     * @param $index
+     * @param $fieldName
      * @return mixed
      */
-    function getImage(array $additional, $index);
+    function prepareColumn(array $dataSource, $index, $fieldName);
 }
