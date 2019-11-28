@@ -14,7 +14,7 @@ use Magento\Framework\View\Asset\Repository;
 use \Magento\Sales\Api\OrderRepositoryInterface;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
-class OrderGridInfo
+class OrderGridInfo implements AdminGridColumnInterface
 {
     const IMAGE_PATH = 'Ebizmarts_SagePaySuite::images/icon-shield-';
 
@@ -40,11 +40,6 @@ class OrderGridInfo
     private $assetRepository;
 
     /**
-     * @var AdminGridColumnInterface
-     */
-    private $adminGridColumn;
-
-    /**
      * OrderGridInfo constructor.
      * @param RequestInterface $requestInterface
      * @param OrderRepositoryInterface $orderRepository
@@ -56,13 +51,11 @@ class OrderGridInfo
     public function __construct(
         RequestInterface $requestInterface,
         OrderRepositoryInterface $orderRepository,
-        AdminGridColumnInterface $adminGridColumn,
         Logger $suiteLogger,
         Repository $assetRepository
     ) {
         $this->requestInterface = $requestInterface;
         $this->orderRepository = $orderRepository;
-        $this->adminGridColumn = $adminGridColumn;
         $this->suiteLogger = $suiteLogger;
         $this->assetRepository = $assetRepository;
     }
@@ -97,7 +90,7 @@ class OrderGridInfo
                             $additional = @unserialize($additional); //@codingStandardsIgnoreLine
                         }
                         if (is_array($additional) && !empty($additional)) {
-                            $image = $this->adminGridColumn->getImage($additional, $index);
+                            $image = $this->getImage($additional, $index);
                             $url = $this->assetRepository->getUrlWithParams($image, $params);
                             $item[$fieldName . '_src'] = $url;
                         }
