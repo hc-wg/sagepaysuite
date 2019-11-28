@@ -1,4 +1,4 @@
-## [1.3.10] - 2019-09-18
+## [1.3.10] - 2019-11-26
 ### Added
 - Show Fraud information on order grid (3D, Post Code, Address, CV2)
 
