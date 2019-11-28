@@ -46,13 +46,20 @@ class OrderGridInfo
     private $assetRepository;
 
     /**
+     * @var AdminGridColumnInterface
+     */
+    private $adminGridColumn;
+
+    /**
      * OrderGridInfo constructor.
      * @param RequestInterface $requestInterface
      * @param AdditionalInformation $serialize
      * @param OrderRepositoryInterface $orderRepository
+     * @param AdminGridColumnInterface $adminGridColumn
      * @param Logger $suiteLogger
      * @param Repository $assetRepository
      */
+
     public function __construct(
         RequestInterface $requestInterface,
         AdditionalInformation $serialize,
@@ -64,6 +71,7 @@ class OrderGridInfo
         $this->requestInterface = $requestInterface;
         $this->serialize = $serialize;
         $this->orderRepository = $orderRepository;
+        $this->adminGridColumn = $adminGridColumn;
         $this->suiteLogger = $suiteLogger;
         $this->assetRepository = $assetRepository;
     }
