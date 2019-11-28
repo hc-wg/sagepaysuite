@@ -6,17 +6,10 @@
 
 namespace Ebizmarts\SagePaySuite\Ui\Component\Listing\Column;
 
-use Magento\Framework\App\RequestInterface;
-use Magento\Framework\Exception\InputException;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\View\Asset\Repository;
-use \Magento\Sales\Api\OrderRepositoryInterface;
 use \Magento\Framework\View\Element\UiComponent\ContextInterface;
 use \Magento\Framework\View\Element\UiComponentFactory;
 use \Magento\Ui\Component\Listing\Columns\Column;
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Ebizmarts\SagePaySuite\Model\Config;
-use \Ebizmarts\SagePaySuite\Helper\AdditionalInformation;
+use \Ebizmarts\SagePaySuite\Model\OrderGridInfo;
 
 class Fraud extends Column
 {
