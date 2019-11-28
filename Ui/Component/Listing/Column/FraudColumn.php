@@ -8,8 +8,9 @@
 
 namespace Ebizmarts\SagePaySuite\Ui\Component\Listing\Column;
 
+use Ebizmarts\SagePaySuite\Model\Config;
 
-class FraudImage implements \Ebizmarts\SagePaySuite\Api\AdminGridColumnInterface
+class FraudColumn extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
 {
     const IMAGE_PATH = 'Ebizmarts_SagePaySuite::images/icon-shield-';
 
