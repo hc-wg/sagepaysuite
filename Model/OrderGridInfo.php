@@ -40,12 +40,19 @@ class OrderGridInfo
     private $assetRepository;
 
     /**
+     * @var AdminGridColumnInterface
+     */
+    private $adminGridColumn;
+
+    /**
      * OrderGridInfo constructor.
      * @param RequestInterface $requestInterface
      * @param OrderRepositoryInterface $orderRepository
+     * @param AdminGridColumnInterface $adminGridColumn
      * @param Logger $suiteLogger
      * @param Repository $assetRepository
      */
+
     public function __construct(
         RequestInterface $requestInterface,
         OrderRepositoryInterface $orderRepository,
@@ -55,6 +62,7 @@ class OrderGridInfo
     ) {
         $this->requestInterface = $requestInterface;
         $this->orderRepository = $orderRepository;
+        $this->adminGridColumn = $adminGridColumn;
         $this->suiteLogger = $suiteLogger;
         $this->assetRepository = $assetRepository;
     }
