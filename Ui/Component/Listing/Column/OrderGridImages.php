@@ -11,6 +11,8 @@ namespace Ebizmarts\SagePaySuite\Ui\Component\Listing\Column;
 
 class OrderGridImages implements \Ebizmarts\SagePaySuite\Api\AdminGridColumnInterface
 {
+    const IMAGE_PATH = 'Ebizmarts_SagePaySuite::images/icon-shield-';
+
     /**
      * @param array $additional
      * @param string $index
