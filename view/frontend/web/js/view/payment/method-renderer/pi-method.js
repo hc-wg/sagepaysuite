@@ -15,13 +15,14 @@ define(
         'Magento_Checkout/js/action/place-order',
         'Magento_Checkout/js/model/full-screen-loader',
         'Magento_Ui/js/modal/modal',
+        'Magento_CheckoutAgreements/js/view/agreement-validation',
         'Magento_Checkout/js/model/payment/additional-validators',
         'Magento_Checkout/js/model/url-builder',
         'Magento_Checkout/js/model/quote',
         'Magento_Customer/js/customer-data',
         'Magento_Checkout/js/action/set-payment-information'
     ],
-    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal, additionalValidators, urlBuilder, quote, customerData, setPaymentInformation) {
+    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal, agreementValidation, additionalValidators, urlBuilder, quote, customerData, setPaymentInformation) {
         'use strict';
 
         $(document).ready(function () {
@@ -153,7 +154,7 @@ define(
                 ).done(
                     function (response) {
                         if (response === true) {
-                            self.createMerchantSessionKey();
+                            return true;//self.createMerchantSessionKey();
                         } else {
                             self.showPaymentError("Unable to save payment info.");
                         }
@@ -167,6 +168,7 @@ define(
                         }
                     }
                 );
+                return false;
             },
             preparePayment: function () {
                 var self = this;
@@ -174,7 +176,7 @@ define(
                 self.destroyInstanceSagePay();
 
                 //validations
-                if (!self.validate() || !additionalValidators.validate() || self.getCode() != self.isChecked()) {
+                if (!self.validate() || self.getCode() != self.isChecked()) {
                     return false;
                 }
 
@@ -193,7 +195,10 @@ define(
                         JSON.stringify(payload)
                     ).done(
                         function () {
-                            self.savePaymentInfo();
+                            if (additionalValidators.validate()) {
+                                self.savePaymentInfo();
+                            }
+                            self.createMerchantSessionKey();
                         }
                     ).fail(
                         function (response) {
@@ -220,6 +225,10 @@ define(
             },
             tokenise: function () {
                 var self = this;
+
+                if (!self.validate() || !additionalValidators.validate() || self.getCode() != self.isChecked()) {
+                    return false;
+                }
 
                 if (self.dropInInstance !== null) {
                     self.dropInInstance.tokenise();
