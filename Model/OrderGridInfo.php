@@ -30,7 +30,7 @@ class OrderGridInfo implements AdminGridColumnInterface
 
     /**
      * Logging instance
-     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     * @var Logger
      */
     private $suiteLogger;
 
@@ -43,7 +43,6 @@ class OrderGridInfo implements AdminGridColumnInterface
      * OrderGridInfo constructor.
      * @param RequestInterface $requestInterface
      * @param OrderRepositoryInterface $orderRepository
-     * @param AdminGridColumnInterface $adminGridColumn
      * @param Logger $suiteLogger
      * @param Repository $assetRepository
      */
@@ -66,7 +65,7 @@ class OrderGridInfo implements AdminGridColumnInterface
      * @param string $fieldName
      * @return array
      */
-    public function prepareColumn(array $dataSource, $index, $fieldName)
+    public function prepareColumn(array $dataSource, string $index, string $fieldName) :array
     {
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as &$item) {
