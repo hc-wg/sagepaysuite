@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Ebizmarts\SagePaySuite\Api;
 
@@ -11,5 +12,5 @@ interface AdminGridColumnInterface
      * @param string $fieldName
      * @return array
      */
-    function prepareColumn(array $dataSource, $index, $fieldName);
+    function prepareColumn(array $dataSource, string $index, string $fieldName) :array;
 }
