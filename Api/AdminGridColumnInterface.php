@@ -7,9 +7,9 @@ interface AdminGridColumnInterface
 
     /**
      * @param array $dataSource
-     * @param $index
-     * @param $fieldName
-     * @return mixed
+     * @param string $index
+     * @param string $fieldName
+     * @return array
      */
     function prepareColumn(array $dataSource, $index, $fieldName);
 }
