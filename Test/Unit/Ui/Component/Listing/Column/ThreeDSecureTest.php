@@ -47,7 +47,7 @@ class ThreeDSecureTest extends \PHPUnit\Framework\TestCase
                 'items' => [
                     [
                         'entity_id' => self::ENTITY_ID,
-                        'sagepay_threeDSecure_src' => self::IMAGE_URL_CHECK,
+                        self::FIELD_NAME . '_src' => self::IMAGE_URL_CHECK,
                         'payment_method' => "sagepaysuite"
                     ]
                 ]
