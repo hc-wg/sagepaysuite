@@ -12,8 +12,6 @@ use \Magento\Ui\Component\Listing\Columns\Column;
 
 class Fraud extends Column
 {
-    const IMAGE_PATH = 'Ebizmarts_SagePaySuite::images/icon-shield-';
-
     /**
      * @var \Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\FraudColumn
      */
