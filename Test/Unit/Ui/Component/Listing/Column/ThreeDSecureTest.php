@@ -9,6 +9,7 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Ui\Component\Listing\Column;
 
 use Ebizmarts\SagePaySuite\Model\OrderGridInfo;
+use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\OrderGridColumns;
 use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\ThreeDSecure;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponentFactory;
@@ -36,8 +37,8 @@ class ThreeDSecureTest extends \PHPUnit\Framework\TestCase
     {
         $contextMock = $this->createMock(ContextInterface::class);
         $uiComponentFactoryMock = $this->createMock(UiComponentFactory::class);
-        $orderGridInfoMock = $this
-            ->getMockBuilder(OrderGridInfo::class)
+        $orderGridColumnsMock = $this
+            ->getMockBuilder(OrderGridColumns::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -53,7 +54,7 @@ class ThreeDSecureTest extends \PHPUnit\Framework\TestCase
             ]
         ];
 
-        $orderGridInfoMock
+        $orderGridColumnsMock
             ->expects($this->once())
             ->method('prepareColumn')
             ->with(self::DATA_SOURCE, self::INDEX, self::FIELD_NAME)
@@ -61,7 +62,7 @@ class ThreeDSecureTest extends \PHPUnit\Framework\TestCase
 
         $threeDSecureMock = $this->getMockBuilder(ThreeDSecure::class)
             ->setConstructorArgs([
-                'orderGridInfo' => $orderGridInfoMock,
+                'orderGridColumns' => $orderGridColumnsMock,
                 'context' => $contextMock,
                 'uiComponentFactory' => $uiComponentFactoryMock,
                 [],
