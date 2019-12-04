@@ -17,7 +17,7 @@ class FraudColumn extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
     /**
      * @param array $additional
      * @param string $index
-     * @return mixed|string
+     * @return string
      */
     public function getImage(array $additional, $index)
     {
@@ -56,6 +56,7 @@ class FraudColumn extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
 
     /**
      * @param array $additional
+     * @param $index
      * @return string
      */
     public function getFraudImage(array $additional, $index)
