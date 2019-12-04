@@ -10,7 +10,6 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderGridInfo;
-use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\ThreeDSecure;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\View\Asset\Repository;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -272,7 +271,6 @@ class OrderGridInfoTest extends \PHPUnit\Framework\TestCase
                       "index" => "avsCvcCheckSecurityCode",
                       "fieldName" => "sagepay_cvTwoCheck"
                   ]
-
           ]
         ];
     }
