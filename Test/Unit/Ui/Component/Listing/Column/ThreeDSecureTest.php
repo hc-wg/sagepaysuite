@@ -8,7 +8,6 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Ui\Component\Listing\Column;
 
-use Ebizmarts\SagePaySuite\Model\OrderGridInfo;
 use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\OrderGridColumns;
 use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\ThreeDSecure;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
