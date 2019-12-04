@@ -67,7 +67,10 @@ class FraudColumnTest extends \PHPUnit\Framework\TestCase
      */
     public function testGetFraudImage($data)
     {
-        $orderTest = $data["fraudcode"];
+        $jsonVar = json_encode($data, JSON_PRETTY_PRINT);
+        error_log($jsonVar, 3, '/Users/Juan/Sites/m233/var/log/ebizmarts.log');
+        error_log("\n", 3, '/Users/Juan/Sites/m233/var/log/ebizmarts.log');
+        $additional = $data["fraudcode"];
         $fraudColumnMock = $this->getMockBuilder(FraudColumn::class)
             ->disableOriginalConstructor()
             ->setMethods(['checkIfThirdMan', 'getImageNameThirdman', 'checkIfRed', 'getImageNameRed', 'getWaitingImage'])
@@ -76,25 +79,25 @@ class FraudColumnTest extends \PHPUnit\Framework\TestCase
         $fraudColumnMock
             ->expects($this->once())
             ->method('checkIfThirdMan')
-            ->with($orderTest)
+            ->with($additional)
             ->willReturn($data["checkIfThirdMan"]);
 
         $fraudColumnMock
             ->expects($this->exactly($data["expectedGetImageNameThirdman"]))
             ->method('getImageNameThirdman')
-            ->with($orderTest)
+            ->with($additional["fraudcode"])
             ->willReturn($data["image"]);
 
         $fraudColumnMock
             ->expects($this->exactly($data["expectedCheckIfRed"]))
             ->method('checkIfRed')
-            ->with($orderTest)
+            ->with($additional)
             ->willReturn($data["checkIfRed"]);
 
         $fraudColumnMock
             ->expects($this->exactly($data["expectedGetImageNameRed"]))
             ->method('getImageNameRed')
-            ->with($orderTest)
+            ->with($additional)
             ->willReturn($data["image"]);
 
         $fraudColumnMock
@@ -102,7 +105,7 @@ class FraudColumnTest extends \PHPUnit\Framework\TestCase
             ->method('getWaitingImage')
             ->willReturn($data["image"]);
 
-        $this->assertEquals($data["image"], $fraudColumnMock->getFraudImage($orderTest, self::INDEX));
+        $this->assertEquals($data["image"], $fraudColumnMock->getFraudImage($additional, self::INDEX));
 
     }
 
