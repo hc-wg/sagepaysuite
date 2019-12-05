@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * Copyright © 2019 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Ui\Component\Listing\Column;
 
@@ -67,9 +70,6 @@ class FraudColumnTest extends \PHPUnit\Framework\TestCase
      */
     public function testGetFraudImage($data)
     {
-        $jsonVar = json_encode($data, JSON_PRETTY_PRINT);
-        error_log($jsonVar, 3, '/Users/Juan/Sites/m233/var/log/ebizmarts.log');
-        error_log("\n", 3, '/Users/Juan/Sites/m233/var/log/ebizmarts.log');
         $additional = $data["fraudcode"];
         $fraudColumnMock = $this->getMockBuilder(FraudColumn::class)
             ->disableOriginalConstructor()
