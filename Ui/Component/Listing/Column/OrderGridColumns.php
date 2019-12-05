@@ -1,9 +1,7 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: juan
- * Date: 2019-11-26
- * Time: 16:59
+ * Copyright © 2019 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
  */
 
 namespace Ebizmarts\SagePaySuite\Ui\Component\Listing\Column;
@@ -56,6 +54,7 @@ class OrderGridColumns extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
                 $threeDStatus = 'cross.png';
                 break;
         }
+
         return self::IMAGE_PATH . $threeDStatus;
     }
 
