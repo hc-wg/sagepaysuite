@@ -75,7 +75,7 @@ class OrderGridColumnsTest extends \PHPUnit\Framework\TestCase
     {
         $orderGridColumnsMock = $this->getMockBuilder(OrderGridColumns::class)
             ->disableOriginalConstructor()
-            ->setMethodsExcept(['getThreeDStatus'])
+            ->setMethods(['getImage', 'getStatusImage', 'getStatus'])
             ->getMock();
 
         $result = $orderGridColumnsMock->getThreeDStatus($data["status"]);
@@ -90,7 +90,7 @@ class OrderGridColumnsTest extends \PHPUnit\Framework\TestCase
     {
         $orderGridColumnsMock = $this->getMockBuilder(OrderGridColumns::class)
             ->disableOriginalConstructor()
-            ->setMethodsExcept(['getStatusImage'])
+            ->setMethods(['getImage', 'getThreeDStatus', 'getStatus'])
             ->getMock();
 
         $result = $orderGridColumnsMock->getStatusImage($data["status"]);

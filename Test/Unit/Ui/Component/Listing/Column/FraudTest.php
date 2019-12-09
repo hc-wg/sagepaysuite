@@ -10,6 +10,7 @@ use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\Fraud;
 use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\FraudColumn;
 use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\ThreeDSecure;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
+use Magento\Framework\View\Element\UiComponent\Processor;
 use Magento\Framework\View\Element\UiComponentFactory;
 
 class FraudTest extends \PHPUnit\Framework\TestCase
@@ -37,6 +38,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(ContextInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
+
         $contextMock->expects($this->once())
             ->method('getProcessor')
             ->willReturn(

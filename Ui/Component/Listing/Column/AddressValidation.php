@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Ui\Component\Listing\Column;
 
+use Ebizmarts\SagePaySuite\Model\OrderGridInfo;
 use \Magento\Framework\View\Element\UiComponent\ContextInterface;
 use \Magento\Framework\View\Element\UiComponentFactory;
 use \Magento\Ui\Component\Listing\Columns\Column;
@@ -13,7 +14,7 @@ use \Magento\Ui\Component\Listing\Columns\Column;
 class AddressValidation extends Column
 {
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\OrderGridInfo
+     * @var OrderGridInfo
      */
     private $orderGridColumns;
 

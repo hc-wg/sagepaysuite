@@ -43,12 +43,27 @@ class OrderGridInfoTest extends \PHPUnit\Framework\TestCase
     {
         $orderTest = $data["status"];
 
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
+        $suiteLoggerMock = $this
+            ->getMockBuilder(Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderRepositoryMock = $this
+            ->getMockBuilder(OrderRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $requestMock = $this
+            ->getMockBuilder(RequestInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
 
-        $assetRepositoryMock = $this->createMock(Repository::class);
+        $assetRepositoryMock = $this
+            ->getMockBuilder(Repository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
             $data["image"],
             [
@@ -57,17 +72,23 @@ class OrderGridInfoTest extends \PHPUnit\Framework\TestCase
         )
             ->willReturn($data["image"]);
 
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
+        $orderMock = $this
+            ->getMockBuilder(OrderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock = $this
+            ->getMockBuilder(OrderPaymentInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
 
         $columnMock = $this->getMockBuilder(OrderGridInfo::class)
             ->setConstructorArgs([
                 'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
                 'orderRepository' => $orderRepositoryMock,
                 'suiteLogger' => $suiteLoggerMock,
                 'assetRepository' => $assetRepositoryMock,

@@ -65,7 +65,7 @@ class OrderGridInfo implements AdminGridColumnInterface
      * @param string $fieldName
      * @return array
      */
-    public function prepareColumn(array $dataSource, string $index, string $fieldName) :array
+    public function prepareColumn(array $dataSource, string $index, string $fieldName)
     {
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as &$item) {

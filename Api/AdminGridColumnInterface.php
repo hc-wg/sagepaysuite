@@ -12,5 +12,5 @@ interface AdminGridColumnInterface
      * @param string $fieldName
      * @return array
      */
-    function prepareColumn(array $dataSource, string $index, string $fieldName) :array;
+    function prepareColumn(array $dataSource, string $index, string $fieldName);
 }
