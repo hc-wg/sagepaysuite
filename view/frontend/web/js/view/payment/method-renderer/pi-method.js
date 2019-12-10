@@ -154,7 +154,7 @@ define(
                 ).done(
                     function (response) {
                         if (response === true) {
-                            return true;//self.createMerchantSessionKey();
+                            return true;
                         } else {
                             self.showPaymentError("Unable to save payment info.");
                         }
@@ -195,9 +195,6 @@ define(
                         JSON.stringify(payload)
                     ).done(
                         function () {
-                            if (additionalValidators.validate()) {
-                                self.savePaymentInfo();
-                            }
                             self.createMerchantSessionKey();
                         }
                     ).fail(
@@ -226,7 +223,9 @@ define(
             tokenise: function () {
                 var self = this;
 
-                if (!self.validate() || !additionalValidators.validate() || self.getCode() != self.isChecked()) {
+                if (additionalValidators.validate()) {
+                    self.savePaymentInfo();
+                } else {
                     return false;
                 }
 
