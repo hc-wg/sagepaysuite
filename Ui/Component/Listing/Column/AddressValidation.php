@@ -9,31 +9,30 @@ namespace Ebizmarts\SagePaySuite\Ui\Component\Listing\Column;
 use \Magento\Framework\View\Element\UiComponent\ContextInterface;
 use \Magento\Framework\View\Element\UiComponentFactory;
 use \Magento\Ui\Component\Listing\Columns\Column;
-use \Ebizmarts\SagePaySuite\Model\OrderGridInfo;
 
 class AddressValidation extends Column
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Model\OrderGridInfo
      */
-    private $orderGridInfo;
+    private $orderGridColumns;
 
     /**
      * AddressValidation constructor.
-     * @param OrderGridInfo $orderGridInfo
+     * @param OrderGridColumns $orderGridColumns
      * @param ContextInterface $context
      * @param UiComponentFactory $uiComponentFactory
      * @param array $components
      * @param array $data
      */
     public function __construct(
-        OrderGridInfo $orderGridInfo,
+        OrderGridColumns $orderGridColumns,
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
         array $components = [],
         array $data = []
     ) {
-        $this->orderGridInfo = $orderGridInfo;
+        $this->orderGridColumns = $orderGridColumns;
         parent::__construct($context, $uiComponentFactory, $components, $data);
     }
 
@@ -44,7 +43,7 @@ class AddressValidation extends Column
     public function prepareDataSource(array $dataSource)
     {
         $fieldName = $this->getFieldName();
-        return $this->orderGridInfo->prepareColumn($dataSource, "avsCvcCheckAddress", $fieldName);
+        return $this->orderGridColumns->prepareColumn($dataSource, "avsCvcCheckAddress", $fieldName);
     }
 
     /**

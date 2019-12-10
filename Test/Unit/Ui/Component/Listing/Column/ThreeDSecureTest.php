@@ -1,14 +1,12 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: juan
- * Date: 2019-11-12
- * Time: 10:47
+ * Copyright © 2019 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
  */
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Ui\Component\Listing\Column;
 
-use Ebizmarts\SagePaySuite\Model\OrderGridInfo;
+use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\OrderGridColumns;
 use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\ThreeDSecure;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponentFactory;
@@ -36,8 +34,8 @@ class ThreeDSecureTest extends \PHPUnit\Framework\TestCase
     {
         $contextMock = $this->createMock(ContextInterface::class);
         $uiComponentFactoryMock = $this->createMock(UiComponentFactory::class);
-        $orderGridInfoMock = $this
-            ->getMockBuilder(OrderGridInfo::class)
+        $orderGridColumnsMock = $this
+            ->getMockBuilder(OrderGridColumns::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -46,14 +44,14 @@ class ThreeDSecureTest extends \PHPUnit\Framework\TestCase
                 'items' => [
                     [
                         'entity_id' => self::ENTITY_ID,
-                        'sagepay_threeDSecure_src' => self::IMAGE_URL_CHECK,
+                        self::FIELD_NAME . '_src' => self::IMAGE_URL_CHECK,
                         'payment_method' => "sagepaysuite"
                     ]
                 ]
             ]
         ];
 
-        $orderGridInfoMock
+        $orderGridColumnsMock
             ->expects($this->once())
             ->method('prepareColumn')
             ->with(self::DATA_SOURCE, self::INDEX, self::FIELD_NAME)
@@ -61,7 +59,7 @@ class ThreeDSecureTest extends \PHPUnit\Framework\TestCase
 
         $threeDSecureMock = $this->getMockBuilder(ThreeDSecure::class)
             ->setConstructorArgs([
-                'orderGridInfo' => $orderGridInfoMock,
+                'orderGridColumns' => $orderGridColumnsMock,
                 'context' => $contextMock,
                 'uiComponentFactory' => $uiComponentFactoryMock,
                 [],
