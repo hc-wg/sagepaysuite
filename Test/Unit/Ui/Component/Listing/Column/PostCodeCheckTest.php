@@ -1,13 +1,12 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: juan
- * Date: 2019-11-12
- * Time: 14:15
+ * Copyright © 2019 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
  */
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Ui\Component\Listing\Column;
 
+use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\OrderGridColumns;
 use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\PostCodeCheck;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponentFactory;
@@ -37,8 +36,8 @@ class PostCodeCheckTest extends \PHPUnit\Framework\TestCase
     {
         $contextMock = $this->createMock(ContextInterface::class);
         $uiComponentFactoryMock = $this->createMock(UiComponentFactory::class);
-        $orderGridInfoMock = $this
-            ->getMockBuilder(OrderGridInfo::class)
+        $orderGridColumnsMock = $this
+            ->getMockBuilder(OrderGridColumns::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -54,7 +53,7 @@ class PostCodeCheckTest extends \PHPUnit\Framework\TestCase
             ]
         ];
 
-        $orderGridInfoMock
+        $orderGridColumnsMock
             ->expects($this->once())
             ->method('prepareColumn')
             ->with(self::DATA_SOURCE, self::INDEX, self::FIELD_NAME)
@@ -62,7 +61,7 @@ class PostCodeCheckTest extends \PHPUnit\Framework\TestCase
 
         $postCodeCheckMock = $this->getMockBuilder(PostCodeCheck::class)
             ->setConstructorArgs([
-                'orderGridInfo' => $orderGridInfoMock,
+                'orderGridColumns' => $orderGridColumnsMock,
                 'context' => $contextMock,
                 'uiComponentFactory' => $uiComponentFactoryMock,
                 [],
