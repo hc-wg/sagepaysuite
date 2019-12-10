@@ -1,15 +1,14 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: juan
- * Date: 2019-11-12
- * Time: 14:24
+ * Copyright © 2019 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
  */
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Ui\Component\Listing\Column;
 
 use Ebizmarts\SagePaySuite\Model\OrderGridInfo;
 use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\CvTwoCheck;
+use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\OrderGridColumns;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponent\Processor;
 use Magento\Framework\View\Element\UiComponentFactory;
@@ -40,6 +39,7 @@ class CvTwoCheckTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder(ContextInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
+
         $contextMock->expects($this->once())
             ->method('getProcessor')
             ->willReturn(
@@ -48,12 +48,14 @@ class CvTwoCheckTest extends \PHPUnit_Framework_TestCase
                     ->disableOriginalConstructor()
                     ->getMock()
             );
+
         $uiComponentFactoryMock = $this
             ->getMockBuilder(UiComponentFactory::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $orderGridInfoMock = $this
-            ->getMockBuilder(OrderGridInfo::class)
+
+        $orderGridColumnsMock = $this
+            ->getMockBuilder(OrderGridColumns::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -69,7 +71,7 @@ class CvTwoCheckTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $orderGridInfoMock
+        $orderGridColumnsMock
             ->expects($this->once())
             ->method('prepareColumn')
             ->with(self::DATA_SOURCE, self::INDEX, self::FIELD_NAME)
@@ -77,7 +79,7 @@ class CvTwoCheckTest extends \PHPUnit_Framework_TestCase
 
         $cvTwoCheckMock = $this->getMockBuilder(CvTwoCheck::class)
             ->setConstructorArgs([
-                'orderGridInfo' => $orderGridInfoMock,
+                'orderGridColumns' => $orderGridColumnsMock,
                 'context' => $contextMock,
                 'uiComponentFactory' => $uiComponentFactoryMock,
                 [],
