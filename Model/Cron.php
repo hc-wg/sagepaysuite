@@ -117,7 +117,6 @@ class Cron
         Data $suiteHelper,
         Reporting $reportingApi
     ) {
-
         $this->suiteLogger            = $suiteLogger;
         $this->orderPaymentRepository = $orderPaymentRepository;
         $this->objectManager          = $objectManager;
