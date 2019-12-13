@@ -154,7 +154,6 @@ class Cron
                 /** @var Payment $payment */
                 $payment = $_order->getPayment();
                 if ($payment !== null) {
-
                     $transactionId = $this->suiteHelper->clearTransactionId($payment->getLastTransId());
 
                     $transactionDetails = $this->getTransactionDetails($transactionId, $_order, $payment);
