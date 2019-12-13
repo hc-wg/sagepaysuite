@@ -156,7 +156,7 @@ class CheckoutTest extends \PHPUnit\Framework\TestCase
         $this->quoteMock->expects($this->any())
             ->method('getCheckoutMethod')
             ->will($this->returnValue(\Magento\Checkout\Model\Type\Onepage::METHOD_GUEST));
-        $this->quoteMock->expects($this->once())
+        $this->quoteMock->expects($this->exactly(3))
             ->method('getBillingAddress')
             ->will($this->returnValue($addressMock));
 
