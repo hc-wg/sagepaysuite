@@ -26,16 +26,16 @@ jobs:
       # Install dependencies
       - run: sudo apt-get update
       - run:
-         name: Install libraries
-         command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+          name: Install libraries
+          command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
 
       - run:
-         name: Configure PHP extensions
-         command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
+          name: Configure PHP extensions
+          command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
 
       - run:
-         name: Install PHP extensions
-         command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
+          name: Install PHP extensions
+          command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
 
       - run: sudo apt-get install -y mysql-client
 
@@ -63,8 +63,8 @@ jobs:
       - run: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
       - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
       - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
-      - run: bin/magento setup:upgrade
       - run: bin/magento setup:di:compile
+      - run: bin/magento setup:upgrade
 
       # run tests!
       - run: chmod -R 777 ./var
@@ -103,16 +103,16 @@ jobs:
       # Install dependencies
       - run: sudo apt-get update
       - run:
-         name: Install libraries
-         command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+          name: Install libraries
+          command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
 
       - run:
-         name: Configure PHP extensions
-         command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
+          name: Configure PHP extensions
+          command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
 
       - run:
-         name: Install PHP extensions
-         command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
+          name: Install PHP extensions
+          command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
 
       - run: sudo apt-get install -y mysql-client
 
@@ -140,8 +140,8 @@ jobs:
       - run: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -rf app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
       - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
       - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
-      - run: bin/magento setup:upgrade
       - run: bin/magento setup:di:compile
+      - run: bin/magento setup:upgrade
 
       # run tests!
       - run: chmod -R 777 ./var
