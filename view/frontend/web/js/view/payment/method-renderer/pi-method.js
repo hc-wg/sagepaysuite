@@ -235,7 +235,9 @@ define(
             tokenise: function () {
                 var self = this;
 
-                self.checkAgreementsAndSavePaymentInfo();
+                if(!self.checkAgreementsAndSavePaymentInfo()) {
+                    return false;
+                }
 
                 if (self.dropInInstance !== null) {
                     self.dropInInstance.tokenise();
