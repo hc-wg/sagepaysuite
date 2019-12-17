@@ -1,3 +1,9 @@
+## [1.3.11] - 2019-12-19
+### Fixed
+- Items being canceled when order take more than 15 minutes
+- Guest order being created with "Guest" as customer name
+- Pi not loading when there are terms and conditions
+
 ## [1.3.10] - 2019-11-26
 ### Added
 - Show Fraud information on order grid (3D, Post Code, Address, CV2)
@@ -127,6 +133,7 @@
 - Magento not running schema updates. Switching to Schema patches
 - New CSRF checks rejecting callbacks
 
+[1.3.11]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.11
 [1.3.10]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.10
 [1.3.9]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.9
 [1.3.8]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.8
