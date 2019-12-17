@@ -179,6 +179,8 @@ class Checkout extends AbstractHelper
 
         $quote->setCustomerId(null);
         $quote->setCustomerEmail($quote->getBillingAddress()->getEmail());
+        $quote->setCustomerFirstname($quote->getBillingAddress()->getFirstname());
+        $quote->setCustomerLastname($quote->getBillingAddress()->getLastname());
         $quote->setCustomerIsGuest(true);
         $quote->setCustomerGroupId(GroupInterface::NOT_LOGGED_IN_ID);
 
