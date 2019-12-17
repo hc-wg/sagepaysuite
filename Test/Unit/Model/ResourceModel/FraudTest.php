@@ -30,7 +30,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->method('where')
             ->withConsecutive(
                 ['sales_order.state=?', 'pending_payment'],
-                ['sales_order.created_at <= now() - INTERVAL 15 MINUTE'],
+                ['sales_order.created_at <= now() - INTERVAL 30 MINUTE'],
                 ['sales_order.created_at >= now() - INTERVAL 2 DAY'],
                 ["payment.method LIKE '%sagepaysuite%'"]
             )
