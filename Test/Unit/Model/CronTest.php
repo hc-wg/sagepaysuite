@@ -203,7 +203,7 @@ class CronTest extends \PHPUnit\Framework\TestCase
             ->willReturnOnConsecutiveCalls(self::TEST_VPSTXID1, self::TEST_VPSTXID2);
 
         $transactionDetails = (object)[
-            'status' => Cron::TIMED_OUT_STATUS
+            'txstateid' => Cron::TIMED_OUT_TXSTATEID
         ];
 
         $reportingApiMock = $this
