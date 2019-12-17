@@ -195,6 +195,9 @@ define(
                         JSON.stringify(payload)
                     ).done(
                         function () {
+                            if (!self.dropInEnabled()) {
+                                self.checkAgreementsAndSavePaymentInfo();
+                            }
                             self.createMerchantSessionKey();
                         }
                     ).fail(
@@ -205,6 +208,15 @@ define(
                 });
 
                 return false;
+            },
+            checkAgreementsAndSavePaymentInfo: function () {
+                var self = this;
+
+                if (additionalValidators.validate()) {
+                    self.savePaymentInfo();
+                } else {
+                    return false;
+                }
             },
             loadDropInForm: function () {
                 var self = this;
@@ -223,11 +235,7 @@ define(
             tokenise: function () {
                 var self = this;
 
-                if (additionalValidators.validate()) {
-                    self.savePaymentInfo();
-                } else {
-                    return false;
-                }
+                self.checkAgreementsAndSavePaymentInfo();
 
                 if (self.dropInInstance !== null) {
                     self.dropInInstance.tokenise();
