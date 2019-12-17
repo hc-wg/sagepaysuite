@@ -189,6 +189,21 @@ class Reporting
         return $this->_handleApiErrors($this->_executeRequest($xml));
     }
 
+    /**
+     * @param $vendorTxCode
+     * @param null|int $storeId
+     * @return mixed
+     * @throws ApiException
+     */
+    public function getTransactionDetailsByVendorTxCode($vendorTxCode, $storeId = null)
+    {
+        $this->config->setConfigurationScopeId($storeId);
+
+        $params = '<vendorTxCode>' . $vendorTxCode . '</vendorTxCode>';
+        $xml = $this->_createXml('getTransactionDetail', $params);
+        return $this->_handleApiErrors($this->_executeRequest($xml));
+    }
+
     public function whitelistIpAddress($ipAddress)
     {
         $params = "<validips><ipaddress><address>$ipAddress</address>";

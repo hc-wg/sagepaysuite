@@ -64,8 +64,8 @@ jobs:
         - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
         - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
         - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
-        - run: bin/magento setup:upgrade
         - run: bin/magento setup:di:compile
+        - run: bin/magento setup:upgrade
 
         # run tests!
         - run: chmod -R 777 ./var
@@ -144,8 +144,8 @@ jobs:
         - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
         - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
         - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
-        - run: bin/magento setup:upgrade
         - run: bin/magento setup:di:compile
+        - run: bin/magento setup:upgrade
 
         # run tests!
         - run: chmod -R 777 ./var
