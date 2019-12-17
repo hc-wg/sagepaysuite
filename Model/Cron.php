@@ -24,7 +24,7 @@ use \Ebizmarts\SagePaySuite\Model\Api\Reporting;
 
 class Cron
 {
-    const TIMED_OUT_STATUS = "Transaction CANCELLED by Sage Pay after 15 minutes of inactivity.  This is normally because the customer closed their browser.";
+    const TIMED_OUT_TXSTATEID = "8";
     const TRANSACTION_NOT_FOUND = "0043";
 
     /**
@@ -158,9 +158,9 @@ class Cron
 
                     $transactionDetails = $this->getTransactionDetails($transactionId, $_order, $payment);
 
-                    if ((string)$transactionDetails->status === self::TIMED_OUT_STATUS) {
-                            $_order->cancel()->save(); //@codingStandardsIgnoreLine
-                            $this->logCancelledPayment($orderId);
+                    if ((string)$transactionDetails->txstateid === self::TIMED_OUT_TXSTATEID) {
+                        $_order->cancel()->save(); //@codingStandardsIgnoreLine
+                        $this->logCancelledPayment($orderId);
                     }
                 } else {
                     $this->logErrorPaymentNotFound($orderId);
@@ -304,7 +304,7 @@ class Cron
      * @param $apiException
      * @param int $orderId
      */
-    private function ApiExceptionToLog($apiException, int $orderId)
+    private function apiExceptionToLog($apiException, int $orderId)
     {
         if ($this->checkIfTransactionNotFound($apiException)) {
             $this->logTransactionNotFound($orderId, $apiException);
