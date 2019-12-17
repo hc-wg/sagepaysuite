@@ -24,7 +24,7 @@ use \Ebizmarts\SagePaySuite\Model\Api\Reporting;
 
 class Cron
 {
-    const TIMED_OUT_TXSTATEID = "8";
+    const TIMED_OUT_TXSTATEID = 8;
     const TRANSACTION_NOT_FOUND = "0043";
 
     /**
@@ -158,7 +158,7 @@ class Cron
 
                     $transactionDetails = $this->getTransactionDetails($transactionId, $_order, $payment);
 
-                    if ((string)$transactionDetails->txstateid === self::TIMED_OUT_TXSTATEID) {
+                    if ((int)$transactionDetails->txstateid === self::TIMED_OUT_TXSTATEID) {
                         $_order->cancel()->save(); //@codingStandardsIgnoreLine
                         $this->logCancelledPayment($orderId);
                     }
@@ -166,7 +166,7 @@ class Cron
                     $this->logErrorPaymentNotFound($orderId);
                 }
             } catch (ApiException $apiException) {
-                $this->ApiExceptionToLog($apiException, $orderId);
+                $this->apiExceptionToLog($apiException, $orderId);
             } catch (\Exception $e) {
                 $this->logGeneralException($orderId, $e);
             }
