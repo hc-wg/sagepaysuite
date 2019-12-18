@@ -173,7 +173,7 @@ define(
             preparePayment: function () {
                 var self = this;
 
-                if(!self.dropInEnabled()) {
+                if (!self.dropInEnabled()) {
                     if (!additionalValidators.validate()) {
                         return false;
                     }
@@ -201,7 +201,7 @@ define(
                         JSON.stringify(payload)
                     ).done(
                         function () {
-                            if(!self.dropInEnabled()) {
+                            if (!self.dropInEnabled()) {
                                 self.savePaymentInfo();
                             }
                             self.createMerchantSessionKey();
