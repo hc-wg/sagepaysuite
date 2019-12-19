@@ -63,8 +63,8 @@ jobs:
       - run: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
       - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
       - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
-      - run: bin/magento setup:di:compile
       - run: bin/magento setup:upgrade
+      - run: bin/magento setup:di:compile
 
       # run tests!
       - run: chmod -R 777 ./var
@@ -140,8 +140,8 @@ jobs:
       - run: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -rf app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
       - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
       - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
-      - run: bin/magento setup:di:compile
       - run: bin/magento setup:upgrade
+      - run: bin/magento setup:di:compile
 
       # run tests!
       - run: chmod -R 777 ./var
