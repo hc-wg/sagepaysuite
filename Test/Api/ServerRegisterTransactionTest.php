@@ -169,9 +169,4 @@ class ServerRegisterTransactionTest extends WebapiAbstract
 
         return $quoteIdMask;
     }
-
-    public function padIpAddress($n)
-    {
-        return str_pad($n, 3, "0", STR_PAD_LEFT);
-    }
 }
