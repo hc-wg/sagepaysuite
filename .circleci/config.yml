@@ -1,5 +1,18 @@
 version: 2
 jobs:
+    build_mysql_56:
+      docker:
+        - image: circleci/mysql:5.6
+          environment:
+            MYSQL_USER: magento
+            MYSQL_PASSWORD: magento
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: circle_test
+            MYSQL_ALLOW_EMPTY_PASSWORD: true
+
+      steps:
+        - run: sudo apt-get install -y mariadb-client
+
     run_php71:
       docker:
         - image: circleci/php:7.1-apache-node
@@ -10,13 +23,13 @@ jobs:
             MYSQL_PASSWORD: magento
             MYSQL_ALLOW_EMPTY_PASSWORD: true
 
-        - image: circleci/mysql:5.6
-          environment:
-            MYSQL_USER: magento
-            MYSQL_PASSWORD: magento
-            MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: circle_test
-            MYSQL_ALLOW_EMPTY_PASSWORD: true
+#        - image: circleci/mysql:5.6
+#          environment:
+#            MYSQL_USER: magento
+#            MYSQL_PASSWORD: magento
+#            MYSQL_ROOT_PASSWORD: root
+#            MYSQL_DATABASE: circle_test
+#            MYSQL_ALLOW_EMPTY_PASSWORD: true
 
       working_directory: ~/magento2
 
@@ -37,7 +50,7 @@ jobs:
            name: Install PHP extensions
            command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
 
-        - run: sudo apt-get install -y mariadb-client
+#        - run: sudo apt-get install -y mariadb-client
 
         # Prepare Apache env
         - run: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
@@ -90,13 +103,13 @@ jobs:
             MYSQL_PASSWORD: magento
             MYSQL_ALLOW_EMPTY_PASSWORD: true
 
-        - image: circleci/mysql:5.6
-          environment:
-            MYSQL_USER: magento
-            MYSQL_PASSWORD: magento
-            MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: circle_test
-            MYSQL_ALLOW_EMPTY_PASSWORD: true
+#        - image: circleci/mysql:5.6
+#          environment:
+#            MYSQL_USER: magento
+#            MYSQL_PASSWORD: magento
+#            MYSQL_ROOT_PASSWORD: root
+#            MYSQL_DATABASE: circle_test
+#            MYSQL_ALLOW_EMPTY_PASSWORD: true
 
       working_directory: ~/magento2
 
@@ -117,7 +130,7 @@ jobs:
            name: Install PHP extensions
            command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
 
-        - run: sudo apt-get install -y mysql-client
+#        - run: sudo apt-get install -y mysql-client
 
         # Prepare Apache env
         - run: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
@@ -164,5 +177,9 @@ workflows:
   version: 2
   build_test:
     jobs:
-      - run_php70
-      - run_php71
+      - run_php70:
+          requires:
+            - build_mysql_56
+      - run_php71:
+          requires:
+            - build_mysql_56
