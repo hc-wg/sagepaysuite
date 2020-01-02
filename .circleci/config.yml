@@ -45,7 +45,7 @@ jobs:
 
     run_php71:
       docker:
-        - image: circleci/php:7.1-apache-node
+#        - image: circleci/php:7.1-apache-node
 #          environment:
 #            MYSQL_HOST: 127.0.0.1
 #            MYSQL_DATABASE: circle_test
