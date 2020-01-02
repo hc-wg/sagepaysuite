@@ -44,7 +44,7 @@ jobs:
         - run: chmod +x bin/magento
 
     run_php71:
-#      docker:
+      docker:
 #        - image: circleci/php:7.1-apache-node
 #          environment:
 #            MYSQL_HOST: 127.0.0.1
