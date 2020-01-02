@@ -21,7 +21,6 @@ executors:
 jobs:
     build_mysql_56:
       executor: my-executor
-
       steps:
         - setup_remote_docker:
             docker_layer_caching: true
@@ -36,11 +35,7 @@ jobs:
         - run: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
         - run: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
         - run: sudo service apache2 restart
-
-          # Install test runners
         - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
-
-          # Install Magento
         - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento226EE-PreCompiled.tar.gz
         - run: tar xpf Magento226EE-PreCompiled.tar.gz
         - run: mv magento2/* .
@@ -51,7 +46,7 @@ jobs:
         - persist_to_workspace:
             # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is
             # taken to be the root directory of the workspace.
-            root: /home/circleci
+            root: /home/circleci/magento2
             # Must be relative path from root
             paths:
               - magento2
