@@ -79,6 +79,34 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $result);
     }
 
+    public function testGetTransactionDetailsByVendorTxCode()
+    {
+        $responseMock = $this->createMock(HttpResponse::class);
+        $responseMock->expects($this->exactly(2))->method('getResponseData')->willReturn($this->getTransactionDetailsByVendorTxCodeResponse());
+
+        $httpTextMock = $this->createMock(HttpText::class);
+        $httpTextMock->expects($this->once())->method('setUrl')->with(Config::URL_REPORTING_API_TEST);
+        $httpTextMock->expects($this->once())->method('executePost')->with($this->getTransactionDetailsByVendorTxCodeRequestXML())->willReturn($responseMock);
+
+        $simpleInstance = new \SimpleXMLElement($this->getTransactionDetailsByVendorTxCodeResponseXml());
+        $this->objectManagerMock->method('create')->willReturn($simpleInstance);
+
+        $httpTextFactory = $this->createMock('\Ebizmarts\SagePaySuite\Model\Api\HttpTextFactory');
+        $httpTextFactory->expects($this->once())->method('create')->willReturn($httpTextMock);
+
+        $reportingApiModel = $this->makeReportingModelObjectManager($httpTextFactory);
+
+        $result = $reportingApiModel->getTransactionDetailsByVendorTxCode("REF20131029-1-838");
+
+        $expected               = new stdClass;
+        $expected->errorcode    = '0000';
+        $expected->timestamp    = '04/11/2013 11:45:32';
+        $expected->vpstxid      = 'EE6025C6-7D24-4873-FB92-CD7A66B9494E';
+        $expected->vendortxcode = 'REF20131029-1-838';
+
+        $this->assertEquals($expected, $result);
+    }
+
     /**
      * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
      * @expectedExceptionMessage INVALID STATUS
@@ -295,6 +323,14 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
     /**
      * @return string
      */
+    private function getTransactionDetailsByVendorTxCodeRequestXML()
+    {
+        return 'XML=<vspaccess><command>getTransactionDetail</command><vendor></vendor><user></user><vendorTxCode>REF20131029-1-838</vendorTxCode><signature>6a4a665ca8a1785db650aaf6a2f86fd7</signature></vspaccess>';
+    }
+
+    /**
+     * @return string
+     */
     private function getGetTokenCountRequestXml()
     {
         return 'XML=<vspaccess><command>getTokenCount</command><vendor></vendor><user></user><signature>eca0a57c18e960a6cba53f685597b6c2</signature></vspaccess>';
@@ -318,6 +354,11 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
     private function getTransactionDetailsResponse() : string
     {
         return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getTransactionDetailsResponseXml();
+    }
+
+    private function getTransactionDetailsByVendorTxCodeResponse() : string
+    {
+        return 'Content-Language: en-GB'.PHP_EOL.PHP_EOL . $this->getTransactionDetailsByVendorTxCodeResponseXML();
     }
 
     private function getFraudRedResponse() : string
@@ -347,6 +388,13 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
     }
 
     private function getTransactionDetailsResponseXml()
+    {
+        return '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
+                <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>
+                </vspaccess>';
+    }
+
+    private function getTransactionDetailsByVendorTxCodeResponseXml()
     {
         return '<vspaccess><errorcode>0000</errorcode><timestamp>04/11/2013 11:45:32</timestamp>
                 <vpstxid>EE6025C6-7D24-4873-FB92-CD7A66B9494E</vpstxid><vendortxcode>REF20131029-1-838</vendortxcode>

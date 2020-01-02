@@ -1,16 +1,13 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: juan
- * Date: 2019-11-19
- * Time: 16:21
+ * Copyright © 2019 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
  */
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderGridInfo;
-use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\ThreeDSecure;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\View\Asset\Repository;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -21,10 +18,13 @@ use \Ebizmarts\SagePaySuite\Helper\AdditionalInformation;
 class OrderGridInfoTest extends \PHPUnit\Framework\TestCase
 {
     const ENTITY_ID = 1;
+    const IMAGE_URL_TEST = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/test.png';
     const IMAGE_URL_CHECK = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/icon-shield-check.png';
     const IMAGE_URL_CROSS = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/icon-shield-cross.png';
     const IMAGE_URL_ZEBRA = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/icon-shield-zebra.png';
     const IMAGE_URL_OUTLINE = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/icon-shield-outline.png';
+    const IMAGE_URL_NOTCHECKED = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/icon-shield-outline.png';
+    const IMAGE_URL_INVALID = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/icon-shield-';
     const DATA_SOURCE = [
         'data' => [
             'items' => [
@@ -36,9 +36,12 @@ class OrderGridInfoTest extends \PHPUnit\Framework\TestCase
         ]
     ];
 
-    public function testThreeDSAuthenticated()
+    /**
+     * @dataProvider columnProvider
+     */
+    public function testPrepareColumn($data)
     {
-        $orderTest = ['threeDStatus' => 'AUTHENTICATED'];
+        $orderTest = $data["status"];
 
         $suiteLoggerMock = $this->createMock(Logger::class);
         $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
@@ -47,12 +50,12 @@ class OrderGridInfoTest extends \PHPUnit\Framework\TestCase
 
         $assetRepositoryMock = $this->createMock(Repository::class);
         $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_CHECK,
+            $data["image"],
             [
                 '_secure' => true
             ]
         )
-            ->willReturn(self::IMAGE_URL_CHECK);
+            ->willReturn($data["image"]);
 
         $orderMock = $this->createMock(OrderInterface::class);
         $paymentMock = $this->createMock(OrderPaymentInterface::class);
@@ -61,7 +64,7 @@ class OrderGridInfoTest extends \PHPUnit\Framework\TestCase
         $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
         $serializeMock = $this->createMock(AdditionalInformation::class);
 
-        $threeDSColumnMock = $this->getMockBuilder(OrderGridInfo::class)
+        $columnMock = $this->getMockBuilder(OrderGridInfo::class)
             ->setConstructorArgs([
                 'requestInterface' => $requestMock,
                 'serialize' => $serializeMock,
@@ -71,23 +74,22 @@ class OrderGridInfoTest extends \PHPUnit\Framework\TestCase
                 [],
                 []
             ])
-            ->setMethods(['getThreeDStatus'])
+            ->setMethods(["getImage"])
             ->getMock();
 
-        $threeDSColumnMock->expects($this->once())->method('getThreeDStatus')->willReturn(self::IMAGE_URL_CHECK);
+        $columnMock->expects($this->once())->method("getImage")->willReturn($data["image"]);
 
         $dataSource = self::DATA_SOURCE;
 
-        $response = $threeDSColumnMock->prepareColumn($dataSource, "threeDStatus", "sagepay_threeDSecure");
+        $response = $columnMock->prepareColumn($dataSource, $data["index"], $data["fieldName"]);
 
         $expectedResponse = [
             'data' => [
                 'items' => [
                     [
                         'entity_id' => self::ENTITY_ID,
-                        'sagepay_threeDSecure_src' => self::IMAGE_URL_CHECK,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_threeDSecure_alt' => 'AUTHENTICATED'
+                        $data["fieldName"] . "_src" => $data["image"],
+                        'payment_method' => "sagepaysuite"
                     ]
                 ]
             ]
@@ -96,1443 +98,178 @@ class OrderGridInfoTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expectedResponse, $response);
     }
 
-    public function testThreeDSNotChecked()
+    public function columnProvider()
     {
-        $orderTest = ['threeDStatus' => 'NOTCHECKED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_OUTLINE,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $threeDSColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getThreeDStatus'])
-            ->getMock();
-
-        $threeDSColumnMock->expects($this->once())->method('getThreeDStatus')->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $threeDSColumnMock->prepareColumn($dataSource, "threeDStatus", "sagepay_threeDSecure");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_threeDSecure_src' => self::IMAGE_URL_OUTLINE,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_threeDSecure_alt' => 'NOTCHECKED'
-                    ]
-                ]
-            ]
+        return [
+              "testThreeDSecureAuthenticated" => [
+                  [
+                      "image" => self::IMAGE_URL_CHECK,
+                      "status" => ['threeDStatus' => 'AUTHENTICATED'],
+                      "index" => "threeDStatus",
+                      "fieldName" => "sagepay_threeDSecure"
+                  ],
+              "testThreeDSNotChecked" =>
+                  [
+                      "image" => self::IMAGE_URL_OUTLINE,
+                      "status" => ['threeDStatus' => 'NOTCHECKED'],
+                      "index" => "threeDStatus",
+                      "fieldName" => "sagepay_threeDSecure"
+                  ],
+              "testThreeDSNotAuthenticated" =>
+                  [
+                      "image" => self::IMAGE_URL_OUTLINE,
+                      "status" => ['threeDStatus' => 'NOTAUTHENTICATED'],
+                      "index" => "threeDStatus",
+                      "fieldName" => "sagepay_threeDSecure"
+                  ],
+              "testThreeDSError" =>
+                  [
+                      "image" => self::IMAGE_URL_CROSS,
+                      "status" => ['threeDStatus' => 'ERROR'],
+                      "index" => "threeDStatus",
+                      "fieldName" => "sagepay_threeDSecure"
+                  ],
+              "testThreeDSCardNotEnrolled" =>
+                  [
+                      "image" => self::IMAGE_URL_OUTLINE,
+                      "status" => ['threeDStatus' => 'CARDNOTENROLLED'],
+                      "index" => "threeDStatus",
+                      "fieldName" => "sagepay_threeDSecure"
+                  ],
+              "testThreeDSIssuerNotEnrolled" =>
+                  [
+                      "image" => self::IMAGE_URL_OUTLINE,
+                      "status" => ['threeDStatus' => 'ISSUERNOTENROLLED'],
+                      "index" => "threeDStatus",
+                      "fieldName" => "sagepay_threeDSecure"
+                  ],
+              "testThreeDSMalformedOrInvalid" =>
+                  [
+                      "image" => self::IMAGE_URL_CROSS,
+                      "status" => ['threeDStatus' => 'MALFORMEDORINVALID'],
+                      "index" => "threeDStatus",
+                      "fieldName" => "sagepay_threeDSecure"
+                  ],
+              "testThreeDSAttemptOnly" =>
+                  [
+                      "image" => self::IMAGE_URL_OUTLINE,
+                      "status" => ['threeDStatus' => 'ATTEMPTONLY'],
+                      "index" => "threeDStatus",
+                      "fieldName" => "sagepay_threeDSecure"
+                  ],
+              "testThreeDSNotAvailable" =>
+                  [
+                      "image" => self::IMAGE_URL_OUTLINE,
+                      "status" => ['threeDStatus' => 'NOTAVAILABLE'],
+                      "index" => "threeDStatus",
+                      "fieldName" => "sagepay_threeDSecure"
+                  ],
+              "testAddressValidationMatched" =>
+                  [
+                      "image" => self::IMAGE_URL_CHECK,
+                      "status" => ['avsCvcCheckAddress' => 'MATCHED'],
+                      "index" => "avsCvcCheckAddress",
+                      "fieldName" => "sagepay_addressValidation"
+                  ],
+              "testAddressValidationNotChecked" =>
+                  [
+                      "image" => self::IMAGE_URL_OUTLINE,
+                      "status" => ['avsCvcCheckAddress' => 'NOTCHECKED'],
+                      "index" => "avsCvcCheckAddress",
+                      "fieldName" => "sagepay_addressValidation"
+                  ],
+              "testAddressValidationNotProvided" =>
+                  [
+                      "image" => self::IMAGE_URL_OUTLINE,
+                      "status" => ['avsCvcCheckAddress' => 'NOTPROVIDED'],
+                      "index" => "avsCvcCheckAddress",
+                      "fieldName" => "sagepay_addressValidation"
+                  ],
+              "testAddressValidationNotMatched" =>
+                  [
+                      "image" => self::IMAGE_URL_CROSS,
+                      "status" => ['avsCvcCheckAddress' => 'NOTMATCHED'],
+                      "index" => "avsCvcCheckAddress",
+                      "fieldName" => "sagepay_addressValidation"
+                  ],
+              "testAddressValidationPartial" =>
+                  [
+                      "image" => self::IMAGE_URL_ZEBRA,
+                      "status" => ['avsCvcCheckAddress' => 'PARTIAL'],
+                      "index" => "avsCvcCheckAddress",
+                      "fieldName" => "sagepay_addressValidation"
+                  ],
+              "testPostCodeCheckMatched" =>
+                  [
+                      "image" => self::IMAGE_URL_CHECK,
+                      "status" => ['avsCvcCheckPostalCode' => 'MATCHED'],
+                      "index" => "avsCvcCheckPostalCode",
+                      "fieldName" => "sagepay_postcodeCheck"
+                  ],
+              "testPostCodeNotChecked" =>
+                  [
+                      "image" => self::IMAGE_URL_OUTLINE,
+                      "status" => ['avsCvcCheckPostalCode' => 'NOTCHECKED'],
+                      "index" => "avsCvcCheckPostalCode",
+                      "fieldName" => "sagepay_postcodeCheck"
+                  ],
+              "testPostCodeNotProvided" =>
+                  [
+                      "image" => self::IMAGE_URL_OUTLINE,
+                      "status" => ['avsCvcCheckPostalCode' => 'NOTPROVIDED'],
+                      "index" => "avsCvcCheckPostalCode",
+                      "fieldName" => "sagepay_postcodeCheck"
+                  ],
+              "testPostCodeNotMatched" =>
+                  [
+                      "image" => self::IMAGE_URL_CROSS,
+                      "status" => ['avsCvcCheckPostalCode' => 'NOTMATCHED'],
+                      "index" => "avsCvcCheckPostalCode",
+                      "fieldName" => "sagepay_postcodeCheck"
+                  ],
+              "testPostCodePartial" =>
+                  [
+                      "image" => self::IMAGE_URL_ZEBRA,
+                      "status" => ['avsCvcCheckPostalCode' => 'PARTIAL'],
+                      "index" => "avsCvcCheckPostalCode",
+                      "fieldName" => "sagepay_postcodeCheck"
+                  ],
+              "testCvTwoMatched" =>
+                  [
+                      "image" => self::IMAGE_URL_CHECK,
+                      "status" => ['avsCvcCheckSecurityCode' => 'MATCHED'],
+                      "index" => "avsCvcCheckSecurityCode",
+                      "fieldName" => "sagepay_cvTwoCheck"
+                  ],
+              "testCvTwoNotChecked" =>
+                  [
+                      "image" => self::IMAGE_URL_OUTLINE,
+                      "status" => ['avsCvcCheckSecurityCode' => 'NOTCHECKED'],
+                      "index" => "avsCvcCheckSecurityCode",
+                      "fieldName" => "sagepay_cvTwoCheck"
+                  ],
+              "testCvTwoNotProvided" =>
+                  [
+                      "image" => self::IMAGE_URL_OUTLINE,
+                      "status" => ['avsCvcCheckSecurityCode' => 'NOTPROVIDED'],
+                      "index" => "avsCvcCheckSecurityCode",
+                      "fieldName" => "sagepay_cvTwoCheck"
+                  ],
+              "testCvTwoNotMatched" =>
+                  [
+                      "image" => self::IMAGE_URL_CROSS,
+                      "status" => ['avsCvcCheckSecurityCode' => 'NOTMATCHED'],
+                      "index" => "avsCvcCheckSecurityCode",
+                      "fieldName" => "sagepay_cvTwoCheck"
+                  ],
+              "testCvTwoPartial" =>
+                  [
+                      "image" => self::IMAGE_URL_ZEBRA,
+                      "status" => ['avsCvcCheckSecurityCode' => 'PARTIAL'],
+                      "index" => "avsCvcCheckSecurityCode",
+                      "fieldName" => "sagepay_cvTwoCheck"
+                  ]
+          ]
         ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testThreeDSNotAuthenticated()
-    {
-        $orderTest = ['threeDStatus' => 'NOTAUTHENTICATED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_OUTLINE,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $threeDSColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getThreeDStatus'])
-            ->getMock();
-
-        $threeDSColumnMock->expects($this->once())->method('getThreeDStatus')->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $threeDSColumnMock->prepareColumn($dataSource, "threeDStatus", "sagepay_threeDSecure");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_threeDSecure_src' => self::IMAGE_URL_OUTLINE,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_threeDSecure_alt' => 'NOTAUTHENTICATED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testThreeDSError()
-    {
-        $orderTest = ['threeDStatus' => 'ERROR'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_CROSS,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_CROSS);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $threeDSColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getThreeDStatus'])
-            ->getMock();
-
-        $threeDSColumnMock->expects($this->once())->method('getThreeDStatus')->willReturn(self::IMAGE_URL_CROSS);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $threeDSColumnMock->prepareColumn($dataSource, "threeDStatus", "sagepay_threeDSecure");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_threeDSecure_src' => self::IMAGE_URL_CROSS,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_threeDSecure_alt' => 'ERROR'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testThreeDSCardNotEnrolled()
-    {
-        $orderTest = ['threeDStatus' => 'CARDNOTENROLLED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_OUTLINE,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $threeDSColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getThreeDStatus'])
-            ->getMock();
-
-        $threeDSColumnMock->expects($this->once())->method('getThreeDStatus')->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $threeDSColumnMock->prepareColumn($dataSource, "threeDStatus", "sagepay_threeDSecure");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_threeDSecure_src' => self::IMAGE_URL_OUTLINE,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_threeDSecure_alt' => 'CARDNOTENROLLED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testThreeDSIssuerNotEnrolled()
-    {
-        $orderTest = ['threeDStatus' => 'ISSUERNOTENROLLED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_OUTLINE,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $threeDSColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getThreeDStatus'])
-            ->getMock();
-
-        $threeDSColumnMock->expects($this->once())->method('getThreeDStatus')->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $threeDSColumnMock->prepareColumn($dataSource, "threeDStatus", "sagepay_threeDSecure");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_threeDSecure_src' => self::IMAGE_URL_OUTLINE,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_threeDSecure_alt' => 'ISSUERNOTENROLLED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testThreeDSMalformedOrInvalid()
-    {
-        $orderTest = ['threeDStatus' => 'MALFORMEDORINVALID'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_CROSS,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_CROSS);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $threeDSColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getThreeDStatus'])
-            ->getMock();
-
-        $threeDSColumnMock->expects($this->once())->method('getThreeDStatus')->willReturn(self::IMAGE_URL_CROSS);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $threeDSColumnMock->prepareColumn($dataSource, "threeDStatus", "sagepay_threeDSecure");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_threeDSecure_src' => self::IMAGE_URL_CROSS,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_threeDSecure_alt' => 'MALFORMEDORINVALID'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testThreeDSAttemptOnly()
-    {
-        $orderTest = ['threeDStatus' => 'ATTEMPTONLY'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_OUTLINE,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $threeDSColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getThreeDStatus'])
-            ->getMock();
-
-        $threeDSColumnMock->expects($this->once())->method('getThreeDStatus')->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $threeDSColumnMock->prepareColumn($dataSource, "threeDStatus", "sagepay_threeDSecure");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_threeDSecure_src' => self::IMAGE_URL_OUTLINE,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_threeDSecure_alt' => 'ATTEMPTONLY'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testThreeDSNotAvailable()
-    {
-        $orderTest = ['threeDStatus' => 'NOTAVAILABLE'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_OUTLINE,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $threeDSColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getThreeDStatus'])
-            ->getMock();
-
-        $threeDSColumnMock->expects($this->once())->method('getThreeDStatus')->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $threeDSColumnMock->prepareColumn($dataSource, "threeDStatus", "sagepay_threeDSecure");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_threeDSecure_src' => self::IMAGE_URL_OUTLINE,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_threeDSecure_alt' => 'NOTAVAILABLE'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testThreeDSIncomplete()
-    {
-        $orderTest = ['threeDStatus' => 'INCOMPLETE'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_OUTLINE,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $threeDSColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getThreeDStatus'])
-            ->getMock();
-
-        $threeDSColumnMock->expects($this->once())->method('getThreeDStatus')->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $threeDSColumnMock->prepareColumn($dataSource, "threeDStatus", "sagepay_threeDSecure");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_threeDSecure_src' => self::IMAGE_URL_OUTLINE,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_threeDSecure_alt' => 'INCOMPLETE'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testAddressValidationMatched()
-    {
-        $orderTest = ['avsCvcCheckAddress' => 'MATCHED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_CHECK,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_CHECK);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $addressValidationColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $addressValidationColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_CHECK);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $addressValidationColumnMock->prepareColumn($dataSource, "avsCvcCheckAddress", "sagepay_addressValidation");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_addressValidation_src' => self::IMAGE_URL_CHECK,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_addressValidation_alt' => 'MATCHED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testAddressValidationNotChecked()
-    {
-        $orderTest = ['avsCvcCheckAddress' => 'NOTCHECKED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_OUTLINE,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $addressValidationColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $addressValidationColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $addressValidationColumnMock->prepareColumn($dataSource, "avsCvcCheckAddress", "sagepay_addressValidation");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_addressValidation_src' => self::IMAGE_URL_OUTLINE,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_addressValidation_alt' => 'NOTCHECKED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testAddressValidationNotProvided()
-    {
-        $orderTest = ['avsCvcCheckAddress' => 'NOTPROVIDED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_OUTLINE,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $addressValidationColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $addressValidationColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $addressValidationColumnMock->prepareColumn($dataSource, "avsCvcCheckAddress", "sagepay_addressValidation");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_addressValidation_src' => self::IMAGE_URL_OUTLINE,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_addressValidation_alt' => 'NOTPROVIDED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testAddressValidationNotMatched()
-    {
-        $orderTest = ['avsCvcCheckAddress' => 'NOTMATCHED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_CROSS,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_CROSS);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $addressValidationColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $addressValidationColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_CROSS);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $addressValidationColumnMock->prepareColumn($dataSource, "avsCvcCheckAddress", "sagepay_addressValidation");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_addressValidation_src' => self::IMAGE_URL_CROSS,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_addressValidation_alt' => 'NOTMATCHED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testAddressValidationPartial()
-    {
-        $orderTest = ['avsCvcCheckAddress' => 'PARTIAL'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_ZEBRA,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_ZEBRA);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $addressValidationColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $addressValidationColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_ZEBRA);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $addressValidationColumnMock->prepareColumn($dataSource, "avsCvcCheckAddress", "sagepay_addressValidation");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_addressValidation_src' => self::IMAGE_URL_ZEBRA,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_addressValidation_alt' => 'PARTIAL'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testPostCodeCheckMatched()
-    {
-        $orderTest = ['avsCvcCheckPostalCode' => 'MATCHED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_CHECK,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_CHECK);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $postCodeCheckColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $postCodeCheckColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_CHECK);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $postCodeCheckColumnMock->prepareColumn($dataSource, "avsCvcCheckPostalCode", "sagepay_postcodeCheck");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_postcodeCheck_src' => self::IMAGE_URL_CHECK,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_postcodeCheck_alt' => 'MATCHED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testPostCodeNotChecked()
-    {
-        $orderTest = ['avsCvcCheckPostalCode' => 'NOTCHECKED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_OUTLINE,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $postCodeCheckColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $postCodeCheckColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $postCodeCheckColumnMock->prepareColumn($dataSource, "avsCvcCheckPostalCode", "sagepay_postcodeCheck");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_postcodeCheck_src' => self::IMAGE_URL_OUTLINE,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_postcodeCheck_alt' => 'NOTCHECKED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testPostCodeNotProvided()
-    {
-        $orderTest = ['avsCvcCheckPostalCode' => 'NOTPROVIDED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_OUTLINE,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $postCodeCheckColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $postCodeCheckColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $postCodeCheckColumnMock->prepareColumn($dataSource, "avsCvcCheckPostalCode", "sagepay_postcodeCheck");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_postcodeCheck_src' => self::IMAGE_URL_OUTLINE,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_postcodeCheck_alt' => 'NOTPROVIDED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testPostCodeNotMatched()
-    {
-        $orderTest = ['avsCvcCheckPostalCode' => 'NOTMATCHED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_CROSS,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_CROSS);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $postCodeCheckColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $postCodeCheckColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_CROSS);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $postCodeCheckColumnMock->prepareColumn($dataSource, "avsCvcCheckPostalCode", "sagepay_postcodeCheck");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_postcodeCheck_src' => self::IMAGE_URL_CROSS,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_postcodeCheck_alt' => 'NOTMATCHED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testPostCodePartial()
-    {
-        $orderTest = ['avsCvcCheckPostalCode' => 'PARTIAL'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_ZEBRA,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_ZEBRA);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $postCodeCheckColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $postCodeCheckColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_ZEBRA);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $postCodeCheckColumnMock->prepareColumn($dataSource, "avsCvcCheckPostalCode", "sagepay_postcodeCheck");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_postcodeCheck_src' => self::IMAGE_URL_ZEBRA,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_postcodeCheck_alt' => 'PARTIAL'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testCvTwoMatched()
-    {
-        $orderTest = ['avsCvcCheckSecurityCode' => 'MATCHED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_CHECK,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_CHECK);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $cvTwoCheckColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $cvTwoCheckColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_CHECK);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $cvTwoCheckColumnMock->prepareColumn($dataSource, "avsCvcCheckSecurityCode", "sagepay_cvTwoCheck");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_cvTwoCheck_src' => self::IMAGE_URL_CHECK,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_cvTwoCheck_alt' => 'MATCHED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testCvTwoNotChecked()
-    {
-        $orderTest = ['avsCvcCheckSecurityCode' => 'NOTCHECKED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_OUTLINE,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $cvTwoCheckColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $cvTwoCheckColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $cvTwoCheckColumnMock->prepareColumn($dataSource, "avsCvcCheckSecurityCode", "sagepay_cvTwoCheck");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_cvTwoCheck_src' => self::IMAGE_URL_OUTLINE,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_cvTwoCheck_alt' => 'NOTCHECKED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testCvTwoNotProvided()
-    {
-        $orderTest = ['avsCvcCheckSecurityCode' => 'NOTPROVIDED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_OUTLINE,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $cvTwoCheckColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $cvTwoCheckColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_OUTLINE);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $cvTwoCheckColumnMock->prepareColumn($dataSource, "avsCvcCheckSecurityCode", "sagepay_cvTwoCheck");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_cvTwoCheck_src' => self::IMAGE_URL_OUTLINE,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_cvTwoCheck_alt' => 'NOTPROVIDED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testCvTwoNotMatched()
-    {
-        $orderTest = ['avsCvcCheckSecurityCode' => 'NOTMATCHED'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_CROSS,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_CROSS);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $cvTwoCheckColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $cvTwoCheckColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_CROSS);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $cvTwoCheckColumnMock->prepareColumn($dataSource, "avsCvcCheckSecurityCode", "sagepay_cvTwoCheck");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_cvTwoCheck_src' => self::IMAGE_URL_CROSS,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_cvTwoCheck_alt' => 'NOTMATCHED'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    public function testCvTwoPartial()
-    {
-        $orderTest = ['avsCvcCheckSecurityCode' => 'PARTIAL'];
-
-        $suiteLoggerMock = $this->createMock(Logger::class);
-        $orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $requestMock = $this->createMock(RequestInterface::class);
-        $requestMock->expects($this->once())->method('isSecure')->willReturn(true);
-
-        $assetRepositoryMock = $this->createMock(Repository::class);
-        $assetRepositoryMock->expects($this->once())->method('getUrlWithParams')->with(
-            self::IMAGE_URL_ZEBRA,
-            [
-                '_secure' => true
-            ]
-        )
-            ->willReturn(self::IMAGE_URL_ZEBRA);
-
-        $orderMock = $this->createMock(OrderInterface::class);
-        $paymentMock = $this->createMock(OrderPaymentInterface::class);
-        $orderRepositoryMock->expects($this->once())->method('get')->with(self::ENTITY_ID)->willReturn($orderMock);
-        $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')->willReturn($orderTest);
-        $serializeMock = $this->createMock(AdditionalInformation::class);
-
-        $cvTwoCheckColumnMock = $this->getMockBuilder(OrderGridInfo::class)
-            ->setConstructorArgs([
-                'requestInterface' => $requestMock,
-                'serialize' => $serializeMock,
-                'orderRepository' => $orderRepositoryMock,
-                'suiteLogger' => $suiteLoggerMock,
-                'assetRepository' => $assetRepositoryMock,
-                [],
-                []
-            ])
-            ->setMethods(['getStatusImage'])
-            ->getMock();
-
-        $cvTwoCheckColumnMock->expects($this->once())->method('getStatusImage')->willReturn(self::IMAGE_URL_ZEBRA);
-
-        $dataSource = self::DATA_SOURCE;
-
-        $response = $cvTwoCheckColumnMock->prepareColumn($dataSource, "avsCvcCheckSecurityCode", "sagepay_cvTwoCheck");
-
-        $expectedResponse = [
-            'data' => [
-                'items' => [
-                    [
-                        'entity_id' => self::ENTITY_ID,
-                        'sagepay_cvTwoCheck_src' => self::IMAGE_URL_ZEBRA,
-                        'payment_method' => "sagepaysuite",
-                        'sagepay_cvTwoCheck_alt' => 'PARTIAL'
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedResponse, $response);
     }
 }

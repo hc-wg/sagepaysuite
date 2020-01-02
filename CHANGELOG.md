@@ -1,3 +1,9 @@
+## [1.2.20] - 2019-12-19
+### Fixed
+- Items being canceled when order take more than 15 minutes
+- Guest order being created with "Guest" as customer name
+- Pi not loading when there are terms and conditions
+
 ## [1.2.19] - 2019-11-26
 ### Added
 - Show Fraud information on order grid (3D, Post Code, Address, CV2)
@@ -225,6 +231,8 @@
 ### Added
 - First release with Magento 2.2.0 compatibility.
 
+[1.2.20]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.20
+[1.2.19]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.19
 [1.2.18]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.18
 [1.2.17]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.17
 [1.2.16]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.16
