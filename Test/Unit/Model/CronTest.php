@@ -6,11 +6,19 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
+use Ebizmarts\SagePaySuite\Helper\Data;
+use Ebizmarts\SagePaySuite\Model\Api\Reporting;
+use Ebizmarts\SagePaySuite\Model\Cron;
+use Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud;
+
 class CronTest extends \PHPUnit\Framework\TestCase
 {
+    const TEST_VPSTXID1 = '463B3DE6-443F-585B-E75C-C727476DE98F';
+    const TEST_VPSTXID2 = 'B5690B3B-599B-49DB-AF36-780A7A53F09B';
+
     private $objectManagerHelper;
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Cron
+     * @var Cron
      */
     private $cronModel;
 
@@ -110,9 +118,10 @@ class CronTest extends \PHPUnit\Framework\TestCase
     }
     // @codingStandardsIgnoreEnd
 
-    public function testCancelPendingPaymentOrders()
+    public function testCancelPendingPaymentOrdersWhenPaymentNull()
     {
-        $fraudModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+        $fraudModelMock = $this
+            ->getMockBuilder(Fraud::class)
             ->disableOriginalConstructor()
             ->getMock();
         $fraudModelMock
@@ -120,18 +129,20 @@ class CronTest extends \PHPUnit\Framework\TestCase
             ->method('getOrderIdsToCancel')
             ->willReturn([39, 139]);
 
-        $paymentMock = $this
-            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+        $suiteHelperMock = $this
+            ->getMockBuilder(Data::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock->expects($this->any())
-            ->method('getLastTransId')
-            ->will($this->returnValue(1));
+
+        $reportingApiMock = $this
+            ->getMockBuilder(Reporting::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $orderMock1 = $this
-        ->getMockBuilder('Magento\Sales\Model\Order')
-        ->disableOriginalConstructor()
-        ->getMock();
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
         $orderMock2 = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
             ->disableOriginalConstructor()
@@ -147,7 +158,9 @@ class CronTest extends \PHPUnit\Framework\TestCase
                 "transactionFactory"     => $this->transactionFactoryMock,
                 "orderPaymentRepository" => $this->orderPaymentRepositoryMock,
                 "fraudHelper"            => $this->fraudHelper,
-                "fraudModel"             => $fraudModelMock
+                "fraudModel"             => $fraudModelMock,
+                "suiteHelper"            => $suiteHelperMock,
+                "reportingApi"           => $reportingApiMock
             ]
         );
 
@@ -156,7 +169,7 @@ class CronTest extends \PHPUnit\Framework\TestCase
 
     public function testCancelOrders()
     {
-        $fraudModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+        $fraudModelMock = $this->getMockBuilder(Fraud::class)
             ->disableOriginalConstructor()
             ->getMock();
         $fraudModelMock
@@ -170,7 +183,7 @@ class CronTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $paymentMock1->expects($this->any())
             ->method('getLastTransId')
-            ->willReturn("463B3DE6-443F-585B-E75C-C727476DE98F");
+            ->willReturn(self::TEST_VPSTXID1);
 
         $paymentMock2 = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
@@ -178,7 +191,29 @@ class CronTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $paymentMock2->expects($this->any())
             ->method('getLastTransId')
-            ->willReturn("B5690B3B-599B-49DB-AF36-780A7A53F09B");
+            ->willReturn(self::TEST_VPSTXID2);
+
+        $suiteHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $suiteHelperMock
+            ->expects($this->once())
+            ->method('clearTransactionId')
+            ->willReturnOnConsecutiveCalls(self::TEST_VPSTXID1, self::TEST_VPSTXID2);
+
+        $transactionDetails = (object)[
+            'txstateid' => Cron::TIMED_OUT_TXSTATEID
+        ];
+
+        $reportingApiMock = $this
+            ->getMockBuilder(Reporting::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $reportingApiMock
+            ->expects($this->once())
+            ->method('getTransactionDetails')
+            ->willReturnOnConsecutiveCalls($transactionDetails);
 
         $orderMock2 = $this
             ->getMockBuilder(\Magento\Sales\Model\Order::class)
@@ -255,9 +290,9 @@ class CronTest extends \PHPUnit\Framework\TestCase
         $filterBuilderMock->method('setField')->with('txn_id')->willReturnSelf();
         $filterBuilderMock->method('setConditionType')->with('eq')->willReturnSelf();
 
-        /** @var \Ebizmarts\SagePaySuite\Model\Cron $cronMock */
+        /** @var Cron $cronMock */
         $cronMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Cron::class)
+            ->getMockBuilder(Cron::class)
             ->setMethods(['checkFraud'])
             ->setConstructorArgs(
                 [
@@ -270,7 +305,9 @@ class CronTest extends \PHPUnit\Framework\TestCase
                     "fraudHelper"            => $this->fraudHelper,
                     "fraudModel"             => $fraudModelMock,
                     "criteriaBuilder"        => $criteriaBuilderMock,
-                    "filterBuilder"          => $filterBuilderMock
+                    "filterBuilder"          => $filterBuilderMock,
+                    "suiteHelper"            => $suiteHelperMock,
+                    "reportingApi"           => $reportingApiMock
                 ]
             )
             ->getMock();
@@ -280,7 +317,7 @@ class CronTest extends \PHPUnit\Framework\TestCase
 
     public function testCheckFraud()
     {
-        $fraudModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+        $fraudModelMock = $this->getMockBuilder(Fraud::class)
             ->disableOriginalConstructor()
             ->getMock();
         $fraudModelMock
@@ -339,7 +376,7 @@ class CronTest extends \PHPUnit\Framework\TestCase
 
     public function testCancelPendingPaymentOrders1()
     {
-        $fraudModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+        $fraudModelMock = $this->getMockBuilder(Fraud::class)
             ->disableOriginalConstructor()
             ->getMock();
         $fraudModelMock
@@ -359,7 +396,7 @@ class CronTest extends \PHPUnit\Framework\TestCase
 
     public function testCheckFraudException()
     {
-        $fraudModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+        $fraudModelMock = $this->getMockBuilder(Fraud::class)
             ->disableOriginalConstructor()
             ->getMock();
         $fraudModelMock
@@ -434,7 +471,7 @@ class CronTest extends \PHPUnit\Framework\TestCase
 
     public function testCheckFraudExceptionApi()
     {
-        $fraudModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud::class)
+        $fraudModelMock = $this->getMockBuilder(Fraud::class)
             ->disableOriginalConstructor()
             ->getMock();
         $fraudModelMock
