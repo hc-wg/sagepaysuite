@@ -43,7 +43,7 @@ jobs:
           # Install Magento
         - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento226EE-PreCompiled.tar.gz
         - run: tar xpf Magento226EE-PreCompiled.tar.gz
-        - run: mv magento2/* /home/circleci/magento2
+        - run: mv magento2/* .
         - run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
         - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
         - run: chmod +x bin/magento
@@ -76,7 +76,7 @@ jobs:
 
       steps:
         - attach_workspace:
-            at: /home/circleci/magento2
+            at: ~/magento2
 #        - run: sudo apt-get update || sudo apt-get update
 #        - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
 
