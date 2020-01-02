@@ -43,7 +43,7 @@ class Fraud extends AbstractDb
                 Order::STATE_PENDING_PAYMENT
             )
             ->where(
-                "$ordersTableName.created_at <= now() - INTERVAL 15 MINUTE"
+                "$ordersTableName.created_at <= now() - INTERVAL 30 MINUTE"
             )->where(
                 "$ordersTableName.created_at >= now() - INTERVAL 2 DAY"
             )->where(

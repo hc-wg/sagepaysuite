@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Api\AdminGridColumnInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -13,7 +14,7 @@ use Magento\Framework\View\Asset\Repository;
 use \Magento\Sales\Api\OrderRepositoryInterface;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
-class OrderGridInfo
+class OrderGridInfo implements AdminGridColumnInterface
 {
     const IMAGE_PATH = 'Ebizmarts_SagePaySuite::images/icon-shield-';
 
@@ -29,7 +30,7 @@ class OrderGridInfo
 
     /**
      * Logging instance
-     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     * @var Logger
      */
     private $suiteLogger;
 
@@ -45,6 +46,7 @@ class OrderGridInfo
      * @param Logger $suiteLogger
      * @param Repository $assetRepository
      */
+
     public function __construct(
         RequestInterface $requestInterface,
         OrderRepositoryInterface $orderRepository,
@@ -61,7 +63,7 @@ class OrderGridInfo
      * @param array $dataSource
      * @param string $index
      * @param string $fieldName
-     * @return array
+     * @return array|mixed
      */
     public function prepareColumn(array $dataSource, $index, $fieldName)
     {
@@ -87,11 +89,9 @@ class OrderGridInfo
                             $additional = @unserialize($additional); //@codingStandardsIgnoreLine
                         }
                         if (is_array($additional) && !empty($additional)) {
-                            $status = $this->getStatus($additional, $index);
-                            $image = $this->getImage($index, $status);
+                            $image = $this->getImage($additional, $index);
                             $url = $this->assetRepository->getUrlWithParams($image, $params);
                             $item[$fieldName . '_src'] = $url;
-                            $item[$fieldName . '_alt'] = $status;
                         }
                     }
                 }
@@ -100,90 +100,4 @@ class OrderGridInfo
         return $dataSource;
     }
 
-    /**
-     * @param $index
-     * @param $status
-     * @return string
-     */
-    public function getImage($index, $status)
-    {
-        if ($index == "threeDStatus") {
-            $image = $this->getThreeDStatus($status);
-        } else {
-            $image = $this->getStatusImage($status);
-        }
-
-        return $image;
-    }
-    /**
-     * @param $status
-     * @return string
-     */
-    public function getThreeDStatus($status)
-    {
-        $status = strtoupper($status);
-        switch($status){
-            case 'AUTHENTICATED':
-                $threeDStatus = 'check.png';
-                break;
-            case 'NOTCHECKED':
-            case 'NOTAUTHENTICATED':
-            case 'CARDNOTENROLLED':
-            case 'ISSUERNOTENROLLED':
-            case 'ATTEMPTONLY':
-            case 'NOTAVAILABLE':
-            case 'INCOMPLETE':
-            default:
-                $threeDStatus = 'outline.png';
-                break;
-            case 'ERROR':
-            case 'MALFORMEDORINVALID':
-                $threeDStatus = 'cross.png';
-                break;
-        }
-        return self::IMAGE_PATH . $threeDStatus;
-    }
-
-    /**
-     * @param $status
-     * @return string
-     */
-    public function getStatusImage($status)
-    {
-        $status = strtoupper($status);
-        switch($status){
-            case 'MATCHED':
-                $imageUrl = 'check.png';
-                break;
-            case 'NOTCHECKED':
-            case 'NOTPROVIDED':
-            default:
-                $imageUrl = 'outline.png';
-                break;
-            case 'NOTMATCHED':
-                $imageUrl = 'cross.png';
-                break;
-            case 'PARTIAL':
-                $imageUrl = 'zebra.png';
-                break;
-        }
-
-        return self::IMAGE_PATH . $imageUrl;
-    }
-
-    /**
-     * @param $additional
-     * @param $index
-     * @return string
-     */
-    public function getStatus($additional, $index)
-    {
-        if (isset($additional[$index])) {
-            $status = $additional[$index];
-        } else {
-            $status = "NOTPROVIDED";
-        }
-
-        return $status;
-    }
 }
