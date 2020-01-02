@@ -2,6 +2,13 @@ version: 2
 jobs:
     build_mysql_56:
       docker:
+        - image: circleci/php:7.1-apache-node
+            environment:
+              MYSQL_HOST: 127.0.0.1
+              MYSQL_DATABASE: circle_test
+              MYSQL_USER: magento
+              MYSQL_PASSWORD: magento
+              MYSQL_ALLOW_EMPTY_PASSWORD: true
         - image: circleci/mysql:5.6
           environment:
             MYSQL_USER: magento
@@ -10,18 +17,50 @@ jobs:
             MYSQL_DATABASE: circle_test
             MYSQL_ALLOW_EMPTY_PASSWORD: true
 
+      working_directory: ~/magento2
+
       steps:
+        - run: sudo apt-get update || sudo apt-get update
+        - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
+        - run:
+        name: Install libraries
+        command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+
+        - run:
+           name: Configure PHP extensions
+           command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
+
+        - run:
+           name: Install PHP extensions
+           command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
+
         - run: sudo apt-get install -y mariadb-client
+        - run: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
+        - run: wget https://gist.githubusercontent.com/bcerban/25f3a2d93c19dc562020e0197f78685c/raw/70f1f314ad8ba5d302b911fe622a57ccec60a868/magento2.conf
+        - run: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
+        - run: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
+        - run: sudo service apache2 restart
+
+          # Install test runners
+        - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
+
+          # Install Magento
+        - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento226EE-PreCompiled.tar.gz
+        - run: tar xpf Magento226EE-PreCompiled.tar.gz
+        - run: mv magento2/* .
+        - run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
+        - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
+        - run: chmod +x bin/magento
 
     run_php71:
       docker:
         - image: circleci/php:7.1-apache-node
-          environment:
-            MYSQL_HOST: 127.0.0.1
-            MYSQL_DATABASE: circle_test
-            MYSQL_USER: magento
-            MYSQL_PASSWORD: magento
-            MYSQL_ALLOW_EMPTY_PASSWORD: true
+#          environment:
+#            MYSQL_HOST: 127.0.0.1
+#            MYSQL_DATABASE: circle_test
+#            MYSQL_USER: magento
+#            MYSQL_PASSWORD: magento
+#            MYSQL_ALLOW_EMPTY_PASSWORD: true
 
 #        - image: circleci/mysql:5.6
 #          environment:
@@ -34,41 +73,41 @@ jobs:
       working_directory: ~/magento2
 
       steps:
-        - run: sudo apt-get update || sudo apt-get update
-        - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
+#        - run: sudo apt-get update || sudo apt-get update
+#        - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
 
         # Install dependencies
-        - run:
-           name: Install libraries
-           command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
-
-        - run:
-           name: Configure PHP extensions
-           command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
-
-        - run:
-           name: Install PHP extensions
-           command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
+#        - run:
+#           name: Install libraries
+#           command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+#
+#        - run:
+#           name: Configure PHP extensions
+#           command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
+#
+#        - run:
+#           name: Install PHP extensions
+#           command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
 
 #        - run: sudo apt-get install -y mariadb-client
 
-        # Prepare Apache env
-        - run: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
-        - run: wget https://gist.githubusercontent.com/bcerban/25f3a2d93c19dc562020e0197f78685c/raw/70f1f314ad8ba5d302b911fe622a57ccec60a868/magento2.conf
-        - run: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
-        - run: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
-        - run: sudo service apache2 restart
-
-        # Install test runners
-        - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
-
-        # Install Magento
-        - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento226EE-PreCompiled.tar.gz
-        - run: tar xpf Magento226EE-PreCompiled.tar.gz
-        - run: mv magento2/* .
-        - run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
-        - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
-        - run: chmod +x bin/magento
+#        # Prepare Apache env
+#        - run: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
+#        - run: wget https://gist.githubusercontent.com/bcerban/25f3a2d93c19dc562020e0197f78685c/raw/70f1f314ad8ba5d302b911fe622a57ccec60a868/magento2.conf
+#        - run: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
+#        - run: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
+#        - run: sudo service apache2 restart
+#
+#        # Install test runners
+#        - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
+#
+#        # Install Magento
+#        - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento226EE-PreCompiled.tar.gz
+#        - run: tar xpf Magento226EE-PreCompiled.tar.gz
+#        - run: mv magento2/* .
+#        - run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
+#        - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
+#        - run: chmod +x bin/magento
 
         # Install API
         - checkout:
