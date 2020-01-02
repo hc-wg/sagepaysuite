@@ -1,23 +1,27 @@
-version: 2
+version: 2.1
+executors:
+  my-executor:
+    docker:
+      - image: circleci/php:7.1-apache-node
+        environment:
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_DATABASE: circle_test
+          MYSQL_USER: magento
+          MYSQL_PASSWORD: magento
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+      - image: circleci/mysql:5.6
+        environment:
+          MYSQL_USER: magento
+          MYSQL_PASSWORD: magento
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: circle_test
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+
+    working_directory: ~/magento2
+
 jobs:
     build_mysql_56:
-      docker:
-        - image: circleci/php:7.1-apache-node
-          environment:
-            MYSQL_HOST: 127.0.0.1
-            MYSQL_DATABASE: circle_test
-            MYSQL_USER: magento
-            MYSQL_PASSWORD: magento
-            MYSQL_ALLOW_EMPTY_PASSWORD: true
-        - image: circleci/mysql:5.6
-          environment:
-            MYSQL_USER: magento
-            MYSQL_PASSWORD: magento
-            MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: circle_test
-            MYSQL_ALLOW_EMPTY_PASSWORD: true
-
-      working_directory: ~/magento2
+      executor: my-executor
 
       steps:
         - run: sudo apt-get update || sudo apt-get update
@@ -42,6 +46,14 @@ jobs:
         - run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
         - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
         - run: chmod +x bin/magento
+        # Persist the specified paths (workspace/echo-output) into the workspace for use in downstream job.
+        - persist_to_workspace:
+            # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is
+            # taken to be the root directory of the workspace.
+            root: ./
+            # Must be relative path from root
+            paths:
+              - magento2
 
     run_php71:
       docker:
