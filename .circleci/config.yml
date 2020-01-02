@@ -45,13 +45,13 @@ jobs:
 
     run_php71:
       docker:
-#        - image: circleci/php:7.1-apache-node
-#          environment:
-#            MYSQL_HOST: 127.0.0.1
-#            MYSQL_DATABASE: circle_test
-#            MYSQL_USER: magento
-#            MYSQL_PASSWORD: magento
-#            MYSQL_ALLOW_EMPTY_PASSWORD: true
+        - image: circleci/php:7.1-apache-node
+          environment:
+            MYSQL_HOST: 127.0.0.1
+            MYSQL_DATABASE: circle_test
+            MYSQL_USER: magento
+            MYSQL_PASSWORD: magento
+            MYSQL_ALLOW_EMPTY_PASSWORD: true
 
 #        - image: circleci/mysql:5.6
 #          environment:
