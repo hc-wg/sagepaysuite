@@ -16,14 +16,15 @@ executors:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: circle_test
           MYSQL_ALLOW_EMPTY_PASSWORD: true
-
-    working_directory: ~/magento2
+    working_directory: /tmp
 
 jobs:
     build_mysql_56:
       executor: my-executor
 
       steps:
+        - setup_remote_docker:
+            docker_layer_caching: true
         - run: sudo apt-get update || sudo apt-get update
         - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
         - run: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
@@ -42,7 +43,7 @@ jobs:
           # Install Magento
         - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento226EE-PreCompiled.tar.gz
         - run: tar xpf Magento226EE-PreCompiled.tar.gz
-        - run: mv magento2/* .
+        - run: mv magento2/* /home/circleci/magento2
         - run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
         - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
         - run: chmod +x bin/magento
@@ -50,7 +51,7 @@ jobs:
         - persist_to_workspace:
             # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is
             # taken to be the root directory of the workspace.
-            root: ./
+            root: /home/circleci
             # Must be relative path from root
             paths:
               - magento2
@@ -75,7 +76,7 @@ jobs:
 
       steps:
         - attach_workspace:
-            at: ~/magento2
+            at: /home/circleci/magento2
 #        - run: sudo apt-get update || sudo apt-get update
 #        - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
 
