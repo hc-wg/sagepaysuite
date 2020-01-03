@@ -4,11 +4,6 @@ executors:
     docker:
       - image: circleci/php:7.1
     environment:
-      MYSQL_USER: magento
-      MYSQL_PASSWORD: magento
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: circle_test
-      MYSQL_ALLOW_EMPTY_PASSWORD: true
       PHP_UNIT_VERSION: 6.2
       SNIFFER_SEVERITY: 10
       SNIFFER_VERSION: v5
@@ -138,17 +133,17 @@ jobs:
            command: cd $MAGENTO_PATH && bin/magento setup:upgrade
         - run:
            name: Set write permissions on var directory.
-           command: chmod -R 777 ./var
+           command: chmod -R 777 $MAGENTO_PATH/var
   ###      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
         - run:
            name: Run Magento Cache Flush.
-           command: bin/magento cache:flush
+           command: $MAGENTO_PATH/bin/magento cache:flush
         - run:
            name: Disable Magento's cache.
-           command: bin/magento cache:disable
+           command: $MAGENTO_PATH/bin/magento cache:disable
         - run:
            name: Run API functional tests.
-           command: $MAGENTO_PATH/phpunit-6.2.phar -c $MAGENTO_PATH/dev/tests/api-functional/phpunit.xml
+           command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/api-functional/phpunit.xml
 
     run_php70:
       docker:
