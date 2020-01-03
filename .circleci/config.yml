@@ -271,10 +271,10 @@ workflows:
       - DownloadTools
       - PHP 70 Unit Tests:
           requires:
-            - DownloadTools
+            - PHP 70 Code Sniffer
       - PHP 71 Unit Tests:
           requires:
-            - DownloadTools
+            - PHP 71 Code Sniffer
       - PHP 71 Code Sniffer:
           requires:
             - DownloadTools
