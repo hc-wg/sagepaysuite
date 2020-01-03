@@ -59,7 +59,7 @@ jobs:
             root: /home/circleci
             paths:
               - ./
-    CodeSniffer:
+    PHP 71 Code Sniffer:
       executor: my-executor
       steps:
         - attach_workspace:
@@ -90,7 +90,6 @@ jobs:
            name: Run unit tests.
            command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml --coverage-text
     DiCompileAndApiTests_71:
-      parallelism: 2
       docker:
         - image: circleci/php:7.1-apache
         - image: circleci/mysql:5.6
@@ -142,20 +141,20 @@ jobs:
            command: mysql -h 127.0.0.1 -umagento -pmagento circle_test < ~/magento2/circle_test.sql
         - run:
            name: Run Magento DI Compile.
-           command: cd $MAGENTO_PATH && bin/magento setup:di:compile
+           command: cd $MAGENTO_PATH && bin/magento setup:di:compile -q
         - run:
            name: Run Magento Setup Upgrade.
-           command: cd $MAGENTO_PATH && bin/magento setup:upgrade
+           command: cd $MAGENTO_PATH && bin/magento setup:upgrade -q
         - run:
            name: Set write permissions on var directory.
            command: chmod -R 777 $MAGENTO_PATH/var
   ##      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
         - run:
            name: Run Magento Cache Flush.
-           command: $MAGENTO_PATH/bin/magento cache:flush
+           command: $MAGENTO_PATH/bin/magento cache:flush -q
         - run:
            name: Disable Magento's cache.
-           command: $MAGENTO_PATH/bin/magento cache:disable
+           command: $MAGENTO_PATH/bin/magento cache:disable -q
         - run:
            name: Run API functional tests.
            command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/api-functional/phpunit.xml
@@ -212,20 +211,20 @@ jobs:
            command: mysql -h 127.0.0.1 -umagento -pmagento circle_test < ~/magento2/circle_test.sql
         - run:
            name: Run Magento DI Compile.
-           command: cd $MAGENTO_PATH && bin/magento setup:di:compile
+           command: cd $MAGENTO_PATH && bin/magento setup:di:compile -q
         - run:
            name: Run Magento Setup Upgrade.
-           command: cd $MAGENTO_PATH && bin/magento setup:upgrade
+           command: cd $MAGENTO_PATH && bin/magento setup:upgrade -q
         - run:
            name: Set write permissions on var directory.
            command: chmod -R 777 $MAGENTO_PATH/var
   ##      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
         - run:
            name: Run Magento Cache Flush.
-           command: $MAGENTO_PATH/bin/magento cache:flush
+           command: $MAGENTO_PATH/bin/magento cache:flush -q
         - run:
            name: Disable Magento's cache.
-           command: $MAGENTO_PATH/bin/magento cache:disable
+           command: $MAGENTO_PATH/bin/magento cache:disable -q
         - run:
             name: Split tests.
             command: circleci tests glob "$MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/Test/Api/*Test.php" | circleci tests split --split-by=filesize | xargs php $MAGENTO_PATH/dev/tests/api-functional/phpunit-xml-gen.php
@@ -314,7 +313,7 @@ workflows:
       - UnitTests:
           requires:
             - DownloadTools
-      - CodeSniffer:
+      - PHP 71 Code Sniffer:
           requires:
             - DownloadTools
       - UnitTestsWithCoverage:
@@ -327,15 +326,15 @@ workflows:
       - DiCompileAndApiTests_71:
           requires:
             - DownloadTools
-            - CodeSniffer
+            - PHP 71 Code Sniffer
             - UnitTests
       - SplitDiCompileAndApiTests_71:
           requires:
             - DownloadTools
-            - CodeSniffer
+            - PHP 71 Code Sniffer
             - UnitTests
       - SplitDiCompileAndApiTests_70:
           requires:
             - DownloadTools
-            - CodeSniffer
+            - PHP 71 Code Sniffer
             - UnitTests
