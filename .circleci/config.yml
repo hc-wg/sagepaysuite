@@ -97,7 +97,7 @@ jobs:
            command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml
     PHP 70 Unit Tests:
       docker:
-        - image: circleci/php:7.1-apache
+        - image: circleci/php:7.0-apache
       executor: my-executor
       steps:
         - attach_workspace:
