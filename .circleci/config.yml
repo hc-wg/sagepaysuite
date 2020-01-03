@@ -45,7 +45,7 @@ jobs:
            command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
         - run:
             name: Copy php unit split file.
-            command: cp app/code/Ebizmarts/SagePaySuite/phpunit-xml-gen.php dev/tests/unit/
+            command: cp $MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/phpunit-xml-gen.php dev/tests/unit/
         - run:
            name: Copy integration tests config file.
            command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
@@ -77,11 +77,11 @@ jobs:
         - attach_workspace:
             at: ~/magento2
         - run:
-            command: |
-              circleci tests glob "../../../app/code/Ebizmarts/SagePaySuite/Test/Unit" | circleci tests split --split-by=timings | xargs php $MAGENTO_PATH/dev/tests/unit/phpunit-xml-gen.php
-              /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar \
-                --verbose \
-                --configuration $MAGENTO_PATH/dev/tests/unit/phpunit-partial.xml
+            name: Splt tests.
+            command: circleci tests glob "../../../app/code/Ebizmarts/SagePaySuite/Test/Unit" | circleci tests split --split-by=timings | xargs php dev/tests/unit/phpunit-xml-gen.php
+        - run:
+            name: Run tests.
+            command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar --verbose --configuration $MAGENTO_PATH/dev/tests/unit/phpunit-partial.xml
        # - run:
        #    name: Run unit tests.
        #    command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml
