@@ -171,7 +171,6 @@ workflows:
   build_test:
     jobs:
       - download_tools
-      - build_mysql_56
 #      - run_php70:
 #          requires:
 #            - download_tools
@@ -179,4 +178,3 @@ workflows:
       - run_php71:
           requires:
             - download_tools
-            - build_mysql_56
