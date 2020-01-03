@@ -1,5 +1,4 @@
 <?php
-
 $files = array_slice($argv, 1);
 
 $xml = new DOMDocument();
