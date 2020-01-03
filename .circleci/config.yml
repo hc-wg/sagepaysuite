@@ -160,14 +160,18 @@ workflows:
   build_test:
     jobs:
       - DownloadTools
-      - CodeSniffer
-      - UnitTests
-#      - run_php70:
-#          requires:
-#            - download_tools
-#            - build_mysql_56
+      - CodeSniffer:
+          requires:
+            - DownloadTools
+      - UnitTests:
+          requires:
+            - DownloadTools
       - DiCompileAndApiTests_71:
           requires:
             - DownloadTools
             - CodeSniffer
             - UnitTests
+      #      - run_php70:
+      #          requires:
+      #            - download_tools
+      #            - build_mysql_56
