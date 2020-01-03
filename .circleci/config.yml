@@ -134,7 +134,7 @@ jobs:
         - run:
            name: Set write permissions on var directory.
            command: chmod -R 777 $MAGENTO_PATH/var
-  ###      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
+  ##      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
         - run:
            name: Run Magento Cache Flush.
            command: $MAGENTO_PATH/bin/magento cache:flush
