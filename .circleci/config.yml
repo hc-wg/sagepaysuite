@@ -13,7 +13,7 @@ executors:
     working_directory: ~/
 
 jobs:
-    download_tools:
+  DownloadTools:
       executor: my-executor
       steps:
         - run: wget https://gist.githubusercontent.com/bcerban/25f3a2d93c19dc562020e0197f78685c/raw/70f1f314ad8ba5d302b911fe622a57ccec60a868/magento2.conf
@@ -29,34 +29,24 @@ jobs:
         - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
         - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
         - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
-        # Persist the specified paths (workspace/echo-output) into the workspace for use in downstream job.
         - persist_to_workspace:
-            # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is
-            # taken to be the root directory of the workspace.
             root: /home/circleci
-            # Must be relative path from root
             paths:
               - ./
-    run_php71:
+    CodeSniffer:
+      executor: my-executor
+      steps:
+        - run: composer require --no-progress --prefer-dist --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard
+        - run: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
+        - run: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=8 --ignore=".circleci/config.yml,*.xml"
+    UnitTests:
+      executor: my-executor
+      steps:
+        - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/unit/phpunit.xml --coverage-text
+    DiCompileAndApiTests:
       docker:
         - image: circleci/php:7.1-apache-node
       executor: my-executor
-#        - image: circleci/php:7.1-apache-node
-#          environment:
-#            MYSQL_HOST: 127.0.0.1
-#            MYSQL_DATABASE: circle_test
-#            MYSQL_USER: magento
-#            MYSQL_PASSWORD: magento
-#            MYSQL_ALLOW_EMPTY_PASSWORD: true
-
-#        - image: circleci/mysql:5.6
-#          environment:
-#            MYSQL_USER: magento
-#            MYSQL_PASSWORD: magento
-#            MYSQL_ROOT_PASSWORD: root
-#            MYSQL_DATABASE: circle_test
-#            MYSQL_ALLOW_EMPTY_PASSWORD: true
-
       steps:
         - attach_workspace:
             at: ~/magento2
@@ -71,19 +61,19 @@ jobs:
         - run: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
         - run: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
         - run: sudo service apache2 restart
-        - run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < circle_test.sql
+        - run: mysql -h 127.0.0.1 -umagento -pmagento circle_test < ~/magento2/circle_test.sql
         - run: cd ~/magento2/ && bin/magento setup:di:compile
         - run: cd ~/magento2/ && bin/magento setup:upgrade
         - run: chmod -R 777 ./var
-        - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/unit/phpunit.xml --coverage-text
-  #      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
+        #- run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/unit/phpunit.xml --coverage-text
+  ###      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
         - run: bin/magento cache:flush
         - run: bin/magento cache:disable
         - run: /home/circleci/magento2/phpunit-6.2.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
         # Run code checks
-        - run: composer require --no-progress --prefer-dist --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard
-        - run: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
-        - run: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
+#        - run: composer require --no-progress --prefer-dist --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard
+#        - run: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
+#        - run: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
 
     run_php70:
       docker:
@@ -174,6 +164,8 @@ workflows:
 #          requires:
 #            - download_tools
 #            - build_mysql_56
-      - run_php71:
+      - 71_DiCompileAndApiTests:
           requires:
-            - download_tools
+            - DownloadTools
+            - CodeSniffer
+            - UnitTests
