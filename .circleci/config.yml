@@ -196,7 +196,7 @@ jobs:
            command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/api-functional/phpunit.xml
     PHP 70 Compile and API test:
       docker:
-        - image: circleci/php:7.1-apache
+        - image: circleci/php:7.0-apache
         - image: circleci/mysql:5.6
           environment:
             MYSQL_USER: magento
