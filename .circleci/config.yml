@@ -72,13 +72,13 @@ jobs:
            command: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 $MAGENTO_PATH/app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=$SNIFFER_SEVERITY --ignore=".circleci/config.yml,*.xml"
     UnitTests:
       executor: my-executor
-      parallelism: 3
+      parallelism: 2
       steps:
         - attach_workspace:
             at: ~/magento2
         - run:
-            name: Splt tests.
-            command: circleci tests glob "../../../app/code/Ebizmarts/SagePaySuite/Test/Unit" | circleci tests split --split-by=timings | xargs php $MAGENTO_PATH/dev/tests/unit/phpunit-xml-gen.php
+            name: Split tests.
+            command: circleci tests glob "/home/circleci/magento2/app/code/Ebizmarts/SagePaySuite/Test/Unit/**/*Test.php" | circleci tests split --split-by=timings | xargs php $MAGENTO_PATH/dev/tests/unit/phpunit-xml-gen.php
         - run:
             name: Run tests.
             command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar --verbose --configuration $MAGENTO_PATH/dev/tests/unit/phpunit-partial.xml
