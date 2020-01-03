@@ -44,8 +44,11 @@ jobs:
            name: Copy php unit config file.
            command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
         - run:
-            name: Copy php unit split file.
+            name: Copy php unit split file UNIT.
             command: cp $MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/phpunit-xml-gen.php dev/tests/unit/
+        - run:
+            name: Copy php unit split file API.
+            command: cp $MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/phpunit-xml-gen.php dev/tests/api-functional/
         - run:
            name: Copy integration tests config file.
            command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
@@ -225,7 +228,7 @@ jobs:
            command: $MAGENTO_PATH/bin/magento cache:disable
         - run:
             name: Split tests.
-            command: circleci tests glob "$MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/Test/Unit/**/**/**/**Test.php" "$MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/Test/Unit/**/**/**Test.php" "$MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/Test/Unit/**/**Test.php" | circleci tests split --split-by=filesize | xargs php $MAGENTO_PATH/dev/tests/unit/phpunit-xml-gen.php
+            command: circleci tests glob "$MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/Test/Unit/**/**/**/**Test.php" "$MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/Test/Unit/**/**/**Test.php" "$MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/Test/Unit/**/**Test.php" | circleci tests split --split-by=filesize | xargs php $MAGENTO_PATH/dev/tests/api-functional/phpunit-xml-gen.php
         - run:
            name: Run API functional tests.
            command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/api-functional/phpunit-partial.xml
@@ -298,7 +301,7 @@ jobs:
            command: $MAGENTO_PATH/bin/magento cache:disable
         - run:
             name: Split tests.
-            command: circleci tests glob "$MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/Test/Unit/**/**/**/**Test.php" "$MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/Test/Unit/**/**/**Test.php" "$MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/Test/Unit/**/**Test.php" | circleci tests split --split-by=filesize | xargs php $MAGENTO_PATH/dev/tests/unit/phpunit-xml-gen.php
+            command: circleci tests glob "$MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/Test/Unit/**/**/**/**Test.php" "$MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/Test/Unit/**/**/**Test.php" "$MAGENTO_PATH/app/code/Ebizmarts/SagePaySuite/Test/Unit/**/**Test.php" | circleci tests split --split-by=filesize | xargs php $MAGENTO_PATH/dev/api-functional/unit/phpunit-xml-gen.php
         - run:
            name: Run API functional tests.
            command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/api-functional/phpunit-partial.xml
