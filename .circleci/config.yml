@@ -85,6 +85,14 @@ jobs:
        # - run:
        #    name: Run unit tests.
        #    command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml
+    UnitTestsNotSplit:
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run:
+           name: Run unit tests.
+           command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml
     UnitTestsWithCoverage:
       executor: my-executor
       steps:
@@ -233,6 +241,9 @@ workflows:
   build_test:
     jobs:
       - DownloadTools
+      - UnitTestsNotSplit:
+          requires:
+            - DownloadTools
       - UnitTests:
           requires:
             - DownloadTools
