@@ -36,12 +36,16 @@ jobs:
     CodeSniffer:
       executor: my-executor
       steps:
+        - attach_workspace:
+            at: ~/magento2
         - run: composer require --no-progress --prefer-dist --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard
         - run: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
         - run: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=8 --ignore=".circleci/config.yml,*.xml"
     UnitTests:
       executor: my-executor
       steps:
+        - attach_workspace:
+            at: ~/magento2
         - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/unit/phpunit.xml --coverage-text
     DiCompileAndApiTests_71:
       docker:
