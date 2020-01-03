@@ -78,7 +78,7 @@ jobs:
             at: ~/magento2
         - run:
             name: Splt tests.
-            command: circleci tests glob "../../../app/code/Ebizmarts/SagePaySuite/Test/Unit" | circleci tests split --split-by=timings | xargs php dev/tests/unit/phpunit-xml-gen.php
+            command: circleci tests glob "../../../app/code/Ebizmarts/SagePaySuite/Test/Unit" | circleci tests split --split-by=timings | xargs php $MAGENTO_PATH/dev/tests/unit/phpunit-xml-gen.php
         - run:
             name: Run tests.
             command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar --verbose --configuration $MAGENTO_PATH/dev/tests/unit/phpunit-partial.xml
