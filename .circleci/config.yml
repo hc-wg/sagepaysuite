@@ -44,6 +44,9 @@ jobs:
            name: Copy php unit config file.
            command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
         - run:
+            name: Copy php unit split file.
+            command: cp app/code/Ebizmarts/SagePaySuite/phpunit-xml-gen.php dev/tests/unit/
+        - run:
            name: Copy integration tests config file.
            command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
         - run:
@@ -69,12 +72,19 @@ jobs:
            command: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 $MAGENTO_PATH/app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=$SNIFFER_SEVERITY --ignore=".circleci/config.yml,*.xml"
     UnitTests:
       executor: my-executor
+      parallelism: 4
       steps:
         - attach_workspace:
             at: ~/magento2
         - run:
-           name: Run unit tests.
-           command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml
+            command: |
+              circleci tests glob "../../../app/code/Ebizmarts/SagePaySuite/Test/Unit" | circleci tests split --split-by=timings | xargs php $MAGENTO_PATH/dev/tests/unit/phpunit-xml-gen.php
+              /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar \
+                --verbose \
+                --configuration $MAGENTO_PATH/dev/tests/unit/phpunit-partial.xml
+       # - run:
+       #    name: Run unit tests.
+       #    command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml
     UnitTestsWithCoverage:
       executor: my-executor
       steps:
