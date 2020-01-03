@@ -3,7 +3,6 @@ executors:
   my-executor:
     docker:
       - image: circleci/php:7.1
-      - image: circleci/mysql:5.6
     environment:
       MYSQL_USER: magento
       MYSQL_PASSWORD: magento
@@ -85,6 +84,12 @@ jobs:
       docker:
         - image: circleci/php:7.1-apache
         - image: circleci/mysql:5.6
+          environment:
+            MYSQL_USER: magento
+            MYSQL_PASSWORD: magento
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: circle_test
+            MYSQL_ALLOW_EMPTY_PASSWORD: true
       executor: my-executor
       steps:
         - attach_workspace:
