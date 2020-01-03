@@ -54,6 +54,8 @@ jobs:
             paths:
               - ./
     PHP 71 Code Sniffer:
+      docker:
+        - image: circleci/php:7.1-apache
       executor: my-executor
       steps:
         - attach_workspace:
@@ -67,7 +69,25 @@ jobs:
         - run:
            name: Run coding standard checks.
            command: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 $MAGENTO_PATH/app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=$SNIFFER_SEVERITY --ignore=".circleci/config.yml,*.xml"
-    UnitTests:
+    PHP 70 Code Sniffer:
+      docker:
+        - image: circleci/php:7.0-apache
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run:
+           name: Composer require Squizlabs and Magento coding standard.
+           command: composer require --no-progress --prefer-dist --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard=$SNIFFER_VERSION
+        - run:
+           name: Set coding standard path to PHPCS.
+           command: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
+        - run:
+           name: Run coding standard checks.
+           command: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 $MAGENTO_PATH/app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=$SNIFFER_SEVERITY --ignore=".circleci/config.yml,*.xml"
+    PHP 71 Unit Tests:
+      docker:
+        - image: circleci/php:7.1-apache
       executor: my-executor
       steps:
         - attach_workspace:
@@ -75,7 +95,19 @@ jobs:
         - run:
            name: Run unit tests.
            command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml
-    UnitTestsWithCoverage:
+    PHP 70 Unit Tests:
+      docker:
+        - image: circleci/php:7.1-apache
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run:
+           name: Run unit tests.
+           command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml
+    PHP 71 unit tests with coverage:
+      docker:
+        - image: circleci/php:7.1-apache
       executor: my-executor
       steps:
         - attach_workspace:
@@ -83,7 +115,86 @@ jobs:
         - run:
            name: Run unit tests.
            command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml --coverage-text
-    DiCompileAndApiTests_71:
+    PHP 70 unit tests with coverage:
+      docker:
+        - image: circleci/php:7.0-apache
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run:
+           name: Run unit tests.
+           command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml --coverage-text
+    PHP 71 Compile and API test:
+      docker:
+        - image: circleci/php:7.1-apache
+        - image: circleci/mysql:5.6
+          environment:
+            MYSQL_USER: magento
+            MYSQL_PASSWORD: magento
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: circle_test
+            MYSQL_ALLOW_EMPTY_PASSWORD: true
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run:
+           name: Update linux packages.
+           command: sudo apt-get update || sudo apt-get update
+        - run:
+           name: Set PHP Memory to 1G.
+           command: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
+        - run:
+           name: Install required system libraries.
+           command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+        - run:
+           name: Configure PHP extensions.
+           command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
+        - run:
+           name: Install PHP extensions.
+           command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
+        - run:
+           name: Install MariaDB client.
+           command: sudo apt-get install -y mariadb-client
+        - run:
+           name: Add magento2.dev to hosts file.
+           command: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
+        - run:
+           name: Download Magento 2 web server configuration file.
+           command: wget $MAGENTO_WEB_SERVER_CONF
+        - run:
+           name: Copy Magento 2 web server configuration file.
+           command: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
+        - run:
+           name: Run sed on apache environment vars.
+           command: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
+        - run:
+           name: Restart apache.
+           command: sudo service apache2 restart
+        - run:
+           name: Import database dump.
+           command: mysql -h 127.0.0.1 -umagento -pmagento circle_test < ~/magento2/circle_test.sql
+        - run:
+           name: Run Magento DI Compile.
+           command: cd $MAGENTO_PATH && bin/magento setup:di:compile -q
+        - run:
+           name: Run Magento Setup Upgrade.
+           command: cd $MAGENTO_PATH && bin/magento setup:upgrade -q
+        - run:
+           name: Set write permissions on var directory.
+           command: chmod -R 777 $MAGENTO_PATH/var
+  ##      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
+        - run:
+           name: Run Magento Cache Flush.
+           command: $MAGENTO_PATH/bin/magento cache:flush -q
+        - run:
+           name: Disable Magento's cache.
+           command: $MAGENTO_PATH/bin/magento cache:disable -q
+        - run:
+           name: Run API functional tests.
+           command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/api-functional/phpunit.xml
+    PHP 70 Compile and API test:
       docker:
         - image: circleci/php:7.1-apache
         - image: circleci/mysql:5.6
@@ -158,19 +269,37 @@ workflows:
   build_test:
     jobs:
       - DownloadTools
-      - UnitTests:
+      - PHP 70 Unit Tests:
+          requires:
+            - DownloadTools
+      - PHP 71 Unit Tests:
           requires:
             - DownloadTools
       - PHP 71 Code Sniffer:
           requires:
             - DownloadTools
-      - UnitTestsWithCoverage:
+      - PHP 70 Code Sniffer:
           requires:
             - DownloadTools
-            - UnitTests
-            - DiCompileAndApiTests_71
-      - DiCompileAndApiTests_71:
+      - PHP 71 unit tests with coverage:
+          requires:
+            - DownloadTools
+            - PHP 71 Unit Tests
+            - PHP 71 Compile and API test
+            - PHP 71 Code Sniffer
+      - PHP 70 unit tests with coverage:
+          requires:
+            - DownloadTools
+            - PHP 70 Unit Tests
+            - PHP 70 Compile and API test
+            - PHP 70 Code Sniffer
+      - PHP 71 Compile and API test:
           requires:
             - DownloadTools
             - PHP 71 Code Sniffer
-            - UnitTests
+            - PHP 71 Unit Tests
+      - PHP 70 Compile and API test:
+          requires:
+            - DownloadTools
+            - PHP 70 Code Sniffer
+            - PHP 70 Unit Tests
