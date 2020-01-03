@@ -72,7 +72,7 @@ jobs:
            command: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 $MAGENTO_PATH/app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=$SNIFFER_SEVERITY --ignore=".circleci/config.yml,*.xml"
     UnitTests:
       executor: my-executor
-      parallelism: 4
+      parallelism: 3
       steps:
         - attach_workspace:
             at: ~/magento2
@@ -229,7 +229,7 @@ jobs:
         - run: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=10 --ignore=".circleci/config.yml,*.xml"
 
 workflows:
-  version: 2
+  version: 2.1
   build_test:
     jobs:
       - DownloadTools
