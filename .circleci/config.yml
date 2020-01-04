@@ -142,6 +142,50 @@ jobs:
               extensions-to-install: docker-php-ext-install sodium bcmath gd intl opcache pdo_mysql soap xsl zip
           - magento-compile-and-setup-upgrade
           #- run-api-functional-tests
+    PHP 73 Code Sniffer:
+      docker:
+        - image: circleci/php:7.3.9-apache-stretch
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run-php-cs
+    PHP 73 Unit Tests:
+      docker:
+        - image: circleci/php:7.3.9-apache-stretch
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run-php-unit-tests
+    PHP 73 unit tests with coverage:
+        docker:
+          - image: circleci/php:7.3.9-apache-stretch
+        executor: my-executor
+        steps:
+          - attach_workspace:
+              at: ~/magento2
+          - run-php-unit-tests:
+              coverage: --coverage-text
+    PHP 73 Compile and API test:
+        docker:
+          - image: circleci/php:7.3.9-apache-stretch
+          - image: circleci/mysql:5.6
+            environment:
+              MYSQL_USER: magento
+              MYSQL_PASSWORD: magento
+              MYSQL_ROOT_PASSWORD: root
+              MYSQL_DATABASE: circle_test
+              MYSQL_ALLOW_EMPTY_PASSWORD: true
+        executor: my-executor
+        steps:
+          - attach_workspace:
+              at: ~/magento2
+          - remove-libsodium-install-latest
+          - install-linux-dependencies:
+              extensions-to-install: docker-php-ext-install sodium bcmath gd intl opcache pdo_mysql soap xsl zip
+          - magento-compile-and-setup-upgrade
+          #- run-api-functional-tests
 
 workflows:
   version: 2.1
@@ -182,6 +226,23 @@ workflows:
             - PHP 72 Unit Tests
             - PHP 72 Compile and API test
             - PHP 72 Code Sniffer
+      - PHP 73 Unit Tests:
+          requires:
+            - PHP 73 Code Sniffer
+      - PHP 73 Code Sniffer:
+          requires:
+            - DownloadTools
+      - PHP 73 Compile and API test:
+          requires:
+            - DownloadTools
+            - PHP 73 Code Sniffer
+            - PHP 73 Unit Tests
+      - PHP 73 unit tests with coverage:
+          requires:
+            - DownloadTools
+            - PHP 73 Unit Tests
+            - PHP 73 Compile and API test
+            - PHP 73 Code Sniffer
 
 commands:
   run-php-unit-tests:
