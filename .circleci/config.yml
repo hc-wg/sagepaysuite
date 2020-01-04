@@ -177,6 +177,7 @@ jobs:
               MYSQL_ROOT_PASSWORD: root
               MYSQL_DATABASE: circle_test
               MYSQL_ALLOW_EMPTY_PASSWORD: true
+              MAGENTO_VERSION: 233EE
         executor: my-executor
         steps:
           - attach_workspace:
