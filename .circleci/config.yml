@@ -183,15 +183,10 @@ workflows:
             - DownloadTools232EE
       - PHP 71 Compile and API test:
           requires:
-            - DownloadTools232EE
-            - PHP 71 Code Sniffer
             - PHP 71 Unit Tests
       - PHP 71 unit tests with coverage:
           requires:
-            - DownloadTools232EE
-            - PHP 71 Unit Tests
             - PHP 71 Compile and API test
-            - PHP 71 Code Sniffer
       - PHP 72 Unit Tests:
           requires:
             - PHP 72 Code Sniffer
@@ -200,15 +195,10 @@ workflows:
             - DownloadTools232EE
       - PHP 72 Compile and API test:
           requires:
-            - DownloadTools232EE
-            - PHP 72 Code Sniffer
             - PHP 72 Unit Tests
       - PHP 72 unit tests with coverage:
           requires:
-            - DownloadTools232EE
-            - PHP 72 Unit Tests
             - PHP 72 Compile and API test
-            - PHP 72 Code Sniffer
       - PHP 73 Unit Tests:
           requires:
             - PHP 73 Code Sniffer
@@ -217,15 +207,10 @@ workflows:
             - DownloadTools233EE
       - PHP 73 Compile and API test:
           requires:
-            - DownloadTools233EE
-            - PHP 73 Code Sniffer
             - PHP 73 Unit Tests
       - PHP 73 unit tests with coverage:
           requires:
-            - DownloadTools233EE
-            - PHP 73 Unit Tests
             - PHP 73 Compile and API test
-            - PHP 73 Code Sniffer
 
 commands:
   run-php-unit-tests:
