@@ -81,7 +81,6 @@ jobs:
           - install-libsodium
           - install-linux-dependencies
           - magento-compile-and-setup-upgrade
-          #- run-api-functional-tests
     PHP 72 Code Sniffer:
       docker:
         - image: circleci/php:7.2-apache
