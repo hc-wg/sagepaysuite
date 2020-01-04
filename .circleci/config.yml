@@ -23,6 +23,72 @@ commands:
       - run:
          name: Run PHPCS
          command: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 $MAGENTO_PATH/app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=$SNIFFER_SEVERITY --ignore=".circleci/config.yml,*.xml"
+  install-linux-dependencies:
+    description: "Install system dependencies."
+    steps:
+      - run:
+          name: Update linux packages.
+          command: sudo apt-get update || sudo apt-get update
+      - run:
+          name: Set PHP Memory to 1G.
+          command: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
+      - run:
+          name: Install required system libraries.
+          command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+      - run:
+          name: Configure PHP extensions.
+          command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
+      - run:
+          name: Install PHP extensions.
+          command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
+      - run:
+          name: Install MariaDB client.
+          command: sudo apt-get install -y mariadb-client
+      - run:
+          name: Add magento2.dev to hosts file.
+          command: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
+      - run:
+          name: Download Magento 2 web server configuration file.
+          command: wget $MAGENTO_WEB_SERVER_CONF
+      - run:
+          name: Copy Magento 2 web server configuration file.
+          command: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
+      - run:
+          name: Run sed on apache environment vars.
+          command: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
+      - run:
+          name: Restart apache.
+          command: sudo service apache2 restart
+      - run:
+          name: Import database dump.
+          command: mysql -h 127.0.0.1 -umagento -pmagento circle_test < ~/magento2/circle_test.sql
+- magento-compile-and-setup-upgrade:
+    description: "Setup upgrade and compile Magento"
+    steps:
+      - run:
+          name: Run Magento DI Compile.
+          command: cd $MAGENTO_PATH && bin/magento setup:di:compile -q
+      - run:
+          name: Run Magento Setup Upgrade.
+          command: cd $MAGENTO_PATH && bin/magento setup:upgrade -q
+      - run:
+          name: Set write permissions on var directory.
+          command: chmod -R 777 $MAGENTO_PATH/var
+      ##      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
+      - run:
+          name: Run Magento Cache Flush.
+          command: $MAGENTO_PATH/bin/magento cache:flush -q
+      - run:
+          name: Disable Magento's cache.
+          command: $MAGENTO_PATH/bin/magento cache:disable -q
+
+- run-api-functional-tests:
+    description: "Setup upgrade and compile Magento"
+    steps:
+      - run:
+          name: Run API functional tests.
+          command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/api-functional/phpunit.xml
+
 
 executors:
   my-executor:
@@ -144,61 +210,9 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - run:
-           name: Update linux packages.
-           command: sudo apt-get update || sudo apt-get update
-        - run:
-           name: Set PHP Memory to 1G.
-           command: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
-        - run:
-           name: Install required system libraries.
-           command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
-        - run:
-           name: Configure PHP extensions.
-           command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
-        - run:
-           name: Install PHP extensions.
-           command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
-        - run:
-           name: Install MariaDB client.
-           command: sudo apt-get install -y mariadb-client
-        - run:
-           name: Add magento2.dev to hosts file.
-           command: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
-        - run:
-           name: Download Magento 2 web server configuration file.
-           command: wget $MAGENTO_WEB_SERVER_CONF
-        - run:
-           name: Copy Magento 2 web server configuration file.
-           command: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
-        - run:
-           name: Run sed on apache environment vars.
-           command: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
-        - run:
-           name: Restart apache.
-           command: sudo service apache2 restart
-        - run:
-           name: Import database dump.
-           command: mysql -h 127.0.0.1 -umagento -pmagento circle_test < ~/magento2/circle_test.sql
-        - run:
-           name: Run Magento DI Compile.
-           command: cd $MAGENTO_PATH && bin/magento setup:di:compile -q
-        - run:
-           name: Run Magento Setup Upgrade.
-           command: cd $MAGENTO_PATH && bin/magento setup:upgrade -q
-        - run:
-           name: Set write permissions on var directory.
-           command: chmod -R 777 $MAGENTO_PATH/var
-  ##      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
-        - run:
-           name: Run Magento Cache Flush.
-           command: $MAGENTO_PATH/bin/magento cache:flush -q
-        - run:
-           name: Disable Magento's cache.
-           command: $MAGENTO_PATH/bin/magento cache:disable -q
-        - run:
-           name: Run API functional tests.
-           command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/api-functional/phpunit.xml
+        - install-linux-dependencies
+        - magento-compile-and-setup-upgrade
+        - run-api-functional-tests
     PHP 70 Compile and API test:
       docker:
         - image: circleci/php:7.0-apache
