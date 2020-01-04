@@ -62,7 +62,7 @@ commands:
       - run:
           name: Import database dump.
           command: mysql -h 127.0.0.1 -umagento -pmagento circle_test < ~/magento2/circle_test.sql
-- magento-compile-and-setup-upgrade:
+  magento-compile-and-setup-upgrade:
     description: "Setup upgrade and compile Magento"
     steps:
       - run:
@@ -81,8 +81,7 @@ commands:
       - run:
           name: Disable Magento's cache.
           command: $MAGENTO_PATH/bin/magento cache:disable -q
-
-- run-api-functional-tests:
+  run-api-functional-tests:
     description: "Setup upgrade and compile Magento"
     steps:
       - run:
