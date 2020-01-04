@@ -3,18 +3,26 @@ version: 2.1
 commands:
   run-php-unit-tests:
     description: "Run unit tests."
+    parameters:
+      coverage:
+        type: string
+        default: ""
     steps:
       - run:
          name: Run unit tests.
-         command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml
+         command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml << parameters.coverage >>
   run-php-cs:
     description: "Install PHPCS dependencies and run."
     steps:
       - run:
          name: Composer require PHPCS and Magento coding standard.
          command: composer require --no-progress --prefer-dist --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard=$SNIFFER_VERSION
-      - run: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
-      - run: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 $MAGENTO_PATH/app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=$SNIFFER_SEVERITY --ignore=".circleci/config.yml,*.xml"
+      - run:
+         name: Set installed config paths.
+         command: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
+      - run:
+         name: Run PHPCS
+         command: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 $MAGENTO_PATH/app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=$SNIFFER_SEVERITY --ignore=".circleci/config.yml,*.xml"
 
 executors:
   my-executor:
@@ -111,9 +119,8 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - run:
-           name: Run unit tests.
-           command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml --coverage-text
+        - run-php-unit-tests:
+            coverage: --coverage-text
     PHP 70 unit tests with coverage:
       docker:
         - image: circleci/php:7.0-apache
@@ -121,9 +128,8 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - run:
-           name: Run unit tests.
-           command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml --coverage-text
+        - run-php-unit-tests:
+            coverage: --coverage-text
     PHP 71 Compile and API test:
       docker:
         - image: circleci/php:7.1-apache
