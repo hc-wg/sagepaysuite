@@ -1,4 +1,11 @@
 version: 2.1
+
+commands:
+  run-php-unit-tests:
+    description: "Run unit tests"
+    steps:
+      - run: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml
+
 executors:
   my-executor:
     docker:
@@ -92,9 +99,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - run:
-           name: Run unit tests.
-           command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml
+        - run-php-unit-tests
     PHP 70 Unit Tests:
       docker:
         - image: circleci/php:7.0-apache
@@ -102,9 +107,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - run:
-           name: Run unit tests.
-           command: /home/circleci/magento2/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml
+        - run-php-unit-tests
     PHP 71 unit tests with coverage:
       docker:
         - image: circleci/php:7.1-apache
@@ -275,31 +278,31 @@ workflows:
       - PHP 71 Unit Tests:
           requires:
             - PHP 71 Code Sniffer
-      - PHP 71 Code Sniffer:
-          requires:
-            - DownloadTools
       - PHP 70 Code Sniffer:
           requires:
             - DownloadTools
-      - PHP 71 unit tests with coverage:
+      - PHP 71 Code Sniffer:
           requires:
             - DownloadTools
-            - PHP 71 Unit Tests
-            - PHP 71 Compile and API test
-            - PHP 71 Code Sniffer
       - PHP 70 unit tests with coverage:
           requires:
             - DownloadTools
             - PHP 70 Unit Tests
             - PHP 70 Compile and API test
             - PHP 70 Code Sniffer
-      - PHP 71 Compile and API test:
+      - PHP 71 unit tests with coverage:
           requires:
             - DownloadTools
-            - PHP 71 Code Sniffer
             - PHP 71 Unit Tests
+            - PHP 71 Compile and API test
+            - PHP 71 Code Sniffer
       - PHP 70 Compile and API test:
           requires:
             - DownloadTools
             - PHP 70 Code Sniffer
             - PHP 70 Unit Tests
+      - PHP 71 Compile and API test:
+          requires:
+            - DownloadTools
+            - PHP 71 Code Sniffer
+            - PHP 71 Unit Tests
