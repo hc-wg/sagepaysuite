@@ -97,7 +97,7 @@ jobs:
           - install-libsodium
           - install-linux-dependencies
           - magento-compile-and-setup-upgrade
-          - run-api-functional-tests
+          #- run-api-functional-tests
 
 workflows:
   version: 2.1
@@ -212,8 +212,18 @@ commands:
   install-libsodium:
     description: "Install libsodium requirement for Magento 2.3"
     steps:
-      - run: wget https://download.libsodium.org/libsodium/releases/libsodium-$LIBSODIUM_VERSION.tar.gz
-      - run: tar xvzf libsodium-$LIBSODIUM_VERSION.tar.gz
-      - run: cd libsodium-$LIBSODIUM_VERSION/ && ./configure
-      - run: cd libsodium-$LIBSODIUM_VERSION/ && make && make check
-      - run: cd libsodium-$LIBSODIUM_VERSION/ && sudo make install
+      - run:
+          name: libsodium Download.
+          command: wget https://download.libsodium.org/libsodium/releases/libsodium-$LIBSODIUM_VERSION.tar.gz
+      - run:
+          name: libsodium Uncompress tar file.
+          command: tar xvzf libsodium-$LIBSODIUM_VERSION.tar.gz
+      - run:
+          name: libsodium Run Configure.
+          command: cd libsodium-$LIBSODIUM_VERSION/ && ./configure
+      - run:
+          name: libsodium Run Make Check.
+          command: cd libsodium-$LIBSODIUM_VERSION/ && make && make check
+      - run:
+          name: libsodium Run Make Install.
+          command: cd libsodium-$LIBSODIUM_VERSION/ && sudo make install
