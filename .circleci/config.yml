@@ -123,7 +123,7 @@ jobs:
               at: ~/magento2
           - remove-libsodium-install-latest
           - install-linux-dependencies:
-              extensions-to-install: docker-php-ext-install sodium bcmath gd intl opcache pdo_mysql soap xsl zip
+              extensions-to-install: sodium bcmath gd intl opcache pdo_mysql soap xsl zip
           - magento-compile-and-setup-upgrade
           #- run-api-functional-tests
     PHP 73 Code Sniffer:
@@ -167,7 +167,8 @@ jobs:
               at: ~/magento2
           - remove-libsodium-install-latest
           - install-linux-dependencies:
-              extensions-to-install: docker-php-ext-install sodium bcmath gd intl opcache pdo_mysql soap xsl zip
+              extensions-to-install: sodium bcmath gd intl opcache pdo_mysql soap xsl zip
+              libraries-to-install: libicu-dev libjpeg-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
           - magento-compile-and-setup-upgrade
           #- run-api-functional-tests
 
@@ -243,6 +244,9 @@ commands:
       extensions-to-install:
         type: string
         default: "docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip"
+      libraries-to-install:
+        type: string
+        default: "libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev"
     steps:
       - run:
           name: Update linux packages.
@@ -252,13 +256,13 @@ commands:
           command: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
       - run:
           name: Install required system libraries.
-          command: sudo apt-get install -qq -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+          command: sudo apt-get install -qq -y g++ << parameters.libraries-to-install >>
       - run:
           name: Configure PHP extensions.
           command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
       - run:
           name: Install PHP extensions.
-          command: sudo << parameters.extensions-to-install >>
+          command: sudo docker-php-ext-install << parameters.extensions-to-install >>
       - run:
           name: Install MariaDB client.
           command: sudo apt-get install -qq -y mariadb-client
