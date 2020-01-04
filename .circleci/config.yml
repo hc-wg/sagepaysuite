@@ -312,7 +312,7 @@ commands:
     steps:
       - run:
           name: Download Magento from ebizmartsbackup S3.
-          command: wget https://ebizmartsbackup.s3.amazonaws.com/Magento$MAGENTO_VERSION-PreCompiled.tar.gz
+          command: wget https://ebizmartsbackup.s3.amazonaws.com/Magento<< parameters.version >>-PreCompiled.tar.gz
   download-tools:
     description: "Download files and tools required."
     steps:
