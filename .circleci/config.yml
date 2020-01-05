@@ -88,16 +88,6 @@ jobs:
         - attach_workspace:
             at: ~/magento2
         - run-php-cs
-
-    PHP 70 Code Sniffer:
-      docker:
-        - image: circleci/php:7.0-apache
-      executor: my-executor
-      steps:
-        - attach_workspace:
-            at: ~/magento2
-        - run-php-cs
-
     PHP 71 Unit Tests:
       docker:
         - image: circleci/php:7.1-apache
@@ -106,32 +96,6 @@ jobs:
         - attach_workspace:
             at: ~/magento2
         - run-php-unit-tests
-    PHP 70 Unit Tests:
-      docker:
-        - image: circleci/php:7.0-apache
-      executor: my-executor
-      steps:
-        - attach_workspace:
-            at: ~/magento2
-        - run-php-unit-tests
-    PHP 71 unit tests with coverage:
-      docker:
-        - image: circleci/php:7.1-apache
-      executor: my-executor
-      steps:
-        - attach_workspace:
-            at: ~/magento2
-        - run-php-unit-tests:
-            coverage: --coverage-text
-    PHP 70 unit tests with coverage:
-      docker:
-        - image: circleci/php:7.0-apache
-      executor: my-executor
-      steps:
-        - attach_workspace:
-            at: ~/magento2
-        - run-php-unit-tests:
-            coverage: --coverage-text
     PHP 71 Compile and API test:
       docker:
         - image: circleci/php:7.1-apache
@@ -149,6 +113,31 @@ jobs:
         - install-linux-dependencies
         - magento-compile-and-setup-upgrade
         - run-api-functional-tests
+    PHP 71 unit tests with coverage:
+      docker:
+        - image: circleci/php:7.1-apache
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run-php-unit-tests:
+            coverage: --coverage-text
+    PHP 70 Code Sniffer:
+      docker:
+        - image: circleci/php:7.0-apache
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run-php-cs
+    PHP 70 Unit Tests:
+      docker:
+        - image: circleci/php:7.0-apache
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run-php-unit-tests
     PHP 70 Compile and API test:
       docker:
         - image: circleci/php:7.0-apache
@@ -166,36 +155,100 @@ jobs:
         - install-linux-dependencies
         - magento-compile-and-setup-upgrade
         - run-api-functional-tests
+    PHP 70 unit tests with coverage:
+      docker:
+        - image: circleci/php:7.0-apache
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run-php-unit-tests:
+            coverage: --coverage-text
+    PHP 72 Code Sniffer:
+      docker:
+        - image: circleci/php:7.2-apache
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run-php-cs
+    PHP 72 Unit Tests:
+      docker:
+        - image: circleci/php:7.2-apache
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run-php-unit-tests
+    PHP 72 Compile and API test:
+      docker:
+        - image: circleci/php:7.2-apache
+        - image: circleci/mysql:5.6
+          environment:
+            MYSQL_USER: magento
+            MYSQL_PASSWORD: magento
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: circle_test
+            MYSQL_ALLOW_EMPTY_PASSWORD: true
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - install-linux-dependencies
+        - magento-compile-and-setup-upgrade
+        - run-api-functional-tests
+    PHP 72 unit tests with coverage:
+      docker:
+        - image: circleci/php:7.2-apache
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - run-php-unit-tests:
+            coverage: --coverage-text
 
 workflows:
   version: 2.1
   build_test:
     jobs:
       - DownloadTools226EE
-      - PHP 70 Unit Tests:
-          requires:
-            - PHP 70 Code Sniffer
-      - PHP 71 Unit Tests:
-          requires:
-            - PHP 71 Code Sniffer
+      - DownloadTools2210EE
       - PHP 70 Code Sniffer:
           requires:
             - DownloadTools226EE
-      - PHP 71 Code Sniffer:
+      - PHP 70 Unit Tests:
           requires:
-            - DownloadTools226EE
+            - PHP 70 Code Sniffer
       - PHP 70 Compile and API test:
           requires:
             - PHP 70 Unit Tests
       - PHP 70 unit tests with coverage:
           requires:
             - PHP 70 Compile and API test
+      - PHP 71 Code Sniffer:
+          requires:
+            - DownloadTools226EE
+      - PHP 71 Unit Tests:
+          requires:
+            - PHP 71 Code Sniffer
       - PHP 71 Compile and API test:
           requires:
             - PHP 71 Unit Tests
       - PHP 71 unit tests with coverage:
           requires:
             - PHP 71 Compile and API test
+      - PHP 72 Code Sniffer:
+          requires:
+            - DownloadTools2210EE
+      - PHP 72 Unit Tests:
+          requires:
+            - PHP 72 Code Sniffer
+      - PHP 72 Compile and API test:
+          requires:
+            - PHP 72 Unit Tests
+      - PHP 72 unit tests with coverage:
+          requires:
+            - PHP 72 Compile and API test
 
 commands:
   run-php-unit-tests:
