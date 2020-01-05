@@ -332,7 +332,7 @@ commands:
           command: tar xpf Magento<< parameters.version >>-PreCompiled.tar.gz
       - run:
           name: Delete old code.
-          command: ~/magento2/app/code/Ebizmarts/SagePaySuite/*
+          command: rm -rf ~/magento2/app/code/Ebizmarts/SagePaySuite/*
       - run:
           name: Move Magento files.
           command: mv magento2/* .
