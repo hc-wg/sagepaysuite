@@ -241,7 +241,7 @@ commands:
     parameters:
       extensions-to-install:
         type: string
-        default: "docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip"
+        default: "bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip"
       libraries-to-install:
         type: string
         default: "libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev"
