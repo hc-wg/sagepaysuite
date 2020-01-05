@@ -167,7 +167,7 @@ jobs:
             coverage: --coverage-text
     run_php72:
       docker:
-        - image: circleci/php:7.2-apache
+        - image: circleci/php:7.2-apache-node
           environment:
             MYSQL_HOST: 127.0.0.1
             MYSQL_DATABASE: circle_test
@@ -186,25 +186,25 @@ jobs:
       working_directory: ~/magento2
 
       steps:
-        - run: sudo apt-get update || sudo apt-get update
         - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
         - run:
             name: Remove old libsodium and install latest (compiled)
             command: |-
               sudo rm -f /usr/local/etc/php/conf.d/*sodium.ini
               sudo rm -f /usr/local/lib/php/extensions/*/*sodium.so
-              sudo apt-get remove -qq -y libsodium*
+              sudo apt-get remove -y libsodium*
               sudo mkdir -p /tmp/libsodium
-              wget --quiet https://github.com/jedisct1/libsodium/archive/$LIBSODIUM_VERSION-RELEASE.tar.gz
-              sudo tar -xzf $LIBSODIUM_VERSION-RELEASE.tar.gz -C /tmp/libsodium
-              cd /tmp/libsodium/libsodium-$LIBSODIUM_VERSION-RELEASE/ && sudo ./configure && sudo make --silent && sudo make --silent check && sudo make --silent install
+              wget https://github.com/jedisct1/libsodium/archive/1.0.18-RELEASE.tar.gz
+              sudo tar -xzf 1.0.18-RELEASE.tar.gz -C /tmp/libsodium
+              cd /tmp/libsodium/libsodium-1.0.18-RELEASE/ && sudo ./configure && sudo make && sudo make check && sudo make install
               cd / && sudo rm -rf /tmp/libsodium
               sudo pecl install -o -f libsodium
               sudo docker-php-ext-enable sodium
         # Install dependencies
+        - run: sudo apt-get update
         - run:
             name: Install libraries
-            command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+            command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
 
         - run:
             name: Configure PHP extensions
@@ -239,7 +239,7 @@ jobs:
         - run: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
         - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
         - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
-        - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
+        #- run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
         - run: bin/magento setup:upgrade
         - run: bin/magento setup:di:compile
 
@@ -249,7 +249,7 @@ jobs:
         #      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
         - run: bin/magento cache:flush
         - run: bin/magento cache:disable
-        - run: /home/circleci/magento2/phpunit-6.2.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
+        #- run: /home/circleci/magento2/phpunit-6.2.phar -c /home/circleci/magento2/dev/tests/api-functional/phpunit.xml
 
         # Run code checks
         - run: composer require --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard
