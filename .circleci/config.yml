@@ -311,7 +311,7 @@ commands:
         default: ""
     steps:
       - run:
-          name: Download Magento from ebizmartsbackup S3.
+          name: Download Magento << parameters.version >> from ebizmartsbackup S3.
           command: wget --quiet https://ebizmartsbackup.s3.amazonaws.com/Magento<< parameters.version >>-PreCompiled.tar.gz
   download-tools:
     description: "Download files and tools required."
