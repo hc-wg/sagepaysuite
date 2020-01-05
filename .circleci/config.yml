@@ -10,53 +10,76 @@ executors:
       SNIFFER_VERSION: v5
       MAGENTO_PATH: /home/circleci/magento2
       MAGENTO_VERSION: 226EE
+      MAGENTO_VERSION_2210: 2210EE
       MAGENTO_WEB_SERVER_CONF: https://gist.githubusercontent.com/bcerban/25f3a2d93c19dc562020e0197f78685c/raw/70f1f314ad8ba5d302b911fe622a57ccec60a868/magento2.conf
       MAGENTO_COMPOSER_AUTH: https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
     working_directory: ~/
 
 jobs:
-    DownloadTools:
+    DownloadTools226EE:
       executor: my-executor
       steps:
-        - run:
-           name: Download PHP Unit.
-           command: wget https://phar.phpunit.de/phpunit-$PHP_UNIT_VERSION.phar && chmod +x phpunit-$PHP_UNIT_VERSION.phar
-        - run:
-           name: Download pre compiled Magento.
-           command: wget https://ebizmartsbackup.s3.amazonaws.com/Magento$MAGENTO_VERSION-PreCompiled.tar.gz
-        - run:
-           name: Decompress Magento.
-           command: tar xpf Magento$MAGENTO_VERSION-PreCompiled.tar.gz
-        - run:
-           name: Move Magento files.
-           command: mv magento2/* .
-        - run:
-            name: Delete old code.
-            command: rm -rf app/code/Ebizmarts
-        - run:
-           name: Download magento Composer auth.json file.
-           command: wget $MAGENTO_COMPOSER_AUTH
-        - run:
-           name: Set bin/magento as executable.
-           command: chmod +x bin/magento
-        - checkout:
-            path: app/code/Ebizmarts/SagePaySuite
-        - run:
-           name: Copy Api test data files to folder.
-           command: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
-        - run:
-           name: Copy php unit config file.
-           command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
-        - run:
-           name: Copy integration tests config file.
-           command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
-        - run:
-           name: Copy api functional config file.
-           command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
+        - download-pre-compiled-magento:
+            version: $MAGENTO_VERSION
+        - download-tools:
+            version: $MAGENTO_VERSION
         - persist_to_workspace:
             root: /home/circleci
             paths:
               - ./
+    DownloadTools2210EE:
+      executor: my-executor
+      steps:
+        - download-pre-compiled-magento:
+            version: $MAGENTO_VERSION_2210
+        - download-tools:
+            version: $MAGENTO_VERSION_2210
+        - persist_to_workspace:
+            root: /home/circleci
+            paths:
+              - ./
+#    DownloadTools:
+#      executor: my-executor
+#      steps:
+#        - run:
+#           name: Download PHP Unit.
+#           command: wget https://phar.phpunit.de/phpunit-$PHP_UNIT_VERSION.phar && chmod +x phpunit-$PHP_UNIT_VERSION.phar
+#        - run:
+#           name: Download pre compiled Magento.
+#           command: wget https://ebizmartsbackup.s3.amazonaws.com/Magento$MAGENTO_VERSION-PreCompiled.tar.gz
+#        - run:
+#           name: Decompress Magento.
+#           command: tar xpf Magento$MAGENTO_VERSION-PreCompiled.tar.gz
+#        - run:
+#           name: Move Magento files.
+#           command: mv magento2/* .
+#        - run:
+#            name: Delete old code.
+#            command: rm -rf app/code/Ebizmarts
+#        - run:
+#           name: Download magento Composer auth.json file.
+#           command: wget $MAGENTO_COMPOSER_AUTH
+#        - run:
+#           name: Set bin/magento as executable.
+#           command: chmod +x bin/magento
+#        - checkout:
+#            path: app/code/Ebizmarts/SagePaySuite
+#        - run:
+#           name: Copy Api test data files to folder.
+#           command: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
+#        - run:
+#           name: Copy php unit config file.
+#           command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
+#        - run:
+#           name: Copy integration tests config file.
+#           command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
+#        - run:
+#           name: Copy api functional config file.
+#           command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
+#        - persist_to_workspace:
+#            root: /home/circleci
+#            paths:
+#              - ./
     PHP 71 Code Sniffer:
       docker:
         - image: circleci/php:7.1-apache
@@ -148,7 +171,7 @@ workflows:
   version: 2.1
   build_test:
     jobs:
-      - DownloadTools
+      - DownloadTools226EE
       - PHP 70 Unit Tests:
           requires:
             - PHP 70 Code Sniffer
@@ -157,32 +180,22 @@ workflows:
             - PHP 71 Code Sniffer
       - PHP 70 Code Sniffer:
           requires:
-            - DownloadTools
+            - DownloadTools226EE
       - PHP 71 Code Sniffer:
           requires:
-            - DownloadTools
+            - DownloadTools226EE
       - PHP 70 Compile and API test:
           requires:
-            - DownloadTools
-            - PHP 70 Code Sniffer
             - PHP 70 Unit Tests
       - PHP 70 unit tests with coverage:
           requires:
-            - DownloadTools
-            - PHP 70 Unit Tests
             - PHP 70 Compile and API test
-            - PHP 70 Code Sniffer
       - PHP 71 Compile and API test:
           requires:
-            - DownloadTools
-            - PHP 71 Code Sniffer
             - PHP 71 Unit Tests
       - PHP 71 unit tests with coverage:
           requires:
-            - DownloadTools
-            - PHP 71 Unit Tests
             - PHP 71 Compile and API test
-            - PHP 71 Code Sniffer
 
 commands:
   run-php-unit-tests:
@@ -209,31 +222,38 @@ commands:
           command: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 $MAGENTO_PATH/app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=$SNIFFER_SEVERITY --ignore=".circleci/config.yml,*.xml"
   install-linux-dependencies:
     description: "Install system dependencies."
+    parameters:
+      extensions-to-install:
+        type: string
+        default: "bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip"
+      libraries-to-install:
+        type: string
+        default: "libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev"
     steps:
       - run:
           name: Update linux packages.
-          command: sudo apt-get update || sudo apt-get update
+          command: sudo apt-get update -qq || sudo apt-get update -qq
       - run:
           name: Set PHP Memory to 1G.
           command: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
       - run:
           name: Install required system libraries.
-          command: sudo apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+          command: sudo apt-get install -qq -y g++ << parameters.libraries-to-install >>
       - run:
           name: Configure PHP extensions.
           command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
       - run:
           name: Install PHP extensions.
-          command: sudo docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
+          command: sudo docker-php-ext-install << parameters.extensions-to-install >>
       - run:
           name: Install MariaDB client.
-          command: sudo apt-get install -y mariadb-client
+          command: sudo apt-get install -qq -y mariadb-client
       - run:
           name: Add magento2.dev to hosts file.
           command: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
       - run:
           name: Download Magento 2 web server configuration file.
-          command: wget $MAGENTO_WEB_SERVER_CONF
+          command: wget --quiet $MAGENTO_WEB_SERVER_CONF
       - run:
           name: Copy Magento 2 web server configuration file.
           command: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
@@ -271,3 +291,52 @@ commands:
       - run:
           name: Run API functional tests.
           command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/api-functional/phpunit.xml
+  download-pre-compiled-magento:
+    description: "Download pre-compiled Magento from S3."
+    parameters:
+      version:
+        type: string
+        default: ""
+    steps:
+      - run:
+          name: Download Magento from ebizmartsbackup S3.
+          command: wget --quiet https://ebizmartsbackup.s3.amazonaws.com/Magento<< parameters.version >>-PreCompiled.tar.gz
+  download-tools:
+    description: "Download files and tools required."
+    parameters:
+      version:
+        type: string
+        default: ""
+    steps:
+      - run:
+          name: Download PHP Unit.
+          command: wget --quiet https://phar.phpunit.de/phpunit-$PHP_UNIT_VERSION.phar && chmod +x phpunit-$PHP_UNIT_VERSION.phar
+      - run:
+          name: Decompress Magento.
+          command: tar xpf Magento<< parameters.version >>-PreCompiled.tar.gz
+      - run:
+          name: Move Magento files.
+          command: mv magento2/* .
+      - run:
+          name: Delete old code.
+          command: rm -rf app/code/Ebizmarts
+      - run:
+          name: Download magento Composer auth.json file.
+          command: wget --quiet $MAGENTO_COMPOSER_AUTH
+      - run:
+          name: Set bin/magento as executable.
+          command: chmod +x bin/magento
+      - checkout:
+          path: app/code/Ebizmarts/SagePaySuite
+      - run:
+          name: Copy Api test data files to folder.
+          command: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
+      - run:
+          name: Copy php unit config file.
+          command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
+      - run:
+          name: Copy integration tests config file.
+          command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
+      - run:
+          name: Copy api functional config file.
+          command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
