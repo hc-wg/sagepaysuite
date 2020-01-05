@@ -31,13 +31,16 @@ jobs:
            name: Move Magento files.
            command: mv magento2/* .
         - run:
+            name: Delete old code.
+            command: rm -rf app/code/Ebizmarts
+        - run:
            name: Download magento Composer auth.json file.
            command: wget $MAGENTO_COMPOSER_AUTH
         - run:
            name: Set bin/magento as executable.
            command: chmod +x bin/magento
         - checkout:
-            path: ~/magento2/app/code/Ebizmarts/SagePaySuite
+            path: app/code/Ebizmarts/SagePaySuite
         - run:
            name: Copy Api test data files to folder.
            command: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
