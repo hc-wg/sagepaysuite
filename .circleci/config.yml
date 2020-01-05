@@ -316,7 +316,7 @@ commands:
     steps:
       - run:
           name: Download Magento from ebizmartsbackup S3.
-          command: wget https://ebizmartsbackup.s3.amazonaws.com/Magento<< parameters.version >>-PreCompiled.tar.gz
+          command: wget -quiet https://ebizmartsbackup.s3.amazonaws.com/Magento<< parameters.version >>-PreCompiled.tar.gz
   download-tools:
     description: "Download files and tools required."
     parameters:
@@ -326,19 +326,19 @@ commands:
     steps:
       - run:
           name: Download PHP Unit.
-          command: wget https://phar.phpunit.de/phpunit-$PHP_UNIT_VERSION.phar && chmod +x phpunit-$PHP_UNIT_VERSION.phar
+          command: wget -quiet https://phar.phpunit.de/phpunit-$PHP_UNIT_VERSION.phar && chmod +x phpunit-$PHP_UNIT_VERSION.phar
       - run:
           name: Decompress Magento.
           command: tar xpf Magento<< parameters.version >>-PreCompiled.tar.gz
       - run:
           name: Delete old code.
-          command: rm -rf ~/magento2/app/code/Ebizmarts/SagePaySuite/*
+          command: rm -rf ~/magento2/app/code/Ebizmarts/SagePaySuite
       - run:
           name: Move Magento files.
           command: mv magento2/* .
       - run:
           name: Download magento Composer auth.json file.
-          command: wget $MAGENTO_COMPOSER_AUTH
+          command: wget -quiet $MAGENTO_COMPOSER_AUTH
       - run:
           name: Set bin/magento as executable.
           command: chmod +x bin/magento
