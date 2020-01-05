@@ -153,9 +153,10 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - install-linux-dependencies
+        - remove-libsodium-install-latest
+        - install-linux-dependencies:
+            extensions-to-install: sodium bcmath gd intl opcache pdo_mysql soap xsl zip
         - magento-compile-and-setup-upgrade
-        - run-api-functional-tests
     PHP 72 unit tests with coverage:
       docker:
         - image: circleci/php:7.2-apache
@@ -223,6 +224,9 @@ commands:
   run-php-cs:
     description: "Install PHPCS dependencies and run."
     steps:
+      - run:
+          name: Check PHP version.
+          command: php -v
       - run:
           name: Composer require PHPCS and Magento coding standard.
           command: composer require --no-progress --prefer-dist --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard=$SNIFFER_VERSION
@@ -311,7 +315,7 @@ commands:
         default: ""
     steps:
       - run:
-          name: Download Magento << parameters.version >> from ebizmartsbackup S3.
+          name: Download Magento from ebizmartsbackup S3.
           command: wget --quiet https://ebizmartsbackup.s3.amazonaws.com/Magento<< parameters.version >>-PreCompiled.tar.gz
   download-tools:
     description: "Download files and tools required."
