@@ -88,8 +88,10 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
 
             $payment->setAdditionalInformation('vendorTxCode', (string)$transactionDetails->vendortxcode);
             $payment->setAdditionalInformation('statusDetail', (string)$transactionDetails->status);
+
             if (isset($transactionDetails->{'threedresult'})) {
-                $payment->setAdditionalInformation('threeDStatus', (string)$transactionDetails->{'threedresult'});
+                $threeD = (string)$transactionDetails->{'threedresult'};
+                $payment->setAdditionalInformation('threeDStatus', $threeD);
             }
             $payment->save();
 
