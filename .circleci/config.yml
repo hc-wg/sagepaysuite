@@ -184,8 +184,8 @@ workflows:
 #          requires:
 #            - PHP 70 Code Sniffer
       - PHP 70 Compile and API test:
-          requires:
-            - PHP 70 Unit Tests
+#          requires:
+#            - PHP 70 Unit Tests
       - PHP 70 unit tests with coverage:
           requires:
             - PHP 70 Compile and API test
