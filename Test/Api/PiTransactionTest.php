@@ -5,6 +5,7 @@ namespace Ebizmarts\SagePaySuite\Test\Api;
 use Magento\Framework\Webapi\Rest\Request;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\TestCase\WebapiAbstract;
+use Ebizmarts\SagePaySuite\Model\Config;
 
 class PiTransactionTest extends WebapiAbstract
 {
@@ -28,6 +29,9 @@ class PiTransactionTest extends WebapiAbstract
     /** @var \Magento\Framework\HTTP\Adapter\Curl */
     private $curl;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Api\PIRest */
+    private $piRestApi;
+
     protected function setUp()
     {
         $this->config = Bootstrap::getObjectManager()->create(
@@ -38,6 +42,7 @@ class PiTransactionTest extends WebapiAbstract
 
         $this->helper = $this->objectManager->create("Ebizmarts\SagePaySuite\Test\Api\Helper");
         $this->curl = $this->objectManager->create("Magento\Framework\HTTP\Adapter\Curl");
+        $this->piRestApi = $this->objectManager->create("Ebizmarts\SagePaySuite\Model\Api\PIRest");
     }
 
     /**
@@ -45,18 +50,20 @@ class PiTransactionTest extends WebapiAbstract
      */
     public function testPiCompleteTransaction()
     {
+        $this->config->setDataByPath("sagepaysuite/global/mode", Config::MODE_DEVELOPMENT);
+        $this->config->save();
+
         $this->helper->savePiKey();
         $this->helper->savePiPassword();
 
         $merchantSessionKey = $this->obtainMerchantSessionKey();
-
         $cardIdentifier = $this->getCardIdentifier($merchantSessionKey);
 
         $response = $this->payAndCreateOrder($cardIdentifier, $merchantSessionKey);
 
-        $transactionDetails = $this->helper->getTransactionDetails($response['transaction_id']);
+        $transactionDetails = $this->piRestApi->transactionDetails($response['transaction_id']);
 
-        $this->assertEquals("USD", $transactionDetails->currency);
+        $this->assertEquals("USD", $transactionDetails->getCurrency());
     }
 
     /**
@@ -85,9 +92,9 @@ class PiTransactionTest extends WebapiAbstract
 
         $response = $this->payAndCreateOrder($cardIdentifier, $merchantSessionKey);
 
-        $transactionDetails = $this->helper->getTransactionDetails($response['transaction_id']);
+        $transactionDetails = $this->piRestApi->transactionDetails($response['transaction_id']);
 
-        $this->assertEquals("GBP", $transactionDetails->currency);
+        $this->assertEquals("GBP", $transactionDetails->getCurrency());
     }
 
     /**
@@ -107,7 +114,7 @@ class PiTransactionTest extends WebapiAbstract
 
         $this->curl->write(
             \Zend_Http_Client::POST,
-            "https://pi-test.sagepay.com/api/v1/card-identifiers",
+            "http://pi-test.sagepay.com/api/v1/card-identifiers", //http because of proxy
             '1.0',
             ["Content-type: application/json", "Authorization: Bearer $merchantSessionKey", "Cache-Control: no-cache"],
             json_encode($payload)

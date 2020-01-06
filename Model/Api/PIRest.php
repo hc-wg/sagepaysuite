@@ -207,6 +207,8 @@ class PIRest
 
         if ($this->config->getMode() == Config::MODE_LIVE) {
             return Config::URL_PI_API_LIVE . $endpoint;
+        } else if($this->config->getMode() == Config::MODE_DEVELOPMENT) {
+            return Config::URL_PI_API_DEV . $endpoint;
         } else {
             return Config::URL_PI_API_TEST . $endpoint;
         }
