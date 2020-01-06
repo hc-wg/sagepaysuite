@@ -83,16 +83,17 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
             } else {
                 $vendorTxCode = $payment->getAdditionalInformation("vendorTxCode");
                 $transactionDetails = $this->_reportingApi->getTransactionDetailsByVendorTxCode($vendorTxCode, $order->getStoreId());
+            }
+
+            if (isset($transactionDetails->vpstxid) && isset($transactionDetails->vendortxcode) && isset($transactionDetails->status)){
                 $payment->setLastTransId((string)$transactionDetails->vpstxid);
+                $payment->setAdditionalInformation('vendorTxCode', (string)$transactionDetails->vendortxcode);
+                $payment->setAdditionalInformation('statusDetail', (string)$transactionDetails->status);
+                if (isset($transactionDetails->{'threedresult'})) {
+                    $payment->setAdditionalInformation('threeDStatus', (string)$transactionDetails->{'threedresult'});
+                }
+                $payment->save();
             }
-
-            $payment->setAdditionalInformation('vendorTxCode', (string)$transactionDetails->vendortxcode);
-            $payment->setAdditionalInformation('statusDetail', (string)$transactionDetails->status);
-
-            if (isset($transactionDetails->{'threedresult'})) {
-                $payment->setAdditionalInformation('threeDStatus', (string)$transactionDetails->{'threedresult'});
-            }
-            $payment->save();
 
             //update fraud status
             if (!empty($payment->getLastTransId())) {
