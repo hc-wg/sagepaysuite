@@ -23,7 +23,6 @@ jobs:
       steps:
         - run: sudo apt-get update || sudo apt-get update
         - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
-        - run: sudo sh -c 'echo "199.188.207.57  test.sagepay.com" >> /etc/hosts'
 
         # Install dependencies
         - run:
@@ -104,7 +103,6 @@ jobs:
       steps:
         - run: sudo apt-get update || sudo apt-get update
         - run: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
-        - run: sudo sh -c 'echo "199.188.207.57  test.sagepay.com" >> /etc/hosts'
 
         # Install dependencies
         - run:
