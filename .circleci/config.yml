@@ -115,6 +115,7 @@ jobs:
         - attach_workspace:
             at: ~/magento2
         - sagepay/install-linux-dependencies
+        - run: sudo sh -c 'echo "199.188.207.57  test.sagepay.com" >> /etc/hosts'
         - sagepay/magento-compile-and-setup-upgrade
         - sagepay/run-api-functional-tests
     PHP 70 unit tests with coverage:
