@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  sagepay: pruebas/ebizmarts-sagepay@0.0.2
+
 executors:
   my-executor:
     docker:
@@ -20,9 +23,9 @@ jobs:
     DownloadTools232EE:
       executor: my-executor
       steps:
-        - download-pre-compiled-magento:
+        - sagepay/download-pre-compiled-magento:
             version: $MAGENTO_VERSION
-        - download-tools:
+        - sagepay/download-tools:
             version: $MAGENTO_VERSION
         - persist_to_workspace:
             root: /home/circleci
@@ -31,9 +34,9 @@ jobs:
     DownloadTools233EE:
       executor: my-executor
       steps:
-        - download-pre-compiled-magento:
+        - sagepay/download-pre-compiled-magento:
             version: $MAGENTO_VERSION_233
-        - download-tools:
+        - sagepay/download-tools:
             version: $MAGENTO_VERSION_233
         - persist_to_workspace:
             root: /home/circleci
@@ -46,7 +49,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - run-php-cs
+        - sagepay/run-php-cs
     PHP 71 Unit Tests:
       docker:
         - image: circleci/php:7.1-apache
@@ -54,7 +57,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - run-php-unit-tests
+        - sagepay/run-php-unit-tests
     PHP 71 unit tests with coverage:
         docker:
           - image: circleci/php:7.1-apache
@@ -62,7 +65,7 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
-          - run-php-unit-tests:
+          - sagepay/run-php-unit-tests:
               coverage: --coverage-text
     PHP 71 Compile and API test:
         docker:
@@ -78,9 +81,9 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
-          - install-libsodium
-          - install-linux-dependencies
-          - magento-compile-and-setup-upgrade
+          - sagepay/install-libsodium
+          - sagepay/install-linux-dependencies
+          - sagepay/magento-compile-and-setup-upgrade
     PHP 72 Code Sniffer:
       docker:
         - image: circleci/php:7.2-apache
@@ -88,7 +91,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - run-php-cs
+        - sagepay/run-php-cs
     PHP 72 Unit Tests:
       docker:
         - image: circleci/php:7.2-apache
@@ -96,7 +99,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - run-php-unit-tests
+        - sagepay/run-php-unit-tests
     PHP 72 unit tests with coverage:
         docker:
           - image: circleci/php:7.2-apache
@@ -104,7 +107,7 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
-          - run-php-unit-tests:
+          - sagepay/run-php-unit-tests:
               coverage: --coverage-text
     PHP 72 Compile and API test:
         docker:
@@ -120,10 +123,10 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
-          - remove-libsodium-install-latest
-          - install-linux-dependencies:
+          - sagepay/remove-libsodium-install-latest
+          - sagepay/install-linux-dependencies:
               extensions-to-install: sodium bcmath gd intl opcache pdo_mysql soap xsl zip
-          - magento-compile-and-setup-upgrade
+          - sagepay/magento-compile-and-setup-upgrade
     PHP 73 Code Sniffer:
       docker:
         - image: circleci/php:7.3.9-apache-stretch
@@ -131,7 +134,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - run-php-cs
+        - sagepay/run-php-cs
     PHP 73 Unit Tests:
       docker:
         - image: circleci/php:7.3.9-apache-stretch
@@ -139,7 +142,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - run-php-unit-tests
+        - sagepay/run-php-unit-tests
     PHP 73 unit tests with coverage:
         docker:
           - image: circleci/php:7.3.9-apache-stretch
@@ -147,7 +150,7 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
-          - run-php-unit-tests:
+          - sagepay/run-php-unit-tests:
               coverage: --coverage-text
     PHP 73 Compile and API test:
         docker:
@@ -163,11 +166,11 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
-          - remove-libsodium-install-latest
-          - install-linux-dependencies:
+          - sagepay/remove-libsodium-install-latest
+          - sagepay/install-linux-dependencies:
               extensions-to-install: sodium bcmath gd intl opcache pdo_mysql soap xsl zip
               libraries-to-install: libicu-dev libjpeg-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
-          - magento-compile-and-setup-upgrade
+          - sagepay/magento-compile-and-setup-upgrade
           #- run-api-functional-tests
 
 workflows:
@@ -212,181 +215,3 @@ workflows:
       - PHP 73 unit tests with coverage:
           requires:
             - PHP 73 Compile and API test
-
-commands:
-  run-php-unit-tests:
-    description: "Run unit tests."
-    parameters:
-      coverage:
-        type: string
-        default: ""
-    steps:
-      - run:
-          name: Run unit tests.
-          command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/unit/phpunit.xml << parameters.coverage >>
-  run-php-cs:
-    description: "Install PHPCS dependencies and run."
-    steps:
-      - run:
-          name: Composer require PHPCS and Magento coding standard.
-          command: composer require --no-progress --prefer-dist --dev squizlabs/php_codesniffer:3.x-dev magento/magento-coding-standard=$SNIFFER_VERSION
-      - run:
-          name: Set installed config paths.
-          command: vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/
-      - run:
-          name: Run PHPCS
-          command: vendor/bin/phpcs --standard=Magento2,PSR1,PSR2 $MAGENTO_PATH/app/code/Ebizmarts/* --extensions=php,phtml --warning-severity=$SNIFFER_SEVERITY --ignore=".circleci/config.yml,*.xml"
-  install-linux-dependencies:
-    description: "Install system dependencies."
-    parameters:
-      extensions-to-install:
-        type: string
-        default: "bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip"
-      libraries-to-install:
-        type: string
-        default: "libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev"
-    steps:
-      - run:
-          name: Update linux packages.
-          command: sudo apt-get update -qq || sudo apt-get update -qq
-      - run:
-          name: Set PHP Memory to 1G.
-          command: sudo sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
-      - run:
-          name: Install required system libraries.
-          command: sudo apt-get install -qq -y g++ << parameters.libraries-to-install >>
-      - run:
-          name: Configure PHP extensions.
-          command: sudo docker-php-ext-configure intl && sudo docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
-      - run:
-          name: Install PHP extensions.
-          command: sudo docker-php-ext-install << parameters.extensions-to-install >>
-      - run:
-          name: Install MariaDB client.
-          command: sudo apt-get install -qq -y mariadb-client
-      - run:
-          name: Add magento2.dev to hosts file.
-          command: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
-      - run:
-          name: Download Magento 2 web server configuration file.
-          command: wget --quiet $MAGENTO_WEB_SERVER_CONF
-      - run:
-          name: Copy Magento 2 web server configuration file.
-          command: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
-      - run:
-          name: Run sed on apache environment vars.
-          command: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
-      - run:
-          name: Restart apache.
-          command: sudo service apache2 restart
-      - run:
-          name: Import database dump.
-          command: mysql -h 127.0.0.1 -umagento -pmagento circle_test < ~/magento2/circle_test.sql
-  magento-compile-and-setup-upgrade:
-    description: "Setup upgrade and compile Magento"
-    steps:
-      - run:
-          name: Run Magento DI Compile.
-          command: cd $MAGENTO_PATH && bin/magento setup:di:compile -q
-      - run:
-          name: Run Magento Setup Upgrade.
-          command: cd $MAGENTO_PATH && bin/magento setup:upgrade -q
-      - run:
-          name: Set write permissions on var directory.
-          command: chmod -R 777 $MAGENTO_PATH/var
-      ##      - run: /home/circleci/magento2/phpunit-6.2.phar -c dev/tests/integration/phpunit.xml
-      - run:
-          name: Run Magento Cache Flush.
-          command: $MAGENTO_PATH/bin/magento cache:flush -q
-      - run:
-          name: Disable Magento's cache.
-          command: $MAGENTO_PATH/bin/magento cache:disable -q
-  run-api-functional-tests:
-    description: "Setup upgrade and compile Magento"
-    steps:
-      - run:
-          name: Run API functional tests.
-          command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/api-functional/phpunit.xml
-  download-pre-compiled-magento:
-    description: "Download pre-compiled Magento from S3."
-    parameters:
-      version:
-        type: string
-        default: ""
-    steps:
-      - run:
-          name: Download Magento from ebizmartsbackup S3.
-          command: wget --quiet https://ebizmartsbackup.s3.amazonaws.com/Magento<< parameters.version >>-PreCompiled.tar.gz
-  download-tools:
-    description: "Download files and tools required."
-    parameters:
-      version:
-        type: string
-        default: ""
-    steps:
-      - run:
-          name: Download PHP Unit.
-          command: wget --quiet https://phar.phpunit.de/phpunit-$PHP_UNIT_VERSION.phar && chmod +x phpunit-$PHP_UNIT_VERSION.phar
-      - run:
-          name: Decompress Magento.
-          command: tar xpf Magento<< parameters.version >>-PreCompiled.tar.gz
-      - run:
-          name: Move Magento files.
-          command: mv magento2/* .
-      - run:
-          name: Delete old code.
-          command: rm -rf app/code/Ebizmarts
-      - run:
-          name: Download magento Composer auth.json file.
-          command: wget --quiet $MAGENTO_COMPOSER_AUTH
-      - run:
-          name: Set bin/magento as executable.
-          command: chmod +x bin/magento
-      - checkout:
-          path: app/code/Ebizmarts/SagePaySuite
-      - run:
-          name: Copy Api test data files to folder.
-          command: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
-      - run:
-          name: Copy php unit config file.
-          command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
-      - run:
-          name: Copy integration tests config file.
-          command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
-      - run:
-          name: Copy api functional config file.
-          command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
-  install-libsodium:
-    description: "Install libsodium requirement for Magento 2.3"
-    steps:
-      - run:
-          name: libsodium Download.
-          command: wget --quiet https://download.libsodium.org/libsodium/releases/libsodium-$LIBSODIUM_VERSION.tar.gz
-      - run:
-          name: libsodium Uncompress tar file.
-          command: tar xvzf libsodium-$LIBSODIUM_VERSION.tar.gz
-      - run:
-          name: libsodium Run Configure.
-          command: cd libsodium-$LIBSODIUM_VERSION/ && ./configure
-      - run:
-          name: libsodium Run Make Check.
-          command: cd libsodium-$LIBSODIUM_VERSION/ && make && make check
-      - run:
-          name: libsodium Run Make Install.
-          command: cd libsodium-$LIBSODIUM_VERSION/ && sudo make install
-  remove-libsodium-install-latest:
-    description: "Remove libsodium embedded in image and install latest."
-    steps:
-      - run:
-          name: Remove old libsodium and install latest (compiled)
-          command: |-
-            sudo rm -f /usr/local/etc/php/conf.d/*sodium.ini
-            sudo rm -f /usr/local/lib/php/extensions/*/*sodium.so
-            sudo apt-get remove -qq -y libsodium*
-            sudo mkdir -p /tmp/libsodium
-            wget --quiet https://github.com/jedisct1/libsodium/archive/$LIBSODIUM_VERSION-RELEASE.tar.gz
-            sudo tar -xzf $LIBSODIUM_VERSION-RELEASE.tar.gz -C /tmp/libsodium
-            cd /tmp/libsodium/libsodium-$LIBSODIUM_VERSION-RELEASE/ && sudo ./configure && sudo make --silent && sudo make --silent check && sudo make --silent install
-            cd / && sudo rm -rf /tmp/libsodium
-            sudo pecl install -o -f libsodium
-            sudo docker-php-ext-enable sodium
