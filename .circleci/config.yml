@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  sagepay: pruebas/ebizmarts-sagepay@dev:first
+
 executors:
   my-executor:
     docker:
@@ -18,7 +21,7 @@ jobs:
     DownloadTools216:
       executor: my-executor
       steps:
-        - download-pre-compiled-magento:
+        - sagepay/download-pre-compiled-magento:
             version: $MAGENTO_VERSION
         - download-tools:
             version: $MAGENTO_VERSION
@@ -237,16 +240,6 @@ commands:
       - run:
           name: Run API functional tests.
           command: $MAGENTO_PATH/phpunit-$PHP_UNIT_VERSION.phar -c $MAGENTO_PATH/dev/tests/api-functional/phpunit.xml
-  download-pre-compiled-magento:
-    description: "Download pre-compiled Magento from S3."
-    parameters:
-      version:
-        type: string
-        default: ""
-    steps:
-      - run:
-          name: Download Magento from ebizmartsbackup S3.
-          command: wget --quiet https://ebizmartsbackup.s3.amazonaws.com/Magento<< parameters.version >>-PreCompiled.tar.gz
   download-tools:
     description: "Download files and tools required."
     parameters:
