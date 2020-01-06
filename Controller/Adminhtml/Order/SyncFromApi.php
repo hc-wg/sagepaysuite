@@ -90,8 +90,7 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
             $payment->setAdditionalInformation('statusDetail', (string)$transactionDetails->status);
 
             if (isset($transactionDetails->{'threedresult'})) {
-                $threeD = (string)$transactionDetails->{'threedresult'};
-                $payment->setAdditionalInformation('threeDStatus', $threeD);
+                $payment->setAdditionalInformation('threeDStatus', (string)$transactionDetails->{'threedresult'});
             }
             $payment->save();
 

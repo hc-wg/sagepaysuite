@@ -137,12 +137,8 @@ class Reporting
      */
     private function _handleApiErrors($response)
     {
-        error_log(__METHOD__, 3, '/Users/juan/Sites/m233/var/log/ebizmarts.log');
         //parse xml as object
         $response = (object)((array)$response);
-        $jsonVar = json_encode($response, JSON_PRETTY_PRINT);
-        error_log($jsonVar." response\n", 3, '/Users/juan/Sites/m233/var/log/ebizmarts.log');
-
 
         $exceptionPhrase = "Invalid response from Sage Pay API.";
         $exceptionCode = 0;
