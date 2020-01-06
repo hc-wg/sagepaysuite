@@ -176,7 +176,7 @@ workflows:
   build_test:
     jobs:
       - DownloadTools226EE
-      - DownloadTools2210EE
+      #- DownloadTools2210EE
 #      - PHP 70 Code Sniffer:
 #          requires:
 #            - DownloadTools226EE
@@ -184,32 +184,32 @@ workflows:
 #          requires:
 #            - PHP 70 Code Sniffer
       - PHP 70 Compile and API test
-#          requires:
-#            - PHP 70 Unit Tests
-      - PHP 70 unit tests with coverage:
-          requires:
-            - PHP 70 Compile and API test
-      - PHP 71 Code Sniffer:
           requires:
             - DownloadTools226EE
-      - PHP 71 Unit Tests:
-          requires:
-            - PHP 71 Code Sniffer
-      - PHP 71 Compile and API test:
-          requires:
-            - PHP 71 Unit Tests
-      - PHP 71 unit tests with coverage:
-          requires:
-            - PHP 71 Compile and API test
-      - PHP 72 Code Sniffer:
-          requires:
-            - DownloadTools2210EE
-      - PHP 72 Unit Tests:
-          requires:
-            - PHP 72 Code Sniffer
-      - PHP 72 Compile and API test:
-          requires:
-            - PHP 72 Unit Tests
-      - PHP 72 unit tests with coverage:
-          requires:
-            - PHP 72 Compile and API test
+#      - PHP 70 unit tests with coverage:
+#          requires:
+#            - PHP 70 Compile and API test
+#      - PHP 71 Code Sniffer:
+#          requires:
+#            - DownloadTools226EE
+#      - PHP 71 Unit Tests:
+#          requires:
+#            - PHP 71 Code Sniffer
+#      - PHP 71 Compile and API test:
+#          requires:
+#            - PHP 71 Unit Tests
+#      - PHP 71 unit tests with coverage:
+#          requires:
+#            - PHP 71 Compile and API test
+#      - PHP 72 Code Sniffer:
+#          requires:
+#            - DownloadTools2210EE
+#      - PHP 72 Unit Tests:
+#          requires:
+#            - PHP 72 Code Sniffer
+#      - PHP 72 Compile and API test:
+#          requires:
+#            - PHP 72 Unit Tests
+#      - PHP 72 unit tests with coverage:
+#          requires:
+#            - PHP 72 Compile and API test
