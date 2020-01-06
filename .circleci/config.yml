@@ -183,7 +183,7 @@ workflows:
 #      - PHP 70 Unit Tests:
 #          requires:
 #            - PHP 70 Code Sniffer
-      - PHP 70 Compile and API test
+      - PHP 70 Compile and API test:
           requires:
             - DownloadTools226EE
 #      - PHP 70 unit tests with coverage:
