@@ -51,6 +51,8 @@ class ServerRegisterTransactionTest extends WebapiAbstract
      */
     public function testRegisterServerTransacionAsGuest()
     {
+        $this->config->setDataByPath("sagepaysuite/global/mode", \Ebizmarts\SagePaySuite\Model\Config::MODE_DEVELOPMENT);
+        $this->config->save();
         $this->setPaymentActionAsPayment();
 
         $serviceInfo = [
