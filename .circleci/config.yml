@@ -177,12 +177,12 @@ workflows:
     jobs:
       - DownloadTools226EE
       - DownloadTools2210EE
-      - PHP 70 Code Sniffer:
-          requires:
-            - DownloadTools226EE
-      - PHP 70 Unit Tests:
-          requires:
-            - PHP 70 Code Sniffer
+#      - PHP 70 Code Sniffer:
+#          requires:
+#            - DownloadTools226EE
+#      - PHP 70 Unit Tests:
+#          requires:
+#            - PHP 70 Code Sniffer
       - PHP 70 Compile and API test:
           requires:
             - PHP 70 Unit Tests
