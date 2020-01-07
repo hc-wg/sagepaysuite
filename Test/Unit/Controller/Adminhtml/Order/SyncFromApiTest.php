@@ -61,7 +61,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
 
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->setMethods(['getLastTransId', 'setAdditionalInformation', 'save'])
+            ->setMethods(['getLastTransId', 'setAdditionalInformation', 'save', 'setLastTransId'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -71,10 +71,14 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->willReturn('{' . self::TEST_VPS_TX_ID .'}');
 
         $paymentMock
-            ->expects($this->atLeastOnce())
+            ->expects($this->exactly(3))
             ->method('setAdditionalInformation')
             ->willReturnSelf();
 
+        $paymentMock
+            ->expects($this->once())
+            ->method('setLastTransId')
+            ->willReturnSelf();
 
         $orderMock = $this->makeOrderMock();
 
