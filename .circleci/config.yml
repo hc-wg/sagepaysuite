@@ -111,7 +111,7 @@ jobs:
               coverage: --coverage-text
     PHP 72 Compile and API test:
         docker:
-          - image: ebizmarts/magento2-php72:0.0.1
+          - image: ebizmarts/magento2-php72:0.0.2
           - image: circleci/mysql:5.6
             environment:
               MYSQL_USER: magento
