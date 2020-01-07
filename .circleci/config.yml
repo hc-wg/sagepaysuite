@@ -154,7 +154,7 @@ jobs:
               coverage: --coverage-text
     PHP 73 Compile and API test:
         docker:
-          - image: circleci/php:7.3.9-apache-stretch
+          - image: ebizmarts/magento2-php73:0.0.1
           - image: circleci/mysql:5.6
             environment:
               MYSQL_USER: magento
@@ -166,10 +166,10 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
-          - sagepay/remove-libsodium-install-latest
-          - sagepay/install-linux-dependencies:
-              extensions-to-install: sodium bcmath gd intl opcache pdo_mysql soap xsl zip
-              libraries-to-install: libicu-dev libjpeg-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+          ##- sagepay/remove-libsodium-install-latest
+          ##- sagepay/install-linux-dependencies:
+          ##    extensions-to-install: sodium bcmath gd intl opcache pdo_mysql soap xsl zip
+          ##    libraries-to-install: libicu-dev libjpeg-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
           - sagepay/magento-compile-and-setup-upgrade
           #- run-api-functional-tests
 
