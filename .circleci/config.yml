@@ -129,7 +129,7 @@ jobs:
           - sagepay/magento-compile-and-setup-upgrade
     PHP 73 Code Sniffer:
       docker:
-        - image: ebizmarts/magento2-php73-mysql56:0.0.1
+        - image: circleci/php:7.3.9-apache-stretch
       executor: my-executor
       steps:
         - attach_workspace:
@@ -154,7 +154,8 @@ jobs:
               coverage: --coverage-text
     PHP 73 Compile and API test:
         docker:
-          - image: ebizmarts/magento2-php73-mysql56:0.0.1
+          - image: ebizmarts/magento2-php73-mysql56:0.0.2
+          #- image: circleci/mysql:5.6
             environment:
               MYSQL_USER: magento
               MYSQL_PASSWORD: magento
