@@ -111,7 +111,7 @@ jobs:
               coverage: --coverage-text
     PHP 72 Compile and API test:
         docker:
-          - image: circleci/php:7.2-apache
+          - image: ebizmarts/magento2-php72:0.0.1
           - image: circleci/mysql:5.6
             environment:
               MYSQL_USER: magento
@@ -123,9 +123,28 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
-          - sagepay/remove-libsodium-install-latest
-          - sagepay/install-linux-dependencies:
-              extensions-to-install: sodium bcmath gd intl opcache pdo_mysql soap xsl zip
+          - run: sudo apt-get install -qq -y mariadb-client
+          - run:
+              name: Add magento2.dev to hosts file.
+              command: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
+          - run:
+              name: Download Magento 2 web server configuration file.
+              command: wget --quiet $MAGENTO_WEB_SERVER_CONF
+          - run:
+              name: Copy Magento 2 web server configuration file.
+              command: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
+          - run:
+              name: Run sed on apache environment vars.
+              command: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
+          - run:
+              name: Restart apache.
+              command: sudo service apache2 restart
+          - run:
+              name: Import database dump.
+              command: mysql -h 127.0.0.1 -umagento -pmagento circle_test < ~/magento2/circle_test.sql
+#          - sagepay/remove-libsodium-install-latest
+#          - sagepay/install-linux-dependencies:
+#              extensions-to-install: sodium bcmath gd intl opcache pdo_mysql soap xsl zip
           - sagepay/magento-compile-and-setup-upgrade
     PHP 73 Code Sniffer:
       docker:
@@ -167,7 +186,6 @@ jobs:
           - attach_workspace:
               at: ~/magento2
           - run: sudo apt-get install -qq -y mariadb-client
-          - run: mysql --version
           - run:
               name: Add magento2.dev to hosts file.
               command: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
@@ -197,7 +215,7 @@ workflows:
   version: 2.1
   build_test_dist:
     jobs:
-#      - DownloadTools232EE
+      - DownloadTools232EE
       - DownloadTools233EE
 #      - PHP 71 Unit Tests:
 #          requires:
@@ -211,18 +229,18 @@ workflows:
 #      - PHP 71 unit tests with coverage:
 #          requires:
 #            - PHP 71 Compile and API test
-#      - PHP 72 Unit Tests:
-#          requires:
-#            - PHP 72 Code Sniffer
-#      - PHP 72 Code Sniffer:
-#          requires:
-#            - DownloadTools232EE
-#      - PHP 72 Compile and API test:
-#          requires:
-#            - PHP 72 Unit Tests
-#      - PHP 72 unit tests with coverage:
-#          requires:
-#            - PHP 72 Compile and API test
+      - PHP 72 Unit Tests:
+          requires:
+            - PHP 72 Code Sniffer
+      - PHP 72 Code Sniffer:
+          requires:
+            - DownloadTools232EE
+      - PHP 72 Compile and API test:
+          requires:
+            - PHP 72 Unit Tests
+      - PHP 72 unit tests with coverage:
+          requires:
+            - PHP 72 Compile and API test
       - PHP 73 Unit Tests:
           requires:
             - PHP 73 Code Sniffer
