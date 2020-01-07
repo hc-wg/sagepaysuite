@@ -154,8 +154,8 @@ jobs:
               coverage: --coverage-text
     PHP 73 Compile and API test:
         docker:
-          - image: ebizmarts/magento2-php73-mysql56:0.0.2
-          #- image: circleci/mysql:5.6
+          - image: ebizmarts/magento2-php73:0.0.4
+          - image: circleci/mysql:5.6
             environment:
               MYSQL_USER: magento
               MYSQL_PASSWORD: magento
@@ -167,7 +167,7 @@ jobs:
           - attach_workspace:
               at: ~/magento2
           - run: sudo apt-get install -qq -y mariadb-client
-          - run: echo mysql -v
+          - run: mysql --version
           - run:
               name: Add magento2.dev to hosts file.
               command: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
