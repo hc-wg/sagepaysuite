@@ -117,6 +117,7 @@ jobs:
         - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
         - sagepay/install-linux-dependencies
         - sagepay/magento-compile-and-setup-upgrade
+        - run: $MAGENTO_PATH/bin/magento cache:enable
         - sagepay/run-api-functional-tests
     PHP 70 unit tests with coverage:
       docker:
@@ -195,9 +196,9 @@ workflows:
 #      - PHP 71 Unit Tests:
 #          requires:
 #            - PHP 71 Code Sniffer
-      - PHP 71 Compile and API test:
-          requires:
-            - DownloadTools226EE
+#      - PHP 71 Compile and API test:
+#          requires:
+#            - DownloadTools226EE
 #      - PHP 71 unit tests with coverage:
 #          requires:
 #            - PHP 71 Compile and API test
