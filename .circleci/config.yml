@@ -166,6 +166,24 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
+          - run:
+              name: Add magento2.dev to hosts file.
+              command: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
+          - run:
+              name: Download Magento 2 web server configuration file.
+              command: wget --quiet $MAGENTO_WEB_SERVER_CONF
+          - run:
+              name: Copy Magento 2 web server configuration file.
+              command: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
+          - run:
+              name: Run sed on apache environment vars.
+              command: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
+          - run:
+              name: Restart apache.
+              command: sudo service apache2 restart
+          - run:
+              name: Import database dump.
+              command: mysql -h 127.0.0.1 -umagento -pmagento circle_test < ~/magento2/circle_test.sql
           ##- sagepay/remove-libsodium-install-latest
           ##- sagepay/install-linux-dependencies:
           ##    extensions-to-install: sodium bcmath gd intl opcache pdo_mysql soap xsl zip
