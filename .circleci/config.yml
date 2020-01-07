@@ -69,7 +69,7 @@ jobs:
               coverage: --coverage-text
     PHP 71 Compile and API test:
         docker:
-          - image: ebizmarts/php71m2:primera
+          - image: ebizmarts/magento2-php71:0.0.1
           - image: circleci/mysql:5.6
             environment:
               MYSQL_USER: magento
@@ -81,8 +81,27 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
-          - sagepay/install-libsodium
-          - sagepay/install-linux-dependencies
+          - run: sudo apt-get install -qq -y mariadb-client
+          - run:
+              name: Add magento2.dev to hosts file.
+              command: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
+          - run:
+              name: Download Magento 2 web server configuration file.
+              command: wget --quiet $MAGENTO_WEB_SERVER_CONF
+          - run:
+              name: Copy Magento 2 web server configuration file.
+              command: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
+          - run:
+              name: Run sed on apache environment vars.
+              command: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
+          - run:
+              name: Restart apache.
+              command: sudo service apache2 restart
+          - run:
+              name: Import database dump.
+              command: mysql -h 127.0.0.1 -umagento -pmagento circle_test < ~/magento2/circle_test.sql
+#          - sagepay/install-libsodium
+#          - sagepay/install-linux-dependencies
           - sagepay/magento-compile-and-setup-upgrade
     PHP 72 Code Sniffer:
       docker:
@@ -217,18 +236,18 @@ workflows:
     jobs:
       - DownloadTools232EE
       - DownloadTools233EE
-#      - PHP 71 Unit Tests:
-#          requires:
-#            - PHP 71 Code Sniffer
-#      - PHP 71 Code Sniffer:
-#          requires:
-#            - DownloadTools232EE
-#      - PHP 71 Compile and API test:
-#          requires:
-#            - PHP 71 Unit Tests
-#      - PHP 71 unit tests with coverage:
-#          requires:
-#            - PHP 71 Compile and API test
+      - PHP 71 Unit Tests:
+          requires:
+            - PHP 71 Code Sniffer
+      - PHP 71 Code Sniffer:
+          requires:
+            - DownloadTools232EE
+      - PHP 71 Compile and API test:
+          requires:
+            - PHP 71 Unit Tests
+      - PHP 71 unit tests with coverage:
+          requires:
+            - PHP 71 Compile and API test
       - PHP 72 Unit Tests:
           requires:
             - PHP 72 Code Sniffer
