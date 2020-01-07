@@ -84,8 +84,8 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
                 $vendorTxCode = $payment->getAdditionalInformation("vendorTxCode");
                 $transactionDetails = $this->_reportingApi->getTransactionDetailsByVendorTxCode($vendorTxCode, $order->getStoreId());
             }
-
-            if ($this->issetTransactionDetails() == true){
+            
+            if ($this->issetTransactionDetails($transactionDetails)){
                 $payment->setLastTransId((string)$transactionDetails->vpstxid);
                 $payment->setAdditionalInformation('vendorTxCode', (string)$transactionDetails->vendortxcode);
                 $payment->setAdditionalInformation('statusDetail', (string)$transactionDetails->status);
@@ -133,8 +133,8 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
     /**
      * @return bool
      */
-    public function issetTransactionDetails()
+    public function issetTransactionDetails($transactionDetails)
     {
-        return isset($transactionDetails->vpstxid) && isset($transactionDetails->vendortxcode) && isset($transactionDetails->status);
+        return isset($transactionDetails->vpstxid) && isset($transactionDetails->vendortxcode) && isset($transactionDetails->status);;
     }
 }
