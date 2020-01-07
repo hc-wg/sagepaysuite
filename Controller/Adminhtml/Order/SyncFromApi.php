@@ -85,12 +85,13 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
                 $transactionDetails = $this->_reportingApi->getTransactionDetailsByVendorTxCode($vendorTxCode, $order->getStoreId());
             }
 
-            if (isset($transactionDetails->vpstxid) && isset($transactionDetails->vendortxcode) && isset($transactionDetails->status)){
+            if ($this->issetTransactionDetails() == true){
                 $payment->setLastTransId((string)$transactionDetails->vpstxid);
                 $payment->setAdditionalInformation('vendorTxCode', (string)$transactionDetails->vendortxcode);
                 $payment->setAdditionalInformation('statusDetail', (string)$transactionDetails->status);
-                if (isset($transactionDetails->{'threedresult'})) {
-                    $payment->setAdditionalInformation('threeDStatus', (string)$transactionDetails->{'threedresult'});
+
+                if (isset($transactionDetails->threedresult)) {
+                    $payment->setAdditionalInformation('threeDStatus', (string)$transactionDetails->threedresult);
                 }
                 $payment->save();
             }
@@ -127,5 +128,13 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
     private function isFraudNotChecked($transaction)
     {
         return (bool)$transaction->getSagepaysuiteFraudCheck() === false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function issetTransactionDetails()
+    {
+        return isset($transactionDetails->vpstxid) && isset($transactionDetails->vendortxcode) && isset($transactionDetails->status);
     }
 }
