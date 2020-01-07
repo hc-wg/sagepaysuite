@@ -129,7 +129,7 @@ jobs:
           - sagepay/magento-compile-and-setup-upgrade
     PHP 73 Code Sniffer:
       docker:
-        - image: circleci/php:7.3.9-apache-stretch
+        - image: ebizmarts/magento2-php73-mysql56:0.0.1
       executor: my-executor
       steps:
         - attach_workspace:
