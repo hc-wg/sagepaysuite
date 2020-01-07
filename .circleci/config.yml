@@ -154,8 +154,7 @@ jobs:
               coverage: --coverage-text
     PHP 73 Compile and API test:
         docker:
-          - image: ebizmarts/magento2-php73:0.0.4
-          - image: circleci/mysql:5.6
+          - image: ebizmarts/magento2-php73-mysql56:0.0.1
             environment:
               MYSQL_USER: magento
               MYSQL_PASSWORD: magento
