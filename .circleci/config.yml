@@ -154,8 +154,7 @@ jobs:
               coverage: --coverage-text
     PHP 73 Compile and API test:
         docker:
-          - image: ebizmarts/magento2-php73:0.0.1
-          - image: circleci/mysql:5.6
+          - image: ebizmarts/magento2-php73:0.0.3
             environment:
               MYSQL_USER: magento
               MYSQL_PASSWORD: magento
@@ -166,6 +165,7 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
+          - run: echo mysql -v
           - run:
               name: Add magento2.dev to hosts file.
               command: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
@@ -195,32 +195,32 @@ workflows:
   version: 2.1
   build_test_dist:
     jobs:
-      - DownloadTools232EE
+#      - DownloadTools232EE
       - DownloadTools233EE
-      - PHP 71 Unit Tests:
-          requires:
-            - PHP 71 Code Sniffer
-      - PHP 71 Code Sniffer:
-          requires:
-            - DownloadTools232EE
-      - PHP 71 Compile and API test:
-          requires:
-            - PHP 71 Unit Tests
-      - PHP 71 unit tests with coverage:
-          requires:
-            - PHP 71 Compile and API test
-      - PHP 72 Unit Tests:
-          requires:
-            - PHP 72 Code Sniffer
-      - PHP 72 Code Sniffer:
-          requires:
-            - DownloadTools232EE
-      - PHP 72 Compile and API test:
-          requires:
-            - PHP 72 Unit Tests
-      - PHP 72 unit tests with coverage:
-          requires:
-            - PHP 72 Compile and API test
+#      - PHP 71 Unit Tests:
+#          requires:
+#            - PHP 71 Code Sniffer
+#      - PHP 71 Code Sniffer:
+#          requires:
+#            - DownloadTools232EE
+#      - PHP 71 Compile and API test:
+#          requires:
+#            - PHP 71 Unit Tests
+#      - PHP 71 unit tests with coverage:
+#          requires:
+#            - PHP 71 Compile and API test
+#      - PHP 72 Unit Tests:
+#          requires:
+#            - PHP 72 Code Sniffer
+#      - PHP 72 Code Sniffer:
+#          requires:
+#            - DownloadTools232EE
+#      - PHP 72 Compile and API test:
+#          requires:
+#            - PHP 72 Unit Tests
+#      - PHP 72 unit tests with coverage:
+#          requires:
+#            - PHP 72 Compile and API test
       - PHP 73 Unit Tests:
           requires:
             - PHP 73 Code Sniffer
