@@ -59,7 +59,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - sagepay/install-linux-dependencies
+        - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
         - sagepay/run-api-functional-tests
     PHP 70 unit tests with coverage:
