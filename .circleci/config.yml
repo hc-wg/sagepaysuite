@@ -60,7 +60,7 @@ jobs:
         - sagepay/run-php-unit-tests
     PHP 71 Compile and API test:
       docker:
-        - image: circleci/php:7.1-apache
+        - image: ebizmarts/magento2-php71:0.0.1
         - image: circleci/mysql:5.6
           environment:
             MYSQL_USER: magento
@@ -72,7 +72,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - sagepay/install-linux-dependencies
+        - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
         - sagepay/run-api-functional-tests
     PHP 71 unit tests with coverage:
@@ -144,7 +144,7 @@ jobs:
         - sagepay/run-php-unit-tests
     PHP 72 Compile and API test:
       docker:
-        - image: circleci/php:7.2-apache
+        - image: ebizmarts/magento2-php72:0.0.2
         - image: circleci/mysql:5.6
           environment:
             MYSQL_USER: magento
@@ -156,9 +156,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - sagepay/remove-libsodium-install-latest
-        - sagepay/install-linux-dependencies:
-            extensions-to-install: sodium bcmath gd intl opcache pdo_mysql soap xsl zip
+        - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
     PHP 72 unit tests with coverage:
       docker:
