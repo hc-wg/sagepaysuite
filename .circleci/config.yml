@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  sagepay: pruebas/ebizmarts-sagepay@0.0.2
+  sagepay: pruebas/ebizmarts-sagepay@0.0.4
 
 executors:
   my-executor:
@@ -47,7 +47,7 @@ jobs:
         - sagepay/run-php-unit-tests
     PHP 70 Compile and API test:
       docker:
-        - image: circleci/php:7.0-apache
+        - image: ebizmarts/magento2-php70:0.0.1
         - image: circleci/mysql:5.6
           environment:
             MYSQL_USER: magento
@@ -59,7 +59,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - sagepay/install-linux-dependencies
+        - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
         - sagepay/run-api-functional-tests
     PHP 70 unit tests with coverage:
@@ -89,7 +89,7 @@ jobs:
         - sagepay/run-php-unit-tests
     PHP 56 Compile and API test:
       docker:
-        - image: circleci/php:5.6-apache
+        - image: ebizmarts/magento2-php56:0.0.1
         - image: circleci/mysql:5.6
           environment:
             MYSQL_USER: magento
@@ -101,7 +101,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - sagepay/install-linux-dependencies
+        - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
         - sagepay/run-api-functional-tests
     PHP 56 unit tests with coverage:
