@@ -47,7 +47,7 @@ jobs:
         - sagepay/run-php-unit-tests
     PHP 70 Compile and API test:
       docker:
-        - image: circleci/php:7.0-apache
+        - image: ebizmarts/magento2-php70:0.0.1
         - image: circleci/mysql:5.6
           environment:
             MYSQL_USER: magento
