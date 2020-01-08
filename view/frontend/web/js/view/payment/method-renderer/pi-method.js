@@ -173,6 +173,12 @@ define(
             preparePayment: function () {
                 var self = this;
 
+                if (!self.dropInEnabled()) {
+                    if (!additionalValidators.validate()) {
+                        return false;
+                    }
+                }
+
                 self.destroyInstanceSagePay();
 
                 //validations
@@ -195,6 +201,9 @@ define(
                         JSON.stringify(payload)
                     ).done(
                         function () {
+                            if (!self.dropInEnabled()) {
+                                self.savePaymentInfo();
+                            }
                             self.createMerchantSessionKey();
                         }
                     ).fail(
