@@ -1,3 +1,8 @@
+## [1.1.32] - 2019-12-19
+### Fixed
+- Items being canceled when order take more than 15 minutes
+- Guest order being created with "Guest" as customer name
+
 ## [1.1.31] - 2019-11-26
 ### Added
 - Show Fraud information on order grid (3D, Post Code, Address, CV2)
@@ -353,6 +358,7 @@
    - PI integration (frontend)
    - Online Refunds
    
+[1.1.32]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.32
 [1.1.31]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.31
 [1.1.30]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.30
 [1.1.29]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.29
