@@ -367,7 +367,10 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $controller->execute();
     }
 
-    public function testExecuteApiException()
+    /**
+     * @dataProvider apiExceptionProvider
+     */
+    public function testExecuteApiException($data)
     {
         $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
@@ -376,7 +379,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $messageManagerMock = $this->makeMessageManagerMock();
         $messageManagerMock->expects($this->once())
             ->method('addError')
-            ->with(__('The user does not have permission to view this transaction.'));
+            ->with(__($data["cleanedException"]));
 
         $requestMock = $this->makeRequestMock();
         $requestMock->expects($this->any())
@@ -443,7 +446,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
 
         $reportingApiMock = $this->makeReportingApiMock();
 
-        $error     = new \Magento\Framework\Phrase("The user does not have permission to view this transaction.");
+        $error     = new \Magento\Framework\Phrase($data["exception"]);
         $exception = new \Ebizmarts\SagePaySuite\Model\Api\ApiException($error);
 
         $reportingApiMock->expects($this->once())
@@ -617,5 +620,22 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $contextMock->expects($this->any())->method('getHelper')->will($this->returnValue($helperMock));
 
         return $contextMock;
+    }
+
+    public function apiExceptionProvider()
+    {
+        return [
+            "testExecuteApiException" => [
+                [
+                    "exception" => "Unable to find the transaction for the <vendortxcode> or <vpstxid> supplied.",
+                    "cleanedException" => "Unable to find the transaction for the vendortxcode or vpstxid supplied."
+                ],
+            "testExecuteApiException" =>
+                [
+                    "exception" => "The user does not have permission to view this transaction.",
+                    "cleanedException" => "The user does not have permission to view this transaction."
+                ]
+            ]
+        ];
     }
 }
