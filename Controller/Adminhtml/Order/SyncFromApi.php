@@ -85,14 +85,12 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
                 $transactionDetails = $this->_reportingApi->getTransactionDetailsByVendorTxCode($vendorTxCode, $order->getStoreId());
             }
 
-            if ($this->issetTransactionDetails($transactionDetails))
-            {
+            if ($this->issetTransactionDetails($transactionDetails)) {
                 $payment->setLastTransId((string)$transactionDetails->vpstxid);
                 $payment->setAdditionalInformation('vendorTxCode', (string)$transactionDetails->vendortxcode);
                 $payment->setAdditionalInformation('statusDetail', (string)$transactionDetails->status);
 
-                if (isset($transactionDetails->threedresult))
-                {
+                if (isset($transactionDetails->threedresult)) {
                     $payment->setAdditionalInformation('threeDStatus', (string)$transactionDetails->threedresult);
                 }
                 $payment->save();
@@ -110,7 +108,7 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
             $this->messageManager->addSuccess(__('Successfully synced from Sage Pay\'s API'));
         } catch (ApiException $apiException) {
             $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
-            $this->messageManager->addError(__($this->clearException($apiException)));
+            $this->messageManager->addError(__($this->cleanExceptionString($apiException)));
         } catch (\Exception $e) {
             $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__('Something went wrong: %1', $e->getMessage()));
@@ -140,7 +138,7 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
         return isset($transactionDetails->vpstxid) && isset($transactionDetails->vendortxcode) && isset($transactionDetails->status);
     }
 
-    public function clearException($apiException)
+    public function cleanExceptionString($apiException)
     {
         return str_replace(">", "", str_replace("<","", $apiException->getUserMessage()));
     }
