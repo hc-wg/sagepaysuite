@@ -138,6 +138,12 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
         return isset($transactionDetails->vpstxid) && isset($transactionDetails->vendortxcode) && isset($transactionDetails->status);
     }
 
+    /**
+     * This function replaces the < and > symbols, this is necessary for the exception to be showed correctly
+     * to the customer at the backend.
+     * @param $apiException
+     * @return string|string[]
+     */
     public function cleanExceptionString($apiException)
     {
         return str_replace(">", "", str_replace("<","", $apiException->getUserMessage()));
