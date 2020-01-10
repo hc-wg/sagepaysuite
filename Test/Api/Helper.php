@@ -38,7 +38,7 @@ class Helper
 
         $this->saveReportingApiPassword();
 
-        $transactionDetails = $this->reporting->getTransactionDetails($this->suiteHelper->removeCurlyBraces($vpsTxId));
+        $transactionDetails = $this->reporting->getTransactionDetailsByVpstxid($this->suiteHelper->removeCurlyBraces($vpsTxId));
 
         return $transactionDetails;
     }
