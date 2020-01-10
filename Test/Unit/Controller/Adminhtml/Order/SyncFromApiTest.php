@@ -107,7 +107,7 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
         $reportingApiMock = $this->makeReportingApiMock();
 
         $reportingApiMock->expects($this->once())
-            ->method('getTransactionDetails')
+            ->method('getTransactionDetailsByVpstxid')
             ->with(self::TEST_VPS_TX_ID, self::TEST_STORE_ID)
             ->will($this->returnValue((object)[
                 "vendortxcode" => "100000001-2016-12-12-123456",
@@ -450,7 +450,7 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
         $exception = new \Ebizmarts\SagePaySuite\Model\Api\ApiException($error);
 
         $reportingApiMock->expects($this->once())
-            ->method('getTransactionDetails')
+            ->method('getTransactionDetailsByVpstxid')
             ->willThrowException($exception);
 
         $trnRepoMock = $this

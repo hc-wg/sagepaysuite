@@ -74,7 +74,7 @@ class Shared implements PaymentOperations
 
     public function voidTransaction($vpstxid, \Magento\Sales\Api\Data\OrderInterface $order)
     {
-        $transaction = $this->reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
+        $transaction = $this->reportingApi->getTransactionDetailsByVpstxid($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol'] = $this->config->getVPSProtocol();
         $data['TxType'] = Config::ACTION_VOID;
@@ -89,7 +89,7 @@ class Shared implements PaymentOperations
 
     public function refundTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
-        $transaction = $this->reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
+        $transaction = $this->reportingApi->getTransactionDetailsByVpstxid($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol']         = $this->config->getVPSProtocol();
         $data['TxType']              = Config::ACTION_REFUND;
@@ -108,7 +108,7 @@ class Shared implements PaymentOperations
 
     public function abortDeferredTransaction($vpstxid, \Magento\Sales\Api\Data\OrderInterface $order)
     {
-        $transaction = $this->reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
+        $transaction = $this->reportingApi->getTransactionDetailsByVpstxid($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol']  = $this->config->getVPSProtocol();
         $data['TxType']       = Config::ACTION_ABORT;
@@ -126,7 +126,7 @@ class Shared implements PaymentOperations
     {
         $vpsTxId = $this->suiteHelper->clearTransactionId($vpsTxId);
 
-        $transaction = $this->reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
+        $transaction = $this->reportingApi->getTransactionDetailsByVpstxid($vpsTxId, $order->getStoreId());
         $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $transaction, [__METHOD__, __LINE__]);
 
         $result = null;
@@ -151,7 +151,7 @@ class Shared implements PaymentOperations
 
     public function releaseTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
-        $transaction = $this->reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
+        $transaction = $this->reportingApi->getTransactionDetailsByVpstxid($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol']   = $this->config->getVPSProtocol();
         $data['TxType']        = Config::ACTION_RELEASE;
@@ -167,7 +167,7 @@ class Shared implements PaymentOperations
 
     public function authorizeTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
-        $transaction = $this->reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
+        $transaction = $this->reportingApi->getTransactionDetailsByVpstxid($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol']         = $this->config->getVPSProtocol();
         $data['TxType']              = \Ebizmarts\SagePaySuite\Model\Config::ACTION_AUTHORISE;
@@ -185,7 +185,7 @@ class Shared implements PaymentOperations
 
     public function repeatTransaction($vpstxid, $quote_data, \Magento\Sales\Api\Data\OrderInterface $order, $paymentAction = Config::ACTION_REPEAT)
     {
-        $transaction = $this->reportingApi->getTransactionDetails($vpstxid, $order->getStoreId());
+        $transaction = $this->reportingApi->getTransactionDetailsByVpstxid($vpstxid, $order->getStoreId());
 
         $data['VPSProtocol'] = $this->config->getVPSProtocol();
         $data['TxType']      = $paymentAction;
