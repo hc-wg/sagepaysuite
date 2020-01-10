@@ -280,7 +280,7 @@ class Cron
     public function getTransactionDetails($transactionId, Order $_order, Payment $payment)
     {
         if ($transactionId != null) {
-            $transactionDetails = $this->reportingApi->getTransactionDetails($transactionId, $_order->getStoreId());
+            $transactionDetails = $this->reportingApi->getTransactionDetailsByVpstxid($transactionId, $_order->getStoreId());
         } else {
             $vendorTxCode = $payment->getAdditionalInformation('vendorTxCode');
             $transactionDetails = $this->reportingApi->getTransactionDetailsByVendorTxCode(

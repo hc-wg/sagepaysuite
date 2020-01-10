@@ -48,7 +48,7 @@ class CreditMemo implements ObserverInterface
         $vpsTxId    = $this->suiteHelper->clearTransactionId($vpsTxIdRaw);
 
         try {
-            $this->reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
+            $this->reportingApi->getTransactionDetailsByVpstxid($vpsTxId, $order->getStoreId());
         } catch (\Exception $e) {
             $this->messageManager->addErrorMessage($this->reportingApiErrorMessage($e));
         }
