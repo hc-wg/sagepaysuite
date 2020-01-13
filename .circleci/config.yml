@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  sagepay: pruebas/ebizmarts-sagepay@0.0.2
+  sagepay: pruebas/ebizmarts-sagepay@0.0.4
 
 executors:
   my-executor:
@@ -60,7 +60,7 @@ jobs:
         - sagepay/run-php-unit-tests
     PHP 71 Compile and API test:
       docker:
-        - image: circleci/php:7.1-apache
+        - image: ebizmarts/magento2-php71:0.0.1
         - image: circleci/mysql:5.6
           environment:
             MYSQL_USER: magento
@@ -72,7 +72,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - sagepay/install-linux-dependencies
+        - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
         - sagepay/run-api-functional-tests
     PHP 71 unit tests with coverage:
@@ -102,7 +102,7 @@ jobs:
         - sagepay/run-php-unit-tests
     PHP 70 Compile and API test:
       docker:
-        - image: circleci/php:7.0-apache
+        - image: ebizmarts/magento2-php70:0.0.1
         - image: circleci/mysql:5.6
           environment:
             MYSQL_USER: magento
@@ -115,7 +115,7 @@ jobs:
         - attach_workspace:
             at: ~/magento2
         - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
-        - sagepay/install-linux-dependencies
+        - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
         - run: $MAGENTO_PATH/bin/magento cache:enable
         - sagepay/run-api-functional-tests
@@ -146,7 +146,7 @@ jobs:
         - sagepay/run-php-unit-tests
     PHP 72 Compile and API test:
       docker:
-        - image: circleci/php:7.2-apache
+        - image: ebizmarts/magento2-php72:0.0.2
         - image: circleci/mysql:5.6
           environment:
             MYSQL_USER: magento
@@ -158,9 +158,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
-        - sagepay/remove-libsodium-install-latest
-        - sagepay/install-linux-dependencies:
-            extensions-to-install: sodium bcmath gd intl opcache pdo_mysql soap xsl zip
+        - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
     PHP 72 unit tests with coverage:
       docker:
