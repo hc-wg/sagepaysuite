@@ -46,7 +46,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $reportingApiMock->expects($this->any())
-            ->method('getTransactionDetails')
+            ->method('getTransactionDetailsByVpstxid')
             ->willReturn($this->transactionDetailsResponse);
         $this->suiteHelperMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Data')

@@ -263,7 +263,7 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
 
         try {
             $order              = $payment->getOrder();
-            $transactionDetails = $this->reportingApi->getTransactionDetails($transactionId, $order->getStoreId());
+            $transactionDetails = $this->reportingApi->getTransactionDetailsByVpstxid($transactionId, $order->getStoreId());
 
             if ((int)$transactionDetails->txstateid === Shared::DEFERRED_AWAITING_RELEASE) {
                 if ($order->canInvoice()) {
