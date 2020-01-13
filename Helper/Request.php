@@ -236,9 +236,8 @@ class Request extends AbstractHelper
                 continue;
             }
 
-            $itemDiscount = $item->getDiscountAmount() / $itemQty;
             $taxAmount = $item->getTaxAmount() / $itemQty;
-            $itemValue = $item->getPriceInclTax() - $taxAmount - $itemDiscount;
+            $itemValue = ($item->getRowTotal() - $item->getDiscountAmount()) / $itemQty;
 
             $itemTotal = $itemValue + $taxAmount;
 
