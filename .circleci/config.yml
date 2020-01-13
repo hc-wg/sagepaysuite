@@ -72,6 +72,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
+        - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
         - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
         - sagepay/run-api-functional-tests
@@ -158,6 +159,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
+        - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
         - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
     PHP 72 unit tests with coverage:
@@ -174,41 +176,41 @@ workflows:
   version: 2.1
   build_test:
     jobs:
-#      - DownloadTools226EE
+      - DownloadTools226EE
       - DownloadTools2210EE
-#      - PHP 70 Code Sniffer:
-#          requires:
-#            - DownloadTools226EE
-#      - PHP 70 Unit Tests:
-#          requires:
-#            - PHP 70 Code Sniffer
-#      - PHP 70 Compile and API test:
-#          requires:
-#            - DownloadTools226EE
-#      - PHP 70 unit tests with coverage:
-#          requires:
-#            - PHP 70 Compile and API test
-#      - PHP 71 Code Sniffer:
-#          requires:
-#            - DownloadTools226EE
-#      - PHP 71 Unit Tests:
-#          requires:
-#            - PHP 71 Code Sniffer
-#      - PHP 71 Compile and API test:
-#          requires:
-#            - DownloadTools226EE
-#      - PHP 71 unit tests with coverage:
-#          requires:
-#            - PHP 71 Compile and API test
-#      - PHP 72 Code Sniffer:
-#          requires:
-#            - DownloadTools2210EE
-#      - PHP 72 Unit Tests:
-#          requires:
-#            - PHP 72 Code Sniffer
-      - PHP 72 Compile and API test:
+      - PHP 70 Code Sniffer:
+          requires:
+            - DownloadTools226EE
+      - PHP 70 Unit Tests:
+          requires:
+            - PHP 70 Code Sniffer
+      - PHP 70 Compile and API test:
+          requires:
+            - DownloadTools226EE
+      - PHP 70 unit tests with coverage:
+          requires:
+            - PHP 70 Compile and API test
+      - PHP 71 Code Sniffer:
+          requires:
+            - DownloadTools226EE
+      - PHP 71 Unit Tests:
+          requires:
+            - PHP 71 Code Sniffer
+      - PHP 71 Compile and API test:
+          requires:
+            - DownloadTools226EE
+      - PHP 71 unit tests with coverage:
+          requires:
+            - PHP 71 Compile and API test
+      - PHP 72 Code Sniffer:
           requires:
             - DownloadTools2210EE
-#      - PHP 72 unit tests with coverage:
-#          requires:
-#            - PHP 72 Compile and API test
+      - PHP 72 Unit Tests:
+          requires:
+            - PHP 72 Code Sniffer
+      - PHP 72 Compile and API test:
+          requires:
+            - PHP 72 Unit Tests
+      - PHP 72 unit tests with coverage:
+          requires:
+            - PHP 72 Compile and API test
