@@ -180,7 +180,7 @@ class Reporting
      * @return mixed
      * @throws ApiException
      */
-    public function getTransactionDetails($vpstxid, $storeId = null)
+    public function getTransactionDetailsByVpstxid($vpstxid, $storeId = null)
     {
         $this->config->setConfigurationScopeId($storeId);
 

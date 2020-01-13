@@ -49,7 +49,7 @@ class Pi implements PaymentOperations
         $result = null;
 
         $vpsTxId = $this->suiteHelper->clearTransactionId($vpsTxId);
-        $transaction = $this->reportingApi->getTransactionDetails($vpsTxId, $order->getStoreId());
+        $transaction = $this->reportingApi->getTransactionDetailsByVpstxid($vpsTxId, $order->getStoreId());
 
         if ($this->validateTxStateId($transaction)) {
             throw new ApiException(__('Cannot capture deferred transaction, transaction state is invalid.'));

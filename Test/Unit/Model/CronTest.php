@@ -212,7 +212,7 @@ class CronTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $reportingApiMock
             ->expects($this->once())
-            ->method('getTransactionDetails')
+            ->method('getTransactionDetailsByVpstxid')
             ->willReturnOnConsecutiveCalls($transactionDetails);
 
         $orderMock2 = $this
