@@ -216,7 +216,7 @@ class ServerTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $reportingApiMock
             ->expects($this->once())
-            ->method('getTransactionDetails')
+            ->method('getTransactionDetailsByVpstxid')
             ->willReturn($transactionDetails);
 
         $this->serverModel = $this->objectManagerHelper->getObject(
@@ -268,7 +268,7 @@ class ServerTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $reportingApiMock
             ->expects($this->once())
-            ->method('getTransactionDetails')
+            ->method('getTransactionDetailsByVpstxid')
             ->willReturn($transactionDetails);
 
         $this->serverModel = $this->objectManagerHelper->getObject(
