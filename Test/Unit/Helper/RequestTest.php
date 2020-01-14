@@ -354,7 +354,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function populateBasketInformationDataProviderBasketXml()
+    public function populateBasketInformationBasketXmlDataProvider()
     {
         return [
             'test XML' => [
@@ -530,7 +530,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider populateBasketInformationDataProviderBasketXml
+     * @dataProvider populateBasketInformationBasketXmlDataProvider
      * @param $data
      */
     public function testPopulateBasketInformationBasketXml($data)
@@ -748,7 +748,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function populateBasketInformationDataProviderSageFifty()
+    public function populateBasketInformationSageFiftyDataProvider()
     {
         return [
             'test Sage50' => [
@@ -916,7 +916,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider populateBasketInformationDataProviderSageFifty
+     * @dataProvider populateBasketInformationSageFiftyDataProvider
      * @param $data
      */
     public function testPopulateBasketInformationSageFifty($data)
