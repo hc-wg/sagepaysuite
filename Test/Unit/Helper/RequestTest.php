@@ -354,85 +354,9 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function populateBasketInformationDataProvider()
+    public function populateBasketInformationBasketXmlDataProvider()
     {
         return [
-            'test Sage50' => [
-                    [
-                        'lines' => 2,
-                        'sku' => 'WSH08-28-Purple',
-                        'expected_sku' => 'WSH08-28-Purple',
-                        'name' => 'SybilRunningShort',
-                        'expected_name' => 'SybilRunningShort',
-                        'qty' => 1,
-                        'priceInclTax' => 44,
-                        'product_id' => 1234,
-                        'price' => 44,
-                        'taxAmount' => 0,
-                        'shippingDescription' => 'BestWay-TableRate',
-                        'shippingAmount' => 15,
-                        'shippingTaxAmount' => 0,
-                        'deliveryGrossAmount' => 15,
-                        'parentItem' => false,
-                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
-                        'id' => null,
-                        'firstName' => null,
-                        'lastName' => null,
-                        'middleName' => null,
-                        'prefix' => null,
-                        'email' => null,
-                        'telephone' => null,
-                        'streetLine' => null,
-                        'expectedStreetLine' => null,
-                        'city' => null,
-                        'regionCode' => null,
-                        'country' => null,
-                        'postCode' => null,
-                        'fax' => null,
-                        'isMultishipping' => null,
-                        'allAddresses' => null,
-                        'method' => null,
-                    ]
-                ]
-            ,
-            'test Sage50 with spaces' => [
-                    [
-                        'lines' => 2,
-                        'sku' => 'WSH08-28-Purple',
-                        'expected_sku' => 'WSH08-28-Purple',
-                        'name' => 'Sybil Running Short',
-                        'expected_name' => 'Sybil Running Short',
-                        'qty' => 1,
-                        'priceInclTax' => 44,
-                        'product_id' => 1234,
-                        'price' => 44,
-                        'taxAmount' => 0,
-                        'shippingDescription' => 'BestWay-TableRate',
-                        'shippingAmount' => 15,
-                        'shippingTaxAmount' => 0,
-                        'deliveryGrossAmount' => 15,
-                        'parentItem' => false,
-                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
-                        'id' => null,
-                        'firstName' => null,
-                        'lastName' => null,
-                        'middleName' => null,
-                        'prefix' => null,
-                        'email' => null,
-                        'telephone' => null,
-                        'streetLine' => null,
-                        'expectedStreetLine' => null,
-                        'city' => null,
-                        'regionCode' => null,
-                        'country' => null,
-                        'postCode' => null,
-                        'fax' => null,
-                        'isMultishipping' => null,
-                        'allAddresses' => null,
-                        'method' => null,
-                    ]
-                ]
-            ,
             'test XML' => [
                     [
                         'name' => 'SybilRunningShort & more information',
@@ -602,113 +526,18 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                         'method' => 'sagepayserver',
                     ]
                 ]
-            ,
-            'test Ireland postcode' =>
-                [
-                    [
-                        'lines' => 2,
-                        'sku' => 'WSH08-28-Purple',
-                        'expected_sku' => 'WSH08-28-Purple',
-                        'name' => 'SybilRunningShort',
-                        'expected_name' => 'SybilRunningShort',
-                        'qty' => 1,
-                        'priceInclTax' => 44,
-                        'product_id' => 1234,
-                        'price' => 44,
-                        'taxAmount' => 0,
-                        'shippingDescription' => 'BestWay-TableRate',
-                        'shippingAmount' => 15,
-                        'shippingTaxAmount' => 0,
-                        'deliveryGrossAmount' => 15,
-                        'parentItem' => false,
-                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
-                        'id' => null,
-                        'firstName' => 'firstname',
-                        'lastName' => 'lastname',
-                        'middleName' => 'm',
-                        'prefix' => 'pref',
-                        'email' => 'email',
-                        'telephone' => '1234567',
-                        'streetLine' => 'Street test',
-                        'city' => 'city',
-                        'regionCode' => null,
-                        'country' => 'IE',
-                        'postCode' => '',
-                        'expected_postCode' => '000',
-                        'fax' => null,
-                        'isMultishipping' => null,
-                        'allAddresses' => null,
-                        'method' => null,
-                    ]
-                ]
-            ,
-            'test Hong Kong postcode' =>
-                [
-                    [
-                        'lines' => 2,
-                        'sku' => 'WSH08-28-Purple',
-                        'expected_sku' => 'WSH08-28-Purple',
-                        'name' => 'SybilRunningShort',
-                        'expected_name' => 'SybilRunningShort',
-                        'qty' => 1,
-                        'priceInclTax' => 44,
-                        'product_id' => 1234,
-                        'price' => 44,
-                        'taxAmount' => 0,
-                        'shippingDescription' => 'BestWay-TableRate',
-                        'shippingAmount' => 15,
-                        'shippingTaxAmount' => 0,
-                        'deliveryGrossAmount' => 15,
-                        'parentItem' => false,
-                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
-                        'id' => null,
-                        'firstName' => 'firstname',
-                        'lastName' => 'lastname',
-                        'middleName' => 'm',
-                        'prefix' => 'pref',
-                        'email' => 'email',
-                        'telephone' => '1234567',
-                        'streetLine' => 'Street test',
-                        'city' => 'city',
-                        'regionCode' => null,
-                        'country' => 'HK',
-                        'postCode' => '',
-                        'expected_postCode' => '000',
-                        'fax' => null,
-                        'isMultishipping' => null,
-                        'allAddresses' => null,
-                        'method' => null,
-                    ]
-                ]
         ];
     }
 
     /**
-     * @dataProvider populateBasketInformationDataProvider
+     * @dataProvider populateBasketInformationBasketXmlDataProvider
      * @param $data
      */
-    public function testPopulateBasketInformation($data)
+    public function testPopulateBasketInformationBasketXml($data)
     {
         $basket = null;
 
-        if ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50) {
-            $basket = [
-                'Basket' => $data['lines'] . ':' . '[' .
-                    $data['sku'] . '] ' .
-                    $data['name'] . ':' .
-                    $data['qty'] . ':' .
-                    number_format($data['priceInclTax'], 2) . ':' .
-                    number_format($data['taxAmount'], 3) . ':' .
-                    number_format($data['priceInclTax'] * $data['qty'], 2) . ':' .
-                    number_format($data['priceInclTax'] * $data['qty'], 2) . ':' .
-                    $data['shippingDescription'] . ':' .
-                    '1' . ':' .
-                    $data['shippingAmount'] . ':' .
-                    $data['shippingTaxAmount'] . ':' .
-                    ($data['shippingAmount'] + $data['shippingTaxAmount']) . ':' .
-                    ($data['shippingAmount'] + $data['shippingTaxAmount'])
-            ];
-        } elseif ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML) {
+        if ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML) {
             $xmlDesc = "<description>{$data['name']}</description>";
             if (array_key_exists('expected_name', $data)) {
                 $xmlDesc = "<description>{$data['expected_name']}</description>";
@@ -819,12 +648,13 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                 'getProductId',
                 'getQty',
                 'getTaxAmount',
-                'getPriceInclTax',
                 'getPrice',
                 'getSku',
                 'getName',
                 'getId',
-                'toArray'
+                'toArray',
+                'getRowTotal',
+                'getDiscountAmount'
             ])
             ->disableOriginalConstructor()
             ->getMock();
@@ -843,9 +673,6 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         $itemMock->expects($this->any())
             ->method('getTaxAmount')
             ->willReturn($data['taxAmount']);
-        $itemMock->expects($this->any())
-            ->method('getPriceInclTax')
-            ->willReturn($data['priceInclTax']);
         $itemMock->expects($this->any())
             ->method('getPrice')
             ->willReturn($data['price']);
@@ -904,6 +731,377 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         $this->configMock->expects($this->any())
              ->method('getBasketFormat')
              ->willReturn($data['format']);
+
+        $simpleInstance = new \SimpleXMLElement('<?xml version="1.0" encoding="utf-8" ?><basket />');
+        $this->objectManagerMock
+            ->method('create')
+            ->willReturn($simpleInstance);
+
+        $this->requestHelper = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Helper\Request',
+            ['config' => $this->configMock, 'objectManager' => $this->objectManagerMock]
+        );
+
+        $this->assertEquals(
+            current($basket),
+            current($this->requestHelper->populateBasketInformation($quoteMock))
+        );
+    }
+
+    public function populateBasketInformationSageFiftyDataProvider()
+    {
+        return [
+            'test Sage50' => [
+                [
+                    'lines' => 2,
+                    'sku' => 'WSH08-28-Purple',
+                    'expected_sku' => 'WSH08-28-Purple',
+                    'name' => 'SybilRunningShort',
+                    'expected_name' => 'SybilRunningShort',
+                    'qty' => 1,
+                    'priceInclTax' => 44,
+                    'product_id' => 1234,
+                    'price' => 44,
+                    'taxAmount' => 0,
+                    'rowTotal' => 50,
+                    'discountAmount' => 6,
+                    'shippingDescription' => 'BestWay-TableRate',
+                    'shippingAmount' => 15,
+                    'shippingTaxAmount' => 0,
+                    'deliveryGrossAmount' => 15,
+                    'parentItem' => false,
+                    'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
+                    'id' => null,
+                    'firstName' => null,
+                    'lastName' => null,
+                    'middleName' => null,
+                    'prefix' => null,
+                    'email' => null,
+                    'telephone' => null,
+                    'streetLine' => null,
+                    'expectedStreetLine' => null,
+                    'city' => null,
+                    'regionCode' => null,
+                    'country' => null,
+                    'postCode' => null,
+                    'fax' => null,
+                    'isMultishipping' => null,
+                    'allAddresses' => null,
+                    'method' => null,
+                ]
+            ]
+            ,
+            'test Sage50 with spaces' => [
+                [
+                    'lines' => 2,
+                    'sku' => 'WSH08-28-Purple',
+                    'expected_sku' => 'WSH08-28-Purple',
+                    'name' => 'Sybil Running Short',
+                    'expected_name' => 'Sybil Running Short',
+                    'qty' => 1,
+                    'priceInclTax' => 44,
+                    'product_id' => 1234,
+                    'price' => 44,
+                    'taxAmount' => 0,
+                    'rowTotal' => 50,
+                    'discountAmount' => 6,
+                    'shippingDescription' => 'BestWay-TableRate',
+                    'shippingAmount' => 15,
+                    'shippingTaxAmount' => 0,
+                    'deliveryGrossAmount' => 15,
+                    'parentItem' => false,
+                    'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
+                    'id' => null,
+                    'firstName' => null,
+                    'lastName' => null,
+                    'middleName' => null,
+                    'prefix' => null,
+                    'email' => null,
+                    'telephone' => null,
+                    'streetLine' => null,
+                    'expectedStreetLine' => null,
+                    'city' => null,
+                    'regionCode' => null,
+                    'country' => null,
+                    'postCode' => null,
+                    'fax' => null,
+                    'isMultishipping' => null,
+                    'allAddresses' => null,
+                    'method' => null,
+                ]
+            ]
+            ,
+            'test Ireland postcode' =>
+                [
+                    [
+                        'lines' => 2,
+                        'sku' => 'WSH08-28-Purple',
+                        'expected_sku' => 'WSH08-28-Purple',
+                        'name' => 'SybilRunningShort',
+                        'expected_name' => 'SybilRunningShort',
+                        'qty' => 1,
+                        'priceInclTax' => 44,
+                        'product_id' => 1234,
+                        'price' => 44,
+                        'taxAmount' => 0,
+                        'rowTotal' => 50,
+                        'discountAmount' => 6,
+                        'shippingDescription' => 'BestWay-TableRate',
+                        'shippingAmount' => 15,
+                        'shippingTaxAmount' => 0,
+                        'deliveryGrossAmount' => 15,
+                        'parentItem' => false,
+                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
+                        'id' => null,
+                        'firstName' => 'firstname',
+                        'lastName' => 'lastname',
+                        'middleName' => 'm',
+                        'prefix' => 'pref',
+                        'email' => 'email',
+                        'telephone' => '1234567',
+                        'streetLine' => 'Street test',
+                        'city' => 'city',
+                        'regionCode' => null,
+                        'country' => 'IE',
+                        'postCode' => '',
+                        'expected_postCode' => '000',
+                        'fax' => null,
+                        'isMultishipping' => null,
+                        'allAddresses' => null,
+                        'method' => null,
+                    ]
+                ]
+            ,
+            'test Hong Kong postcode' =>
+                [
+                    [
+                        'lines' => 2,
+                        'sku' => 'WSH08-28-Purple',
+                        'expected_sku' => 'WSH08-28-Purple',
+                        'name' => 'SybilRunningShort',
+                        'expected_name' => 'SybilRunningShort',
+                        'qty' => 1,
+                        'priceInclTax' => 44,
+                        'product_id' => 1234,
+                        'price' => 44,
+                        'taxAmount' => 0,
+                        'rowTotal' => 50,
+                        'discountAmount' => 6,
+                        'shippingDescription' => 'BestWay-TableRate',
+                        'shippingAmount' => 15,
+                        'shippingTaxAmount' => 0,
+                        'deliveryGrossAmount' => 15,
+                        'parentItem' => false,
+                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
+                        'id' => null,
+                        'firstName' => 'firstname',
+                        'lastName' => 'lastname',
+                        'middleName' => 'm',
+                        'prefix' => 'pref',
+                        'email' => 'email',
+                        'telephone' => '1234567',
+                        'streetLine' => 'Street test',
+                        'city' => 'city',
+                        'regionCode' => null,
+                        'country' => 'HK',
+                        'postCode' => '',
+                        'expected_postCode' => '000',
+                        'fax' => null,
+                        'isMultishipping' => null,
+                        'allAddresses' => null,
+                        'method' => null,
+                    ]
+                ]
+        ];
+    }
+
+    /**
+     * @dataProvider populateBasketInformationSageFiftyDataProvider
+     * @param $data
+     */
+    public function testPopulateBasketInformationSageFifty($data)
+    {
+            $basket = [
+                'Basket' => $data['lines'] . ':' . '[' .
+                    $data['sku'] . '] ' .
+                    $data['name'] . ':' .
+                    $data['qty'] . ':' .
+                    number_format($data['priceInclTax'], 2) . ':' .
+                    number_format($data['taxAmount'], 3) . ':' .
+                    number_format($data['rowTotal'], 3) . ':' .
+                    number_format($data['discountAmount'], 3) . ':' .
+                    number_format($data['priceInclTax'] * $data['qty'], 2) . ':' .
+                    number_format($data['priceInclTax'] * $data['qty'], 2) . ':' .
+                    $data['shippingDescription'] . ':' .
+                    '1' . ':' .
+                    $data['shippingAmount'] . ':' .
+                    $data['shippingTaxAmount'] . ':' .
+                    ($data['shippingAmount'] + $data['shippingTaxAmount']) . ':' .
+                    ($data['shippingAmount'] + $data['shippingTaxAmount'])
+            ];
+
+        $addressMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote\Address')
+            ->disableOriginalConstructor()
+            ->setMethods([
+                'getShippingDescription',
+                'getShippingAmount',
+                'getShippingTaxAmount',
+                'getFirstname',
+                'getLastname',
+                'getMiddlename',
+                'getPrefix',
+                'getEmail',
+                'getTelephone',
+                'getStreetLine',
+                'getCity',
+                'getRegionCode',
+                'getCountry',
+                'getPostcode',
+                'getFax'
+            ])->getMock();
+        $addressMock->expects($this->any())
+            ->method('getShippingDescription')
+            ->willReturn($data['shippingDescription']);
+        $addressMock->expects($this->any())
+            ->method('getShippingAmount')
+            ->willReturn($data['shippingAmount']);
+        $addressMock->expects($this->any())
+            ->method('getShippingTaxAmount')
+            ->willReturn($data['shippingTaxAmount']);
+        $addressMock->expects($this->any())
+            ->method('getFirstname')
+            ->willReturn($data['firstName']);
+        $addressMock->expects($this->any())
+            ->method('getLastname')
+            ->willReturn($data['lastName']);
+        $addressMock->expects($this->any())
+            ->method('getMiddlename')
+            ->willReturn($data['middleName']);
+        $addressMock->expects($this->any())
+            ->method('getPrefix')
+            ->willReturn($data['prefix']);
+        $addressMock->expects($this->any())
+            ->method('getEmail')
+            ->willReturn($data['email']);
+        $addressMock->expects($this->any())
+            ->method('getTelephone')
+            ->willReturn($data['telephone']);
+        $addressMock->expects($this->any())
+            ->method('getStreetLine')
+            ->willReturn($data['streetLine']);
+        $addressMock->expects($this->any())
+            ->method('getCity')
+            ->willReturn($data['city']);
+        $addressMock->expects($this->any())
+            ->method('getRegionCode')
+            ->willReturn($data['regionCode']);
+        $addressMock->expects($this->any())
+            ->method('getCountry')
+            ->willReturn($data['country']);
+        $addressMock->expects($this->any())
+            ->method('getPostcode')
+            ->willReturn($data['postCode']);
+        $addressMock->expects($this->any())
+            ->method('getFax')
+            ->willReturn($data['fax']);
+
+        $itemMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote\Item')
+            ->setMethods([
+                'getParentItem',
+                'getProductId',
+                'getQty',
+                'getTaxAmount',
+                'getPrice',
+                'getSku',
+                'getName',
+                'getId',
+                'toArray',
+                'getRowTotal',
+                'getDiscountAmount'
+            ])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $itemMock->expects($this->any())
+            ->method('toArray')
+            ->willReturn([]);
+        $itemMock->expects($this->any())
+            ->method('getParentItem')
+            ->willReturn($data['parentItem']);
+        $itemMock->expects($this->any())
+            ->method('getQty')
+            ->willReturn($data['qty']);
+        $itemMock->expects($this->any())
+            ->method('getProductId')
+            ->willReturn($data['product_id']);
+        $itemMock->expects($this->any())
+            ->method('getTaxAmount')
+            ->willReturn($data['taxAmount']);
+        $itemMock->expects($this->any())
+            ->method('getRowTotal')
+            ->willReturn($data['rowTotal']);
+        $itemMock->expects($this->any())
+            ->method('getDiscountAmount')
+            ->willReturn($data['discountAmount']);
+        $itemMock->expects($this->any())
+            ->method('getPrice')
+            ->willReturn($data['price']);
+        $itemMock->expects($this->any())
+            ->method('getSku')
+            ->willReturn($data['sku']);
+        $itemMock->expects($this->any())
+            ->method('getName')
+            ->willReturn($data['name']);
+        $itemMock->expects($this->any())
+            ->method('getId')
+            ->willReturn($data['id']);
+
+        $items[] = $itemMock;
+
+        $itemsCollectionMock = $this
+            ->getMockBuilder('Magento\Quote\Model\ResourceModel\Quote\Item\Collection')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $itemsCollectionMock->expects($this->any())
+            ->method('getIterator')
+            ->willReturn(new \ArrayIterator($items));
+
+        $payment = $this
+            ->getMockBuilder('\Magento\Quote\Model\Quote\Payment')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $payment->expects($this->any())
+            ->method('getMethod')
+            ->willReturn($data['method']);
+
+        $quoteMock = $this
+            ->getMockBuilder('Magento\Quote\Model\Quote')
+            ->setMethods(["getPayment", "getIsMultiShipping", "getItemsCollection", "getShippingAddress", "getBillingAddress", "getAllAddresses"])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $quoteMock->expects($this->any())
+            ->method('getItemsCollection')
+            ->willReturn($itemsCollectionMock);
+        $quoteMock->expects($this->any())
+            ->method('getShippingAddress')
+            ->willReturn($addressMock);
+        $quoteMock->expects($this->any())
+            ->method('getBillingAddress')
+            ->willReturn($addressMock);
+        $quoteMock->expects($this->any())
+            ->method('getIsMultiShipping')
+            ->willReturn($data['isMultishipping']);
+        $quoteMock->expects($this->any())
+            ->method('getPayment')
+            ->willReturn($payment);
+        $quoteMock->expects($this->any())
+            ->method('getAllAddresses')
+            ->willReturn($data['allAddresses']);
+
+        $this->configMock->expects($this->any())
+            ->method('getBasketFormat')
+            ->willReturn($data['format']);
 
         $simpleInstance = new \SimpleXMLElement('<?xml version="1.0" encoding="utf-8" ?><basket />');
         $this->objectManagerMock
