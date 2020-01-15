@@ -1010,8 +1010,6 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     $data['qty'] . ':' .
                     number_format($data['priceInclTax'], 2) . ':' .
                     number_format($data['taxAmount'], 3) . ':' .
-                    number_format($data['rowTotal'], 3) . ':' .
-                    number_format($data['discountAmount'], 3) . ':' .
                     number_format($data['priceInclTax'] * $data['qty'], 2) . ':' .
                     number_format($data['priceInclTax'] * $data['qty'], 2) . ':' .
                     $data['shippingDescription'] . ':' .
