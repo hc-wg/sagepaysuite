@@ -359,211 +359,132 @@ class RequestTest extends \PHPUnit\Framework\TestCase
     public function populateBasketInformationBasketXmlDataProvider()
     {
         return [
-            'test Sage50' =>
-                [
-                    [
-                        'lines' => 2,
-                        'sku' => 'WSH08-28-Purple',
-                        'expected_sku' => 'WSH08-28-Purple',
-                        'name' => 'SybilRunningShort',
-                        'expected_name' => 'SybilRunningShort',
-                        'qty' => 1,
-                        'priceInclTax' => 44,
-                        'product_id' => 1234,
-                        'price' => 44,
-                        'taxAmount' => 0,
-                        'shippingDescription' => 'BestWay-TableRate',
-                        'shippingAmount' => 15,
-                        'shippingTaxAmount' => 0,
-                        'deliveryGrossAmount' => 15,
-                        'parentItem' => false,
-                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
-                        'id' => null,
-                        'firstName' => null,
-                        'lastName' => null,
-                        'middleName' => null,
-                        'prefix' => null,
-                        'email' => null,
-                        'telephone' => null,
-                        'streetLine' => null,
-                        'expectedStreetLine' => null,
-                        'city' => null,
-                        'regionCode' => null,
-                        'country' => null,
-                        'postCode' => null,
-                        'fax' => null,
-                        'isMultishipping' => null,
-                        'allAddresses' => null,
-                        'method' => null,
-                    ]
-                ]
-            ,
-            'test Sage50 with spaces' =>
-                [
-                    [
-                        'lines' => 2,
-                        'sku' => 'WSH08-28-Purple',
-                        'expected_sku' => 'WSH08-28-Purple',
-                        'name' => 'Sybil Running Short',
-                        'expected_name' => 'Sybil Running Short',
-                        'qty' => 1,
-                        'priceInclTax' => 44,
-                        'product_id' => 1234,
-                        'price' => 44,
-                        'taxAmount' => 0,
-                        'shippingDescription' => 'BestWay-TableRate',
-                        'shippingAmount' => 15,
-                        'shippingTaxAmount' => 0,
-                        'deliveryGrossAmount' => 15,
-                        'parentItem' => false,
-                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_SAGE50,
-                        'id' => null,
-                        'firstName' => null,
-                        'lastName' => null,
-                        'middleName' => null,
-                        'prefix' => null,
-                        'email' => null,
-                        'telephone' => null,
-                        'streetLine' => null,
-                        'expectedStreetLine' => null,
-                        'city' => null,
-                        'regionCode' => null,
-                        'country' => null,
-                        'postCode' => null,
-                        'fax' => null,
-                        'isMultishipping' => null,
-                        'allAddresses' => null,
-                        'method' => null,
-                    ]
-                ]
-            ,
             'test XML' => [
-                    [
-                        'name' => 'SybilRunningShort & more information',
-                        'expected_name' => '<![CDATA[SybilRunningShort & more information]]>',
-                        'sku' => 'WSH08-28Pur&',
-                        'expected_sku' => '<![CDATA[WSH08-28Pur]]>',
-                        'product_id' => 56,
-                        'id' => null,
-                        'qty' => 1,
-                        'taxAmount' => 0,
-                        'unitTaxAmount' => 0,
-                        'unitGrossAmount' => 16,
-                        'totalGrossAmount' => 16,
-                        'firstName' => 'first name',
-                        'expected_firstName' => '<![CDATA[first name]]>',
-                        'lastName' => 'last name',
-                        'expected_lastName' => '<![CDATA[last name]]>',
-                        'middleName' => 'm',
-                        'prefix' => 'pref',
-                        'email' => 'email',
-                        'telephone' => '123456',
-                        'streetLine' => 'streetLine',
-                        'expectedStreetLine' => '<![CDATA[streetLine]]>',
-                        'city' => 'city',
-                        'country' => 'co',
-                        'postCode' => '11222',
-                        'shippingAmount' => 15,
-                        'shippingTaxAmount' => 1,
-                        'deliveryGrossAmount' => 16,
-                        'priceInclTax' => 16,
-                        'price' => 16,
-                        'fax' => '11222',
-                        'parentItem' => false,
-                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML,
-                        'shippingDescription' => 'desc',
-                        'regionCode' => 'rc',
-                        'allAddresses' => [],
-                        'isMultishipping' => false,
-                        'method' => 'sagepayserver',
-                    ]
-                ]
-            ,
-            'test XML special chars' =>
                 [
-                    [
-                        'name' => 'Pursuit Lumaflex&trade; Tone Band',
-                        'expected_name' => '<![CDATA[Pursuit Lumaflex Tone Band]]>',
-                        'sku' => '24-UG02',
-                        'expected_sku' => '<![CDATA[24-UG02]]>',
-                        'product_id' => 56,
-                        'id' => null,
-                        'qty' => 1,
-                        'taxAmount' => 0,
-                        'unitTaxAmount' => 0,
-                        'unitGrossAmount' => 16,
-                        'totalGrossAmount' => 16,
-                        'firstName' => 'first name',
-                        'expected_firstName' => '<![CDATA[first name]]>',
-                        'lastName' => 'last name',
-                        'expected_lastName' => '<![CDATA[last name]]>',
-                        'middleName' => 'm',
-                        'prefix' => 'pref',
-                        'email' => 'email',
-                        'telephone' => '123456',
-                        'streetLine' => '1 Alfa & testing, more Address',
-                        'expectedStreetLine' => '<![CDATA[1 Alfa & testing, more Address]]>',
-                        'city' => 'city',
-                        'country' => 'co',
-                        'postCode' => '11222',
-                        'shippingAmount' => 15,
-                        'shippingTaxAmount' => 1,
-                        'deliveryGrossAmount' => 16,
-                        'priceInclTax' => 16,
-                        'price' => 16,
-                        'fax' => '11222',
-                        'parentItem' => false,
-                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML,
-                        'shippingDescription' => 'desc',
-                        'regionCode' => 'rc',
-                        'allAddresses' => [],
-                        'isMultishipping' => false,
-                        'method' => 'sagepayserver',
-                    ]
+                    'name' => 'SybilRunningShort & more information',
+                    'expected_name' => '<![CDATA[SybilRunningShort & more information]]>',
+                    'sku' => 'WSH08-28Pur&',
+                    'expected_sku' => '<![CDATA[WSH08-28Pur]]>',
+                    'product_id' => 56,
+                    'id' => null,
+                    'qty' => 1,
+                    'taxAmount' => 0,
+                    'unitTaxAmount' => 0,
+                    'unitGrossAmount' => 16,
+                    'totalGrossAmount' => 16,
+                    'firstName' => 'first name',
+                    'expected_firstName' => '<![CDATA[first name]]>',
+                    'lastName' => 'last name',
+                    'expected_lastName' => '<![CDATA[last name]]>',
+                    'middleName' => 'm',
+                    'prefix' => 'pref',
+                    'email' => 'email',
+                    'telephone' => '123456',
+                    'streetLine' => 'streetLine',
+                    'expectedStreetLine' => '<![CDATA[streetLine]]>',
+                    'city' => 'city',
+                    'country' => 'co',
+                    'postCode' => '11222',
+                    'shippingAmount' => 15,
+                    'shippingTaxAmount' => 1,
+                    'deliveryGrossAmount' => 16,
+                    'priceInclTax' => 16,
+                    'price' => 16,
+                    'fax' => '11222',
+                    'parentItem' => false,
+                    'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML,
+                    'shippingDescription' => 'desc',
+                    'regionCode' => 'rc',
+                    'allAddresses' => [],
+                    'isMultishipping' => false,
+                    'method' => 'sagepayserver',
                 ]
+            ]
             ,
-            'test XML with tax' =>
+            'test XML special chars' => [
                 [
-                    [
-                        'name' => 'SybilRunningShort',
-                        'expected_name' => '<![CDATA[SybilRunningShort]]>',
-                        'product_id' => 66,
-                        'sku' => 'taxable-WSH0',
-                        'expected_sku' => '<![CDATA[taxable-WSH0]]>',
-                        'id' => null,
-                        'qty' => 3,
-                        'taxAmount' => 120,
-                        'unitTaxAmount' => 40,
-                        'unitGrossAmount' => 240,
-                        'totalGrossAmount' => 720,
-                        'firstName' => 'first name',
-                        'expected_firstName' => '<![CDATA[first name]]>',
-                        'lastName' => 'last name',
-                        'expected_lastName' => '<![CDATA[last name]]>',
-                        'middleName' => 'm',
-                        'prefix' => 'pref',
-                        'email' => 'email',
-                        'telephone' => '123456',
-                        'streetLine' => 'streetLine',
-                        'expectedStreetLine' => '<![CDATA[streetLine]]>',
-                        'city' => 'city',
-                        'country' => 'co',
-                        'postCode' => '11222',
-                        'shippingAmount' => 15,
-                        'shippingTaxAmount' => 1,
-                        'deliveryGrossAmount' => 16,
-                        'price' => 200,
-                        'priceInclTax' => 240,
-                        'fax' => '11222',
-                        'parentItem' => false,
-                        'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML,
-                        'shippingDescription' => 'desc',
-                        'regionCode' => 'rc',
-                        'allAddresses' => [],
-                        'isMultishipping' => false,
-                        'method' => 'sagepayserver',
-                    ]
+                    'name' => 'Pursuit Lumaflex&trade; Tone Band',
+                    'expected_name' => '<![CDATA[Pursuit Lumaflex Tone Band]]>',
+                    'sku' => '24-UG02',
+                    'expected_sku' => '<![CDATA[24-UG02]]>',
+                    'product_id' => 56,
+                    'id' => null,
+                    'qty' => 1,
+                    'taxAmount' => 0,
+                    'unitTaxAmount' => 0,
+                    'unitGrossAmount' => 16,
+                    'totalGrossAmount' => 16,
+                    'firstName' => 'first name',
+                    'expected_firstName' => '<![CDATA[first name]]>',
+                    'lastName' => 'last name',
+                    'expected_lastName' => '<![CDATA[last name]]>',
+                    'middleName' => 'm',
+                    'prefix' => 'pref',
+                    'email' => 'email',
+                    'telephone' => '123456',
+                    'streetLine' => '1 Alfa & testing, more Address',
+                    'expectedStreetLine' => '<![CDATA[1 Alfa & testing, more Address]]>',
+                    'city' => 'city',
+                    'country' => 'co',
+                    'postCode' => '11222',
+                    'shippingAmount' => 15,
+                    'shippingTaxAmount' => 1,
+                    'deliveryGrossAmount' => 16,
+                    'priceInclTax' => 16,
+                    'price' => 16,
+                    'fax' => '11222',
+                    'parentItem' => false,
+                    'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML,
+                    'shippingDescription' => 'desc',
+                    'regionCode' => 'rc',
+                    'allAddresses' => [],
+                    'isMultishipping' => false,
+                    'method' => 'sagepayserver',
                 ]
+
+            ]
+            ,
+            'test XML with tax' => [
+                [
+                    'name' => 'SybilRunningShort',
+                    'expected_name' => '<![CDATA[SybilRunningShort]]>',
+                    'product_id' => 66,
+                    'sku' => 'taxable-WSH0',
+                    'expected_sku' => '<![CDATA[taxable-WSH0]]>',
+                    'id' => null,
+                    'qty' => 3,
+                    'taxAmount' => 120,
+                    'unitTaxAmount' => 40,
+                    'unitGrossAmount' => 240,
+                    'totalGrossAmount' => 720,
+                    'firstName' => 'first name',
+                    'expected_firstName' => '<![CDATA[first name]]>',
+                    'lastName' => 'last name',
+                    'expected_lastName' => '<![CDATA[last name]]>',
+                    'middleName' => 'm',
+                    'prefix' => 'pref',
+                    'email' => 'email',
+                    'telephone' => '123456',
+                    'streetLine' => 'streetLine',
+                    'expectedStreetLine' => '<![CDATA[streetLine]]>',
+                    'city' => 'city',
+                    'country' => 'co',
+                    'postCode' => '11222',
+                    'shippingAmount' => 15,
+                    'shippingTaxAmount' => 1,
+                    'deliveryGrossAmount' => 16,
+                    'price' => 200,
+                    'priceInclTax' => 240,
+                    'fax' => '11222',
+                    'parentItem' => false,
+                    'format' => \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML,
+                    'shippingDescription' => 'desc',
+                    'regionCode' => 'rc',
+                    'allAddresses' => [],
+                    'isMultishipping' => false,
+                    'method' => 'sagepayserver',
+                ]
+            ]
             ,
             'test XML recipientName' =>
                 [
@@ -626,8 +547,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
 
             $basket = [
                 'BasketXML' => '<?xml version="1.0" encoding="utf-8"?>' .
-            '<basket>' .
-            '<item>' .
+                    '<basket>' .
+                    '<item>' .
                     $xmlDesc .
                     '<productSku>' . $data['expected_sku'] . '</productSku>' .
                     '<productCode>' . $data['product_id'] . '</productCode>' .
@@ -647,12 +568,12 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     '<recipientCity>' . $data['city'] . '</recipientCity>' .
                     '<recipientCountry>' . $data['country'] . '</recipientCountry>' .
                     '<recipientPostCode>' . $data['postCode'] . '</recipientPostCode>' .
-                '</item>' .
-                '<deliveryNetAmount>' . number_format($data['shippingAmount'], 2) . '</deliveryNetAmount>' .
-                '<deliveryTaxAmount>' . number_format($data['shippingTaxAmount'], 2) . '</deliveryTaxAmount>' .
-                '<deliveryGrossAmount>' . number_format($data['deliveryGrossAmount'], 2) . '</deliveryGrossAmount>' .
-                '<shippingFaxNo>' . $data['fax'] . '</shippingFaxNo>' .
-            '</basket>'
+                    '</item>' .
+                    '<deliveryNetAmount>' . number_format($data['shippingAmount'], 2) . '</deliveryNetAmount>' .
+                    '<deliveryTaxAmount>' . number_format($data['shippingTaxAmount'], 2) . '</deliveryTaxAmount>' .
+                    '<deliveryGrossAmount>' . number_format($data['deliveryGrossAmount'], 2) . '</deliveryGrossAmount>' .
+                    '<shippingFaxNo>' . $data['fax'] . '</shippingFaxNo>' .
+                    '</basket>'
             ];
         }
 
@@ -677,26 +598,26 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                 'getFax'
             ])->getMock();
         $addressMock->expects($this->any())
-             ->method('getShippingDescription')
-             ->willReturn($data['shippingDescription']);
+            ->method('getShippingDescription')
+            ->willReturn($data['shippingDescription']);
         $addressMock->expects($this->any())
-             ->method('getShippingAmount')
-             ->willReturn($data['shippingAmount']);
+            ->method('getShippingAmount')
+            ->willReturn($data['shippingAmount']);
         $addressMock->expects($this->any())
-             ->method('getShippingTaxAmount')
-             ->willReturn($data['shippingTaxAmount']);
+            ->method('getShippingTaxAmount')
+            ->willReturn($data['shippingTaxAmount']);
         $addressMock->expects($this->any())
-             ->method('getFirstname')
-             ->willReturn($data['firstName']);
+            ->method('getFirstname')
+            ->willReturn($data['firstName']);
         $addressMock->expects($this->any())
-             ->method('getLastname')
-             ->willReturn($data['lastName']);
+            ->method('getLastname')
+            ->willReturn($data['lastName']);
         $addressMock->expects($this->any())
-             ->method('getMiddlename')
-             ->willReturn($data['middleName']);
+            ->method('getMiddlename')
+            ->willReturn($data['middleName']);
         $addressMock->expects($this->any())
-             ->method('getPrefix')
-             ->willReturn($data['prefix']);
+            ->method('getPrefix')
+            ->willReturn($data['prefix']);
         $addressMock->expects($this->any())
             ->method('getEmail')
             ->willReturn($data['email']);
@@ -810,8 +731,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             ->willReturn($data['allAddresses']);
 
         $this->configMock->expects($this->any())
-             ->method('getBasketFormat')
-             ->willReturn($data['format']);
+            ->method('getBasketFormat')
+            ->willReturn($data['format']);
 
         $simpleInstance = new \SimpleXMLElement('<?xml version="1.0" encoding="utf-8" ?><basket />');
         $this->objectManagerMock
