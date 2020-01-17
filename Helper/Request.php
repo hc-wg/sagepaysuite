@@ -235,9 +235,8 @@ class Request extends AbstractHelper
                 continue;
             }
 
-            $itemDiscount = $item->getDiscountAmount() / $itemQty;
             $taxAmount = $item->getTaxAmount() / $itemQty;
-            $itemValue = $item->getPriceInclTax() - $taxAmount - $itemDiscount;
+            $itemValue = ($item->getRowTotal() - $item->getDiscountAmount()) / $itemQty;
 
             $itemTotal = $itemValue + $taxAmount;
 
@@ -305,7 +304,7 @@ class Request extends AbstractHelper
 
         //add total rows
         $basketString = count($basketArray) . $basketString;
-
+        
         return $basketString;
     }
 
