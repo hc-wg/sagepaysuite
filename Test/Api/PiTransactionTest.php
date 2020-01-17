@@ -85,7 +85,7 @@ class PiTransactionTest extends WebapiAbstract
 
         $transactionDetails = $this->helper->getTransactionDetails($response['transaction_id']);
 
-        $this->assertEquals("GBP", $transactionDetails->currency);
+        $this->assertEquals("USD", $transactionDetails->currency);
     }
 
     /**
