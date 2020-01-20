@@ -15,7 +15,7 @@ $customerAddress->setData(
     [
         'entity_id' => 1,
         'attribute_set_id' => 2,
-        'telephone' => "0191 479 5977",
+        'telephone' => "01518283930",
         'postcode' => 75477,
         'country_id' => 'US',
         'city' => 'CityM',
