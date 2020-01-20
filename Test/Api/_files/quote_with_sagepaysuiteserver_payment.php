@@ -4,7 +4,7 @@
  * See COPYING.txt for license details.
  */
 
-require BP . '/dev/tests/integration/testsuite/Magento/Checkout/_files/quote_with_address.php';
+require BP . '/dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files/quote_with_address.php';
 
 /** @var \Magento\Quote\Model\Quote $quote */
 
