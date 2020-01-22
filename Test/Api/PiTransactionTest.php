@@ -51,14 +51,14 @@ class PiTransactionTest extends WebapiAbstract
      */
     public function testPiCompleteTransaction()
     {
-        $this->helper->savePiKey();
-        $this->helper->savePiPassword();
-
         $this->config->saveConfig("sagepaysuite/global/currency", Config::CURRENCY_BASE, ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
         $this->config->saveConfig("currency/options/base", "USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
         $this->config->saveConfig("currency/options/default", "USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
         $this->config->saveConfig("currency/options/allow", "USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
         $this->config->saveConfig("sagepaysuite/global/mode", Config::MODE_DEVELOPMENT);
+
+        $this->helper->savePiKey();
+        $this->helper->savePiPassword();
 
         $merchantSessionKey = $this->obtainMerchantSessionKey();
         $cardIdentifier = $this->getCardIdentifier($merchantSessionKey);
@@ -75,13 +75,13 @@ class PiTransactionTest extends WebapiAbstract
      */
     public function testPiCompleteTransactionCurrencyOptions()
     {
-        $this->helper->savePiKey();
-        $this->helper->savePiPassword();
-
         $this->config->saveConfig("sagepaysuite/global/currency", Config::CURRENCY_BASE, ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
         $this->config->saveConfig("currency/options/base", "GBP", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
         $this->config->saveConfig("currency/options/default", "USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
         $this->config->saveConfig("currency/options/allow", "GBP,EUR,USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
+
+        $this->helper->savePiKey();
+        $this->helper->savePiPassword();
 
         $merchantSessionKey = $this->obtainMerchantSessionKey();
 
