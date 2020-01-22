@@ -72,6 +72,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
+        - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
         - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
         - sagepay/run-api-functional-tests
@@ -114,8 +115,10 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
+        - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
         - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
+        - run: $MAGENTO_PATH/bin/magento cache:enable
         - sagepay/run-api-functional-tests
     PHP 70 unit tests with coverage:
       docker:
@@ -156,8 +159,10 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
+        - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
         - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
+        - sagepay/run-api-functional-tests
     PHP 72 unit tests with coverage:
       docker:
         - image: circleci/php:7.2-apache
