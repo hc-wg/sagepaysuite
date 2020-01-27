@@ -43,7 +43,7 @@ jobs:
 #            paths:
 #              - ./
         # Install Magento
-        - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.3.tar.gz
+        - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.3.tar.gz && tar xzf Magento-EE-2.3.3.tar.gz
         - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
         - run: chmod +x bin/magento
         - run: composer install --prefer-source --no-interaction
