@@ -37,11 +37,45 @@ jobs:
 #        - sagepay/download-pre-compiled-magento:
 #            version: $MAGENTO_VERSION_233
 
-        - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.3.tar.gz && mv Magento-EE-2.3.3.tar.gz ./Magento233EE-PreCompiled.tar.gz
-        - run: mkdir magento2
-        
-        - sagepay/download-tools:
-            version: $MAGENTO_VERSION_233
+        - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.3.tar.gz
+
+#        - sagepay/download-tools:
+#            version: $MAGENTO_VERSION_233
+        - run:
+            name: Download PHP Unit.
+            command: wget --quiet https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
+        - run:
+            name: Decompress Magento.
+            command: tar xpf Magento-EE-2.3.3.tar.gz
+#        - run:
+#            name: Move Magento files.
+#            command: mv magento2/* .
+        - run:
+            name: Delete tar.
+            command: rm Magento-EE-2.3.3.tar.gz
+        - run:
+            name: Delete old code.
+            command: rm -rf app/code/Ebizmarts
+        - run:
+            name: Download magento Composer auth.json file.
+            command: wget --quiet https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
+        - run:
+            name: Set bin/magento as executable.
+            command: chmod +x bin/magento
+        - checkout:
+            path: app/code/Ebizmarts/SagePaySuite
+        - run:
+            name: Copy Api test data files to folder.
+            command: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
+        - run:
+            name: Copy php unit config file.
+            command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
+        - run:
+            name: Copy integration tests config file.
+            command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
+        - run:
+            name: Copy api functional config file.
+            command: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
 
         - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
         - run: chmod +x bin/magento
