@@ -37,7 +37,7 @@ jobs:
 #        - sagepay/download-pre-compiled-magento:
 #            version: $MAGENTO_VERSION_233
 
-        - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.3.tar.gz && mv ./Magento-EE-2.3.3-PreCompiled.tar.gz
+        - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.3.tar.gz && mv Magento-EE-2.3.3.tar.gz ./Magento-EE-2.3.3-PreCompiled.tar.gz
 
         - sagepay/download-tools:
             version: $MAGENTO_VERSION_233
