@@ -34,14 +34,21 @@ jobs:
     DownloadTools233EE:
       executor: my-executor
       steps:
-        - sagepay/download-pre-compiled-magento:
-            version: $MAGENTO_VERSION_233
-        - sagepay/download-tools:
-            version: $MAGENTO_VERSION_233
-        - persist_to_workspace:
-            root: /home/circleci
-            paths:
-              - ./
+#        - sagepay/download-pre-compiled-magento:
+#            version: $MAGENTO_VERSION_233
+#        - sagepay/download-tools:
+#            version: $MAGENTO_VERSION_233
+#        - persist_to_workspace:
+#            root: /home/circleci
+#            paths:
+#              - ./
+        # Install Magento
+        - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.3.tar.gz
+        - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
+        - run: chmod +x bin/magento
+        - run: composer install --prefer-source --no-interaction
+        - run: bin/magento setup:install --base-url=http://magento2.dev:8080/ --db-host=$MYSQL_HOST --db-name=$MYSQL_DATABASE --db-user=$MYSQL_USER --db-password=$MYSQL_PASSWORD --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1 --cleanup-database --use-sample-data
+
     PHP 71 Code Sniffer:
       docker:
         - image: circleci/php:7.1-apache
