@@ -39,51 +39,21 @@ jobs:
     DownloadTools233EE:
       executor: my-executor
       steps:
+        - sagepay/install-linux-dependencies
 #        - sagepay/download-pre-compiled-magento:
 #            version: $MAGENTO_VERSION_233
 #        - sagepay/download-tools:
 #            version: $MAGENTO_VERSION_233
-        - run: sudo -E sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
-
-        - run: wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.18.tar.gz
-        - run: tar xvzf libsodium-1.0.18.tar.gz
-        - run: cd libsodium-1.0.18/ && ./configure
-        - run: cd libsodium-1.0.18/ && make && make check
-        - run: cd libsodium-1.0.18/ && sudo make install
-
-        # Install dependencies
-        - run: sudo apt-get update
-        - run:
-            name: Install libraries
-            command: sudo -E apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
-
-        - run:
-            name: Configure PHP extensions
-            command: sudo -E docker-php-ext-configure intl && sudo -E docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
-
-        - run:
-            name: Install PHP extensions
-            command: sudo -E docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
-
-        - run: sudo apt-get install -y mariadb-client
-
-        # Prepare Apache env
-        - run: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
-        - run: wget https://gist.githubusercontent.com/bcerban/25f3a2d93c19dc562020e0197f78685c/raw/70f1f314ad8ba5d302b911fe622a57ccec60a868/magento2.conf
-        - run: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
-        - run: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
-        - run: sudo service apache2 restart
-
-        # Install test runners
-        - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
-
-        # Install Magento
         - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento-EE-2.3.3.tar.gz && tar xzf Magento-EE-2.3.3.tar.gz
         - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
         - run: chmod +x bin/magento
         - run: composer install --prefer-source --no-interaction
-        - run: bin/magento setup:install --base-url=http://magento2.dev:8080/ --db-host=$MYSQL_HOST --db-name=$MYSQL_DATABASE --db-user=$MYSQL_USER --db-password=$MYSQL_PASSWORD --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1 --cleanup-database --use-sample-data
-
+        - run: bin/magento setup:install --base-url=http://magento2.dev:8080/ --db-host=127.0.0.1 --db-name=circle_test --db-user=magento --db-password=magento --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1 --cleanup-database --use-sample-data
+        - run: wget --quiet https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
+        - run: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
+        - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
+        - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
+        - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
         - persist_to_workspace:
             root: /home/circleci
             paths:
