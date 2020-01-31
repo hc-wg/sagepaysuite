@@ -175,7 +175,7 @@ jobs:
               at: ~/magento2
           - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
 #          - sagepay/install-mariadb-and-setup-webserver
-
+          - run: cd magento2
           - run: sudo -E sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
 
           - run: wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.18.tar.gz
@@ -194,9 +194,13 @@ jobs:
               name: Configure PHP extensions
               command: sudo -E docker-php-ext-configure intl && sudo -E docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
 
+          - run: sudo apt-get -y install gcc make autoconf libc-dev pkg-config
+          - run: sudo apt-get -y install libmcrypt-dev
+          - run: sudo pecl install mcrypt-1.0.2
+
           - run:
               name: Install PHP extensions
-              command: sudo -E docker-php-ext-install bcmath gd intl mcrypt opcache pdo_mysql soap xsl zip
+              command: sudo -E docker-php-ext-install bcmath gd intl opcache pdo_mysql soap xsl zip
 
           - run: sudo apt-get install -y mariadb-client
 
