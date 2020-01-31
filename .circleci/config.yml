@@ -227,7 +227,7 @@ jobs:
           - attach_workspace:
               at: ~/magento2
           - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
-          - sagepay/install-mariadb-and-setup-webserver
+#          - sagepay/install-mariadb-and-setup-webserver
           - sagepay/magento-compile-and-setup-upgrade
           - sagepay/run-api-functional-tests
     PHP 73 unit tests with coverage:
