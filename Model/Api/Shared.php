@@ -90,6 +90,20 @@ class Shared
         return $this->_executeRequest(Config::ACTION_VOID, $data);
     }
 
+    public function cancelAuthenticatedTransaction($vpstxid, \Magento\Sales\Api\Data\OrderInterface $order)
+    {
+        $transaction = $this->reportingApi->getTransactionDetailsByVpstxid($vpstxid, $order->getStoreId());
+
+        $data['VPSProtocol'] = $this->config->getVPSProtocol();
+        $data['TxType'] = Config::ACTION_CANCEL;
+        $data['Vendor'] = $this->config->getVendorname();
+        $data['VendorTxCode'] = (string)$transaction->vendortxcode;;
+        $data['VPSTxId'] = (string)$transaction->vpstxid;
+        $data['SecurityKey'] = (string)$transaction->securitykey;
+
+        return $this->executeRequest(Config::ACTION_CANCEL, $data);
+    }
+
     public function refundTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
     {
         $transaction = $this->_reportingApi->getTransactionDetailsByVpstxid($vpstxid, $order->getStoreId());
