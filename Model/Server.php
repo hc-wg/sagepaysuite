@@ -272,7 +272,7 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
                     $this->sharedApi->abortDeferredTransaction($transactionId, $order);
                 }
             }
-            elseif ((int)$transactionDetails->txstateid === PaymentOperations::AUTHENTICATED_AWATING_AUTHORISE){
+            elseif ((int)$transactionDetails->txstateid === PaymentOperations::AUTHENTICATED_AWAITING_AUTHORISE){
                 $this->sharedApi->cancelAuthenticatedTransaction($transactionId, $order);
             }
             else {
