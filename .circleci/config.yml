@@ -175,11 +175,6 @@ jobs:
               at: ~/magento2
           - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
           - sagepay/install-mariadb-and-setup-webserver
-
-          # Install test runners
-          - run: cd ~/magento2 && composer install --prefer-source --no-interaction
-          - run: cd ~/magento2 && bin/magento setup:install --base-url=http://magento2.dev:8080/ --db-host=127.0.0.1 --db-name=circle_test --db-user=magento --db-password=magento --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1 --cleanup-database --use-sample-data
-
           - sagepay/magento-compile-and-setup-upgrade
           - sagepay/run-api-functional-tests
     PHP 73 unit tests with coverage:
