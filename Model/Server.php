@@ -15,6 +15,8 @@ use Ebizmarts\SagePaySuite\Model\Api\ApiException;
  */
 class Server extends \Magento\Payment\Model\Method\AbstractMethod
 {
+    const REQUEST_TYPE_CANCEL = 'CANCEL';
+
     /**
      * @var string
      */
@@ -269,7 +271,11 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
                 if ($order->canInvoice()) {
                     $this->sharedApi->abortDeferredTransaction($transactionId, $order);
                 }
-            } else {
+            }
+            elseif ((int)$transactionDetails->txstateid === PaymentOperations::AUTHENTICATED_AWATING_AUTHORISE){
+                $this->sharedApi->cancelAuthenticatedTransaction($transactionId, $order);
+            }
+            else {
                 $this->sharedApi->voidTransaction($transactionId, $order);
             }
         } catch (ApiException $apiException) {
