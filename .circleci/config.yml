@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  sagepay: pruebas/ebizmarts-sagepay@0.0.4
+  sagepay: pruebas/ebizmarts-sagepay@0.0.5
 
 executors:
   my-executor:
@@ -28,10 +28,8 @@ jobs:
     DownloadTools232EE:
       executor: my-executor
       steps:
-#        - sagepay/download-pre-compiled-magento:
-#            version: $MAGENTO_VERSION
-        - run: wget --quiet https://ebizmartsbackup.s3.amazonaws.com/Magento232EE-PreCompiled-NoSampleData.tar.gz
-        - run: mv Magento232EE-PreCompiled-NoSampleData.tar.gz Magento232EE-PreCompiled.tar.gz
+        - sagepay/download-pre-compiled-magento-no-sampledata:
+            version: $MAGENTO_VERSION
         - sagepay/download-tools:
             version: $MAGENTO_VERSION
         - persist_to_workspace:
@@ -41,10 +39,8 @@ jobs:
     DownloadTools233EE:
       executor: my-executor
       steps:
-#        - sagepay/download-pre-compiled-magento:
-#            version: $MAGENTO_VERSION_233
-        - run: wget --quiet https://ebizmartsbackup.s3.amazonaws.com/Magento233EE-PreCompiled-NoSampleData.tar.gz
-        - run: mv Magento233EE-PreCompiled-NoSampleData.tar.gz Magento233EE-PreCompiled.tar.gz
+        - sagepay/download-pre-compiled-magento-no-sampledata:
+            version: $MAGENTO_VERSION_233
         - sagepay/download-tools:
             version: $MAGENTO_VERSION_233
         - persist_to_workspace:
