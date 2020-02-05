@@ -28,7 +28,7 @@ jobs:
     DownloadTools232EE:
       executor: my-executor
       steps:
-        - sagepay/download-pre-compiled-magento:
+        - sagepay/download-pre-compiled-magento-no-sampledata:
             version: $MAGENTO_VERSION
         - sagepay/download-tools:
             version: $MAGENTO_VERSION
@@ -39,20 +39,10 @@ jobs:
     DownloadTools233EE:
       executor: my-executor
       steps:
-#        - sagepay/download-pre-compiled-magento:
-#            version: $MAGENTO_VERSION_233
-#        - sagepay/download-tools:
-#            version: $MAGENTO_VERSION_233
-        - run: wget https://phar.phpunit.de/phpunit-6.2.phar && chmod +x phpunit-6.2.phar
-        - run: wget https://ebizmartsbackup.s3.amazonaws.com/Magento2.3.3-PreCompiled-NoSampleData.tar.gz && tar xzf Magento2.3.3-PreCompiled-NoSampleData.tar.gz
-        - run: wget https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
-        - run: chmod +x bin/magento
-        - checkout:
-            path: app/code/Ebizmarts/SagePaySuite
-        - run: mkdir -p dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files && cp -r app/code/Ebizmarts/SagePaySuite/Test/Api/_files/* dev/tests/integration/testsuite/Ebizmarts/SagePaySuite/_files
-        - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config.xml dev/tests/unit/phpunit.xml
-        - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_integration.xml dev/tests/integration/phpunit.xml
-        - run: cp app/code/Ebizmarts/SagePaySuite/phpunit_config_functional.xml dev/tests/api-functional/phpunit.xml
+        - sagepay/download-pre-compiled-magento-no-sampledata:
+            version: $MAGENTO_VERSION_233
+        - sagepay/download-tools:
+            version: $MAGENTO_VERSION_233
         - persist_to_workspace:
             root: /home/circleci
             paths:
