@@ -269,14 +269,14 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
 
             if ((int)$transactionDetails->txstateid === PaymentOperations::DEFERRED_AWAITING_RELEASE) {
                 if ($order->canInvoice()) {
-                    $this->sharedApi->abortDeferredTransaction($transactionId, $order);
+                    $this->sharedApi->abortDeferredTransaction($transactionDetails);
                 }
             }
             elseif ((int)$transactionDetails->txstateid === PaymentOperations::AUTHENTICATED_AWAITING_AUTHORISE){
-                $this->sharedApi->cancelAuthenticatedTransaction($transactionId, $order);
+                $this->sharedApi->cancelAuthenticatedTransaction($transactionDetails);
             }
             else {
-                $this->sharedApi->voidTransaction($transactionId, $order);
+                $this->sharedApi->voidTransaction($transactionDetails);
             }
         } catch (ApiException $apiException) {
             if ($this->exceptionCodeIsInvalidTransactionState($apiException)) {
