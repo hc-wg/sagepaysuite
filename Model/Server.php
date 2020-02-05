@@ -15,7 +15,6 @@ use Ebizmarts\SagePaySuite\Model\Api\ApiException;
  */
 class Server extends \Magento\Payment\Model\Method\AbstractMethod
 {
-    const REQUEST_TYPE_CANCEL = 'CANCEL';
 
     /**
      * @var string
