@@ -34,6 +34,8 @@ class Helper
 
     public function getTransactionDetails($vpsTxId)
     {
+        $this->config->setDataByPath("sagepaysuite/global/mode", \Ebizmarts\SagePaySuite\Model\Config::MODE_DEVELOPMENT);
+        $this->config->save();
         $this->saveReportingApiUser();
 
         $this->saveReportingApiPassword();
