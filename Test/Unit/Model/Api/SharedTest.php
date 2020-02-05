@@ -173,15 +173,6 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('executePost')
             ->willReturn($responseMock);
 
-        $orderMock = $this
-            ->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock
-            ->expects($this->once())
-            ->method('getStoreId')
-            ->willReturn(1);
-
         $this->assertEquals(
             [
                 "status" => 200,
@@ -191,7 +182,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                     'StatusDetail' => 'Success.'
                 ]
             ],
-            $this->sharedApiModel->voidTransaction("12345", $orderMock)
+            $this->sharedApiModel->voidTransaction($this->transactionDetailsResponse)
         );
     }
 
@@ -433,15 +424,6 @@ class SharedTest extends \PHPUnit_Framework_TestCase
             ->method('executePost')
             ->willReturn($responseMock);
 
-        $orderMock = $this
-            ->getMockBuilder(\Magento\Sales\Api\Data\OrderInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock
-            ->expects($this->once())
-            ->method('getStoreId')
-            ->willReturn(1);
-
         $this->assertEquals(
             [
                 "status" => 200,
@@ -451,7 +433,7 @@ class SharedTest extends \PHPUnit_Framework_TestCase
                     'StatusDetail' => '2006 : The Abort was Successful.'
                 ]
             ],
-            $this->sharedApiModel->abortDeferredTransaction("12345", $orderMock)
+            $this->sharedApiModel->abortDeferredTransaction($this->transactionDetailsResponse)
         );
     }
 
