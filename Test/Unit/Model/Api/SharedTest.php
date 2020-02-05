@@ -437,6 +437,59 @@ class SharedTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testCancelAuthenticatedTransaction()
+    {
+        $stringResponse = 'HTTP/1.1 200 OK';
+        $stringResponse .= "\n\n";
+        $stringResponse .= "VPSProtocol=3.00\n";
+        $stringResponse .= "Status=OK\n";
+        $stringResponse .= "StatusDetail=Success.\n";
+
+        $responseMock = $this
+            ->getMockBuilder(HttpResponse::class)
+            ->setMethods(['getStatus'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $responseMock
+            ->expects($this->exactly(2))
+            ->method('getStatus')
+            ->willReturn(200);
+
+        $this->httpTextMock
+            ->method('getResponseData')
+            ->willReturn($stringResponse);
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('arrayToQueryParams')
+            ->with(
+                [
+                    'VPSProtocol'  => '3.00',
+                    'TxType'       => 'CANCEL',
+                    'Vendor'       => "testvendorname",
+                    'VendorTxCode' => "1000000001-2016-12-12-12345678",
+                    'SecurityKey'  => "fds87",
+                    "VPSTxId"      => "12345"
+                ]
+            );
+        $this->httpTextMock
+            ->expects($this->once())
+            ->method('executePost')
+            ->willReturn($responseMock);
+
+        $this->assertEquals(
+            [
+                "status" => 200,
+                "data" => [
+                    'VPSProtocol'  => '3.00',
+                    'Status'       => 'OK',
+                    'StatusDetail' => 'Success.'
+                ]
+            ],
+            $this->sharedApiModel->cancelAuthenticatedTransaction($this->transactionDetailsResponse)
+        );
+
+    }
+
     public function testCaptureDeferredTransactionAwaitingRelease()
     {
         $stringResponse = 'HTTP/1.1 200 OK';
