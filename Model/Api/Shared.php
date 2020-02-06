@@ -98,7 +98,7 @@ class Shared
         $data['VPSTxId'] = (string)$transactionDetails->vpstxid;
         $data['SecurityKey'] = (string)$transactionDetails->securitykey;
 
-        return $this->executeRequest(Config::ACTION_CANCEL, $data);
+        return $this->_executeRequest(Config::ACTION_CANCEL, $data);
     }
 
     public function refundTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
