@@ -137,10 +137,10 @@ workflows:
             - DownloadTools216
       - PHP 56 Unit Tests:
           requires:
-            - PHP 70 Code Sniffer
+            - PHP 56 Code Sniffer
       - PHP 56 Compile and API test:
           requires:
-            - PHP 70 Unit Tests
+            - PHP 56 Unit Tests
       - PHP 56 unit tests with coverage:
           requires:
-            - PHP 70 Compile and API test
+            - PHP 56 Compile and API test
