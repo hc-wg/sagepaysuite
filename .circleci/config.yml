@@ -18,7 +18,7 @@ executors:
     working_directory: ~/
 
 jobs:
-    DownloadTools216:
+    DownloadTools2118EE:
       executor: my-executor
       steps:
         - sagepay/download-pre-compiled-magento:
@@ -119,10 +119,10 @@ workflows:
   version: 2.1
   build_test_dist:
     jobs:
-      - DownloadTools216
+      - DownloadTools2118EE
       - PHP 70 Code Sniffer:
           requires:
-            - DownloadTools216
+            - DownloadTools2118EE
       - PHP 70 Unit Tests:
           requires:
             - PHP 70 Code Sniffer
@@ -134,7 +134,7 @@ workflows:
             - PHP 70 Compile and API test
       - PHP 56 Code Sniffer:
           requires:
-            - DownloadTools216
+            - DownloadTools2118EE
       - PHP 56 Unit Tests:
           requires:
             - PHP 56 Code Sniffer
