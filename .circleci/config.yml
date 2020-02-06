@@ -12,7 +12,7 @@ executors:
       SNIFFER_SEVERITY: 10
       SNIFFER_VERSION: v5
       MAGENTO_PATH: /home/circleci/magento2
-      MAGENTO_VERSION: 216
+      MAGENTO_VERSION: 2118EE
       MAGENTO_WEB_SERVER_CONF: https://gist.githubusercontent.com/bcerban/25f3a2d93c19dc562020e0197f78685c/raw/70f1f314ad8ba5d302b911fe622a57ccec60a868/magento2.conf
       MAGENTO_COMPOSER_AUTH: https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
     working_directory: ~/
