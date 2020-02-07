@@ -219,8 +219,11 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
      */
     private function _getServiceURL()
     {
-        if ($this->_config->getMode() == Config::MODE_LIVE) {
+        $mode = $this->_config->getMode();
+        if ($mode == Config::MODE_LIVE) {
             return Config::URL_SERVER_POST_LIVE;
+        } else if($mode == Config::MODE_DEVELOPMENT) {
+            return Config::URL_SERVER_POST_DEV;
         } else {
             return Config::URL_SERVER_POST_TEST;
         }
