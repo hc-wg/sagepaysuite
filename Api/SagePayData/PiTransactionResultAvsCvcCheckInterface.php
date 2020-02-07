@@ -19,6 +19,9 @@ interface PiTransactionResultAvsCvcCheckInterface
      */
     public function setStatus($status);
 
+    /**
+     * @return mixed
+     */
     public function getStatus();
 
     /**

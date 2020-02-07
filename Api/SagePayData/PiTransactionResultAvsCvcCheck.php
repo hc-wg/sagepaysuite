@@ -20,6 +20,9 @@ class PiTransactionResultAvsCvcCheck extends AbstractExtensibleObject implements
         $this->setData(self::STATUS, $status);
     }
 
+    /**
+     * @return mixed|null
+     */
     public function getStatus()
     {
         return $this->_get(self::STATUS);
@@ -34,6 +37,9 @@ class PiTransactionResultAvsCvcCheck extends AbstractExtensibleObject implements
         $this->setData(self::ADDRESS, $addressStatus);
     }
 
+    /**
+     * @return mixed|null
+     */
     public function getAddress()
     {
         return $this->_get(self::ADDRESS);
