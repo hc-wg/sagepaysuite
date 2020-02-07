@@ -27,6 +27,9 @@ interface PiTransactionResultAvsCvcCheckInterface
      */
     public function setAddress($addressStatus);
 
+    /**
+     * @return mixed
+     */
     public function getAddress();
 
     /**
@@ -35,6 +38,9 @@ interface PiTransactionResultAvsCvcCheckInterface
      */
     public function setPostalCode($postalCodeStatus);
 
+    /**
+     * @return mixed
+     */
     public function getPostalCode();
 
     /**
@@ -43,5 +49,8 @@ interface PiTransactionResultAvsCvcCheckInterface
      */
     public function setSecurityCode($securityCodeStatus);
 
+    /**
+     * @return mixed
+     */
     public function getSecurityCode();
 }

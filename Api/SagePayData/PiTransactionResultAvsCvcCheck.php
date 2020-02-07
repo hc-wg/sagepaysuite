@@ -1,9 +1,7 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: pablo
- * Date: 1/25/17
- * Time: 3:48 PM
+ * Copyright © 2020 ebizmarts. All rights reserved.
+ * See LICENSE.txt for license details.
  */
 
 namespace Ebizmarts\SagePaySuite\Api\SagePayData;
@@ -50,6 +48,9 @@ class PiTransactionResultAvsCvcCheck extends AbstractExtensibleObject implements
         $this->setData(self::POSTAL_CODE, $postalCodeStatus);
     }
 
+    /**
+     * @return mixed|null
+     */
     public function getPostalCode()
     {
         return $this->_get(self::POSTAL_CODE);
@@ -64,6 +65,9 @@ class PiTransactionResultAvsCvcCheck extends AbstractExtensibleObject implements
         $this->setData(self::SECURITY_CODE, $securityCodeStatus);
     }
 
+    /**
+     * @return mixed|null
+     */
     public function getSecurityCode()
     {
         return $this->_get(self::SECURITY_CODE);
