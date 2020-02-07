@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Model\Api;
 
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\DataObject;
 
 /**
  * Sage Pay Shared API
@@ -72,6 +73,10 @@ class Shared implements PaymentOperations
         $this->requestHelper       = $requestHelper;
     }
 
+    /**
+     * @param object $transactionDetails
+     * @return array
+     */
     public function voidTransaction($transactionDetails)
     {
         $data['VPSProtocol'] = $this->config->getVPSProtocol();
@@ -85,6 +90,10 @@ class Shared implements PaymentOperations
         return $this->executeRequest(Config::ACTION_VOID, $data);
     }
 
+    /**
+     * @param object $transactionDetails
+     * @return array
+     */
     public function cancelAuthenticatedTransaction($transactionDetails)
     {
         $data['VPSProtocol'] = $this->config->getVPSProtocol();
@@ -116,6 +125,10 @@ class Shared implements PaymentOperations
         return $this->executeRequest(Config::ACTION_REFUND, $data);
     }
 
+    /**
+     * @param object $transactionDetails
+     * @return array
+     */
     public function abortDeferredTransaction($transactionDetails)
     {
         $data['VPSProtocol']  = $this->config->getVPSProtocol();
