@@ -1,3 +1,11 @@
+## [1.1.33] - 2020-02-12
+### Changed
+- Look transaction by vendorTxCode if not VPSTxId when SyncFromApi
+
+### Fixed
+- Problem with basket format when using Sage50
+- Error while trying to cancel SERVER Authenticate order
+
 ## [1.1.32] - 2019-12-19
 ### Fixed
 - Items being canceled when order take more than 15 minutes
@@ -358,6 +366,7 @@
    - PI integration (frontend)
    - Online Refunds
    
+[1.1.33]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.33
 [1.1.32]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.32
 [1.1.31]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.31
 [1.1.30]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.30
