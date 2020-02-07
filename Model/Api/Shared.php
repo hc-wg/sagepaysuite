@@ -98,7 +98,7 @@ class Shared implements PaymentOperations
     public function cancelAuthenticatedTransaction($transactionDetails)
     {
         $data = array();
-        $data['VPSProtocol'] = $this->_config->getVPSProtocol();
+        $data['VPSProtocol'] = $this->config->getVPSProtocol();
         $data['TxType'] = Config::ACTION_CANCEL;
         $data['Vendor'] = $this->config->getVendorname();
         $data['VendorTxCode'] = (string)$transactionDetails->vendortxcode;;
