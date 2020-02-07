@@ -80,7 +80,7 @@ class Shared implements PaymentOperations
     {
 
         $data = array();
-        $data['VPSProtocol'] = $this->_config->getVPSProtocol();
+        $data['VPSProtocol'] = $this->config->getVPSProtocol();
         $data['TxType'] = Config::ACTION_VOID;
         $data['Vendor'] = $this->config->getVendorname();
         $data['VendorTxCode'] = $this->suiteHelper->generateVendorTxCode();
@@ -134,7 +134,7 @@ class Shared implements PaymentOperations
     public function abortDeferredTransaction($transactionDetails)
     {
         $data = array();
-        $data['VPSProtocol']  = $this->_config->getVPSProtocol();
+        $data['VPSProtocol']  = $this->config->getVPSProtocol();
         $data['TxType']       = Config::ACTION_ABORT;
         $data['ReferrerID']   = $this->requestHelper->getReferrerId();
         $data['Vendor']       = $this->config->getVendorname();
