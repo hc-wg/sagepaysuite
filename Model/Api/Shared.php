@@ -72,19 +72,39 @@ class Shared implements PaymentOperations
         $this->requestHelper       = $requestHelper;
     }
 
-    public function voidTransaction($vpstxid, \Magento\Sales\Api\Data\OrderInterface $order)
+    /**
+     * @param object $transactionDetails
+     * @return array
+     */
+    public function voidTransaction($transactionDetails)
     {
-        $transaction = $this->reportingApi->getTransactionDetailsByVpstxid($vpstxid, $order->getStoreId());
-
+        $data = array();
         $data['VPSProtocol'] = $this->config->getVPSProtocol();
         $data['TxType'] = Config::ACTION_VOID;
         $data['Vendor'] = $this->config->getVendorname();
         $data['VendorTxCode'] = $this->suiteHelper->generateVendorTxCode();
-        $data['VPSTxId'] = (string)$transaction->vpstxid;
-        $data['SecurityKey'] = (string)$transaction->securitykey;
-        $data['TxAuthNo'] = (string)$transaction->vpsauthcode;
+        $data['VPSTxId'] = (string)$transactionDetails->vpstxid;
+        $data['SecurityKey'] = (string)$transactionDetails->securitykey;
+        $data['TxAuthNo'] = (string)$transactionDetails->vpsauthcode;
 
         return $this->executeRequest(Config::ACTION_VOID, $data);
+    }
+
+    /**
+     * @param object $transactionDetails
+     * @return array
+     */
+    public function cancelAuthenticatedTransaction($transactionDetails)
+    {
+        $data = array();
+        $data['VPSProtocol'] = $this->config->getVPSProtocol();
+        $data['TxType'] = Config::ACTION_CANCEL;
+        $data['Vendor'] = $this->config->getVendorname();
+        $data['VendorTxCode'] = (string)$transactionDetails->vendortxcode;;
+        $data['VPSTxId'] = (string)$transactionDetails->vpstxid;
+        $data['SecurityKey'] = (string)$transactionDetails->securitykey;
+
+        return $this->executeRequest(Config::ACTION_CANCEL, $data);
     }
 
     public function refundTransaction($vpstxid, $amount, \Magento\Sales\Api\Data\OrderInterface $order)
@@ -106,18 +126,21 @@ class Shared implements PaymentOperations
         return $this->executeRequest(Config::ACTION_REFUND, $data);
     }
 
-    public function abortDeferredTransaction($vpstxid, \Magento\Sales\Api\Data\OrderInterface $order)
+    /**
+     * @param object $transactionDetails
+     * @return array
+     */
+    public function abortDeferredTransaction($transactionDetails)
     {
-        $transaction = $this->reportingApi->getTransactionDetailsByVpstxid($vpstxid, $order->getStoreId());
-
+        $data = array();
         $data['VPSProtocol']  = $this->config->getVPSProtocol();
         $data['TxType']       = Config::ACTION_ABORT;
         $data['ReferrerID']   = $this->requestHelper->getReferrerId();
         $data['Vendor']       = $this->config->getVendorname();
-        $data['VendorTxCode'] = (string)$transaction->vendortxcode;
-        $data['VPSTxId']      = (string)$transaction->vpstxid;
-        $data['SecurityKey']  = (string)$transaction->securitykey;
-        $data['TxAuthNo']     = (string)$transaction->vpsauthcode;
+        $data['VendorTxCode'] = (string)$transactionDetails->vendortxcode;
+        $data['VPSTxId']      = (string)$transactionDetails->vpstxid;
+        $data['SecurityKey']  = (string)$transactionDetails->securitykey;
+        $data['TxAuthNo']     = (string)$transactionDetails->vpsauthcode;
 
         return $this->executeRequest(Config::ACTION_ABORT, $data);
     }
