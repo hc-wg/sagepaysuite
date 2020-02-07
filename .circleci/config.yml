@@ -62,7 +62,8 @@ jobs:
         - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
         - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
-        - sagepay/run-api-functional-tests
+#        - sagepay/run-api-functional-tests
+        - run: cd ~/magento2/dev/tests/integration && ./../../../vendor/bin/phpunit -c ../api-functional/phpunit.xml
     PHP 70 unit tests with coverage:
       docker:
         - image: circleci/php:7.0-apache
@@ -105,7 +106,8 @@ jobs:
         - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
         - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
-        - sagepay/run-api-functional-tests
+#        - sagepay/run-api-functional-tests
+        - run: cd ~/magento2/dev/tests/integration && ./../../../vendor/bin/phpunit -c ../api-functional/phpunit.xml
     PHP 56 unit tests with coverage:
       docker:
         - image: circleci/php:5.6-apache
