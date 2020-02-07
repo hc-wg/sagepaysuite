@@ -78,6 +78,7 @@ class Shared implements PaymentOperations
      */
     public function voidTransaction($transactionDetails)
     {
+        $data = array();
         $data['VPSProtocol'] = $this->config->getVPSProtocol();
         $data['TxType'] = Config::ACTION_VOID;
         $data['Vendor'] = $this->config->getVendorname();
@@ -95,6 +96,7 @@ class Shared implements PaymentOperations
      */
     public function cancelAuthenticatedTransaction($transactionDetails)
     {
+        $data = array();
         $data['VPSProtocol'] = $this->config->getVPSProtocol();
         $data['TxType'] = Config::ACTION_CANCEL;
         $data['Vendor'] = $this->config->getVendorname();
@@ -130,6 +132,7 @@ class Shared implements PaymentOperations
      */
     public function abortDeferredTransaction($transactionDetails)
     {
+        $data = array();
         $data['VPSProtocol']  = $this->config->getVPSProtocol();
         $data['TxType']       = Config::ACTION_ABORT;
         $data['ReferrerID']   = $this->requestHelper->getReferrerId();
