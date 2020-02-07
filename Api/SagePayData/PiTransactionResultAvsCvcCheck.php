@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Api\SagePayData;
 
 use Magento\Framework\Api\AbstractExtensibleObject;
+use Magento\Tests\NamingConvention\true\string;
 
 class PiTransactionResultAvsCvcCheck extends AbstractExtensibleObject implements PiTransactionResultAvsCvcCheckInterface
 {
@@ -21,7 +22,7 @@ class PiTransactionResultAvsCvcCheck extends AbstractExtensibleObject implements
     }
 
     /**
-     * @return mixed|null
+     * @return string|null
      */
     public function getStatus()
     {
@@ -38,7 +39,7 @@ class PiTransactionResultAvsCvcCheck extends AbstractExtensibleObject implements
     }
 
     /**
-     * @return mixed|null
+     * @return string|null
      */
     public function getAddress()
     {
@@ -55,7 +56,7 @@ class PiTransactionResultAvsCvcCheck extends AbstractExtensibleObject implements
     }
 
     /**
-     * @return mixed|null
+     * @return string|null
      */
     public function getPostalCode()
     {
@@ -72,7 +73,7 @@ class PiTransactionResultAvsCvcCheck extends AbstractExtensibleObject implements
     }
 
     /**
-     * @return mixed|null
+     * @return string|null
      */
     public function getSecurityCode()
     {
