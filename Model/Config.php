@@ -48,6 +48,7 @@ class Config
     const ACTION_AUTHORISE       = 'AUTHORISE';
     const ACTION_POST            = 'post';
     const ACTION_ABORT           = 'ABORT';
+    const ACTION_CANCEL          = 'CANCEL';
 
     /**
      * SagePay MODES
@@ -99,6 +100,8 @@ class Config
     const URL_REPORTING_API_DEV          = 'http://test.sagepay.com/access/access.htm';
     const URL_SHARED_VOID_TEST           = 'https://test.sagepay.com/gateway/service/void.vsp';
     const URL_SHARED_VOID_LIVE           = 'https://live.sagepay.com/gateway/service/void.vsp';
+    const URL_SHARED_CANCEL_TEST         = 'https://test.sagepay.com/gateway/service/cancel.vsp';
+    const URL_SHARED_CANCEL_LIVE         = 'https://live.sagepay.com/gateway/service/cancel.vsp';
     const URL_SHARED_REFUND_TEST         = 'https://test.sagepay.com/gateway/service/refund.vsp';
     const URL_SHARED_REFUND_LIVE         = 'https://live.sagepay.com/gateway/service/refund.vsp';
     const URL_SHARED_RELEASE_TEST        = 'https://test.sagepay.com/gateway/service/release.vsp';
