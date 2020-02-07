@@ -8,7 +8,6 @@ namespace Ebizmarts\SagePaySuite\Model\Api;
 
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Magento\Framework\DataObject;
 
 /**
  * Sage Pay Shared API
