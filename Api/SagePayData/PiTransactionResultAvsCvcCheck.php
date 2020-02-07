@@ -7,7 +7,6 @@
 namespace Ebizmarts\SagePaySuite\Api\SagePayData;
 
 use Magento\Framework\Api\AbstractExtensibleObject;
-use Magento\Tests\NamingConvention\true\string;
 
 class PiTransactionResultAvsCvcCheck extends AbstractExtensibleObject implements PiTransactionResultAvsCvcCheckInterface
 {
