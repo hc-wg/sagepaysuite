@@ -1,7 +1,7 @@
 {
     "name": "ebizmarts/sagepaysuite",
     "description": "Official Sage Pay integration for Magento 2.",
-    "version": "1.1.32",
+    "version": "1.1.33",
     "require": {
         "phpseclib/phpseclib": "2.0.*",
         "magento/module-sales": "100.1.*",
