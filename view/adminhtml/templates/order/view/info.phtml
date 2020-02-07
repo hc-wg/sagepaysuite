@@ -67,12 +67,12 @@ $payment = $block->getPayment();
                     </td>
                 </tr>
             <?php endif; ?>
-            <?php if ($payment->getAdditionalInformation("threeDStatus")) { ?>
+            <?php if ($payment->getAdditionalInformation("threeDStatus")): ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('3D Status')); ?>:</th>
                     <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("threeDStatus")); ?></td>
                 </tr>
-            <?php } ?>
+            <?php endif; ?>
             <?php if ($payment->getAdditionalInformation("avsCvcCheckAddress")) { ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('Address Verification Result')); ?>:</th>
