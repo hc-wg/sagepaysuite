@@ -1,5 +1,6 @@
 ## [1.3.12] - 2020-02-12
 ## Added
+- Compatibility with Magento 2.3.4
 - Show verification results in payment layout at order details
 
 ### Changed
@@ -144,6 +145,7 @@
 - Magento not running schema updates. Switching to Schema patches
 - New CSRF checks rejecting callbacks
 
+[1.3.12]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.12
 [1.3.11]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.11
 [1.3.10]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.10
 [1.3.9]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.9
