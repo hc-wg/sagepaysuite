@@ -1,3 +1,14 @@
+## [1.3.12] - 2020-02-12
+## Added
+- Show verification results in payment layout at order details
+
+### Changed
+- Look transaction by vendorTxCode if not VPSTxId when SyncFromApi
+
+### Fixed
+- Problem with basket format when using Sage50
+- Error while trying to cancel SERVER Authenticate order
+
 ## [1.3.11] - 2019-12-19
 ### Fixed
 - Items being canceled when order take more than 15 minutes
