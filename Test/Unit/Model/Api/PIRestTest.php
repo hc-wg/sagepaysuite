@@ -15,6 +15,7 @@ use Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequest;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResult;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmount;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheckFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCard;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethod;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD;
@@ -313,6 +314,24 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $threedResultMock->expects($this->once())->method('setStatus')->with("NotChecked");
 
+        $avsCvcCheckResultMock = $this->
+            getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheck::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $avsCvcCheckResultMock->expects($this->once())->method('setStatus')->with('SecurityCodeMatchOnly');
+        $avsCvcCheckResultMock->expects($this->once())->method('setAddress')->with('NotMatched');
+        $avsCvcCheckResultMock->expects($this->once())->method('setPostalCode')->with('NotMatched');
+        $avsCvcCheckResultMock->expects($this->once())->method('setSecurityCode')->with('Matched');
+
+        $avsCvcCheckResultFactoryMock = $this->
+            getMockBuilder(PiTransactionResultAvsCvcCheckFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $avsCvcCheckResultFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($avsCvcCheckResultMock);
+
         $threedResultFactoryMock = $this
             ->getMockBuilder(PiTransactionResultThreeDFactory::class)
             ->disableOriginalConstructor()
@@ -358,6 +377,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         $piTransactionResult->expects($this->once())->method('setBankResponseCode')->with("00");
         $piTransactionResult->expects($this->once())->method('setPaymentMethod')->with($payResult);
         $piTransactionResult->expects($this->once())->method('setThreeDSecure')->with($threedResultMock);
+        $piTransactionResult->expects($this->once())->method('setAvsCvcCheck')->with($avsCvcCheckResultMock);
 
         $piResultFactory = $this->makeTransactionResultFactoryMock($piTransactionResult);
 
@@ -395,6 +415,12 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
                             },
                             "3DSecure": {
                                 "status": "NotChecked"
+                            },
+                            "avsCvcCheck": {
+                                "status": "SecurityCodeMatchOnly",
+                                "address": "NotMatched",
+                                "postalCode": "NotMatched",
+                                "securityCode": "Matched"
                             }
                         }
                     '
@@ -453,7 +479,8 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
                 "piCaptureResultFactory"     => $piResultFactory,
                 "cardResultFactory"          => $cardResultFactory,
                 "paymentMethodResultFactory" => $paymentMethodResultFactory,
-                "threedResultFactory"        => $threedResultFactoryMock
+                "threedResultFactory"        => $threedResultFactoryMock,
+                "avsCvcCheckResultFactory"   => $avsCvcCheckResultFactoryMock
             ]
         );
 
