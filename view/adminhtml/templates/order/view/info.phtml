@@ -24,38 +24,38 @@ $payment = $block->getPayment();
     <div class="order-payment-additional order-payment-method-title">
         <table class="data-table admin__table-secondary">
             <tbody>
-            <?php if ($payment->getLastTransId()) { ?>
+            <?php if ($payment->getLastTransId()): ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('VPSTxId')); ?>:</th>
                     <td><?php echo $block->escapeHtml($block->getSuiteHelper()->clearTransactionId($payment->getLastTransId())); ?></td>
                 </tr>
-            <?php } ?>
-            <?php if ($payment->getAdditionalInformation("vendorTxCode")) { ?>
+            <?php endif; ?>
+            <?php if ($payment->getAdditionalInformation("vendorTxCode")): ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('VendorTxCode')); ?>:</th>
                     <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("vendorTxCode")); ?></td>
                 </tr>
-            <?php } ?>
-            <?php if ($payment->getAdditionalInformation("mode")) { ?>
+            <?php endif; ?>
+            <?php if ($payment->getAdditionalInformation("mode")): ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('Mode')); ?>:</th>
                     <td><?php echo strtoupper($block->escapeHtml($payment->getAdditionalInformation("mode"))); ?></td>
                 </tr>
-            <?php } ?>
-            <?php if ($payment->getAdditionalInformation("statusDetail")) {
+            <?php endif; ?>
+            <?php if ($payment->getAdditionalInformation("statusDetail")):
                 $statusDetail = $payment->getAdditionalInformation("statusDetail");
-                if (strrpos($payment->getAdditionalInformation("statusDetail"), " : ") !== false) {
+                if (strrpos($payment->getAdditionalInformation("statusDetail"), " : ") !== false):
                     $statusDetail = explode(" : ", $statusDetail);
                     $statusDetail = $statusDetail[1];
-                }
+                endif;
                 ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('Status')); ?>:</th>
                     <td><?php echo $block->escapeHtml($statusDetail); ?></td>
                 </tr>
-            <?php } ?>
+            <?php endif; ?>
             <?php $statusCode = $payment->getAdditionalInformation("statusCode"); ?>
-            <?php if ($this->isThreeDRedirect($statusCode)) : ?>
+            <?php if ($this->isThreeDRedirect($statusCode)): ?>
                 <tr>
                     <td colspan="2">
                         <div align="left" class="message message-info">
@@ -73,30 +73,30 @@ $payment = $block->getPayment();
                     <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("threeDStatus")); ?></td>
                 </tr>
             <?php endif; ?>
-            <?php if ($payment->getAdditionalInformation("avsCvcCheckAddress")) { ?>
+            <?php if ($payment->getAdditionalInformation("avsCvcCheckAddress")): ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('Address Verification Result')); ?>:</th>
                     <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("avsCvcCheckAddress")); ?></td>
                 </tr>
-            <?php } ?>
-            <?php if ($payment->getAdditionalInformation("avsCvcCheckPostalCode")) { ?>
+            <?php endif; ?>
+            <?php if ($payment->getAdditionalInformation("avsCvcCheckPostalCode")): ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('Postcode Verification Result')); ?>:</th>
                     <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("avsCvcCheckPostalCode")); ?></td>
                 </tr>
-            <?php } ?>
-            <?php if ($payment->getAdditionalInformation("avsCvcCheckSecurityCode")) { ?>
+            <?php endif; ?>
+            <?php if ($payment->getAdditionalInformation("avsCvcCheckSecurityCode")): ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('CV2 Verification Result')); ?>:</th>
                     <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("avsCvcCheckSecurityCode")); ?></td>
                 </tr>
-            <?php } ?>
-            <?php if ($payment->getAdditionalInformation("avsCvcCheckStatus")) { ?>
+            <?php endif; ?>
+            <?php if ($payment->getAdditionalInformation("avsCvcCheckStatus")): ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('AVS and CV2 Verification Result')); ?>:</th>
                     <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("avsCvcCheckStatus")); ?></td>
                 </tr>
-            <?php } ?>
+            <?php endif; ?>
             </tbody>
         </table>
     </div>
@@ -116,17 +116,17 @@ $payment = $block->getPayment();
             <?php if (empty($payment->getAdditionalInformation("fraudscreenrecommendation")) ||
                 $payment->getAdditionalInformation("fraudscreenrecommendation") == \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_NORESULT ||
                 $payment->getAdditionalInformation("fraudscreenrecommendation") == \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_NOTCHECKED
-            ) { ?>
+            ): ?>
                 <tr>
                     <td colspan="2">
                             <?php echo $block->escapeHtml(__('Not enough information.')); ?>
                     </td>
                 </tr>
-            <?php } else { ?>
+            <?php else: ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('Fraud Recommendation')); ?>:</th>
                     <td><?php $html = $payment->getAdditionalInformation("fraudscreenrecommendation");
-                    switch ($html) {
+                    switch ($html):
                         case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_CHALLENGE:
                         case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD:
                             $html = '<span style="color:orange;">' . $html . '</span>';
@@ -135,25 +135,25 @@ $payment = $block->getPayment();
                         case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT:
                             $html = '<span style="color:red;">' . $html . '</span>';
                             break;
-                    }
+                    endswitch;
                         echo $html;
                     ?>
                     </td>
                 </tr>
-                <?php if (!empty($payment->getAdditionalInformation("fraudprovidername"))) { ?>
+                <?php if (!empty($payment->getAdditionalInformation("fraudprovidername"))): ?>
                     <tr>
                         <th><?php echo $block->escapeHtml(__('Provider')); ?>:</th>
-                        <td><?php if ($payment->getAdditionalInformation("fraudprovidername") == "ReD") {
+                        <td><?php if ($payment->getAdditionalInformation("fraudprovidername") == "ReD"):
                                 $html = '<img style="height: 20px;" src="' . $block->getViewFileUrl('Ebizmarts_SagePaySuite::images/red_logo.png') . '">';
-                            } else {
+                             else:
                                 $html = '<span><img style="height: 20px;vertical-align: text-top;" src="' . $block->getViewFileUrl('Ebizmarts_SagePaySuite::images/t3m_logo.png') . '"> T3M</span>';
-                            }
+                            endif;
                             echo $html;
                             ?>
                         </td>
                     </tr>
-                <?php } ?>
-            <?php } ?>
+                <?php endif; ?>
+            <?php endif; ?>
             </tbody>
         </table>
     </div>
