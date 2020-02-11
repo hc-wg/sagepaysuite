@@ -61,25 +61,35 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
 
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->setMethods(['getLastTransId', 'setAdditionalInformation', 'save'])
+            ->setMethods(['getLastTransId', 'setAdditionalInformation', 'save', 'setLastTransId'])
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock
-            ->expects($this->exactly(3))
-            ->method('setAdditionalInformation')
-            ->willReturnSelf();
+
         $paymentMock
             ->expects($this->exactly(3))
             ->method('getLastTransId')
             ->willReturn('{' . self::TEST_VPS_TX_ID .'}');
 
+        $paymentMock
+            ->expects($this->exactly(3))
+            ->method('setAdditionalInformation')
+            ->willReturnSelf();
+
+        $paymentMock
+            ->expects($this->once())
+            ->method('setLastTransId')
+            ->willReturnSelf();
+
         $orderMock = $this->makeOrderMock();
+
         $orderMock->expects($this->any())
             ->method('load')
             ->willReturnSelf();
+
         $orderMock->expects($this->any())
             ->method('getPayment')
             ->will($this->returnValue($paymentMock));
+
         $orderMock->expects($this->once())
             ->method('getStoreId')
             ->willReturn(self::TEST_STORE_ID);
@@ -89,16 +99,19 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
+
         $orderFactoryMock->expects($this->once())
             ->method('create')
             ->will($this->returnValue($orderMock));
 
         $reportingApiMock = $this->makeReportingApiMock();
+
         $reportingApiMock->expects($this->once())
-            ->method('getTransactionDetails')
+            ->method('getTransactionDetailsByVpstxid')
             ->with(self::TEST_VPS_TX_ID, self::TEST_STORE_ID)
             ->will($this->returnValue((object)[
                 "vendortxcode" => "100000001-2016-12-12-123456",
+                "vpstxid" => "513C0BA4-E135-469B-DF3E-DF936FF69291",
                 "status" => "OK STATUS",
                 "threedresult" => "CHECKED"
             ]));
@@ -108,10 +121,12 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['getSagepaysuiteFraudCheck', 'getByTransactionId'])
             ->disableOriginalConstructor()
             ->getMock();
+
         $trnRepoMock
             ->expects($this->once())
             ->method('getSagepaysuiteFraudCheck')
             ->willReturn(false);
+
         $trnRepoMock
             ->expects($this->once())
             ->method('getByTransactionId')
@@ -122,6 +137,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['processFraudInformation'])
             ->disableOriginalConstructor()
             ->getMock();
+
         $fraudHelperMock->expects($this->once())->method('processFraudInformation');
 
         $suiteHelperMock = $this
@@ -129,6 +145,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['clearTransactionId'])
             ->disableOriginalConstructor()
             ->getMock();
+
         $suiteHelperMock
             ->expects($this->once())
             ->method('clearTransactionId')
@@ -187,43 +204,71 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
 
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
-            ->setMethods(['getLastTransId', 'setAdditionalInformation', 'save'])
+            ->setMethods(['getLastTransId', 'setAdditionalInformation', 'save', 'getAdditionalInformation', 'setLastTransId'])
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentMock
-            ->expects($this->atLeastOnce())
-            ->method('setAdditionalInformation')
-            ->willReturnSelf();
+
         $paymentMock
             ->expects($this->exactly(3))
             ->method('getLastTransId')
             ->willReturn('NOT_TO_BE_FOUND-463B3DE6-443F-585B-E75C-C727476DE98F');
 
+        $paymentMock
+            ->expects($this->atLeastOnce())
+            ->method('setAdditionalInformation')
+            ->willReturnSelf();
+
         $orderMock = $this->makeOrderMock();
+
         $orderMock->expects($this->any())
             ->method('load')
             ->willReturnSelf();
+
         $orderMock->expects($this->any())
             ->method('getPayment')
             ->will($this->returnValue($paymentMock));
+
+        $orderMock->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(self::TEST_STORE_ID);
 
         $orderFactoryMock = $this
             ->getMockBuilder('Magento\Sales\Model\OrderFactory')
             ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
+
         $orderFactoryMock->expects($this->once())
             ->method('create')
             ->will($this->returnValue($orderMock));
 
         $reportingApiMock = $this->makeReportingApiMock();
-        $reportingApiMock->expects($this->once())
-            ->method('getTransactionDetails')
+
+        $paymentMock
+            ->expects($this->once())
+            ->method('getAdditionalInformation')
+            ->with('vendorTxCode')
+            ->willReturn('000000010-2019-12-23-1854421577127282');
+
+        $reportingApiMock
+            ->expects($this->once())
+            ->method('getTransactionDetailsByVendorTxCode')
+            ->with('000000010-2019-12-23-1854421577127282', 1)
             ->will($this->returnValue((object)[
-                "vendortxcode" => "100000001-2016-12-12-123456",
-                "status" => "OK STATUS",
-                "threedresult" => "CHECKED"
+                'vendortxcode' => '000000010-2019-12-23-1854421577127282',
+                'vpstxid' => '513C0BA4-E135-469B-DF3E-DF936FF69291',
+                'status' => 'OK STATUS',
+                'threedresult' => 'CHECKED'
             ]));
+
+        $paymentMock
+            ->expects($this->once())
+            ->method('setLastTransId')
+            ->with('513C0BA4-E135-469B-DF3E-DF936FF69291');
+
+        $paymentMock
+            ->expects($this->once())
+            ->method('save');
 
         $trnRepoMock = $this
             ->getMockBuilder(\Magento\Sales\Model\Order\Payment\Transaction\Repository::class)
@@ -241,6 +286,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['processFraudInformation'])
             ->disableOriginalConstructor()
             ->getMock();
+
         $fraudHelperMock->expects($this->never())->method('processFraudInformation');
 
         $syncFromApiController = $this->objectManagerHelper->getObject(
@@ -321,7 +367,10 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $controller->execute();
     }
 
-    public function testExecuteApiException()
+    /**
+     * @dataProvider apiExceptionProvider
+     */
+    public function testExecuteApiException($data)
     {
         $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
 
@@ -330,7 +379,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $messageManagerMock = $this->makeMessageManagerMock();
         $messageManagerMock->expects($this->once())
             ->method('addError')
-            ->with('The user does not have permission to view this transaction.');
+            ->with(__($data["cleanedException"]));
 
         $requestMock = $this->makeRequestMock();
         $requestMock->expects($this->any())
@@ -365,9 +414,11 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['getLastTransId', 'setAdditionalInformation', 'save'])
             ->disableOriginalConstructor()
             ->getMock();
+
         $paymentMock
             ->expects($this->never())
             ->method('setAdditionalInformation');
+
         $paymentMock
             ->expects($this->once())
             ->method('getLastTransId')
@@ -395,11 +446,11 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
 
         $reportingApiMock = $this->makeReportingApiMock();
 
-        $error     = new \Magento\Framework\Phrase("The user does not have permission to view this transaction.");
+        $error     = new \Magento\Framework\Phrase($data["exception"]);
         $exception = new \Ebizmarts\SagePaySuite\Model\Api\ApiException($error);
 
         $reportingApiMock->expects($this->once())
-            ->method('getTransactionDetails')
+            ->method('getTransactionDetailsByVpstxid')
             ->willThrowException($exception);
 
         $trnRepoMock = $this
@@ -422,6 +473,10 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $fraudHelperMock->expects($this->never())->method('processFraudInformation');
 
+        $suiteHelperMock = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Helper\Data'
+        );
+
         $syncFromApiController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi',
             [
@@ -429,7 +484,8 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
                 'orderFactory'          => $orderFactoryMock,
                 'reportingApi'          => $reportingApiMock,
                 'transactionRepository' => $trnRepoMock,
-                'fraudHelper'           => $fraudHelperMock
+                'fraudHelper'           => $fraudHelperMock,
+                'suiteHelper'           => $suiteHelperMock
             ]
         );
 
@@ -564,5 +620,22 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $contextMock->expects($this->any())->method('getHelper')->will($this->returnValue($helperMock));
 
         return $contextMock;
+    }
+
+    public function apiExceptionProvider()
+    {
+        return [
+            "testExecuteApiException" => [
+                [
+                    "exception" => "Unable to find the transaction for the <vendortxcode> or <vpstxid> supplied.",
+                    "cleanedException" => "Unable to find the transaction for the vendortxcode or vpstxid supplied."
+                ],
+            "testExecuteApiException" =>
+                [
+                    "exception" => "The user does not have permission to view this transaction.",
+                    "cleanedException" => "The user does not have permission to view this transaction."
+                ]
+            ]
+        ];
     }
 }

@@ -15,6 +15,7 @@ use Ebizmarts\SagePaySuite\Model\Api\ApiException;
  */
 class Server extends \Magento\Payment\Model\Method\AbstractMethod
 {
+
     /**
      * @var string
      */
@@ -263,14 +264,18 @@ class Server extends \Magento\Payment\Model\Method\AbstractMethod
 
         try {
             $order              = $payment->getOrder();
-            $transactionDetails = $this->reportingApi->getTransactionDetails($transactionId, $order->getStoreId());
+            $transactionDetails = $this->reportingApi->getTransactionDetailsByVpstxid($transactionId, $order->getStoreId());
 
             if ((int)$transactionDetails->txstateid === Shared::DEFERRED_AWAITING_RELEASE) {
                 if ($order->canInvoice()) {
-                    $this->sharedApi->abortDeferredTransaction($transactionId, $order);
+                    $this->sharedApi->abortDeferredTransaction($transactionDetails);
                 }
-            } else {
-                $this->sharedApi->voidTransaction($transactionId, $order);
+            }
+            elseif ((int)$transactionDetails->txstateid === Shared::AUTHENTICATED_AWAITING_AUTHORISE){
+                $this->sharedApi->cancelAuthenticatedTransaction($transactionDetails);
+            }
+            else {
+                $this->sharedApi->voidTransaction($transactionDetails);
             }
         } catch (ApiException $apiException) {
             if ($this->exceptionCodeIsInvalidTransactionState($apiException)) {

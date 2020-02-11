@@ -48,12 +48,14 @@ class Config
     const ACTION_AUTHORISE       = 'AUTHORISE';
     const ACTION_POST            = 'post';
     const ACTION_ABORT           = 'ABORT';
+    const ACTION_CANCEL          = 'CANCEL';
 
     /**
      * SagePay MODES
      */
     const MODE_TEST = 'test';
     const MODE_LIVE = 'live';
+    const MODE_DEVELOPMENT = 'development';
 
     /**
      * 3D secure MODES
@@ -91,11 +93,15 @@ class Config
     const URL_FORM_REDIRECT_LIVE         = 'https://live.sagepay.com/gateway/service/vspform-register.vsp';
     const URL_FORM_REDIRECT_TEST         = 'https://test.sagepay.com/gateway/service/vspform-register.vsp';
     const URL_PI_API_LIVE                = 'https://pi-live.sagepay.com/api/v1/';
+    const URL_PI_API_DEV                 = 'http://pi-test.sagepay.com/api/v1/';
     const URL_PI_API_TEST                = 'https://pi-test.sagepay.com/api/v1/';
     const URL_REPORTING_API_TEST         = 'https://test.sagepay.com/access/access.htm';
     const URL_REPORTING_API_LIVE         = 'https://live.sagepay.com/access/access.htm';
+    const URL_REPORTING_API_DEV          = 'http://test.sagepay.com/access/access.htm';
     const URL_SHARED_VOID_TEST           = 'https://test.sagepay.com/gateway/service/void.vsp';
     const URL_SHARED_VOID_LIVE           = 'https://live.sagepay.com/gateway/service/void.vsp';
+    const URL_SHARED_CANCEL_TEST         = 'https://test.sagepay.com/gateway/service/cancel.vsp';
+    const URL_SHARED_CANCEL_LIVE         = 'https://live.sagepay.com/gateway/service/cancel.vsp';
     const URL_SHARED_REFUND_TEST         = 'https://test.sagepay.com/gateway/service/refund.vsp';
     const URL_SHARED_REFUND_LIVE         = 'https://live.sagepay.com/gateway/service/refund.vsp';
     const URL_SHARED_RELEASE_TEST        = 'https://test.sagepay.com/gateway/service/release.vsp';
@@ -109,6 +115,7 @@ class Config
     const URL_SHARED_ABORT_TEST          = 'https://test.sagepay.com/gateway/service/abort.vsp';
     const URL_SHARED_ABORT_LIVE          = 'https://live.sagepay.com/gateway/service/abort.vsp';
     const URL_SERVER_POST_TEST           = 'https://test.sagepay.com/gateway/service/vspserver-register.vsp';
+    const URL_SERVER_POST_DEV            = 'http://test.sagepay.com/gateway/service/vspserver-register.vsp';
     const URL_SERVER_POST_LIVE           = 'https://live.sagepay.com/gateway/service/vspserver-register.vsp';
     const URL_DIRECT_POST_TEST           = 'https://test.sagepay.com/gateway/service/vspdirect-register.vsp';
     const URL_DIRECT_POST_LIVE           = 'https://live.sagepay.com/gateway/service/vspdirect-register.vsp';
