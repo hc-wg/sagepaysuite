@@ -66,7 +66,7 @@ class RecoverCartAndCancelOrder
 
     public function getOrder()
     {
-        /** Reload quote and cancel order if it was pre-saved but not completed */
+        /** Get order if it was pre-saved but not completed */
         $presavedOrderId = $this->checkoutSession->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
 
         if (!empty($presavedOrderId)) {
