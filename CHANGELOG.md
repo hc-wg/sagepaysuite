@@ -1,3 +1,14 @@
+## [1.2.21] - 2020-02-12
+### Added
+- Compatibility with Magento 2.2.11
+
+### Changed
+- Look transaction by vendorTxCode if not VPSTxId when SyncFromApi
+
+### Fixed
+- Problem with basket format when using Sage50
+- Error while trying to cancel SERVER Authenticate order
+
 ## [1.2.20] - 2019-12-19
 ### Fixed
 - Items being canceled when order take more than 15 minutes
@@ -231,6 +242,7 @@
 ### Added
 - First release with Magento 2.2.0 compatibility.
 
+[1.2.21]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.21
 [1.2.20]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.20
 [1.2.19]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.19
 [1.2.18]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.18

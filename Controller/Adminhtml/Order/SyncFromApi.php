@@ -77,14 +77,24 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
             }
 
             $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
-            $transactionDetails = $this->_reportingApi->getTransactionDetails($transactionId, $order->getStoreId());
 
-            $payment->setAdditionalInformation('vendorTxCode', (string)$transactionDetails->vendortxcode);
-            $payment->setAdditionalInformation('statusDetail', (string)$transactionDetails->status);
-            if (isset($transactionDetails->{'threedresult'})) {
-                $payment->setAdditionalInformation('threeDStatus', (string)$transactionDetails->{'threedresult'});
+            if ($transactionId != null) {
+                $transactionDetails = $this->_reportingApi->getTransactionDetailsByVpstxid($transactionId, $order->getStoreId());
+            } else {
+                $vendorTxCode = $payment->getAdditionalInformation("vendorTxCode");
+                $transactionDetails = $this->_reportingApi->getTransactionDetailsByVendorTxCode($vendorTxCode, $order->getStoreId());
             }
-            $payment->save();
+
+            if ($this->issetTransactionDetails($transactionDetails)) {
+                $payment->setLastTransId((string)$transactionDetails->vpstxid);
+                $payment->setAdditionalInformation('vendorTxCode', (string)$transactionDetails->vendortxcode);
+                $payment->setAdditionalInformation('statusDetail', (string)$transactionDetails->status);
+
+                if (isset($transactionDetails->threedresult)) {
+                    $payment->setAdditionalInformation('threeDStatus', (string)$transactionDetails->threedresult);
+                }
+                $payment->save();
+            }
 
             //update fraud status
             if (!empty($payment->getLastTransId())) {
@@ -98,7 +108,7 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
             $this->messageManager->addSuccess(__('Successfully synced from Sage Pay\'s API'));
         } catch (ApiException $apiException) {
             $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
-            $this->messageManager->addError(__($apiException->getUserMessage()));
+            $this->messageManager->addError(__($this->cleanExceptionString($apiException)));
         } catch (\Exception $e) {
             $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__('Something went wrong: %1', $e->getMessage()));
@@ -118,5 +128,24 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
     private function isFraudNotChecked($transaction)
     {
         return (bool)$transaction->getSagepaysuiteFraudCheck() === false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function issetTransactionDetails($transactionDetails)
+    {
+        return isset($transactionDetails->vpstxid) && isset($transactionDetails->vendortxcode) && isset($transactionDetails->status);
+    }
+
+    /**
+     * This function replaces the < and > symbols, this is necessary for the exception to be showed correctly
+     * to the customer at the backend.
+     * @param $apiException
+     * @return string|string[]
+     */
+    public function cleanExceptionString($apiException)
+    {
+        return str_replace(">", "", str_replace("<","", $apiException->getUserMessage()));
     }
 }

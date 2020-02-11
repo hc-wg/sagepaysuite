@@ -83,6 +83,8 @@ class Reporting
     {
         if ($this->config->getMode() == Config::MODE_LIVE) {
             return Config::URL_REPORTING_API_LIVE;
+        } else if($this->config->getMode() == Config::MODE_DEVELOPMENT) {
+            return Config::URL_REPORTING_API_DEV;
         } else {
             return Config::URL_REPORTING_API_TEST;
         }
@@ -180,7 +182,7 @@ class Reporting
      * @return mixed
      * @throws ApiException
      */
-    public function getTransactionDetails($vpstxid, $storeId = null)
+    public function getTransactionDetailsByVpstxid($vpstxid, $storeId = null)
     {
         $this->config->setConfigurationScopeId($storeId);
 

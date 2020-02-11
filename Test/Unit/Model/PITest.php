@@ -401,7 +401,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $reportingApiMock
             ->expects($this->once())
-            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
+            ->method("getTransactionDetailsByVpstxid")->willReturn($this->makeReportingResult());
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
@@ -459,7 +459,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $reportingApiMock
             ->expects($this->once())
-            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
+            ->method("getTransactionDetailsByVpstxid")->willReturn($this->makeReportingResult());
 
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
@@ -513,7 +513,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $reportingApiMock
             ->expects($this->once())
-            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
+            ->method("getTransactionDetailsByVpstxid")->willReturn($this->makeReportingResult());
 
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
@@ -562,7 +562,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $reportingApiMock
             ->expects($this->once())
-            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
+            ->method("getTransactionDetailsByVpstxid")->willReturn($this->makeReportingResult());
 
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
@@ -604,7 +604,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $reportingApiMock
             ->expects($this->once())
-            ->method("getTransactionDetails")->willReturn($this->makeReportingResult());
+            ->method("getTransactionDetailsByVpstxid")->willReturn($this->makeReportingResult());
 
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')

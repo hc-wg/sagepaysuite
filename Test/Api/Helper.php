@@ -34,11 +34,13 @@ class Helper
 
     public function getTransactionDetails($vpsTxId)
     {
+        $this->config->setDataByPath("sagepaysuite/global/mode", \Ebizmarts\SagePaySuite\Model\Config::MODE_DEVELOPMENT);
+        $this->config->save();
         $this->saveReportingApiUser();
 
         $this->saveReportingApiPassword();
 
-        $transactionDetails = $this->reporting->getTransactionDetails($this->suiteHelper->removeCurlyBraces($vpsTxId));
+        $transactionDetails = $this->reporting->getTransactionDetailsByVpstxid($this->suiteHelper->removeCurlyBraces($vpsTxId));
 
         return $transactionDetails;
     }

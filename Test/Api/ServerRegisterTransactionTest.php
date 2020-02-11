@@ -23,9 +23,6 @@ class ServerRegisterTransactionTest extends WebapiAbstract
     /** @var \Magento\Config\Model\Config */
     private $config;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\Api\Reporting */
-    private $reporting;
-
     /** @var  \Ebizmarts\SagePaySuite\Test\Api\Helper */
     private $helper;
 
@@ -45,10 +42,6 @@ class ServerRegisterTransactionTest extends WebapiAbstract
         $this->helper->saveReportingApiUser();
         $this->helper->saveReportingApiPassword();
 
-        /** @var \Ebizmarts\SagePaySuite\Model\Api\Reporting */
-        $this->reporting = $this->objectManager->create('Ebizmarts\SagePaySuite\Model\Api\Reporting');
-        $this->reporting->whitelistIpAddress($this->getCurrentIpAddress());
-
         $appConfig = $this->objectManager->get(Config::class);
         $appConfig->clean();
     }
@@ -58,6 +51,8 @@ class ServerRegisterTransactionTest extends WebapiAbstract
      */
     public function testRegisterServerTransacionAsGuest()
     {
+        $this->config->setDataByPath("sagepaysuite/global/mode", \Ebizmarts\SagePaySuite\Model\Config::MODE_DEVELOPMENT);
+        $this->config->save();
         $this->setPaymentActionAsPayment();
 
         $serviceInfo = [
@@ -175,25 +170,5 @@ class ServerRegisterTransactionTest extends WebapiAbstract
             ->create('Magento\Quote\Model\QuoteIdMaskFactory')->create()->load($cartId, 'quote_id');
 
         return $quoteIdMask;
-    }
-
-    private function getCurrentIpAddress()
-    {
-        /** @var \Magento\Framework\HTTP\Adapter\Curl */
-        $this->curl->write(
-            \Zend_Http_Client::GET,
-            "http://checkip.amazonaws.com/"
-        );
-
-        $ipAddressResponse = $this->curl->read();
-        $ipAddress = \Zend_Http_Response::extractBody($ipAddressResponse);
-
-        $ip = array_map(array($this, "padIpAddress"), explode('.', $ipAddress));
-        return trim(implode(".", $ip));
-    }
-
-    public function padIpAddress($n)
-    {
-        return str_pad($n, 3, "0", STR_PAD_LEFT);
     }
 }

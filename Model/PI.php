@@ -289,7 +289,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
 
         try {
             $order              = $payment->getOrder();
-            $transactionDetails = $this->reportingApi->getTransactionDetails($transactionId, $order->getStoreId());
+            $transactionDetails = $this->reportingApi->getTransactionDetailsByVpstxid($transactionId, $order->getStoreId());
 
             if ((string)$transactionDetails->txstateid === self::DEFERRED_AWAITING_RELEASE) {
                 if ($order->canInvoice()) {
