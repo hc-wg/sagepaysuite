@@ -68,7 +68,7 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
 
         $reportingApiModel = $this->makeReportingModelObjectManager($httpTextFactory);
 
-        $result = $reportingApiModel->getTransactionDetails("12345");
+        $result = $reportingApiModel->getTransactionDetailsByVpstxid("12345");
 
         $expected               = new stdClass;
         $expected->errorcode    = '0000';
@@ -138,7 +138,7 @@ class ReportingTest extends \PHPUnit\Framework\TestCase
 
         $reportingApiModel = $this->makeReportingModelObjectManager($httpTextFactory);
 
-        $result = $reportingApiModel->getTransactionDetails("12345");
+        $result = $reportingApiModel->getTransactionDetailsByVpstxid("12345");
     }
 
     public function testGetTokenCount()

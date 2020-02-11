@@ -30,6 +30,9 @@ class PiTransactionTest extends WebapiAbstract
     /** @var \Magento\Framework\HTTP\Adapter\Curl */
     private $curl;
 
+    /** @var \Ebizmarts\SagePaySuite\Model\Api\PIRest */
+    private $piRestApi;
+
     protected function setUp()
     {
         $this->config = Bootstrap::getObjectManager()->create(
@@ -40,6 +43,7 @@ class PiTransactionTest extends WebapiAbstract
 
         $this->helper = $this->objectManager->create("Ebizmarts\SagePaySuite\Test\Api\Helper");
         $this->curl = $this->objectManager->create("Magento\Framework\HTTP\Adapter\Curl");
+        $this->piRestApi = $this->objectManager->create("Ebizmarts\SagePaySuite\Model\Api\PIRest");
     }
 
     /**
@@ -47,21 +51,23 @@ class PiTransactionTest extends WebapiAbstract
      */
     public function testPiCompleteTransaction()
     {
+        $this->config->saveConfig("sagepaysuite/global/currency", Config::CURRENCY_BASE, ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
+        $this->config->saveConfig("currency/options/base", "USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
+        $this->config->saveConfig("currency/options/default", "USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
+        $this->config->saveConfig("currency/options/allow", "USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
+        $this->config->saveConfig("sagepaysuite/global/mode", Config::MODE_DEVELOPMENT);
+
         $this->helper->savePiKey();
         $this->helper->savePiPassword();
 
-        $this->config->saveConfig("sagepaysuite/global/currency", Config::CURRENCY_BASE, ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
-        $this->config->saveConfig("currency/options/base", "USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
-
         $merchantSessionKey = $this->obtainMerchantSessionKey();
-
         $cardIdentifier = $this->getCardIdentifier($merchantSessionKey);
 
         $response = $this->payAndCreateOrder($cardIdentifier, $merchantSessionKey);
 
-        $transactionDetails = $this->helper->getTransactionDetails($response['transaction_id']);
+        $transactionDetails = $this->piRestApi->transactionDetails($response['transaction_id']);
 
-        $this->assertEquals("USD", $transactionDetails->currency);
+        $this->assertEquals("USD", $transactionDetails->getCurrency());
     }
 
     /**
@@ -69,13 +75,13 @@ class PiTransactionTest extends WebapiAbstract
      */
     public function testPiCompleteTransactionCurrencyOptions()
     {
-        $this->helper->savePiKey();
-        $this->helper->savePiPassword();
-
         $this->config->saveConfig("sagepaysuite/global/currency", Config::CURRENCY_BASE, ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
         $this->config->saveConfig("currency/options/base", "GBP", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
         $this->config->saveConfig("currency/options/default", "USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
         $this->config->saveConfig("currency/options/allow", "GBP,EUR,USD", ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
+
+        $this->helper->savePiKey();
+        $this->helper->savePiPassword();
 
         $merchantSessionKey = $this->obtainMerchantSessionKey();
 
@@ -83,9 +89,9 @@ class PiTransactionTest extends WebapiAbstract
 
         $response = $this->payAndCreateOrder($cardIdentifier, $merchantSessionKey);
 
-        $transactionDetails = $this->helper->getTransactionDetails($response['transaction_id']);
+        $transactionDetails = $this->piRestApi->transactionDetails($response['transaction_id']);
 
-        $this->assertEquals("GBP", $transactionDetails->currency);
+        $this->assertEquals("GBP", $transactionDetails->getCurrency());
     }
 
     /**
@@ -105,7 +111,7 @@ class PiTransactionTest extends WebapiAbstract
 
         $this->curl->write(
             \Zend_Http_Client::POST,
-            "https://pi-test.sagepay.com/api/v1/card-identifiers",
+            "http://pi-test.sagepay.com/api/v1/card-identifiers", //http because of proxy
             '1.0',
             ["Content-type: application/json", "Authorization: Bearer $merchantSessionKey", "Cache-Control: no-cache"],
             json_encode($payload)
@@ -168,7 +174,16 @@ class PiTransactionTest extends WebapiAbstract
                 "cc_exp_year"          => substr(self::TEST_CC_EXPIRY, -2),
                 "cc_last_four"         => substr(self::TEST_CC_NUMBER, -4),
                 "cc_type"              => self::TEST_CC_TYPE,
-                "merchant_session_key" => $merchantSessionKey
+                "merchant_session_key" => $merchantSessionKey,
+                "javascript_enabled"   => 1,
+                'accept_headers' => 'Accept headers.',
+                'language' => "en-US",
+                'user_agent' => "morcilla firefox",
+                'java_enabled' => 1,
+                'color_depth' => 32,
+                'screen_width' => 1024,
+                'screen_height' => 768,
+                'timezone' => 180
             ]
         ];
 
