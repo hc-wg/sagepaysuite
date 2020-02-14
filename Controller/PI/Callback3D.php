@@ -99,12 +99,12 @@ class Callback3D extends Action
                 $this->javascriptRedirect('checkout/cart');
             }
         } catch (ApiException $apiException) {
-            $this->recoverCartAndCancelOrder->execute();
+            $this->recoverCartAndCancelOrder->execute(true);
             $this->logger->critical($apiException);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
-            $this->recoverCartAndCancelOrder->execute();
+            $this->recoverCartAndCancelOrder->execute(true);
             $this->logger->critical($e);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
