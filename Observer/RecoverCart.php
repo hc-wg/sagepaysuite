@@ -25,6 +25,13 @@ class RecoverCart implements ObserverInterface
     /** @var Logo */
     private $logo;
 
+    /**
+     * RecoverCart constructor.
+     * @param Session $session
+     * @param Logger $suiteLogger
+     * @param ManagerInterface $messageManager
+     * @param Logo $logo
+     */
     public function __construct(
         Session $session,
         Logger $suiteLogger,
