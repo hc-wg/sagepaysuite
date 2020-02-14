@@ -27,6 +27,13 @@ class RecoverCartAndCancelOrder
     /** @var QuoteFactory */
     private $quoteFactory;
 
+    /**
+     * RecoverCartAndCancelOrder constructor.
+     * @param Session $checkoutSession
+     * @param Logger $suiteLogger
+     * @param OrderFactory $orderFactory
+     * @param QuoteFactory $quoteFactory
+     */
     public function __construct(
         Session $checkoutSession,
         Logger $suiteLogger,
@@ -39,14 +46,16 @@ class RecoverCartAndCancelOrder
         $this->quoteFactory    = $quoteFactory;
     }
 
-    public function execute()
+    public function execute(bool $cancelOrder)
     {
         $order = $this->getOrder();
 
         if ($this->verifyIfOrderIsValid($order)) {
             $quote = $this->checkoutSession->getQuote();
             if (empty($quote) || empty($quote->getId())) {
-                $order->cancel()->save();
+                if ($cancelOrder) {
+                    $order->cancel()->save();
+                }
                 $this->recoverQuote($order);
                 $this->removeFlag();
             }
@@ -87,6 +96,6 @@ class RecoverCartAndCancelOrder
 
     public function removeFlag()
     {
-        $this->checkoutSession->setData("sagepaysuite_presaved_order_pending_payment", null);
+        $this->checkoutSession->setData(SagePaySession::PRESAVED_PENDING_ORDER_KEY, null);
     }
 }
