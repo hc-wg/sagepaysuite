@@ -12,4 +12,7 @@
     <event name="adminhtml_sales_order_creditmemo_register_before">
         <observer name="sagepaysuite_creditmemo_reporting_api_health" instance="Ebizmarts\SagePaySuite\Observer\CreditMemo" />
     </event>
+    <event name="controller_front_send_response_before">
+        <observer name="sagepaysuite_recover_cart" instance="Ebizmarts\SagePaySuite\Observer\RecoverCart" />
+    </event>
 </config>
