@@ -44,6 +44,9 @@ class RecoverCart implements ObserverInterface
         $this->logo            = $logo;
     }
 
+    /**
+     * @param Observer $observer
+     */
     public function execute(Observer $observer)
     {
         if ($this->isHomePage($observer)) {
@@ -58,7 +61,6 @@ class RecoverCart implements ObserverInterface
     }
 
     /**
-     * @param Observer $observer
      * @return bool
      */
     public function isHomePage()
@@ -66,16 +68,29 @@ class RecoverCart implements ObserverInterface
         return $this->logo->isHomePage();
     }
 
+    /**
+     * @param $presavedOrderId
+     * @param $quoteIsActive
+     * @return bool
+     */
     public function checkIfRecoverCartIsPossible($presavedOrderId, $quoteIsActive)
     {
         return $this->checkPreSavedOrder($presavedOrderId) && $this->checkQuoteIsActive($quoteIsActive);
     }
 
+    /**
+     * @param $presavedOrderId
+     * @return bool
+     */
     public function checkPreSavedOrder($presavedOrderId)
     {
         return !empty($presavedOrderId);
     }
 
+    /**
+     * @param $quoteIsActive
+     * @return bool
+     */
     public function checkQuoteIsActive($quoteIsActive)
     {
         return $quoteIsActive === 0;
