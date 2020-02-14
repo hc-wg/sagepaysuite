@@ -110,6 +110,7 @@ class EcommerceManagement extends RequestManagement
         if ($order !== null) {
             //set pre-saved order flag in checkout session
             $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, $order->getId());
+            $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::QUOTE_IS_ACTIVE, 0);
 
             $payment = $order->getPayment();
             $payment->setTransactionId($this->getPayResult()->getTransactionId());

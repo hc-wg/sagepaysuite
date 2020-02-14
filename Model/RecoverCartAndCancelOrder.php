@@ -97,5 +97,6 @@ class RecoverCartAndCancelOrder
     public function removeFlag()
     {
         $this->checkoutSession->setData(SagePaySession::PRESAVED_PENDING_ORDER_KEY, null);
+        $this->checkoutSession->setData(SagePaySession::QUOTE_IS_ACTIVE, 1);
     }
 }
