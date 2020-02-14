@@ -171,7 +171,7 @@ class Callback extends Action implements CsrfAwareActionInterface
 
             return;
         } catch (\Exception $e) {
-            $this->recoverCartAndCancelOrder->execute();
+            $this->recoverCartAndCancelOrder->execute(true);
             $this->suiteLogger->logException($e);
             $this->redirectToCartAndShowError('We can\'t place the order: ' . $e->getMessage());
         }
@@ -267,6 +267,8 @@ class Callback extends Action implements CsrfAwareActionInterface
      */
     private function updatePaymentInformation($transactionId, $payment, $completionResponse)
     {
+        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag TransactionId: " . $transactionId, [__METHOD__, __LINE__]);
+        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag getLastTransId: " . $payment->getLastTransId(), [__METHOD__, __LINE__]);
         if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) {
             $payment->setAdditionalInformation('statusDetail', $completionResponse['StatusDetail']);
             $payment->setAdditionalInformation('threeDStatus', $completionResponse['3DSecureStatus']);

@@ -119,7 +119,7 @@ class Failure extends Action
                 throw new LocalizedException(__('Invalid response from Sage Pay'));
             }
 
-            $this->recoverCartAndCancelOrder->execute();
+            $this->recoverCartAndCancelOrder->execute(true);
 
             $statusDetail = $this->extractStatusDetail($response);
 
