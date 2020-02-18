@@ -16,6 +16,7 @@ use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Ebizmarts\SagePaySuite\Model\OrderLoader;
 
 class Cancel extends Action
 {
@@ -59,6 +60,9 @@ class Cancel extends Action
     /** @var RecoverCart */
     private $recoverCart;
 
+    /** @var OrderLoader */
+    private $orderLoader;
+
     /**
      * Cancel constructor.
      * @param Context $context
@@ -82,7 +86,8 @@ class Cancel extends Action
         QuoteIdMaskFactory $quoteIdMaskFactory,
         OrderFactory $orderFactory,
         EncryptorInterface $encryptor,
-        RecoverCart $recoverCart
+        RecoverCart $recoverCart,
+        OrderLoader $orderLoader
     ) {
     
         parent::__construct($context);
@@ -95,6 +100,7 @@ class Cancel extends Action
         $this->orderFactory       = $orderFactory;
         $this->encryptor          = $encryptor;
         $this->recoverCart        = $recoverCart;
+        $this->orderLoader        = $orderLoader;
 
         $this->config->setMethodCode(Config::METHOD_SERVER);
     }
@@ -113,10 +119,7 @@ class Cancel extends Action
             throw new \Exception("Quote not found.");
         }
 
-        $order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
-        if (empty($order->getId())) {
-            throw new \Exception("Order not found.");
-        }
+        $order = $this->orderLoader->loadOrderFromQuote($this->quote);
 
         $this->recoverCart->setShouldCancelOrder(true)->execute();
 
