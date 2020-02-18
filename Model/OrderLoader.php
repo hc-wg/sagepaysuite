@@ -11,6 +11,10 @@ class OrderLoader
     /** @var OrderFactory */
     private $orderFactory;
 
+    /**
+     * OrderLoader constructor.
+     * @param OrderFactory $orderFactory
+     */
     public function __construct(
         OrderFactory $orderFactory
     ){
