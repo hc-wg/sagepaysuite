@@ -17,7 +17,6 @@ class OrderLoader
         $this->orderFactory = $orderFactory;
     }
 
-
     /**
      * @param Quote $quote
      * @return \Magento\Sales\Model\Order
