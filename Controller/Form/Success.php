@@ -9,6 +9,7 @@ namespace Ebizmarts\SagePaySuite\Controller\Form;
 use Ebizmarts\SagePaySuite\Helper\Checkout;
 use Ebizmarts\SagePaySuite\Model\Form;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
@@ -74,6 +75,9 @@ class Success extends \Magento\Framework\App\Action\Action
      */
     private $encryptor;
 
+    /** @var OrderLoader */
+    private $orderLoader;
+
     /**
      * Success constructor.
      * @param Context $context
@@ -86,6 +90,8 @@ class Success extends \Magento\Framework\App\Action\Action
      * @param OrderSender $orderSender
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
+     * @param EncryptorInterface $encryptor
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
@@ -98,7 +104,8 @@ class Success extends \Magento\Framework\App\Action\Action
         OrderSender $orderSender,
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
-        EncryptorInterface $encryptor
+        EncryptorInterface $encryptor,
+        OrderLoader $orderLoader
     ) {
     
         parent::__construct($context);
@@ -111,6 +118,7 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->updateOrderCallback = $updateOrderCallback;
         $this->suiteHelper         = $suiteHelper;
         $this->encryptor           = $encryptor;
+        $this->orderLoader         = $orderLoader;
     }
 
     /**
@@ -131,10 +139,7 @@ class Success extends \Magento\Framework\App\Action\Action
                 $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"))
             );
 
-            $this->_order = $this->_orderFactory->create()->loadByIncrementId($this->_quote->getReservedOrderId());
-            if ($this->_order === null || $this->_order->getId() === null) {
-                throw new LocalizedException(__('Order not available.'));
-            }
+            $this->_order = $this->orderLoader->loadOrderFromQuote($this->_quote);
 
             $transactionId = $response["VPSTxId"];
             $transactionId = $this->suiteHelper->removeCurlyBraces($transactionId); //strip brackets
