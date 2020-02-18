@@ -71,7 +71,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->willReturn('{' . self::TEST_VPS_TX_ID .'}');
 
         $paymentMock
-            ->expects($this->exactly(3))
+            ->expects($this->exactly(4))
             ->method('setAdditionalInformation')
             ->willReturnSelf();
 
@@ -113,6 +113,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
                 "vendortxcode" => "100000001-2016-12-12-123456",
                 "vpstxid" => "513C0BA4-E135-469B-DF3E-DF936FF69291",
                 "status" => "OK STATUS",
+                "securitykey" => "CDBE617TI9",
                 "threedresult" => "CHECKED"
             ]));
 
