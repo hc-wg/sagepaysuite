@@ -89,9 +89,11 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
                 $payment->setLastTransId((string)$transactionDetails->vpstxid);
                 $payment->setAdditionalInformation('vendorTxCode', (string)$transactionDetails->vendortxcode);
                 $payment->setAdditionalInformation('statusDetail', (string)$transactionDetails->status);
+
                 if (isset($transactionDetails->securitykey)){
                     $payment->setAdditionalInformation('securityKey', (string)$transactionDetails->securitykey);
                 }
+                
                 if (isset($transactionDetails->threedresult)) {
                     $payment->setAdditionalInformation('threeDStatus', (string)$transactionDetails->threedresult);
                 }
