@@ -26,6 +26,7 @@ use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderFactory;
 use \Ebizmarts\SagePaySuite\Helper\Data;
+use \Ebizmarts\SagePaySuite\Model\OrderLoader;
 use function urlencode;
 
 class Notify extends Action implements CsrfAwareActionInterface
@@ -73,6 +74,11 @@ class Notify extends Action implements CsrfAwareActionInterface
     private $encryptor;
 
     /**
+     * @var OrderLoader
+     */
+    private $orderLoader;
+
+    /**
      * Notify constructor.
      * @param Context $context
      * @param Logger $suiteLogger
@@ -83,6 +89,8 @@ class Notify extends Action implements CsrfAwareActionInterface
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param Data $suiteHelper
      * @param QuoteRepository $cartRepository
+     * @param EncryptorInterface $encryptor
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
@@ -94,7 +102,8 @@ class Notify extends Action implements CsrfAwareActionInterface
         OrderUpdateOnCallback $updateOrderCallback,
         Data $suiteHelper,
         QuoteRepository $cartRepository,
-        EncryptorInterface $encryptor
+        EncryptorInterface $encryptor,
+        OrderLoader $orderLoader
     ) {
         parent::__construct($context);
 
@@ -107,6 +116,8 @@ class Notify extends Action implements CsrfAwareActionInterface
         $this->suiteHelper         = $suiteHelper;
         $this->cartRepository      = $cartRepository;
         $this->encryptor           = $encryptor;
+        $this->orderLoader         = $orderLoader;
+
         $this->config->setMethodCode(Config::METHOD_SERVER);
     }
 
@@ -124,10 +135,7 @@ class Notify extends Action implements CsrfAwareActionInterface
         try {
             $this->quote = $this->cartRepository->get($quoteId, [$storeId]);
 
-            $order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
-            if ($order === null || $order->getId() === null) {
-                return $this->returnInvalid(__("Order was not found"));
-            }
+            $order = $this->orderLoader->loadOrderFromQuote($this->quote);
 
             $this->order = $order;
             $payment     = $order->getPayment();
