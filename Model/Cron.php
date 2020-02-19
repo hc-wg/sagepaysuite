@@ -16,7 +16,7 @@ use Magento\Framework\ObjectManagerInterface;
 use Magento\Sales\Api\OrderPaymentRepositoryInterface;
 use \Magento\Sales\Api\TransactionRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\Order\Payment;
+use Magento\Sales\Model\Order\Payment as OrderPayment;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory;
 use \Ebizmarts\SagePaySuite\Model\ResourceModel\Fraud as FraudModel;
 use \Ebizmarts\SagePaySuite\Helper\Data;
@@ -151,7 +151,7 @@ class Cron
             $orderId = $_order->getEntityId();
 
             try {
-                /** @var Payment $payment */
+                /** @var OrderPayment $payment */
                 $payment = $_order->getPayment();
                 if ($payment !== null) {
                     $transactionId = $this->suiteHelper->clearTransactionId($payment->getLastTransId());
@@ -273,11 +273,11 @@ class Cron
     /**
      * @param $transactionId
      * @param Order $_order
-     * @param Payment $payment
+     * @param OrderPayment $payment
      * @return mixed
      * @throws ApiException
      */
-    public function getTransactionDetails($transactionId, Order $_order, Payment $payment)
+    public function getTransactionDetails($transactionId, Order $_order, OrderPayment $payment)
     {
         if ($transactionId != null) {
             $transactionDetails = $this->reportingApi->getTransactionDetailsByVpstxid($transactionId, $_order->getStoreId());
