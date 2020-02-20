@@ -8,6 +8,8 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
+use Magento\Catalog\Model\ProductFactory;
+use Magento\Quote\Model\QuoteRepository;
 
 class RecoverCartAndCancelOrder
 {
@@ -23,23 +25,35 @@ class RecoverCartAndCancelOrder
     /** @var QuoteFactory */
     private $quoteFactory;
 
+    /** @var ProductFactory */
+    private $productFactory;
+
+    /** @var QuoteRepository */
+    private $quoteRepository;
+
     /**
      * RecoverCartAndCancelOrder constructor.
      * @param Session $checkoutSession
      * @param Logger $suiteLogger
      * @param OrderFactory $orderFactory
      * @param QuoteFactory $quoteFactory
+     * @param ProductFactory $productFactory
+     * @param QuoteRepository $quoteRepository
      */
     public function __construct(
         Session $checkoutSession,
         Logger $suiteLogger,
         OrderFactory $orderFactory,
-        QuoteFactory $quoteFactory
+        QuoteFactory $quoteFactory,
+        ProductFactory $productFactory,
+        QuoteRepository $quoteRepository
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->suiteLogger     = $suiteLogger;
         $this->orderFactory    = $orderFactory;
         $this->quoteFactory    = $quoteFactory;
+        $this->productFactory  = $productFactory;
+        $this->quoteRepository = $quoteRepository;
     }
 
     public function execute(bool $cancelOrder)
@@ -52,21 +66,37 @@ class RecoverCartAndCancelOrder
                 if ($cancelOrder) {
                     $order->cancel()->save();
                 }
-                $this->recoverQuote($order);
+                $this->cloneQuoteAndReplaceInSession($order);
                 $this->removeFlag();
             }
         }
     }
 
-    public function recoverQuote($order)
+    public function cloneQuoteAndReplaceInSession($order)
     {
-        $quote = $this->quoteFactory->create()->load($order->getQuoteId());
-        if ($quote->getId()) {
-            $quote->setIsActive(1);
-            $quote->setReservedOrderId(null);
-            $quote->save();
-            $this->checkoutSession->replaceQuote($quote);
+        $quote = $this->quoteRepository->get($order->getQuoteId());
+        $items = $quote->getAllVisibleItems();
+
+        $newQuote = $this->quoteFactory->create();
+        $newQuote->setStoreId($quote->getStoreId());
+        $newQuote->setIsActive(1);
+        $newQuote->setReservedOrderId(null);
+        foreach ($items as $item) {
+            $productId = $item->getProductId();
+            $product = $this->productFactory->create()->load($productId);
+
+            $options = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
+
+            $info = $options['info_buyRequest'];
+            $request = new \Magento\Framework\DataObject();
+            $request->setData($info);
+
+            $newQuote->addProduct($product, $request);
         }
+        $newQuote->collectTotals();
+        $newQuote->save();
+
+        $this->checkoutSession->replaceQuote($newQuote);
     }
 
     public function getOrder()
