@@ -8,7 +8,6 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
-use Magento\Catalog\Model\ProductFactory;
 use Magento\Quote\Model\QuoteRepository;
 
 class RecoverCartAndCancelOrder
@@ -25,9 +24,6 @@ class RecoverCartAndCancelOrder
     /** @var QuoteFactory */
     private $quoteFactory;
 
-    /** @var ProductFactory */
-    private $productFactory;
-
     /** @var QuoteRepository */
     private $quoteRepository;
 
@@ -37,7 +33,6 @@ class RecoverCartAndCancelOrder
      * @param Logger $suiteLogger
      * @param OrderFactory $orderFactory
      * @param QuoteFactory $quoteFactory
-     * @param ProductFactory $productFactory
      * @param QuoteRepository $quoteRepository
      */
     public function __construct(
@@ -45,14 +40,12 @@ class RecoverCartAndCancelOrder
         Logger $suiteLogger,
         OrderFactory $orderFactory,
         QuoteFactory $quoteFactory,
-        ProductFactory $productFactory,
         QuoteRepository $quoteRepository
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->suiteLogger     = $suiteLogger;
         $this->orderFactory    = $orderFactory;
         $this->quoteFactory    = $quoteFactory;
-        $this->productFactory  = $productFactory;
         $this->quoteRepository = $quoteRepository;
     }
 
@@ -82,10 +75,9 @@ class RecoverCartAndCancelOrder
         $newQuote->setIsActive(1);
         $newQuote->setReservedOrderId(null);
         foreach ($items as $item) {
-            $productId = $item->getProductId();
-            $product = $this->productFactory->create()->load($productId);
+            $product = $item->getProduct();
 
-            $options = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
+            $options = $product->getTypeInstance(true)->getOrderOptions($product);
 
             $info = $options['info_buyRequest'];
             $request = new \Magento\Framework\DataObject();
