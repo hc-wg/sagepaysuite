@@ -10,6 +10,7 @@ use Magento\Framework\Message\ManagerInterface;
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Theme\Block\Html\Header\Logo;
+use Magento\Framework\UrlInterface;
 
 class RecoverCart implements ObserverInterface
 {
@@ -25,6 +26,9 @@ class RecoverCart implements ObserverInterface
     /** @var Logo */
     private $logo;
 
+    /** @var UrlInterface */
+    private $urlInterface;
+
     /**
      * RecoverCart constructor.
      * @param Session $session
@@ -36,12 +40,14 @@ class RecoverCart implements ObserverInterface
         Session $session,
         Logger $suiteLogger,
         ManagerInterface $messageManager,
-        Logo $logo
+        Logo $logo,
+        UrlInterface $urlInterface
     ) {
         $this->session = $session;
         $this->suiteLogger     = $suiteLogger;
         $this->messageManager  = $messageManager;
         $this->logo            = $logo;
+        $this->urlInterface    = $urlInterface;
     }
 
     /**
@@ -53,8 +59,9 @@ class RecoverCart implements ObserverInterface
             $presavedOrderId = $this->session->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
             $quoteIsActive = $this->session->getData(SagePaySession::QUOTE_IS_ACTIVE);
             if ($this->checkIfRecoverCartIsPossible($presavedOrderId, $quoteIsActive)) {
+                $url = $this->urlInterface->getBaseUrl() . "sagepaysuite/cart/recover";
                 $message = __("There's an order in process, but you can recover the cart ");
-                $message .= sprintf("<a target='_self' href='http://m233.local/sagepaysuite/cart/recover'>%s</a>", __('HERE'));
+                $message .= sprintf("<a target='_self' href=$url>%s</a>", __('HERE'));
                 $this->messageManager->addNotice($message);
             }
         }
