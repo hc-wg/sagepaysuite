@@ -160,6 +160,11 @@ class CancelTest extends \PHPUnit_Framework_TestCase
 
         $this->recoverCartMock
             ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
+        $this->recoverCartMock
+            ->expects($this->once())
             ->method('execute');
 
         $this->expectSetBody(

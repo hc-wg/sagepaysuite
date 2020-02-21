@@ -38,6 +38,9 @@ class RecoverCart
     /** @var ManagerInterface */
     private $messageManager;
 
+    /** @var bool */
+    private $_shouldCancelOrder;
+
     /**
      * RecoverCart constructor.
      * @param Session $checkoutSession
@@ -65,14 +68,14 @@ class RecoverCart
         $this->messageManager    = $messageManager;
     }
 
-    public function execute(bool $cancelOrder)
+    public function execute()
     {
         $order = $this->getOrder();
 
         if ($this->verifyIfOrderIsValid($order)) {
             $quote = $this->checkoutSession->getQuote();
             if (!empty($quote)) {
-                if ($cancelOrder) {
+                if ($this->_shouldCancelOrder) {
                     $order->cancel()->save();
                 }
                 $this->cloneQuoteAndReplaceInSession($order);
@@ -138,5 +141,10 @@ class RecoverCart
     {
         $this->checkoutSession->setData(SagePaySession::PRESAVED_PENDING_ORDER_KEY, null);
         $this->checkoutSession->setData(SagePaySession::QUOTE_IS_ACTIVE, 1);
+    }
+
+    public function setShouldCancelOrder(bool $shouldCancelOrder) {
+        $this->_shouldCancelOrder = $shouldCancelOrder;
+        return $this;
     }
 }
