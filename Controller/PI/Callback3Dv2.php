@@ -14,7 +14,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
-use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 
 class Callback3Dv2 extends Action
 {
@@ -39,8 +39,8 @@ class Callback3Dv2 extends Action
     /** @var CryptAndCodeData */
     private $cryptAndCode;
 
-    /** @var RecoverCartAndCancelOrder */
-    private $recoverCartAndCancelOrder;
+    /** @var RecoverCart */
+    private $recoverCart;
 
     /**
      * Callback3D constructor.
@@ -52,7 +52,7 @@ class Callback3Dv2 extends Action
      * @param Session $checkoutSession
      * @param OrderRepositoryInterface $orderRepository
      * @param CryptAndCodeData $cryptAndCode
-     * @param RecoverCartAndCancelOrder $recoverCartAndCancelOrder
+     * @param RecoverCart $recoverCart
      */
     public function __construct(
         Context $context,
@@ -63,7 +63,7 @@ class Callback3Dv2 extends Action
         Session $checkoutSession,
         OrderRepositoryInterface $orderRepository,
         CryptAndCodeData $cryptAndCode,
-        RecoverCartAndCancelOrder $recoverCartAndCancelOrder
+        RecoverCart $recoverCart
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -75,7 +75,7 @@ class Callback3Dv2 extends Action
         $this->requester = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
         $this->cryptAndCode                = $cryptAndCode;
-        $this->recoverCartAndCancelOrder   = $recoverCartAndCancelOrder;
+        $this->recoverCart                 = $recoverCart;
     }
 
     public function execute()
@@ -107,12 +107,12 @@ class Callback3Dv2 extends Action
                 $this->javascriptRedirect('checkout/cart');
             }
         } catch (ApiException $apiException) {
-            $this->recoverCartAndCancelOrder->execute(true);
+            $this->recoverCart->execute(true);
             $this->logger->critical($apiException);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
-            $this->recoverCartAndCancelOrder->execute(true);
+            $this->recoverCart->execute(true);
             $this->logger->critical($e);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');

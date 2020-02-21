@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Form;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
-use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 
 class FailureTest extends \PHPUnit\Framework\TestCase
 {
@@ -32,11 +32,11 @@ class FailureTest extends \PHPUnit\Framework\TestCase
             ->method('decodeSagePayResponse')
             ->will($this->returnValue($responseData));
 
-        $recoverCartAndCancelOrderMock = $this
-            ->getMockBuilder(RecoverCartAndCancelOrder::class)
+        $recoverCartMock = $this
+            ->getMockBuilder(RecoverCart::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $recoverCartAndCancelOrderMock
+        $recoverCartMock
             ->expects($this->once())
             ->method('execute');
 
@@ -44,9 +44,9 @@ class FailureTest extends \PHPUnit\Framework\TestCase
         $formFailureController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Form\Failure',
             [
-                'context'                   => $contextMock,
-                'formModel'                 => $formModelMock,
-                'recoverCartAndCancelOrder' => $recoverCartAndCancelOrderMock
+                'context'     => $contextMock,
+                'formModel'   => $formModelMock,
+                'recoverCart' => $recoverCartMock
             ]
         );
 

@@ -4,24 +4,24 @@ namespace Ebizmarts\SagePaySuite\Controller\Cart;
 
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Action\Action;
-use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 
 class Recover extends Action
 {
-    /** @var RecoverCartAndCancelOrder */
-    private $recoverCartAndCancelOrder;
+    /** @var RecoverCart */
+    private $recoverCart;
 
     /**
      * Recover constructor.
      * @param Context $context
-     * @param RecoverCartAndCancelOrder $recoverCartAndCancelOrder
+     * @param RecoverCart $recoverCart
      */
     public function __construct(
         Context $context,
-        RecoverCartAndCancelOrder $recoverCartAndCancelOrder
+        RecoverCart $recoverCart
     ) {
         parent::__construct($context);
-        $this->recoverCartAndCancelOrder = $recoverCartAndCancelOrder;
+        $this->recoverCart = $recoverCart;
     }
 
     /**
@@ -29,7 +29,7 @@ class Recover extends Action
      */
     public function execute()
     {
-        $this->recoverCartAndCancelOrder->execute(false);
+        $this->recoverCart->execute(false);
         return $this->redirectToCart();
     }
 
