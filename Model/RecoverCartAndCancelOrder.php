@@ -65,7 +65,7 @@ class RecoverCartAndCancelOrder
         }
     }
 
-    public function cloneQuoteAndReplaceInSession($order)
+    private function cloneQuoteAndReplaceInSession($order)
     {
         $quote = $this->quoteRepository->get($order->getQuoteId());
         $items = $quote->getAllVisibleItems();
@@ -91,7 +91,7 @@ class RecoverCartAndCancelOrder
         $this->checkoutSession->replaceQuote($newQuote);
     }
 
-    public function getOrder()
+    private function getOrder()
     {
         /** Get order if it was pre-saved but not completed */
         $presavedOrderId = $this->checkoutSession->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
@@ -105,14 +105,14 @@ class RecoverCartAndCancelOrder
         return $order;
     }
 
-    public function verifyIfOrderIsValid($order)
+    private function verifyIfOrderIsValid($order)
     {
         return $order !== null &&
             $order->getId() !== null &&
             $order->getState() === Order::STATE_PENDING_PAYMENT;
     }
 
-    public function removeFlag()
+    private function removeFlag()
     {
         $this->checkoutSession->setData(SagePaySession::PRESAVED_PENDING_ORDER_KEY, null);
         $this->checkoutSession->setData(SagePaySession::QUOTE_IS_ACTIVE, 1);
