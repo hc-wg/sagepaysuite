@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  sagepay: pruebas/ebizmarts-sagepay@0.0.4
+  sagepay: pruebas/ebizmarts-sagepay@0.0.5
 
 executors:
   my-executor:
@@ -17,13 +17,18 @@ executors:
       MAGENTO_WEB_SERVER_CONF: https://gist.githubusercontent.com/bcerban/25f3a2d93c19dc562020e0197f78685c/raw/70f1f314ad8ba5d302b911fe622a57ccec60a868/magento2.conf
       MAGENTO_COMPOSER_AUTH: https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
       LIBSODIUM_VERSION: 1.0.18
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_DATABASE: circle_test
+      MYSQL_USER: magento
+      MYSQL_PASSWORD: magento
+      MYSQL_ALLOW_EMPTY_PASSWORD: true
     working_directory: ~/
 
 jobs:
     DownloadTools232EE:
       executor: my-executor
       steps:
-        - sagepay/download-pre-compiled-magento:
+        - sagepay/download-pre-compiled-magento-no-sampledata:
             version: $MAGENTO_VERSION
         - sagepay/download-tools:
             version: $MAGENTO_VERSION
@@ -34,7 +39,7 @@ jobs:
     DownloadTools233EE:
       executor: my-executor
       steps:
-        - sagepay/download-pre-compiled-magento:
+        - sagepay/download-pre-compiled-magento-no-sampledata:
             version: $MAGENTO_VERSION_233
         - sagepay/download-tools:
             version: $MAGENTO_VERSION_233
@@ -58,15 +63,6 @@ jobs:
         - attach_workspace:
             at: ~/magento2
         - sagepay/run-php-unit-tests
-    PHP 71 unit tests with coverage:
-        docker:
-          - image: circleci/php:7.1-apache
-        executor: my-executor
-        steps:
-          - attach_workspace:
-              at: ~/magento2
-          - sagepay/run-php-unit-tests:
-              coverage: --coverage-text
     PHP 71 Compile and API test:
         docker:
           - image: ebizmarts/magento2-php71:0.0.1
@@ -81,8 +77,19 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
+          - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
           - sagepay/install-mariadb-and-setup-webserver
           - sagepay/magento-compile-and-setup-upgrade
+          - sagepay/run-api-functional-tests
+    PHP 71 unit tests with coverage:
+      docker:
+        - image: circleci/php:7.1-apache
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - sagepay/run-php-unit-tests:
+            coverage: --coverage-text
     PHP 72 Code Sniffer:
       docker:
         - image: circleci/php:7.2-apache
@@ -99,15 +106,6 @@ jobs:
         - attach_workspace:
             at: ~/magento2
         - sagepay/run-php-unit-tests
-    PHP 72 unit tests with coverage:
-        docker:
-          - image: circleci/php:7.2-apache
-        executor: my-executor
-        steps:
-          - attach_workspace:
-              at: ~/magento2
-          - sagepay/run-php-unit-tests:
-              coverage: --coverage-text
     PHP 72 Compile and API test:
         docker:
           - image: ebizmarts/magento2-php72:0.0.2
@@ -122,8 +120,19 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
+          - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
           - sagepay/install-mariadb-and-setup-webserver
           - sagepay/magento-compile-and-setup-upgrade
+          - sagepay/run-api-functional-tests
+    PHP 72 unit tests with coverage:
+      docker:
+        - image: circleci/php:7.2-apache
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - sagepay/run-php-unit-tests:
+            coverage: --coverage-text
     PHP 73 Code Sniffer:
       docker:
         - image: circleci/php:7.3.9-apache-stretch
@@ -140,15 +149,6 @@ jobs:
         - attach_workspace:
             at: ~/magento2
         - sagepay/run-php-unit-tests
-    PHP 73 unit tests with coverage:
-        docker:
-          - image: circleci/php:7.3.9-apache-stretch
-        executor: my-executor
-        steps:
-          - attach_workspace:
-              at: ~/magento2
-          - sagepay/run-php-unit-tests:
-              coverage: --coverage-text
     PHP 73 Compile and API test:
         docker:
           - image: ebizmarts/magento2-php73:0.0.4
@@ -163,9 +163,19 @@ jobs:
         steps:
           - attach_workspace:
               at: ~/magento2
+          - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
           - sagepay/install-mariadb-and-setup-webserver
           - sagepay/magento-compile-and-setup-upgrade
-          #- run-api-functional-tests
+          - sagepay/run-api-functional-tests
+    PHP 73 unit tests with coverage:
+      docker:
+        - image: circleci/php:7.3.9-apache-stretch
+      executor: my-executor
+      steps:
+        - attach_workspace:
+            at: ~/magento2
+        - sagepay/run-php-unit-tests:
+            coverage: --coverage-text
 
 workflows:
   version: 2.1

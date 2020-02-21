@@ -76,6 +76,8 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
         $payResultMock = $this->makeMockDisabledConstructor(PiTransactionResultInterface::class);
         $payResultMock->expects($this->any())->method('getStatusCode')->willReturn(Config::SUCCESS_STATUS);
 
+        $payResultMock->expects($this->once())->method('getAvsCvcCheck');
+
         $piRestApiMock = $this->makeMockDisabledConstructor(PIRest::class);
         $piRestApiMock->expects($this->once())->method('capture')->willReturn($payResultMock);
 
