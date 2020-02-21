@@ -29,7 +29,7 @@ class Recover extends Action
      */
     public function execute()
     {
-        $this->recoverCart->execute(false);
+        $this->recoverCart->setShouldCancelOrder(false)->execute();
         return $this->redirectToCart();
     }
 

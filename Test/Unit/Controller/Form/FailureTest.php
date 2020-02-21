@@ -38,6 +38,11 @@ class FailureTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $recoverCartMock
             ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
+        $recoverCartMock
+            ->expects($this->once())
             ->method('execute');
 
         $objectManagerHelper = new ObjectManagerHelper($this);

@@ -171,7 +171,7 @@ class Callback extends Action implements CsrfAwareActionInterface
 
             return;
         } catch (\Exception $e) {
-            $this->recoverCart->execute(true);
+            $this->recoverCart->setShouldCancelOrder(true)->execute();
             $this->suiteLogger->logException($e);
             $this->redirectToCartAndShowError('We can\'t place the order: ' . $e->getMessage());
         }
