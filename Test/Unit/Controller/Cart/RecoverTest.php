@@ -22,8 +22,12 @@ class RecoverTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $recoverCartMock
             ->expects($this->once())
-            ->method('execute')
-            ->with(false);
+            ->method('setShouldCancelOrder')
+            ->with(false)
+            ->willReturnSelf();
+        $recoverCartMock
+            ->expects($this->once())
+            ->method('execute');
 
         $objectManagerHelper = new ObjectManagerHelper($this);
         $recover = $objectManagerHelper->getObject(

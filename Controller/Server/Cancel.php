@@ -118,7 +118,7 @@ class Cancel extends Action
             throw new \Exception("Order not found.");
         }
 
-        $this->recoverCart->execute(true);
+        $this->recoverCart->setShouldCancelOrder(true)->execute();
 
         $this->inactivateQuote($this->quote);
 

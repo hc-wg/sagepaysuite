@@ -299,7 +299,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
                 [SagePaySession::QUOTE_IS_ACTIVE, 1]
             );
 
-        $this->recoverCart->execute(true);
+        $this->recoverCart->setShouldCancelOrder(true)->execute();
     }
 
     public function testExecuteOrderNotAvailable()
@@ -324,8 +324,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
                 [SagePaySession::QUOTE_IS_ACTIVE, 1]
             );
 
-        $this->recoverCart->execute(true);
-
+        $this->recoverCart->setShouldCancelOrder(true)->execute();
     }
 
     public function testExecuteQuoteNotAvailable()
@@ -374,6 +373,6 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
                 [SagePaySession::QUOTE_IS_ACTIVE, 1]
             );
 
-        $this->recoverCart->execute(true);
+        $this->recoverCart->setShouldCancelOrder(true)->execute();
     }
 }

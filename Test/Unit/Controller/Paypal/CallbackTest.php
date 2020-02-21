@@ -300,6 +300,11 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
 
         $this->recoverCartMock
             ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
+        $this->recoverCartMock
+            ->expects($this->once())
             ->method('execute');
 
         $this->_expectRedirect("checkout/cart");
@@ -315,6 +320,11 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->method('getPost')
             ->willReturn($response);
 
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
         $this->recoverCartMock
             ->expects($this->once())
             ->method('execute');
@@ -337,6 +347,11 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
             ]));
 
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
         $this->recoverCartMock
             ->expects($this->once())
             ->method('execute');
@@ -362,6 +377,11 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
 
         $this->recoverCartMock
             ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
+        $this->recoverCartMock
+            ->expects($this->once())
             ->method('execute');
 
         $this->_expectRedirect("checkout/cart");
@@ -385,6 +405,11 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
             ]));
 
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
         $this->recoverCartMock
             ->expects($this->once())
             ->method('execute');
