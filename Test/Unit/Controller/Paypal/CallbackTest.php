@@ -6,7 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Paypal;
 
-use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
@@ -54,8 +54,8 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
     private $suiteHelperMock;
     private $encryptorMock;
 
-    /** @var RecoverCartAndCancelOrder */
-    private $recoverCartAndCancelOrderMock;
+    /** @var RecoverCart */
+    private $recoverCartMock;
 
     // @codingStandardsIgnoreStart
     protected function setUp()
@@ -220,8 +220,8 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->recoverCartAndCancelOrderMock = $this
-            ->getMockBuilder(RecoverCartAndCancelOrder::class)
+        $this->recoverCartMock = $this
+            ->getMockBuilder(RecoverCart::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -229,18 +229,18 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
         $this->paypalCallbackController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Paypal\Callback',
             [
-                'context'                   => $contextMock,
-                'config'                    => $this->configMock,
-                'checkoutSession'           => $this->checkoutSessionMock,
-                'checkoutHelper'            => $checkoutHelperMock,
-                'postApi'                   => $postApiMock,
-                'transactionFactory'        => $transactionFactoryMock,
-                'quoteFactory'              => $quoteFactoryMock,
-                'orderFactory'              => $this->orderFactoryMock,
-                "actionFactory"             => $closedForActionFactoryMock,
-                "suiteHelper"               => $this->suiteHelperMock,
-                "encryptor"                 => $this->encryptorMock,
-                "recoverCartAndCancelOrder" => $this->recoverCartAndCancelOrderMock
+                'context'            => $contextMock,
+                'config'             => $this->configMock,
+                'checkoutSession'    => $this->checkoutSessionMock,
+                'checkoutHelper'     => $checkoutHelperMock,
+                'postApi'            => $postApiMock,
+                'transactionFactory' => $transactionFactoryMock,
+                'quoteFactory'       => $quoteFactoryMock,
+                'orderFactory'       => $this->orderFactoryMock,
+                "actionFactory"      => $closedForActionFactoryMock,
+                "suiteHelper"        => $this->suiteHelperMock,
+                "encryptor"          => $this->encryptorMock,
+                "recoverCart"        => $this->recoverCartMock
             ]
         );
     }
@@ -298,7 +298,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
                 "StatusDetail" => "INVALID STATUS"
             ]));
 
-        $this->recoverCartAndCancelOrderMock
+        $this->recoverCartMock
             ->expects($this->once())
             ->method('execute');
 
@@ -315,7 +315,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->method('getPost')
             ->willReturn($response);
 
-        $this->recoverCartAndCancelOrderMock
+        $this->recoverCartMock
             ->expects($this->once())
             ->method('execute');
 
@@ -337,7 +337,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
             ]));
 
-        $this->recoverCartAndCancelOrderMock
+        $this->recoverCartMock
             ->expects($this->once())
             ->method('execute');
 
@@ -360,7 +360,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
             ]));
 
-        $this->recoverCartAndCancelOrderMock
+        $this->recoverCartMock
             ->expects($this->once())
             ->method('execute');
 
@@ -385,7 +385,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
             ]));
 
-        $this->recoverCartAndCancelOrderMock
+        $this->recoverCartMock
             ->expects($this->once())
             ->method('execute');
 

@@ -9,18 +9,18 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Cart;
 
 use Ebizmarts\SagePaySuite\Controller\Cart\Recover;
-use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
 class RecoverTest extends \PHPUnit\Framework\TestCase
 {
     public function testExecute()
     {
-        $recoverCartAndCancelOrderMock = $this
-            ->getMockBuilder(RecoverCartAndCancelOrder::class)
+        $recoverCartMock = $this
+            ->getMockBuilder(RecoverCart::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $recoverCartAndCancelOrderMock
+        $recoverCartMock
             ->expects($this->once())
             ->method('execute')
             ->with(false);
@@ -29,7 +29,7 @@ class RecoverTest extends \PHPUnit\Framework\TestCase
         $recover = $objectManagerHelper->getObject(
             '\Ebizmarts\SagePaySuite\Controller\Cart\Recover',
             [
-                'recoverCartAndCancelOrder' => $recoverCartAndCancelOrderMock
+                'recoverCart' => $recoverCartMock
             ]
         );
 

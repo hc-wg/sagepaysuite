@@ -25,7 +25,7 @@ use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
-use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 
 use Magento\Framework\Encryption\EncryptorInterface;
 
@@ -85,8 +85,8 @@ class CancelTest extends \PHPUnit\Framework\TestCase
     /** @var EncryptorInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $encryptorMock;
 
-    /** @var RecoverCartAndCancelOrder */
-    private $recoverCartAndCancelOrderMock;
+    /** @var RecoverCart */
+    private $recoverCartMock;
 
     // @codingStandardsIgnoreStart
     protected function setUp()
@@ -116,8 +116,8 @@ class CancelTest extends \PHPUnit\Framework\TestCase
             ->setMethods(['create'])
             ->getMock();
 
-        $this->recoverCartAndCancelOrderMock = $this
-            ->getMockBuilder(RecoverCartAndCancelOrder::class)
+        $this->recoverCartMock = $this
+            ->getMockBuilder(RecoverCart::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -137,7 +137,7 @@ class CancelTest extends \PHPUnit\Framework\TestCase
             $this->quoteIdMaskFactory,
             $this->orderFactory,
             $this->encryptorMock,
-            $this->recoverCartAndCancelOrderMock
+            $this->recoverCartMock
         );
     }
     // @codingStandardsIgnoreEnd
@@ -159,7 +159,7 @@ class CancelTest extends \PHPUnit\Framework\TestCase
         $this->order->expects($this->once())->method("loadByIncrementId")->with(self::RESERVED_ORDER_ID)->willReturnSelf();
         $this->order->expects($this->once())->method("getId")->willReturn(self::RESERVED_ORDER_ID);
 
-        $this->recoverCartAndCancelOrderMock
+        $this->recoverCartMock
             ->expects($this->once())
             ->method('execute');
 

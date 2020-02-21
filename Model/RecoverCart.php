@@ -12,7 +12,7 @@ use Magento\Quote\Model\QuoteRepository;
 use Magento\Framework\DataObjectFactory;
 use Magento\Framework\Message\ManagerInterface;
 
-class RecoverCartAndCancelOrder
+class RecoverCart
 {
     const ORDER_ERROR_MESSAGE = "Order not availabe";
     const QUOTE_ERROR_MESSAGE = "Quote not availabe";
@@ -39,7 +39,7 @@ class RecoverCartAndCancelOrder
     private $messageManager;
 
     /**
-     * RecoverCartAndCancelOrder constructor.
+     * RecoverCart constructor.
      * @param Session $checkoutSession
      * @param Logger $suiteLogger
      * @param OrderFactory $orderFactory
