@@ -21,7 +21,7 @@ use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
-use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 
 class Callback extends Action
 {
@@ -74,8 +74,8 @@ class Callback extends Action
      */
     private $encryptor;
 
-    /** @var RecoverCartAndCancelOrder */
-    private $recoverCartAndCancelOrder;
+    /** @var RecoverCart */
+    private $recoverCart;
 
     /**
      * Callback constructor.
@@ -90,7 +90,7 @@ class Callback extends Action
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
      * @param EncryptorInterface $encryptor
-     * @param RecoverCartAndCancelOrder $recoverCartAndCancelOrder
+     * @param RecoverCart $recoverCart
      */
     public function __construct(
         Context $context,
@@ -104,21 +104,21 @@ class Callback extends Action
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
         EncryptorInterface $encryptor,
-        RecoverCartAndCancelOrder $recoverCartAndCancelOrder
+        RecoverCart $recoverCart
     ) {
     
         parent::__construct($context);
-        $this->config                      = $config;
-        $this->checkoutSession             = $checkoutSession;
-        $this->suiteLogger                 = $suiteLogger;
-        $this->postApi                     = $postApi;
-        $this->quote                       = $quote;
-        $this->orderFactory                = $orderFactory;
-        $this->quoteFactory                = $quoteFactory;
-        $this->updateOrderCallback         = $updateOrderCallback;
-        $this->suiteHelper                 = $suiteHelper;
-        $this->encryptor                   = $encryptor;
-        $this->recoverCartAndCancelOrder   = $recoverCartAndCancelOrder;
+        $this->config              = $config;
+        $this->checkoutSession     = $checkoutSession;
+        $this->suiteLogger         = $suiteLogger;
+        $this->postApi             = $postApi;
+        $this->quote               = $quote;
+        $this->orderFactory        = $orderFactory;
+        $this->quoteFactory        = $quoteFactory;
+        $this->updateOrderCallback = $updateOrderCallback;
+        $this->suiteHelper         = $suiteHelper;
+        $this->encryptor           = $encryptor;
+        $this->recoverCart         = $recoverCart;
 
         $this->config->setMethodCode(Config::METHOD_PAYPAL);
     }
@@ -168,7 +168,7 @@ class Callback extends Action
 
             return;
         } catch (\Exception $e) {
-            $this->recoverCartAndCancelOrder->execute(true);
+            $this->recoverCart->execute(true);
             $this->suiteLogger->logException($e);
             $this->redirectToCartAndShowError('We can\'t place the order: ' . $e->getMessage());
         }

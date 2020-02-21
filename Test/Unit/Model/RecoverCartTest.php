@@ -7,7 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Type\AbstractType;
@@ -23,7 +23,7 @@ use Magento\Quote\Model\QuoteFactory;
 use Magento\Framework\DataObjectFactory;
 use Magento\Framework\Message\ManagerInterface;
 
-class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
+class RecoverCartTest extends \PHPUnit_Framework_TestCase
 {
     const TEST_ORDER_ID   = 7832;
     const TEST_QUOTE_ID   = 123;
@@ -39,8 +39,8 @@ class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
     /** @var Session */
     private $checkoutSessionMock;
 
-    /** @var RecoverCartAndCancelOrder */
-    private $recoverCartAndCancelOrder;
+    /** @var RecoverCart */
+    private $recoverCart;
 
     /** @var OrderFactory */
     private $orderFactoryMock;
@@ -109,8 +109,8 @@ class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $objectManagerHelper = new ObjectManagerHelper($this);
-        $this->recoverCartAndCancelOrder = $objectManagerHelper->getObject(
-            '\Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder',
+        $this->recoverCart = $objectManagerHelper->getObject(
+            '\Ebizmarts\SagePaySuite\Model\RecoverCart',
             [
                 'checkoutSession'   => $this->checkoutSessionMock,
                 'suiteLogger'       => $this->suiteLoggerMock,
@@ -299,7 +299,7 @@ class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
                 [SagePaySession::QUOTE_IS_ACTIVE, 1]
             );
 
-        $this->recoverCartAndCancelOrder->execute(true);
+        $this->recoverCart->execute(true);
     }
 
     public function testExecuteOrderNotAvailable()
@@ -313,7 +313,7 @@ class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
         $this->messageManagerMock
             ->expects($this->once())
             ->method('addError')
-            ->with(RecoverCartAndCancelOrder::ORDER_ERROR_MESSAGE)
+            ->with(RecoverCart::ORDER_ERROR_MESSAGE)
             ->willReturnSelf();
 
         $this->checkoutSessionMock
@@ -324,7 +324,7 @@ class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
                 [SagePaySession::QUOTE_IS_ACTIVE, 1]
             );
 
-        $this->recoverCartAndCancelOrder->execute(true);
+        $this->recoverCart->execute(true);
 
     }
 
@@ -363,7 +363,7 @@ class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
         $this->messageManagerMock
             ->expects($this->once())
             ->method('addError')
-            ->with(RecoverCartAndCancelOrder::QUOTE_ERROR_MESSAGE)
+            ->with(RecoverCart::QUOTE_ERROR_MESSAGE)
             ->willReturnSelf();
 
         $this->checkoutSessionMock
@@ -374,6 +374,6 @@ class CheckoutCartIndexTest extends \PHPUnit_Framework_TestCase
                 [SagePaySession::QUOTE_IS_ACTIVE, 1]
             );
 
-        $this->recoverCartAndCancelOrder->execute(true);
+        $this->recoverCart->execute(true);
     }
 }

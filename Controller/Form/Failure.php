@@ -16,7 +16,7 @@ use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
-use Ebizmarts\SagePaySuite\Model\RecoverCartAndCancelOrder;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 
 class Failure extends Action
 {
@@ -64,8 +64,8 @@ class Failure extends Action
      */
     private $encryptor;
 
-    /** @var RecoverCartAndCancelOrder */
-    private $recoverCartAndCancelOrder;
+    /** @var RecoverCart */
+    private $recoverCart;
 
     /**
      * Failure constructor.
@@ -77,7 +77,7 @@ class Failure extends Action
      * @param QuoteFactory $quoteFactory
      * @param Session $checkoutSession
      * @param EncryptorInterface $encryptor
-     * @param RecoverCartAndCancelOrder $recoverCartAndCancelOrder
+     * @param RecoverCart $recoverCart
      */
     public function __construct(
         Context $context,
@@ -88,18 +88,18 @@ class Failure extends Action
         QuoteFactory $quoteFactory,
         Session $checkoutSession,
         EncryptorInterface $encryptor,
-        RecoverCartAndCancelOrder $recoverCartAndCancelOrder
+        RecoverCart $recoverCart
     ) {
     
         parent::__construct($context);
-        $this->suiteLogger                 = $suiteLogger;
-        $this->logger                      = $logger;
-        $this->formModel                   = $formModel;
-        $this->orderFactory                = $orderFactory;
-        $this->quoteFactory                = $quoteFactory;
-        $this->checkoutSession             = $checkoutSession;
-        $this->encryptor                   = $encryptor;
-        $this->recoverCartAndCancelOrder   = $recoverCartAndCancelOrder;
+        $this->suiteLogger     = $suiteLogger;
+        $this->logger          = $logger;
+        $this->formModel       = $formModel;
+        $this->orderFactory    = $orderFactory;
+        $this->quoteFactory    = $quoteFactory;
+        $this->checkoutSession = $checkoutSession;
+        $this->encryptor       = $encryptor;
+        $this->recoverCart     = $recoverCart;
     }
 
     /**
@@ -118,7 +118,7 @@ class Failure extends Action
                 throw new LocalizedException(__('Invalid response from Sage Pay'));
             }
 
-            $this->recoverCartAndCancelOrder->execute(true);
+            $this->recoverCart->execute(true);
 
             $statusDetail = $this->extractStatusDetail($response);
 
