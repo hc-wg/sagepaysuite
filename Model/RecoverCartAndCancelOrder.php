@@ -10,6 +10,7 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Quote\Model\QuoteRepository;
 use Magento\Framework\DataObjectFactory;
+use Magento\Framework\Message\ManagerInterface;
 
 class RecoverCartAndCancelOrder
 {
@@ -31,6 +32,9 @@ class RecoverCartAndCancelOrder
     /** @var DataObjectFactory */
     private $dataObjectFactory;
 
+    /** @var ManagerInterface */
+    private $messageManager;
+
     /**
      * RecoverCartAndCancelOrder constructor.
      * @param Session $checkoutSession
@@ -46,7 +50,8 @@ class RecoverCartAndCancelOrder
         OrderFactory $orderFactory,
         QuoteFactory $quoteFactory,
         QuoteRepository $quoteRepository,
-        DataObjectFactory $dataObjectFactory
+        DataObjectFactory $dataObjectFactory,
+        ManagerInterface $messageManager
     ) {
         $this->checkoutSession   = $checkoutSession;
         $this->suiteLogger       = $suiteLogger;
@@ -54,6 +59,7 @@ class RecoverCartAndCancelOrder
         $this->quoteFactory      = $quoteFactory;
         $this->quoteRepository   = $quoteRepository;
         $this->dataObjectFactory = $dataObjectFactory;
+        $this->messageManager    = $messageManager;
     }
 
     public function execute(bool $cancelOrder)
@@ -68,7 +74,13 @@ class RecoverCartAndCancelOrder
                 }
                 $this->cloneQuoteAndReplaceInSession($order);
                 $this->removeFlag();
+            } else {
+                $this->removeFlag();
+                $this->messageManager->addError(__('Quote not availabe'));
             }
+        } else {
+            $this->removeFlag();
+            $this->messageManager->addError(__('Order not available'));
         }
     }
 
