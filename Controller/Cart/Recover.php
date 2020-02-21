@@ -24,13 +24,19 @@ class Recover extends Action
         $this->recoverCartAndCancelOrder = $recoverCartAndCancelOrder;
     }
 
+    /**
+     * @return \Magento\Framework\App\ResponseInterface
+     */
     public function execute()
     {
         $this->recoverCartAndCancelOrder->execute(false);
         return $this->redirectToCart();
     }
 
-    public function redirectToCart()
+    /**
+     * @return \Magento\Framework\App\ResponseInterface
+     */
+    private function redirectToCart()
     {
         $redirectUrl = 'checkout/cart';
         return $this->_redirect($redirectUrl);
