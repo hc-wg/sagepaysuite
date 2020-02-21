@@ -7,6 +7,7 @@ use Ebizmarts\SagePaySuite\Model\Config;
 interface PaymentOperations
 {
     const DEFERRED_AWAITING_RELEASE = 14;
+    const AUTHENTICATED_AWAITING_AUTHORISE = 15;
     const SUCCESSFULLY_AUTHORISED   = 16;
 
     /**

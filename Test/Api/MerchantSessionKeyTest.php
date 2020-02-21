@@ -2,6 +2,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Api;
 
+use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Webapi\Rest\Request;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\TestCase\WebapiAbstract;
@@ -16,12 +17,15 @@ class MerchantSessionKeyTest extends WebapiAbstract
     /** @var  \Ebizmarts\SagePaySuite\Test\Api\Helper */
     private $helper;
 
+    /** @var \Magento\Config\Model\ResourceModel\Config */
+    private $config;
+
     protected function setUp()
     {
         $this->objectManager = Bootstrap::getObjectManager();
 
         $this->config = $this->objectManager->create(
-            'Magento\Config\Model\Config'
+            \Magento\Config\Model\ResourceModel\Config::class
         );
 
         $this->helper = $this->objectManager->create("Ebizmarts\SagePaySuite\Test\Api\Helper");
@@ -31,6 +35,8 @@ class MerchantSessionKeyTest extends WebapiAbstract
     {
         $this->helper->savePiKey();
         $this->helper->savePiPassword();
+
+        $this->config->saveConfig("sagepaysuite/global/mode", Config::MODE_DEVELOPMENT);
 
         $serviceInfo = [
             'rest' => [
