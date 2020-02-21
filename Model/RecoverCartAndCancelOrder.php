@@ -9,6 +9,7 @@ use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Quote\Model\QuoteRepository;
+use Magento\Framework\DataObjectFactory;
 
 class RecoverCartAndCancelOrder
 {
@@ -27,6 +28,9 @@ class RecoverCartAndCancelOrder
     /** @var QuoteRepository */
     private $quoteRepository;
 
+    /** @var DataObjectFactory */
+    private $dataObjectFactory;
+
     /**
      * RecoverCartAndCancelOrder constructor.
      * @param Session $checkoutSession
@@ -34,19 +38,22 @@ class RecoverCartAndCancelOrder
      * @param OrderFactory $orderFactory
      * @param QuoteFactory $quoteFactory
      * @param QuoteRepository $quoteRepository
+     * @param DataObjectFactory $dataObjectFactory
      */
     public function __construct(
         Session $checkoutSession,
         Logger $suiteLogger,
         OrderFactory $orderFactory,
         QuoteFactory $quoteFactory,
-        QuoteRepository $quoteRepository
+        QuoteRepository $quoteRepository,
+        DataObjectFactory $dataObjectFactory
     ) {
-        $this->checkoutSession = $checkoutSession;
-        $this->suiteLogger     = $suiteLogger;
-        $this->orderFactory    = $orderFactory;
-        $this->quoteFactory    = $quoteFactory;
-        $this->quoteRepository = $quoteRepository;
+        $this->checkoutSession   = $checkoutSession;
+        $this->suiteLogger       = $suiteLogger;
+        $this->orderFactory      = $orderFactory;
+        $this->quoteFactory      = $quoteFactory;
+        $this->quoteRepository   = $quoteRepository;
+        $this->dataObjectFactory = $dataObjectFactory;
     }
 
     public function execute(bool $cancelOrder)
@@ -80,7 +87,7 @@ class RecoverCartAndCancelOrder
             $options = $product->getTypeInstance(true)->getOrderOptions($product);
 
             $info = $options['info_buyRequest'];
-            $request = new \Magento\Framework\DataObject();
+            $request = $this->dataObjectFactory->create();
             $request->setData($info);
 
             $newQuote->addProduct($product, $request);
