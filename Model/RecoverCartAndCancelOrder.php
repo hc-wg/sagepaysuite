@@ -55,7 +55,7 @@ class RecoverCartAndCancelOrder
 
         if ($this->verifyIfOrderIsValid($order)) {
             $quote = $this->checkoutSession->getQuote();
-            if (empty($quote) || empty($quote->getId())) {
+            if (!empty($quote)) {
                 if ($cancelOrder) {
                     $order->cancel()->save();
                 }
