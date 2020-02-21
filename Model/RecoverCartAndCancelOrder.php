@@ -14,6 +14,9 @@ use Magento\Framework\Message\ManagerInterface;
 
 class RecoverCartAndCancelOrder
 {
+    const ORDER_ERROR_MESSAGE = "Order not availabe";
+    const QUOTE_ERROR_MESSAGE = "Quote not availabe";
+
     /** @var Session */
     private $checkoutSession;
 
@@ -76,11 +79,11 @@ class RecoverCartAndCancelOrder
                 $this->removeFlag();
             } else {
                 $this->removeFlag();
-                $this->messageManager->addError(__('Quote not availabe'));
+                $this->messageManager->addError(__(self::QUOTE_ERROR_MESSAGE));
             }
         } else {
             $this->removeFlag();
-            $this->messageManager->addError(__('Order not available'));
+            $this->messageManager->addError(__(self::ORDER_ERROR_MESSAGE));
         }
     }
 
