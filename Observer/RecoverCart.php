@@ -82,7 +82,7 @@ class RecoverCart implements ObserverInterface
      */
     private function checkIfRecoverCartIsPossible($presavedOrderId, $quoteIsActive)
     {
-        return $this->checkPreSavedOrder($presavedOrderId) && $this->checkQuoteIsActive($quoteIsActive);
+        return $this->checkPreSavedOrder($presavedOrderId) && $this->checkQuoteIsNotActive($quoteIsActive);
     }
 
     /**
@@ -98,7 +98,7 @@ class RecoverCart implements ObserverInterface
      * @param $quoteIsActive
      * @return bool
      */
-    private function checkQuoteIsActive($quoteIsActive)
+    private function checkQuoteIsNotActive($quoteIsActive)
     {
         return $quoteIsActive === 0;
     }
