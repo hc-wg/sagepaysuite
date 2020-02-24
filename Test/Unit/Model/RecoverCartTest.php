@@ -15,10 +15,10 @@ use Magento\Framework\DataObject;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Checkout\Model\Session;
 use Magento\Quote\Model\Quote\Item;
-use Magento\Quote\Model\QuoteRepository;
+use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Quote\Model\Quote;
-use Magento\Sales\Model\OrderFactory;
+use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Framework\DataObjectFactory;
 use Magento\Framework\Message\ManagerInterface;
@@ -42,10 +42,10 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
     /** @var RecoverCart */
     private $recoverCart;
 
-    /** @var OrderFactory */
-    private $orderFactoryMock;
+    /** @var OrderRepositoryInterface */
+    private $orderRepositoryMock;
 
-    /** @var QuoteRepository */
+    /** @var CartRepositoryInterface */
     private $quoteRepositoryMock;
 
     /** @var QuoteFactory */
@@ -78,13 +78,13 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->orderFactoryMock = $this
-            ->getMockBuilder(OrderFactory::class)
+        $this->orderRepositoryMock = $this
+            ->getMockBuilder(OrderRepositoryInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
         $this->quoteRepositoryMock = $this
-            ->getMockBuilder(QuoteRepository::class)
+            ->getMockBuilder(CartRepositoryInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -114,7 +114,7 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
             [
                 'checkoutSession'   => $this->checkoutSessionMock,
                 'suiteLogger'       => $this->suiteLoggerMock,
-                'orderFactory'      => $this->orderFactoryMock,
+                'orderRepository'   => $this->orderRepositoryMock,
                 'quoteFactory'      => $this->quoteFactoryMock,
                 'quoteRepository'   => $this->quoteRepositoryMock,
                 'dataObjectFactory' => $this->dataObjectFactoryMock,
@@ -131,16 +131,10 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
             ->with(SagePaySession::PRESAVED_PENDING_ORDER_KEY)
             ->willReturn(self::TEST_ORDER_ID);
 
-        $this->orderFactoryMock
+        $this->orderRepositoryMock
             ->expects($this->once())
-            ->method('create')
+            ->method('get')
             ->willReturn($this->orderMock);
-
-        $this->orderMock
-            ->expects($this->once())
-            ->method('load')
-            ->with(self::TEST_ORDER_ID)
-            ->willReturnSelf();
 
         $this->checkoutSessionMock
             ->expects($this->once())
@@ -335,16 +329,11 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
             ->with(SagePaySession::PRESAVED_PENDING_ORDER_KEY)
             ->willReturn(self::TEST_ORDER_ID);
 
-        $this->orderFactoryMock
+        $this->orderRepositoryMock
             ->expects($this->once())
-            ->method('create')
+            ->method('get')
             ->willReturn($this->orderMock);
 
-        $this->orderMock
-            ->expects($this->once())
-            ->method('load')
-            ->with(self::TEST_ORDER_ID)
-            ->willReturnSelf();
         $this->orderMock
             ->expects($this->once())
             ->method('getId')
