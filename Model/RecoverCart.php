@@ -8,9 +8,9 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Model\QuoteFactory;
+use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\OrderFactory;
-use Magento\Quote\Model\QuoteRepository;
+use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Framework\DataObjectFactory;
 use Magento\Framework\Message\ManagerInterface;
 
@@ -26,13 +26,13 @@ class RecoverCart
     /** @var Logger */
     private $suiteLogger;
 
-    /** @var OrderFactory */
-    private $orderFactory;
+    /** @var OrderRepositoryInterface */
+    private $orderRepository;
 
     /** @var QuoteFactory */
     private $quoteFactory;
 
-    /** @var QuoteRepository */
+    /** @var CartRepositoryInterface */
     private $quoteRepository;
 
     /** @var DataObjectFactory */
@@ -48,23 +48,21 @@ class RecoverCart
      * RecoverCart constructor.
      * @param Session $checkoutSession
      * @param Logger $suiteLogger
-     * @param OrderFactory $orderFactory
      * @param QuoteFactory $quoteFactory
-     * @param QuoteRepository $quoteRepository
      * @param DataObjectFactory $dataObjectFactory
      */
     public function __construct(
         Session $checkoutSession,
         Logger $suiteLogger,
-        OrderFactory $orderFactory,
+        OrderRepositoryInterface $orderRepository,
         QuoteFactory $quoteFactory,
-        QuoteRepository $quoteRepository,
+        CartRepositoryInterface $quoteRepository,
         DataObjectFactory $dataObjectFactory,
         ManagerInterface $messageManager
     ) {
         $this->checkoutSession   = $checkoutSession;
         $this->suiteLogger       = $suiteLogger;
-        $this->orderFactory      = $orderFactory;
+        $this->orderRepository   = $orderRepository;
         $this->quoteFactory      = $quoteFactory;
         $this->quoteRepository   = $quoteRepository;
         $this->dataObjectFactory = $dataObjectFactory;
@@ -76,27 +74,26 @@ class RecoverCart
     {
         $order = $this->getOrder();
 
-
-            if ($this->verifyIfOrderIsValid($order)) {
-                $quote = $this->checkoutSession->getQuote();
-                if (!empty($quote)) {
-                    if ($this->_shouldCancelOrder) {
-                        $order->cancel()->save();
-                    }
-                    try {
-                        $this->cloneQuoteAndReplaceInSession($order);
-                    } catch (LocalizedException $e) {
-                        $this->logExceptionAndShowError(self::GENERAL_ERROR_MESSAGE, $e);
-                    } catch (NoSuchEntityException $e) {
-                        $this->logExceptionAndShowError(self::GENERAL_ERROR_MESSAGE, $e);
-                    }
-                    $this->removeFlag();
-                } else {
-                    $this->addError(self::QUOTE_ERROR_MESSAGE);
+        if ($this->verifyIfOrderIsValid($order)) {
+            $quote = $this->checkoutSession->getQuote();
+            if (!empty($quote)) {
+                if ($this->_shouldCancelOrder) {
+                    $order->cancel()->save();
                 }
+                try {
+                    $this->cloneQuoteAndReplaceInSession($order);
+                } catch (LocalizedException $e) {
+                    $this->logExceptionAndShowError(self::GENERAL_ERROR_MESSAGE, $e);
+                } catch (NoSuchEntityException $e) {
+                    $this->logExceptionAndShowError(self::GENERAL_ERROR_MESSAGE, $e);
+                }
+                $this->removeFlag();
             } else {
-                $this->addError(self::ORDER_ERROR_MESSAGE);
+                $this->addError(self::QUOTE_ERROR_MESSAGE);
             }
+        } else {
+            $this->addError(self::ORDER_ERROR_MESSAGE);
+        }
     }
 
     /**
@@ -131,7 +128,7 @@ class RecoverCart
     }
 
     /**
-     * @return Order|null
+     * @return \Magento\Sales\Api\Data\OrderInterface|null
      */
     private function getOrder()
     {
@@ -139,7 +136,7 @@ class RecoverCart
         $presavedOrderId = $this->checkoutSession->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
 
         if (!empty($presavedOrderId)) {
-            $order = $this->orderFactory->create()->load($presavedOrderId);
+            $order = $this->orderRepository->get($presavedOrderId);
         } else {
             $order = null;
         }
