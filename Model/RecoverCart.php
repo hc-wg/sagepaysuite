@@ -68,6 +68,7 @@ class RecoverCart
         $this->messageManager    = $messageManager;
     }
 
+
     public function execute()
     {
         $order = $this->getOrder();
@@ -90,7 +91,12 @@ class RecoverCart
         }
     }
 
-    private function cloneQuoteAndReplaceInSession($order)
+    /**
+     * @param Order $order
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    private function cloneQuoteAndReplaceInSession(Order $order)
     {
         $quote = $this->quoteRepository->get($order->getQuoteId());
         $items = $quote->getAllVisibleItems();
@@ -116,6 +122,9 @@ class RecoverCart
         $this->checkoutSession->replaceQuote($newQuote);
     }
 
+    /**
+     * @return Order|void|null
+     */
     private function getOrder()
     {
         /** Get order if it was pre-saved but not completed */
@@ -130,7 +139,11 @@ class RecoverCart
         return $order;
     }
 
-    private function verifyIfOrderIsValid($order)
+    /**
+     * @param Order $order
+     * @return bool
+     */
+    private function verifyIfOrderIsValid(Order $order)
     {
         return $order !== null &&
             $order->getId() !== null &&
@@ -143,6 +156,10 @@ class RecoverCart
         $this->checkoutSession->setData(SagePaySession::QUOTE_IS_ACTIVE, 1);
     }
 
+    /**
+     * @param bool $shouldCancelOrder
+     * @return $this
+     */
     public function setShouldCancelOrder(bool $shouldCancelOrder) {
         $this->_shouldCancelOrder = $shouldCancelOrder;
         return $this;
