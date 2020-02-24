@@ -5,6 +5,8 @@ namespace Ebizmarts\SagePaySuite\Model;
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Checkout\Model\Session;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
@@ -14,8 +16,9 @@ use Magento\Framework\Message\ManagerInterface;
 
 class RecoverCart
 {
-    const ORDER_ERROR_MESSAGE = "Order not availabe";
-    const QUOTE_ERROR_MESSAGE = "Quote not availabe";
+    const ORDER_ERROR_MESSAGE   = "Order not availabe";
+    const QUOTE_ERROR_MESSAGE   = "Quote not availabe";
+    const GENERAL_ERROR_MESSAGE = "Not possible to recover quote";
 
     /** @var Session */
     private $checkoutSession;
@@ -73,22 +76,27 @@ class RecoverCart
     {
         $order = $this->getOrder();
 
-        if ($this->verifyIfOrderIsValid($order)) {
-            $quote = $this->checkoutSession->getQuote();
-            if (!empty($quote)) {
-                if ($this->_shouldCancelOrder) {
-                    $order->cancel()->save();
+
+            if ($this->verifyIfOrderIsValid($order)) {
+                $quote = $this->checkoutSession->getQuote();
+                if (!empty($quote)) {
+                    if ($this->_shouldCancelOrder) {
+                        $order->cancel()->save();
+                    }
+                    try {
+                        $this->cloneQuoteAndReplaceInSession($order);
+                    } catch (LocalizedException $e) {
+                        $this->logExceptionAndShowError(self::GENERAL_ERROR_MESSAGE, $e);
+                    } catch (NoSuchEntityException $e) {
+                        $this->logExceptionAndShowError(self::GENERAL_ERROR_MESSAGE, $e);
+                    }
+                    $this->removeFlag();
+                } else {
+                    $this->addError(self::QUOTE_ERROR_MESSAGE);
                 }
-                $this->cloneQuoteAndReplaceInSession($order);
-                $this->removeFlag();
             } else {
-                $this->removeFlag();
-                $this->messageManager->addError(__(self::QUOTE_ERROR_MESSAGE));
+                $this->addError(self::ORDER_ERROR_MESSAGE);
             }
-        } else {
-            $this->removeFlag();
-            $this->messageManager->addError(__(self::ORDER_ERROR_MESSAGE));
-        }
     }
 
     /**
@@ -123,7 +131,7 @@ class RecoverCart
     }
 
     /**
-     * @return Order|void|null
+     * @return Order|null
      */
     private function getOrder()
     {
@@ -140,10 +148,10 @@ class RecoverCart
     }
 
     /**
-     * @param Order $order
+     * @param $order
      * @return bool
      */
-    private function verifyIfOrderIsValid(Order $order)
+    private function verifyIfOrderIsValid($order)
     {
         return $order !== null &&
             $order->getId() !== null &&
@@ -160,8 +168,28 @@ class RecoverCart
      * @param bool $shouldCancelOrder
      * @return $this
      */
-    public function setShouldCancelOrder(bool $shouldCancelOrder) {
+    public function setShouldCancelOrder(bool $shouldCancelOrder)
+    {
         $this->_shouldCancelOrder = $shouldCancelOrder;
         return $this;
+    }
+
+    /**
+     * @param $message
+     */
+    private function addError($message)
+    {
+        $this->removeFlag();
+        $this->messageManager->addError(__($message));
+    }
+
+    /**
+     * @param $message
+     * @param $exception
+     */
+    private function logExceptionAndShowError($message, $exception)
+    {
+        $this->addError($message);
+        $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $exception->getTraceAsString(), [__METHOD__, __LINE__]);
     }
 }
