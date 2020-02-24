@@ -14,7 +14,7 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHe
 class RecoverCartTest extends \PHPUnit\Framework\TestCase
 {
     const TEST_BASE_URL = "http://magento.test/";
-    const TEST_MESSAGE  = "There's an order in process, but you can recover the cart <a target='_self' href=http://magento.test/sagepaysuite/cart/recover>HERE</a>";
+    const TEST_MESSAGE  = "There is an order in process. Click <a target='_self' href=http://magento.test/sagepaysuite/cart/recover>HERE</a> to recover the cart.";
     const TEST_ORDER_ID = 7832;
 
     /** @var Session */
