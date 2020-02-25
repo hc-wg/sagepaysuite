@@ -25,6 +25,7 @@ use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 
 use Magento\Framework\Encryption\EncryptorInterface;
 
@@ -84,6 +85,9 @@ class CancelTest extends \PHPUnit\Framework\TestCase
     /** @var EncryptorInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $encryptorMock;
 
+    /** @var RecoverCart */
+    private $recoverCartMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -112,6 +116,11 @@ class CancelTest extends \PHPUnit\Framework\TestCase
             ->setMethods(['create'])
             ->getMock();
 
+        $this->recoverCartMock = $this
+            ->getMockBuilder(RecoverCart::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $this->context->expects($this->atLeastOnce())->method('getRequest')->willReturn($this->request);
         $this->context->expects($this->atLeastOnce())->method('getResponse')->willReturn($this->response);
         $this->context->expects($this->atLeastOnce())->method('getMessageManager')->willReturn($this->messageManager);
@@ -127,23 +136,20 @@ class CancelTest extends \PHPUnit\Framework\TestCase
             $this->quote,
             $this->quoteIdMaskFactory,
             $this->orderFactory,
-            $this->encryptorMock
+            $this->encryptorMock,
+            $this->recoverCartMock
         );
     }
     // @codingStandardsIgnoreEnd
 
     public function testExecute()
     {
-        $this->cart->expects($this->once())->method("setQuote");
-        $this->cart->expects($this->once())->method("save");
-
         $this->request->expects($this->exactly(3))
             ->method('getParam')
             ->withConsecutive(['message'], ['_store'], ['quote'])
             ->willReturnOnConsecutiveCalls("Error Message", self::QUOTE_ID);
 
         $this->messageManager->expects($this->once())->method('addError')->willReturn($this->request);
-        $this->om->expects($this->once())->method("get")->with("Magento\Checkout\Model\Cart")->willReturn($this->cart);
 
         $this->quote->expects($this->once())->method("getId")->willReturn(self::QUOTE_ID);
         $this->quote->expects($this->once())->method("load")->willReturnSelf();
@@ -152,9 +158,15 @@ class CancelTest extends \PHPUnit\Framework\TestCase
         $this->orderFactory->expects($this->once())->method("create")->willReturn($this->order);
         $this->order->expects($this->once())->method("loadByIncrementId")->with(self::RESERVED_ORDER_ID)->willReturnSelf();
         $this->order->expects($this->once())->method("getId")->willReturn(self::RESERVED_ORDER_ID);
-        $this->order->expects($this->once())->method("getItemsCollection")->willReturn([]);
 
-        $this->checkoutSession->expects($this->once())->method("getQuote")->willReturn($this->quote);
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('execute');
 
         $this->expectSetBody(
             '<script>window.top.location.href = "'

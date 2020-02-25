@@ -169,10 +169,16 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
             ]
         )
         ->getMock();
-        $checkoutSessionMock->expects($this->once())->method('setData')
-            ->with(
-                $this->equalTo('sagepaysuite_presaved_order_pending_payment'),
-                $this->equalTo(self::TEST_ORDER_NUMBER)
+        $checkoutSessionMock->expects($this->exactly(2))->method('setData')
+            ->withConsecutive(
+                [
+                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY),
+                    $this->equalTo(self::TEST_ORDER_NUMBER)
+                ],
+                [
+                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::QUOTE_IS_ACTIVE),
+                    $this->equalTo(0)
+                ]
             );
         $checkoutSessionMock->expects($this->once())->method('clearHelperData');
         $checkoutSessionMock->expects($this->once())->method('setLastQuoteId');
@@ -359,10 +365,16 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
             ]
         )
         ->getMock();
-        $checkoutSessionMock->expects($this->once())->method('setData')
-            ->with(
-                $this->equalTo('sagepaysuite_presaved_order_pending_payment'),
-                $this->equalTo(self::TEST_ORDER_NUMBER)
+        $checkoutSessionMock->expects($this->exactly(2))->method('setData')
+            ->withConsecutive(
+                [
+                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY),
+                    $this->equalTo(self::TEST_ORDER_NUMBER)
+                ],
+                [
+                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::QUOTE_IS_ACTIVE),
+                    $this->equalTo(0)
+                ]
             );
         $checkoutSessionMock->expects($this->once())->method('clearHelperData');
         $checkoutSessionMock->expects($this->once())->method('setLastQuoteId');
