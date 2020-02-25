@@ -48,8 +48,11 @@ class RecoverCart
      * RecoverCart constructor.
      * @param Session $checkoutSession
      * @param Logger $suiteLogger
+     * @param OrderRepositoryInterface $orderRepository
      * @param QuoteFactory $quoteFactory
+     * @param CartRepositoryInterface $quoteRepository
      * @param DataObjectFactory $dataObjectFactory
+     * @param ManagerInterface $messageManager
      */
     public function __construct(
         Session $checkoutSession,
