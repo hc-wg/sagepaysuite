@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Form;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 
 class FailureTest extends \PHPUnit\Framework\TestCase
 {
@@ -31,21 +32,26 @@ class FailureTest extends \PHPUnit\Framework\TestCase
             ->method('decodeSagePayResponse')
             ->will($this->returnValue($responseData));
 
-        $quoteMock = $this->makeQuoteMock();
-
-        $quoteFactoryMock = $this->makeQuoteFactoryMock($quoteMock);
-
-        $orderFactoryMock = $this->makeOrderMock();
+        $recoverCartMock = $this
+            ->getMockBuilder(RecoverCart::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $recoverCartMock
+            ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
+        $recoverCartMock
+            ->expects($this->once())
+            ->method('execute');
 
         $objectManagerHelper = new ObjectManagerHelper($this);
         $formFailureController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Form\Failure',
             [
-                'context'      => $contextMock,
-                'formModel'    => $formModelMock,
-                'quoteFactory' => $quoteFactoryMock,
-                'orderFactory' => $orderFactoryMock
-
+                'context'     => $contextMock,
+                'formModel'   => $formModelMock,
+                'recoverCart' => $recoverCartMock
             ]
         );
 
@@ -102,14 +108,14 @@ class FailureTest extends \PHPUnit\Framework\TestCase
         $loggerMock->expects($this->once())->method('critical')->with(
             new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay'))
         );
-
+        
         $objectManagerHelper = new ObjectManagerHelper($this);
         $formFailureController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Form\Failure',
             [
-                'context'   => $contextMock,
-                'formModel' => $formModelMock,
-                'logger'    => $loggerMock
+                'context'                   => $contextMock,
+                'formModel'                 => $formModelMock,
+                'logger'                    => $loggerMock,
             ]
         );
 
@@ -117,91 +123,6 @@ class FailureTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('addError')
             ->with(__('Invalid response from Sage Pay'));
-
-        $formFailureController->execute();
-    }
-
-    public function testExecuteOrderCancelException()
-    {
-        $responseMock = $this->makeResponseMock();
-
-        $requestMock = $this->makeRequestMock();
-
-        $redirectMock = $this->makeRedirectMock();
-
-        $messageManagerMock = $this->makeMessageManagerMock();
-
-        $contextMock = $this->makeContextMock($requestMock, $responseMock, $redirectMock, $messageManagerMock);
-
-        $formModelMock = $this->makeFormModelMock();
-        $formModelMock->expects($this->any())
-            ->method('decodeSagePayResponse')
-            ->will($this->returnValue([
-                "Status" => "REJECTED",
-                "StatusDetail" => "2000 : Invalid Card"
-            ]));
-
-        $quoteMock = $this->getMockBuilder('\Magento\Quote\Model\Quote')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $quoteMock
-            ->expects($this->once())
-            ->method('load')
-            ->willReturnSelf();
-        $quoteMock
-            ->expects($this->never())
-            ->method('getId');
-        $quoteMock
-            ->expects($this->never())
-            ->method('setIsActive');
-        $quoteMock
-            ->expects($this->never())
-            ->method('setReservedOrderId');
-        $quoteMock
-            ->expects($this->never())
-            ->method('save');
-
-        $quoteFactoryMock = $this->makeQuoteFactoryMock($quoteMock);
-
-        $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('loadByIncrementId')
-            ->willReturnSelf();
-
-        $message = new \Magento\Framework\Phrase("Can not cancel order.");
-        $orderMock->expects($this->once())
-            ->method('cancel')
-            ->willThrowException(new \Exception($message->__toString()));
-        $orderFactoryMock = $this->getMockBuilder(\Magento\Sales\Model\OrderFactory::class)
-            ->disableOriginalConstructor()
-            ->setMethods(["create"])
-            ->getMock();
-        $orderFactoryMock->expects($this->once())
-            ->method('create')
-            ->willReturn($orderMock);
-
-        $objectManagerHelper = new ObjectManagerHelper($this);
-        $formFailureController = $objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Controller\Form\Failure',
-            [
-                'context'      => $contextMock,
-                'formModel'    => $formModelMock,
-                'quoteFactory' => $quoteFactoryMock,
-                'orderFactory' => $orderFactoryMock
-
-            ]
-        );
-
-        $messageManagerMock->expects($this->once())
-            ->method('addError')
-            ->with("REJECTED: Invalid Card");
-
-        $redirectMock
-            ->expects($this->once())
-            ->method('redirect')
-            ->with($this->anything(), "checkout/cart", []);
 
         $formFailureController->execute();
     }
@@ -283,46 +204,5 @@ class FailureTest extends \PHPUnit\Framework\TestCase
         $formModelMock = $this->getMockBuilder('Ebizmarts\SagePaySuite\Model\Form')->disableOriginalConstructor()->getMock();
 
         return $formModelMock;
-    }
-
-    /**
-     * @return \PHPUnit_Framework_MockObject_MockObject
-     */
-    private function makeQuoteMock(): \PHPUnit_Framework_MockObject_MockObject
-    {
-        $quoteMock = $this->getMockBuilder('\Magento\Quote\Model\Quote')->disableOriginalConstructor()->getMock();
-        $quoteMock->expects($this->once())->method('load')->willReturnSelf();
-        $quoteMock->expects($this->once())->method('getId')->willReturn(1234);
-        $quoteMock->expects($this->once())->method('setIsActive')->with(1);
-        $quoteMock->expects($this->once())->method('setReservedOrderId')->with(null);
-        $quoteMock->expects($this->once())->method('save');
-
-        return $quoteMock;
-    }
-
-    /**
-     * @param $quoteMock
-     * @return \PHPUnit_Framework_MockObject_MockObject
-     */
-    private function makeQuoteFactoryMock($quoteMock): \PHPUnit_Framework_MockObject_MockObject
-    {
-        $quoteFactoryMock = $this->getMockBuilder('\Magento\Quote\Model\QuoteFactory')->disableOriginalConstructor()->setMethods(["create"])->getMock();
-        $quoteFactoryMock->expects($this->once())->method('create')->willReturn($quoteMock);
-
-        return $quoteFactoryMock;
-    }
-
-    /**
-     * @return \PHPUnit_Framework_MockObject_MockObject
-     */
-    private function makeOrderMock(): \PHPUnit_Framework_MockObject_MockObject
-    {
-        $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)->disableOriginalConstructor()->getMock();
-        $orderMock->expects($this->once())->method('loadByIncrementId')->willReturnSelf();
-        $orderMock->expects($this->once())->method('cancel')->willReturnSelf();
-        $orderFactoryMock = $this->getMockBuilder(\Magento\Sales\Model\OrderFactory::class)->disableOriginalConstructor()->setMethods(["create"])->getMock();
-        $orderFactoryMock->expects($this->once())->method('create')->willReturn($orderMock);
-
-        return $orderFactoryMock;
     }
 }

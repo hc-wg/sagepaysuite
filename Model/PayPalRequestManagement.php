@@ -111,6 +111,7 @@ class PayPalRequestManagement implements \Ebizmarts\SagePaySuite\Api\PayPalManag
             if ($order) {
                 //set pre-saved order flag in checkout session
                 $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, $order->getId());
+                $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::QUOTE_IS_ACTIVE, 0);
 
                 //set payment data
                 $payment = $order->getPayment();

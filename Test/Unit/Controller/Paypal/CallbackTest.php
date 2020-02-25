@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Paypal;
 
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
@@ -52,6 +53,9 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
     /** @var \Ebizmarts\SagePaySuite\Helper\Data|\PHPUnit_Framework_MockObject_MockObject */
     private $suiteHelperMock;
     private $encryptorMock;
+
+    /** @var RecoverCart */
+    private $recoverCartMock;
 
     // @codingStandardsIgnoreStart
     protected function setUp()
@@ -216,6 +220,11 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $this->recoverCartMock = $this
+            ->getMockBuilder(RecoverCart::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $objectManagerHelper            = new ObjectManagerHelper($this);
         $this->paypalCallbackController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Paypal\Callback',
@@ -230,7 +239,8 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
                 'orderFactory'       => $this->orderFactoryMock,
                 "actionFactory"      => $closedForActionFactoryMock,
                 "suiteHelper"        => $this->suiteHelperMock,
-                "encryptor"          => $this->encryptorMock
+                "encryptor"          => $this->encryptorMock,
+                "recoverCart"        => $this->recoverCartMock
             ]
         );
     }
@@ -288,6 +298,15 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
                 "StatusDetail" => "INVALID STATUS"
             ]));
 
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('execute');
+
         $this->_expectRedirect("checkout/cart");
         $this->paypalCallbackController->execute();
     }
@@ -300,6 +319,15 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('getPost')
             ->willReturn($response);
+
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('execute');
 
         $this->_expectRedirect("checkout/cart");
         $this->paypalCallbackController->execute();
@@ -319,6 +347,15 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
             ]));
 
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('execute');
+
         $this->_expectRedirect("checkout/cart");
         $this->paypalCallbackController->execute();
     }
@@ -337,6 +374,15 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
                 "StatusDetail" => "OK STATUS",
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
             ]));
+
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('execute');
 
         $this->_expectRedirect("checkout/cart");
         $this->paypalCallbackController->execute();
@@ -358,6 +404,15 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
                 "StatusDetail" => "OK STATUS",
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
             ]));
+
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('execute');
 
         $this->_expectRedirect("checkout/cart");
         $this->paypalCallbackController->execute();
