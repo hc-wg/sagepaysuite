@@ -162,10 +162,10 @@ class RecoverCart
     }
 
     /**
-     * @param bool $shouldCancelOrder
+     * @param $shouldCancelOrder
      * @return $this
      */
-    public function setShouldCancelOrder(bool $shouldCancelOrder)
+    public function setShouldCancelOrder($shouldCancelOrder)
     {
         $this->_shouldCancelOrder = $shouldCancelOrder;
         return $this;
