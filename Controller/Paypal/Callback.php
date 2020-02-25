@@ -21,6 +21,7 @@ use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 
 class Callback extends Action
 {
@@ -73,6 +74,9 @@ class Callback extends Action
      */
     private $encryptor;
 
+    /** @var RecoverCart */
+    private $recoverCart;
+
     /**
      * Callback constructor.
      * @param Context $context
@@ -86,6 +90,7 @@ class Callback extends Action
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
      * @param EncryptorInterface $encryptor
+     * @param RecoverCart $recoverCart
      */
     public function __construct(
         Context $context,
@@ -98,7 +103,8 @@ class Callback extends Action
         QuoteFactory $quoteFactory,
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
-        EncryptorInterface $encryptor
+        EncryptorInterface $encryptor,
+        RecoverCart $recoverCart
     ) {
     
         parent::__construct($context);
@@ -112,6 +118,7 @@ class Callback extends Action
         $this->updateOrderCallback = $updateOrderCallback;
         $this->suiteHelper         = $suiteHelper;
         $this->encryptor           = $encryptor;
+        $this->recoverCart         = $recoverCart;
 
         $this->config->setMethodCode(Config::METHOD_PAYPAL);
     }
@@ -161,6 +168,7 @@ class Callback extends Action
 
             return;
         } catch (\Exception $e) {
+            $this->recoverCart->setShouldCancelOrder(true)->execute();
             $this->suiteLogger->logException($e);
             $this->redirectToCartAndShowError('We can\'t place the order: ' . $e->getMessage());
         }
@@ -256,6 +264,8 @@ class Callback extends Action
      */
     private function updatePaymentInformation($transactionId, $payment, $completionResponse)
     {
+        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag TransactionId: " . $transactionId, [__METHOD__, __LINE__]);
+        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag getLastTransId: " . $payment->getLastTransId(), [__METHOD__, __LINE__]);
         if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) {
             $payment->setAdditionalInformation('statusDetail', $completionResponse['StatusDetail']);
             $payment->setAdditionalInformation('threeDStatus', $completionResponse['3DSecureStatus']);

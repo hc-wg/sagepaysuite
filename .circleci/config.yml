@@ -60,6 +60,7 @@ jobs:
         - attach_workspace:
             at: ~/magento2
         - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
+        - run: sudo apt-get update
         - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
         - run: cd ~/magento2/dev/tests/integration && ./../../../vendor/bin/phpunit -c ../api-functional/phpunit.xml
@@ -103,6 +104,7 @@ jobs:
         - attach_workspace:
             at: ~/magento2
         - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
+        - run: sudo apt-get update
         - sagepay/install-mariadb-and-setup-webserver
         - sagepay/magento-compile-and-setup-upgrade
         - run: cd ~/magento2/dev/tests/integration && ./../../../vendor/bin/phpunit -c ../api-functional/phpunit.xml

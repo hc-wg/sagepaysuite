@@ -14,6 +14,7 @@ use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 
 class Callback3Dv2 extends Action
 {
@@ -38,6 +39,9 @@ class Callback3Dv2 extends Action
     /** @var CryptAndCodeData */
     private $cryptAndCode;
 
+    /** @var RecoverCart */
+    private $recoverCart;
+
     /**
      * Callback3Dv2 constructor.
      * @param Context $context
@@ -48,6 +52,7 @@ class Callback3Dv2 extends Action
      * @param Session $checkoutSession
      * @param OrderRepositoryInterface $orderRepository
      * @param CryptAndCodeData $cryptAndCode
+     * @param RecoverCart $recoverCart
      */
     public function __construct(
         Context $context,
@@ -57,7 +62,8 @@ class Callback3Dv2 extends Action
         PiRequestManagerFactory $piReqManagerFactory,
         Session $checkoutSession,
         OrderRepositoryInterface $orderRepository,
-        CryptAndCodeData $cryptAndCode
+        CryptAndCodeData $cryptAndCode,
+        RecoverCart $recoverCart
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -68,6 +74,7 @@ class Callback3Dv2 extends Action
         $this->requester                   = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
         $this->cryptAndCode                = $cryptAndCode;
+        $this->recoverCart                 = $recoverCart;
     }
 
     public function execute()
@@ -99,10 +106,12 @@ class Callback3Dv2 extends Action
                 $this->javascriptRedirect('checkout/cart');
             }
         } catch (ApiException $apiException) {
+            $this->recoverCart->setShouldCancelOrder(true)->execute();
             $this->logger->critical($apiException);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
+            $this->recoverCart->setShouldCancelOrder(true)->execute();
             $this->logger->critical($e);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
