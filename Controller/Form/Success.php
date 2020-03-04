@@ -6,21 +6,25 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Form;
 
-use Ebizmarts\SagePaySuite\Helper\Checkout;
 use Ebizmarts\SagePaySuite\Model\Form;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\Api\FilterBuilder;
+use Magento\Framework\Api\Search\FilterGroupBuilder;
+use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Quote\Model\QuoteFactory;
+use Magento\Quote\Model\QuoteRepository;
+use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
-use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Sales\Model\OrderRepository;
 
-class Success extends \Magento\Framework\App\Action\Action
+class Success extends Action
 {
     /**
      * @var \Magento\Quote\Model\Quote
@@ -44,14 +48,14 @@ class Success extends \Magento\Framework\App\Action\Action
     private $_formModel;
 
     /**
-     * @var QuoteFactory
+     * @var OrderRepository
      */
-    private $_quoteFactory;
+    private $_orderRepository;
 
     /**
-     * @var OrderFactory
+     * @var QuoteRepository
      */
-    private $_orderFactory;
+    private $_quoteRepository;
 
     /**
      * @var \Magento\Sales\Model\Order
@@ -75,42 +79,66 @@ class Success extends \Magento\Framework\App\Action\Action
     private $encryptor;
 
     /**
+     * @var FilterBuilder
+     */
+    private $_filterBuilder;
+
+    /**
+     * @var FilterGroupBuilder
+     */
+    private $_filterGroupBuilder;
+
+    /**
+     * @var SearchCriteriaBuilder
+     */
+    private $_searchCriteriaBuilder;
+
+    /**
      * Success constructor.
      * @param Context $context
      * @param Session $checkoutSession
      * @param Logger $suiteLogger
-     * @param Checkout $checkoutHelper
      * @param Form $formModel
-     * @param QuoteFactory $quoteFactory
-     * @param OrderFactory $orderFactory
      * @param OrderSender $orderSender
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
+     * @param EncryptorInterface $encryptor
+     * @param FilterBuilder $filterBuilder
+     * @param FilterGroupBuilder $filterGroupBuilder
+     * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param QuoteRepository $quoteRepository
+     * @param OrderRepository $orderRepository
      */
     public function __construct(
         Context $context,
         Session $checkoutSession,
         Logger $suiteLogger,
-        Checkout $checkoutHelper,
         Form $formModel,
-        QuoteFactory $quoteFactory,
-        OrderFactory $orderFactory,
         OrderSender $orderSender,
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
-        EncryptorInterface $encryptor
-    ) {
-    
+        EncryptorInterface $encryptor,
+        FilterBuilder $filterBuilder,
+        FilterGroupBuilder $filterGroupBuilder,
+        SearchCriteriaBuilder $searchCriteriaBuilder,
+        QuoteRepository $quoteRepository,
+        OrderRepository $orderRepository
+    )
+    {
+
         parent::__construct($context);
-        $this->_checkoutSession    = $checkoutSession;
-        $this->_quoteFactory       = $quoteFactory;
-        $this->_suiteLogger        = $suiteLogger;
-        $this->_formModel          = $formModel;
-        $this->_orderFactory       = $orderFactory;
-        $this->orderSender         = $orderSender;
+        $this->_checkoutSession = $checkoutSession;
+        $this->_suiteLogger = $suiteLogger;
+        $this->_formModel = $formModel;
+        $this->orderSender = $orderSender;
         $this->updateOrderCallback = $updateOrderCallback;
-        $this->suiteHelper         = $suiteHelper;
-        $this->encryptor           = $encryptor;
+        $this->suiteHelper = $suiteHelper;
+        $this->encryptor = $encryptor;
+        $this->_quoteRepository = $quoteRepository;
+        $this->_orderRepository = $orderRepository;
+        $this->_filterBuilder = $filterBuilder;
+        $this->_filterGroupBuilder = $filterGroupBuilder;
+        $this->_searchCriteriaBuilder = $searchCriteriaBuilder;
     }
 
     /**
@@ -121,26 +149,50 @@ class Success extends \Magento\Framework\App\Action\Action
     {
         try {
             $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
+
             if (!array_key_exists("VPSTxId", $response)) {
                 throw new LocalizedException(__('Invalid response from Sage Pay.'));
             }
 
             $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
+            $quoteIDFromParams = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
+            $this->_quote = $this->_quoteRepository->get((int)$quoteIDFromParams);
+            $reservedOrderId = $this->_quote->getReservedOrderId();
+            $incrementIdFilter = $this->_filterBuilder
+                ->setField('increment_id')
+                ->setConditionType('eq')
+                ->setValue($reservedOrderId)
+                ->create();
 
-            $this->_quote = $this->_quoteFactory->create()->load(
-                $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"))
-            );
+            $filterGroup = $this->_filterGroupBuilder
+                ->setFilters(array($incrementIdFilter))
+                ->create();
 
-            $this->_order = $this->_orderFactory->create()->loadByIncrementId($this->_quote->getReservedOrderId());
+            $searchCriteria = $this->_searchCriteriaBuilder
+                ->setFilterGroups(array($filterGroup))
+                ->setPageSize(1)
+                ->setCurrentPage(1)
+                ->create();
+
+            /**
+             * @var Order
+             */
+            $this->_order = null;
+            $orders = $this->_orderRepository->getList($searchCriteria);
+            $ordersCount = $orders->getTotalCount();
+            $orders = $orders->getItems();
+
+            if ($ordersCount > 0) {
+                $this->_order = current($orders);
+            }
+
             if ($this->_order === null || $this->_order->getId() === null) {
                 throw new LocalizedException(__('Order not available.'));
             }
 
             $transactionId = $response["VPSTxId"];
             $transactionId = $this->suiteHelper->removeCurlyBraces($transactionId); //strip brackets
-
             $payment = $this->_order->getPayment();
-
             $vendorTxCode = $payment->getAdditionalInformation("vendorTxCode");
 
             if (!empty($transactionId) && ($vendorTxCode == $response['VendorTxCode'])) {
@@ -153,6 +205,7 @@ class Success extends \Magento\Framework\App\Action\Action
                 $payment->setAdditionalInformation('statusDetail', $response['StatusDetail']);
                 $payment->setCcType($response['CardType']);
                 $payment->setCcLast4($response['Last4Digits']);
+
                 if (array_key_exists("ExpiryDate", $response)) {
                     $payment->setCcExpMonth(substr($response["ExpiryDate"], 0, 2));
                     $payment->setCcExpYear(substr($response["ExpiryDate"], 2));
@@ -166,7 +219,7 @@ class Success extends \Magento\Framework\App\Action\Action
             }
 
             $redirect = 'sagepaysuite/form/failure';
-            $status   = $response['Status'];
+            $status = $response['Status'];
             if ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
                 $this->updateOrderCallback->setOrder($this->_order);
                 try {
@@ -193,7 +246,6 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->_checkoutSession->setLastOrderId($this->_order->getId());
             $this->_checkoutSession->setLastRealOrderId($this->_order->getIncrementId());
             $this->_checkoutSession->setLastOrderStatus($this->_order->getStatus());
-
             $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
 
             return $this->_redirect($redirect);
