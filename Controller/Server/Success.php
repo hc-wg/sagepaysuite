@@ -7,8 +7,19 @@
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Checkout\Model\Session;
+use Magento\Framework\Api\FilterBuilder;
+use Magento\Framework\Api\Search\FilterGroupBuilder;
+use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Quote\Model\QuoteRepository;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\OrderRepository;
+use Psr\Log\LoggerInterface;
 
-class Success extends \Magento\Framework\App\Action\Action
+class Success extends Action
 {
 
     /**
@@ -28,14 +39,14 @@ class Success extends \Magento\Framework\App\Action\Action
     private $_checkoutSession;
 
     /**
-     * @var \Magento\Sales\Model\OrderFactory
+     * @var OrderRepository
      */
-    private $_orderFactory;
+    private $_orderRepository;
 
     /**
-     * @var \Magento\Quote\Model\QuoteFactory
+     * @var QuoteRepository
      */
-    private $_quoteFactory;
+    private $_quoteRepository;
 
     /**
      * @var \Magento\Framework\Encryption\EncryptorInterface
@@ -43,31 +54,57 @@ class Success extends \Magento\Framework\App\Action\Action
     private $encryptor;
 
     /**
-     * @param \Magento\Framework\App\Action\Context $context
+     * @var FilterBuilder
+     */
+    private $_filterBuilder;
+
+    /**
+     * @var FilterGroupBuilder
+     */
+    private $_filterGroupBuilder;
+
+    /**
+     * @var SearchCriteriaBuilder
+     */
+    private $_searchCriteriaBuilder;
+
+    /**
+     * Success constructor.
+     * @param Context $context
      * @param Logger $suiteLogger
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Checkout\Model\Session $checkoutSession
-     * @param \Magento\Sales\Model\OrderFactory $orderFactory
-     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
+     * @param LoggerInterface $logger
+     * @param Session $checkoutSession
+     * @param OrderRepository $orderRepository
+     * @param QuoteRepository $quoteRepository
+     * @param EncryptorInterface $encryptor
+     * @param FilterBuilder $filterBuilder
+     * @param FilterGroupBuilder $filterGroupBuilder
+     * @param SearchCriteriaBuilder $searchCriteriaBuilder
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
+        Context $context,
         Logger $suiteLogger,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory,
-        \Magento\Framework\Encryption\EncryptorInterface $encryptor
+        LoggerInterface $logger,
+        Session $checkoutSession,
+        OrderRepository $orderRepository,
+        QuoteRepository $quoteRepository,
+        EncryptorInterface $encryptor,
+        FilterBuilder $filterBuilder,
+        FilterGroupBuilder $filterGroupBuilder,
+        SearchCriteriaBuilder $searchCriteriaBuilder
     ) {
-    
+
         parent::__construct($context);
 
         $this->_suiteLogger     = $suiteLogger;
         $this->_logger          = $logger;
         $this->_checkoutSession = $checkoutSession;
-        $this->_orderFactory    = $orderFactory;
-        $this->_quoteFactory    = $quoteFactory;
+        $this->_orderRepository    = $orderRepository;
+        $this->_quoteRepository    = $quoteRepository;
         $this->encryptor        = $encryptor;
+        $this->_filterBuilder        = $filterBuilder;
+        $this->_filterGroupBuilder        = $filterGroupBuilder;
+        $this->_searchCriteriaBuilder        = $searchCriteriaBuilder;
     }
 
     public function execute()
@@ -75,18 +112,41 @@ class Success extends \Magento\Framework\App\Action\Action
         try {
             $storeId = $this->getRequest()->getParam("_store");
             $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
+            $quote = $this->_quoteRepository->get($quoteId, array($storeId));
 
-            $quote = $this->_quoteFactory->create();
-            $quote->setStoreId($storeId);
-            $quote->load($quoteId);
+            $incrementIdFilter = $this->_filterBuilder
+                ->setField('increment_id')
+                ->setConditionType('eq')
+                ->setValue($quote->getReservedOrderId())
+                ->create();
 
-            $order = $this->_orderFactory->create()->loadByIncrementId($quote->getReservedOrderId());
+            $filterGroup = $this->_filterGroupBuilder
+                ->setFilters(array($incrementIdFilter))
+                ->create();
+
+            $searchCriteria = $this->_searchCriteriaBuilder
+                ->setFilterGroups(array($filterGroup))
+                ->setPageSize(1)
+                ->setCurrentPage(1)
+                ->create();
+
+            /**
+             * @var Order
+             */
+            $order = null;
+            $orders = $this->_orderRepository->getList($searchCriteria);
+            $ordersCount = $orders->getTotalCount();
+            $orders = $orders->getItems();
+
+            if ($ordersCount > 0) {
+                $order = current($orders);
+            }
 
             //prepare session to success page
             $this->_checkoutSession->clearHelperData();
             $this->_checkoutSession->setLastQuoteId($quote->getId());
             $this->_checkoutSession->setLastSuccessQuoteId($quote->getId());
-            $this->_checkoutSession->setLastOrderId($order->getId());
+            $this->_checkoutSession->setLastOrderId($order->getEntityId());
             $this->_checkoutSession->setLastRealOrderId($order->getIncrementId());
             $this->_checkoutSession->setLastOrderStatus($order->getStatus());
 
