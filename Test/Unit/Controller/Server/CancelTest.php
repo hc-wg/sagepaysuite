@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Server;
 
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Magento\Framework\Message\ManagerInterface;
 use Ebizmarts\SagePaySuite\Controller\Server\Cancel;
 use Ebizmarts\SagePaySuite\Model\Config;
