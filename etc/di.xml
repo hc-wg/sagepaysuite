@@ -33,6 +33,12 @@
         </arguments>
     </type>
 
+    <!-- plugin to check if exist incrementId looking by incrementId and storeId -->
+    <type name="\Magento\Sales\Model\OrderIncrementIdChecker">
+        <plugin name="SagePaySuite_OrderIncrementIdChecker" type="\Ebizmarts\SagePaySuite\Plugin\OrderIncrementIdChecker"/>
+    </type>
+    <!-- plugin to check if exist incrementId looking by incrementId and storeId -->
+
     <preference for="Ebizmarts\SagePaySuite\Api\ServerManagementInterface" type="Ebizmarts\SagePaySuite\Model\ServerRequestManagement" />
     <preference for="Ebizmarts\SagePaySuite\Api\GuestServerManagementInterface" type="Ebizmarts\SagePaySuite\Model\GuestServerRequestManagement" />
 
