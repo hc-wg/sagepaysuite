@@ -18,7 +18,6 @@ use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
-use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
 
 class Success extends \Magento\Framework\App\Action\Action
@@ -48,11 +47,6 @@ class Success extends \Magento\Framework\App\Action\Action
      * @var QuoteFactory
      */
     private $_quoteFactory;
-
-    /**
-     * @var OrderFactory
-     */
-    private $_orderFactory;
 
     /**
      * @var \Magento\Sales\Model\Order
@@ -86,7 +80,6 @@ class Success extends \Magento\Framework\App\Action\Action
      * @param Checkout $checkoutHelper
      * @param Form $formModel
      * @param QuoteFactory $quoteFactory
-     * @param OrderFactory $orderFactory
      * @param OrderSender $orderSender
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
@@ -100,7 +93,6 @@ class Success extends \Magento\Framework\App\Action\Action
         Checkout $checkoutHelper,
         Form $formModel,
         QuoteFactory $quoteFactory,
-        OrderFactory $orderFactory,
         OrderSender $orderSender,
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
@@ -113,7 +105,6 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_quoteFactory       = $quoteFactory;
         $this->_suiteLogger        = $suiteLogger;
         $this->_formModel          = $formModel;
-        $this->_orderFactory       = $orderFactory;
         $this->orderSender         = $orderSender;
         $this->updateOrderCallback = $updateOrderCallback;
         $this->suiteHelper         = $suiteHelper;

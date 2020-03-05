@@ -13,7 +13,6 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteIdMaskFactory;
-use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Ebizmarts\SagePaySuite\Model\OrderLoader;
@@ -48,11 +47,6 @@ class Cancel extends Action
     private $quoteIdMaskFactory;
 
     /**
-     * @var OrderFactory
-     */
-    private $orderFactory;
-
-    /**
      * @var EncryptorInterface
      */
     private $encryptor;
@@ -72,7 +66,6 @@ class Cancel extends Action
      * @param Session $checkoutSession
      * @param Quote $quote
      * @param QuoteIdMaskFactory $quoteIdMaskFactory
-     * @param OrderFactory $orderFactory
      * @param EncryptorInterface $encryptor
      * @param RecoverCart $recoverCart
      */
@@ -84,7 +77,6 @@ class Cancel extends Action
         Session $checkoutSession,
         Quote $quote,
         QuoteIdMaskFactory $quoteIdMaskFactory,
-        OrderFactory $orderFactory,
         EncryptorInterface $encryptor,
         RecoverCart $recoverCart,
         OrderLoader $orderLoader
@@ -97,7 +89,6 @@ class Cancel extends Action
         $this->checkoutSession    = $checkoutSession;
         $this->quote              = $quote;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
-        $this->orderFactory       = $orderFactory;
         $this->encryptor          = $encryptor;
         $this->recoverCart        = $recoverCart;
         $this->orderLoader        = $orderLoader;

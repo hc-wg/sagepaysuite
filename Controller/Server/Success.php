@@ -12,7 +12,6 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Quote\Model\QuoteFactory;
-use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
 
 class Success extends \Magento\Framework\App\Action\Action
@@ -35,11 +34,6 @@ class Success extends \Magento\Framework\App\Action\Action
     private $_checkoutSession;
 
     /**
-     * @var OrderFactory
-     */
-    private $_orderFactory;
-
-    /**
      * @var QuoteFactory
      */
     private $_quoteFactory;
@@ -60,7 +54,6 @@ class Success extends \Magento\Framework\App\Action\Action
      * @param Logger $suiteLogger
      * @param LoggerInterface $logger
      * @param Session $checkoutSession
-     * @param OrderFactory $orderFactory
      * @param QuoteFactory $quoteFactory
      * @param EncryptorInterface $encryptor
      * @param OrderLoader $orderLoader
@@ -70,7 +63,6 @@ class Success extends \Magento\Framework\App\Action\Action
         Logger $suiteLogger,
         LoggerInterface $logger,
         Session $checkoutSession,
-        OrderFactory $orderFactory,
         QuoteFactory $quoteFactory,
         EncryptorInterface $encryptor,
         OrderLoader $orderLoader
@@ -81,7 +73,6 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_suiteLogger     = $suiteLogger;
         $this->_logger          = $logger;
         $this->_checkoutSession = $checkoutSession;
-        $this->_orderFactory    = $orderFactory;
         $this->_quoteFactory    = $quoteFactory;
         $this->encryptor        = $encryptor;
         $this->orderLoader      = $orderLoader;

@@ -22,7 +22,6 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteFactory;
-use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Ebizmarts\SagePaySuite\Model\OrderLoader;
@@ -52,9 +51,6 @@ class Callback extends Action implements CsrfAwareActionInterface
     private $suiteLogger;
 
     private $postData;
-
-    /** @var OrderFactory */
-    private $orderFactory;
 
     /** @var Post */
     private $postApi;
@@ -92,7 +88,6 @@ class Callback extends Action implements CsrfAwareActionInterface
      * @param Logger $suiteLogger
      * @param Post $postApi
      * @param Quote $quote
-     * @param OrderFactory $orderFactory
      * @param QuoteFactory $quoteFactory
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
@@ -107,7 +102,6 @@ class Callback extends Action implements CsrfAwareActionInterface
         Logger $suiteLogger,
         Post $postApi,
         Quote $quote,
-        OrderFactory $orderFactory,
         QuoteFactory $quoteFactory,
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
@@ -122,7 +116,6 @@ class Callback extends Action implements CsrfAwareActionInterface
         $this->suiteLogger         = $suiteLogger;
         $this->postApi             = $postApi;
         $this->quote               = $quote;
-        $this->orderFactory        = $orderFactory;
         $this->quoteFactory        = $quoteFactory;
         $this->updateOrderCallback = $updateOrderCallback;
         $this->suiteHelper         = $suiteHelper;
