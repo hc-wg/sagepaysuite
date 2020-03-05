@@ -79,7 +79,6 @@ class Failure extends Action
      * @param Session $checkoutSession
      * @param EncryptorInterface $encryptor
      * @param RecoverCart $recoverCart
-     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
