@@ -45,6 +45,12 @@ class OrderIncrementIdChecker
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
     }
 
+    /**
+     * @param $subject
+     * @param bool $result
+     * @param $orderIncrementId
+     * @return bool
+     */
     public function afterIsIncrementIdUsed($subject, $result, $orderIncrementId)
     {
         if ($result) {
@@ -57,6 +63,10 @@ class OrderIncrementIdChecker
         return $result;
     }
 
+    /**
+     * @param $orderIncrementId
+     * @return \Magento\Framework\Api\Search\SearchCriteria
+     */
     private function createSearchCriteria($orderIncrementId)
     {
         $this->createFiltersAndAddToSearchCriteriaBuilder($orderIncrementId);
@@ -65,6 +75,9 @@ class OrderIncrementIdChecker
         return $searchCriteria;
     }
 
+    /**
+     * @param $orderIncrementId
+     */
     private function createFiltersAndAddToSearchCriteriaBuilder($orderIncrementId)
     {
         $filter1 = $this->filterBuilder
@@ -82,6 +95,10 @@ class OrderIncrementIdChecker
         $this->searchCriteriaBuilder->addFilter($filter2);
     }
 
+    /**
+     * @return int
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
     private function getStoreId()
     {
         return $this->storeManager->getStore()->getId();
