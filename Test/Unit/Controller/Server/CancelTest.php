@@ -23,9 +23,9 @@ use Magento\Checkout\Model\Cart;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Ebizmarts\SagePaySuite\Model\OrderLoader;
 
 use Magento\Framework\Encryption\EncryptorInterface;
 
@@ -58,9 +58,6 @@ class CancelTest extends \PHPUnit\Framework\TestCase
     /** @var Order|\PHPUnit_Framework_MockObject_MockObject */
     private $order;
 
-    /** @var OrderFactory|\PHPUnit_Framework_MockObject_MockObject */
-    private $orderFactory;
-
     /** @var Quote|\PHPUnit_Framework_MockObject_MockObject */
     private $quote;
 
@@ -88,6 +85,9 @@ class CancelTest extends \PHPUnit\Framework\TestCase
     /** @var RecoverCart */
     private $recoverCartMock;
 
+    /** @var OrderLoader */
+    private $orderLoaderMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -105,11 +105,7 @@ class CancelTest extends \PHPUnit\Framework\TestCase
         $this->suiteLogger = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $this->urlBuilder = $this->getMockBuilder(UrlInterface::class)->disableOriginalConstructor()->getMock();
         $this->encryptorMock = $this->getMockBuilder(EncryptorInterface::class)->disableOriginalConstructor()->getMock();
-
-        $this->orderFactory = $this->getMockBuilder(OrderFactory::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['create'])
-            ->getMock();
+        $this->orderLoaderMock = $this->getMockBuilder(OrderLoader::class) ->disableOriginalConstructor()->getMock();
 
         $this->quoteIdMaskFactory = $this->getMockBuilder(QuoteIdMaskFactory::class)
             ->disableOriginalConstructor()
@@ -135,9 +131,9 @@ class CancelTest extends \PHPUnit\Framework\TestCase
             $this->checkoutSession,
             $this->quote,
             $this->quoteIdMaskFactory,
-            $this->orderFactory,
             $this->encryptorMock,
-            $this->recoverCartMock
+            $this->recoverCartMock,
+            $this->orderLoaderMock
         );
     }
     // @codingStandardsIgnoreEnd
@@ -153,11 +149,12 @@ class CancelTest extends \PHPUnit\Framework\TestCase
 
         $this->quote->expects($this->once())->method("getId")->willReturn(self::QUOTE_ID);
         $this->quote->expects($this->once())->method("load")->willReturnSelf();
-        $this->quote->expects($this->once())->method("getReservedOrderId")->willReturn(self::RESERVED_ORDER_ID);
 
-        $this->orderFactory->expects($this->once())->method("create")->willReturn($this->order);
-        $this->order->expects($this->once())->method("loadByIncrementId")->with(self::RESERVED_ORDER_ID)->willReturnSelf();
-        $this->order->expects($this->once())->method("getId")->willReturn(self::RESERVED_ORDER_ID);
+        $this->orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($this->quote)
+            ->willReturn($this->order);
 
         $this->recoverCartMock
             ->expects($this->once())
