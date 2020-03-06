@@ -6,7 +6,6 @@ use Ebizmarts\SagePaySuite\Model\OrderLoader;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use PHPUnit\Framework\TestCase;
 
@@ -64,7 +63,7 @@ class OrderLoaderTest extends TestCase
             ->method('loadByIncrementIdAndStoreId')
             ->with(self::RESERVER_ORDER_ID, self::STORE_ID)
             ->willReturnSelf();
-        
+
         $this->objectManagerHelper = new ObjectManagerHelper($this);
         $this->sut = $this->objectManagerHelper->getObject(
             OrderLoader::class,
@@ -85,7 +84,7 @@ class OrderLoaderTest extends TestCase
     }
 
     /**
-     * @expectedException LocalizedException
+     * @expectedException \Magento\Framework\Exception\LocalizedException
      */
     public function testLoadOrderFromQuoteException()
     {
