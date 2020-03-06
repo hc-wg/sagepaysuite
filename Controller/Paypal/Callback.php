@@ -6,8 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Paypal;
 
-use Ebizmarts\SagePaySuite\Helper\Checkout;
 use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
+use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Api\Post;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
@@ -19,9 +19,11 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteFactory;
+use Magento\Quote\Model\QuoteRepository;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Magento\Sales\Model\OrderRepository;
 
 class Callback extends Action
 {
@@ -49,19 +51,19 @@ class Callback extends Action
 
     private $postData;
 
-    /** @var OrderFactory */
-    private $orderFactory;
+    /**
+     * @var QuoteRepository
+     */
+    private $quoteRepository;
+
+    /** @var OrderRepository */
+    private $orderRepository;
 
     /** @var Post */
     private $postApi;
 
     /** @var \Magento\Sales\Model\Order */
     private $order;
-
-    /**
-     * @var QuoteFactory
-     */
-    private $quoteFactory;
 
     /** @var OrderUpdateOnCallback */
     private $updateOrderCallback;
@@ -78,6 +80,11 @@ class Callback extends Action
     private $recoverCart;
 
     /**
+     * @var RepositoryQuery
+     */
+    private $_repositoryQuery;
+
+    /**
      * Callback constructor.
      * @param Context $context
      * @param Session $checkoutSession
@@ -91,6 +98,7 @@ class Callback extends Action
      * @param SuiteHelper $suiteHelper
      * @param EncryptorInterface $encryptor
      * @param RecoverCart $recoverCart
+     * @param RepositoryQuery $repositoryQuery
      */
     public function __construct(
         Context $context,
@@ -104,28 +112,29 @@ class Callback extends Action
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
         EncryptorInterface $encryptor,
-        RecoverCart $recoverCart
+        RecoverCart $recoverCart,
+        RepositoryQuery $repositoryQuery
     ) {
     
         parent::__construct($context);
-        $this->config              = $config;
-        $this->checkoutSession     = $checkoutSession;
-        $this->suiteLogger         = $suiteLogger;
-        $this->postApi             = $postApi;
-        $this->quote               = $quote;
-        $this->orderFactory        = $orderFactory;
-        $this->quoteFactory        = $quoteFactory;
-        $this->updateOrderCallback = $updateOrderCallback;
-        $this->suiteHelper         = $suiteHelper;
-        $this->encryptor           = $encryptor;
-        $this->recoverCart         = $recoverCart;
+        $this->config               = $config;
+        $this->checkoutSession      = $checkoutSession;
+        $this->suiteLogger          = $suiteLogger;
+        $this->postApi              = $postApi;
+        $this->quote                = $quote;
+        $this->orderRepository      = $orderFactory;
+        $this->quoteRepository      = $quoteFactory;
+        $this->updateOrderCallback  = $updateOrderCallback;
+        $this->suiteHelper          = $suiteHelper;
+        $this->encryptor            = $encryptor;
+        $this->recoverCart          = $recoverCart;
+        $this->_repositoryQuery     = $repositoryQuery;
 
         $this->config->setMethodCode(Config::METHOD_PAYPAL);
     }
 
     /**
-     * Paypal callback
-     * @throws LocalizedException
+     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|void
      * @throws LocalizedException
      */
     public function execute()
@@ -196,6 +205,7 @@ class Callback extends Action
     {
         $quoteAmount = $this->config->getQuoteAmount($this->quote);
         $amount = number_format($quoteAmount, 2, '.', '');
+
         return $amount;
     }
 
@@ -233,9 +243,8 @@ class Callback extends Action
 
     private function loadQuoteFromDataSource()
     {
-        $this->quote = $this->quoteFactory->create()->load(
-            $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"))
-        );
+        $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
+        $this->quote = $this->quoteRepository->get($quoteId);
 
         if (empty($this->quote->getId())) {
             throw new LocalizedException(__("Unable to find payment data."));
@@ -248,7 +257,17 @@ class Callback extends Action
      */
     private function loadOrderFromDataSource()
     {
-        $order = $this->order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
+        $incrementId = $this->quote->getReservedOrderId();
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $incrementId,
+            'conditionType' => 'eq'
+        );
+
+        $searchCriteria = $this->_repositoryQuery->buildSearchCriteriaWithOR(array($filter), 1, 1);
+        $order = $this->order = current($this->orderRepository->getList($searchCriteria));
+
         if ($order === null || $order->getId() === null) {
             throw new LocalizedException(__("Invalid order."));
         }
@@ -264,8 +283,12 @@ class Callback extends Action
      */
     private function updatePaymentInformation($transactionId, $payment, $completionResponse)
     {
-        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag TransactionId: " . $transactionId, [__METHOD__, __LINE__]);
-        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag getLastTransId: " . $payment->getLastTransId(), [__METHOD__, __LINE__]);
+        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag TransactionId: "
+            . $transactionId, [__METHOD__, __LINE__]);
+
+        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag getLastTransId: "
+            . $payment->getLastTransId(), [__METHOD__, __LINE__]);
+
         if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) {
             $payment->setAdditionalInformation('statusDetail', $completionResponse['StatusDetail']);
             $payment->setAdditionalInformation('threeDStatus', $completionResponse['3DSecureStatus']);
