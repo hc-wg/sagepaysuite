@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
+use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Api\FilterBuilder;
@@ -69,6 +70,11 @@ class Success extends Action
     private $_searchCriteriaBuilder;
 
     /**
+     * @var RepositoryQuery
+     */
+    private $_repositoryQuery;
+
+    /**
      * Success constructor.
      * @param Context $context
      * @param Logger $suiteLogger
@@ -91,7 +97,8 @@ class Success extends Action
         EncryptorInterface $encryptor,
         FilterBuilder $filterBuilder,
         FilterGroupBuilder $filterGroupBuilder,
-        SearchCriteriaBuilder $searchCriteriaBuilder
+        SearchCriteriaBuilder $searchCriteriaBuilder,
+        RepositoryQuery $repositoryQuery
     ) {
 
         parent::__construct($context);
@@ -105,6 +112,7 @@ class Success extends Action
         $this->_filterBuilder        = $filterBuilder;
         $this->_filterGroupBuilder        = $filterGroupBuilder;
         $this->_searchCriteriaBuilder        = $searchCriteriaBuilder;
+        $this->_repositoryQuery        = $repositoryQuery;
     }
 
     public function execute()
@@ -114,21 +122,13 @@ class Success extends Action
             $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
             $quote = $this->_quoteRepository->get($quoteId, array($storeId));
 
-            $incrementIdFilter = $this->_filterBuilder
-                ->setField('increment_id')
-                ->setConditionType('eq')
-                ->setValue($quote->getReservedOrderId())
-                ->create();
+            $incrementIdFilter = array(
+                'field' => 'increment_id',
+                'conditionType' => 'eq',
+                'value' => $quote->getReservedOrderId()
+            );
 
-            $filterGroup = $this->_filterGroupBuilder
-                ->setFilters(array($incrementIdFilter))
-                ->create();
-
-            $searchCriteria = $this->_searchCriteriaBuilder
-                ->setFilterGroups(array($filterGroup))
-                ->setPageSize(1)
-                ->setCurrentPage(1)
-                ->create();
+            $searchCriteria = $this->_repositoryQuery->buildSearchCriteriaWithOR(array($incrementIdFilter));
 
             /**
              * @var Order
@@ -166,3 +166,4 @@ class Success extends Action
         );
     }
 }
+
