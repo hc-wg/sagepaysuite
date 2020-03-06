@@ -3,12 +3,10 @@
 namespace Ebizmarts\SagePaySuite\Plugin;
 
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Framework\Api\SearchCriteriaInterface;
-use Magento\Framework\Api\Filter;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Framework\Api\Search\FilterGroup;
 use Magento\Framework\Api\FilterBuilder;
 use Magento\Framework\Api\Search\SearchCriteriaBuilder;
+use Magento\Sales\Model\OrderIncrementIdChecker as MagentoOrderIncrementIdChecker;
 
 class OrderIncrementIdChecker
 {
@@ -46,12 +44,12 @@ class OrderIncrementIdChecker
     }
 
     /**
-     * @param $subject
+     * @param MagentoOrderIncrementIdChecker $subject
      * @param bool $result
-     * @param $orderIncrementId
+     * @param string $orderIncrementId
      * @return bool
      */
-    public function afterIsIncrementIdUsed($subject, $result, $orderIncrementId)
+    public function afterIsIncrementIdUsed(MagentoOrderIncrementIdChecker $subject, $result, $orderIncrementId)
     {
         if ($result) {
             $searchCriteria = $this->createSearchCriteria($orderIncrementId);
