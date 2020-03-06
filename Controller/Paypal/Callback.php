@@ -15,16 +15,20 @@ use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\QuoteFactory;
 use Magento\Quote\Model\QuoteRepository;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Sales\Model\OrderRepository;
 
-class Callback extends Action
+class Callback extends Action implements CsrfAwareActionInterface
 {
 
     /**
@@ -91,8 +95,8 @@ class Callback extends Action
      * @param Logger $suiteLogger
      * @param Post $postApi
      * @param Quote $quote
-     * @param OrderRepository $orderRepository
-     * @param QuoteRepository $quoteRepository
+     * @param OrderFactory $orderFactory
+     * @param QuoteFactory $quoteFactory
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
      * @param EncryptorInterface $encryptor
@@ -106,8 +110,8 @@ class Callback extends Action
         Logger $suiteLogger,
         Post $postApi,
         Quote $quote,
-        OrderRepository $orderRepository,
-        QuoteRepository $quoteRepository,
+        OrderFactory $orderFactory,
+        QuoteFactory $quoteFactory,
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
         EncryptorInterface $encryptor,
@@ -121,8 +125,8 @@ class Callback extends Action
         $this->suiteLogger          = $suiteLogger;
         $this->postApi              = $postApi;
         $this->quote                = $quote;
-        $this->orderRepository      = $orderRepository;
-        $this->quoteRepository      = $quoteRepository;
+        $this->orderRepository      = $orderFactory;
+        $this->quoteRepository      = $quoteFactory;
         $this->updateOrderCallback  = $updateOrderCallback;
         $this->suiteHelper          = $suiteHelper;
         $this->encryptor            = $encryptor;
@@ -297,5 +301,31 @@ class Callback extends Action
         } else {
             throw new ValidatorException(__('Invalid transaction id'));
         }
+    }
+
+    /**
+     * Create exception in case CSRF validation failed.
+     * Return null if default exception will suffice.
+     *
+     * @param RequestInterface $request
+     *
+     * @return InvalidRequestException|null
+     */
+    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
+    {
+        return null;
+    }
+
+    /**
+     * Perform custom request validation.
+     * Return null if default validation is needed.
+     *
+     * @param RequestInterface $request
+     *
+     * @return bool|null
+     */
+    public function validateForCsrf(RequestInterface $request): ?bool
+    {
+        return true;
     }
 }
