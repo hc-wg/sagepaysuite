@@ -18,7 +18,6 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Magento\Quote\Model\Quote;
-use Magento\Quote\Model\QuoteFactory;
 use Magento\Quote\Model\QuoteRepository;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
@@ -92,8 +91,8 @@ class Callback extends Action
      * @param Logger $suiteLogger
      * @param Post $postApi
      * @param Quote $quote
-     * @param OrderFactory $orderFactory
-     * @param QuoteFactory $quoteFactory
+     * @param OrderRepository $orderRepository
+     * @param QuoteRepository $quoteRepository
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
      * @param EncryptorInterface $encryptor
@@ -107,8 +106,8 @@ class Callback extends Action
         Logger $suiteLogger,
         Post $postApi,
         Quote $quote,
-        OrderRepository $orderFactory,
-        QuoteRepository $quoteFactory,
+        OrderRepository $orderRepository,
+        QuoteRepository $quoteRepository,
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
         EncryptorInterface $encryptor,
@@ -122,8 +121,8 @@ class Callback extends Action
         $this->suiteLogger          = $suiteLogger;
         $this->postApi              = $postApi;
         $this->quote                = $quote;
-        $this->orderRepository      = $orderFactory;
-        $this->quoteRepository      = $quoteFactory;
+        $this->orderRepository      = $orderRepository;
+        $this->quoteRepository      = $quoteRepository;
         $this->updateOrderCallback  = $updateOrderCallback;
         $this->suiteHelper          = $suiteHelper;
         $this->encryptor            = $encryptor;
