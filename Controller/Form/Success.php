@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Form;
 
+use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Form;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
@@ -94,6 +95,11 @@ class Success extends Action
     private $_searchCriteriaBuilder;
 
     /**
+     * @var RepositoryQuery
+     */
+    private $_repositoryQuery;
+
+    /**
      * Success constructor.
      * @param Context $context
      * @param Session $checkoutSession
@@ -122,7 +128,8 @@ class Success extends Action
         FilterGroupBuilder $filterGroupBuilder,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         QuoteRepository $quoteRepository,
-        OrderRepository $orderRepository
+        OrderRepository $orderRepository,
+        RepositoryQuery $repositoryQuery
     )
     {
 
@@ -139,6 +146,7 @@ class Success extends Action
         $this->_filterBuilder = $filterBuilder;
         $this->_filterGroupBuilder = $filterGroupBuilder;
         $this->_searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->_repositoryQuery = $repositoryQuery;
     }
 
     /**
@@ -158,21 +166,15 @@ class Success extends Action
             $quoteIDFromParams = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
             $this->_quote = $this->_quoteRepository->get((int)$quoteIDFromParams);
             $reservedOrderId = $this->_quote->getReservedOrderId();
-            $incrementIdFilter = $this->_filterBuilder
-                ->setField('increment_id')
-                ->setConditionType('eq')
-                ->setValue($reservedOrderId)
-                ->create();
 
-            $filterGroup = $this->_filterGroupBuilder
-                ->setFilters(array($incrementIdFilter))
-                ->create();
+            $incrementIdFilter = array(
+                'field' => 'increment_id',
+                'conditionType' => 'eq',
+                'value' => $reservedOrderId
+            );
 
-            $searchCriteria = $this->_searchCriteriaBuilder
-                ->setFilterGroups(array($filterGroup))
-                ->setPageSize(1)
-                ->setCurrentPage(1)
-                ->create();
+            $searchCriteria = $this->_repositoryQuery->buildSearchCriteriaWithOR(array($incrementIdFilter));
+
 
             /**
              * @var Order
@@ -220,8 +222,10 @@ class Success extends Action
 
             $redirect = 'sagepaysuite/form/failure';
             $status = $response['Status'];
+
             if ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
                 $this->updateOrderCallback->setOrder($this->_order);
+
                 try {
                     $this->updateOrderCallback->confirmPayment($transactionId);
                 } catch (AlreadyExistsException $ex) {
