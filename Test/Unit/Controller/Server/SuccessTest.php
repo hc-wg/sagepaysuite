@@ -8,7 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Server;
 
 use Ebizmarts\SagePaySuite\Controller\Server\Success;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger as SuiteLogger;
-use Ebizmarts\SagePaySuite\Model\OrderLoader;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\Http as HttpRequest;

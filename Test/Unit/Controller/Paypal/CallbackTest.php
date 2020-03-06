@@ -7,7 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Paypal;
 
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
-use Ebizmarts\SagePaySuite\Model\OrderLoader;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 

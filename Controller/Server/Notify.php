@@ -25,7 +25,7 @@ use Magento\Quote\Model\QuoteRepository;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use \Ebizmarts\SagePaySuite\Helper\Data;
-use \Ebizmarts\SagePaySuite\Model\OrderLoader;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use function urlencode;
 
 class Notify extends Action implements CsrfAwareActionInterface

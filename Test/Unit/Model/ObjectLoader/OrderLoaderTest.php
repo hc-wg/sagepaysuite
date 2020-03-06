@@ -1,8 +1,8 @@
 <?php
 
-namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
+namespace Ebizmarts\SagePaySuite\Test\Unit\Model\ObjectLoader;
 
-use Ebizmarts\SagePaySuite\Model\OrderLoader;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
