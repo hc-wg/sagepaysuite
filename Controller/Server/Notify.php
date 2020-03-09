@@ -25,7 +25,6 @@ use Magento\Framework\Validator\Exception;
 use Magento\Quote\Model\QuoteRepository;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
-use Magento\Sales\Model\OrderFactory;
 use \Ebizmarts\SagePaySuite\Helper\Data;
 use Magento\Sales\Model\OrderRepository;
 use function urlencode;
@@ -40,7 +39,7 @@ class Notify extends Action implements CsrfAwareActionInterface
     private $suiteLogger;
 
     /** @var OrderRepository */
-    private $orderRepository;
+    private $_orderRepository;
 
     /** @var OrderSender */
     private $orderSender;
@@ -83,7 +82,7 @@ class Notify extends Action implements CsrfAwareActionInterface
      * Notify constructor.
      * @param Context $context
      * @param Logger $suiteLogger
-     * @param OrderFactory $orderFactory
+     * @param OrderRepository $orderRepository
      * @param OrderSender $orderSender
      * @param Config $config
      * @param Token $tokenModel
@@ -96,7 +95,7 @@ class Notify extends Action implements CsrfAwareActionInterface
     public function __construct(
         Context $context,
         Logger $suiteLogger,
-        OrderFactory $orderFactory,
+        OrderRepository $orderRepository,
         OrderSender $orderSender,
         Config $config,
         Token $tokenModel,
@@ -110,7 +109,7 @@ class Notify extends Action implements CsrfAwareActionInterface
 
         $this->suiteLogger          = $suiteLogger;
         $this->updateOrderCallback  = $updateOrderCallback;
-        $this->orderRepository      = $orderFactory;
+        $this->_orderRepository      = $orderRepository;
         $this->orderSender          = $orderSender;
         $this->config               = $config;
         $this->tokenModel           = $tokenModel;
@@ -126,7 +125,6 @@ class Notify extends Action implements CsrfAwareActionInterface
     {
         //get data from request
         $this->postData = $this->getRequest()->getPost();
-
         $storeId = $this->getRequest()->getParam("_store");
         $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
 
@@ -143,7 +141,7 @@ class Notify extends Action implements CsrfAwareActionInterface
             );
 
             $searchCriteria = $this->_repositoryQuery->buildSearchCriteriaWithOR(array($filter));
-            $order = $this->orderRepository->getList($searchCriteria);
+            $order = $this->_orderRepository->getList($searchCriteria);
             $order = current($order);
 
             if ($order === null || $order->getId() === null) {
