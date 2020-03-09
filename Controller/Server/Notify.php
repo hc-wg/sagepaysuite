@@ -13,24 +13,23 @@ use Ebizmarts\SagePaySuite\Model\InvalidSignatureException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Ebizmarts\SagePaySuite\Model\Token;
-use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Validator\Exception;
 use Magento\Quote\Model\QuoteRepository;
 use Magento\Quote\Model\Quote;
-use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
-use Magento\Sales\Model\OrderFactory;
-use \Magento\Sales\Model\Order;
 use \Ebizmarts\SagePaySuite\Helper\Data;
 use Magento\Sales\Model\OrderRepository;
 use function urlencode;
 
-class Notify extends Action
+class Notify extends Action implements CsrfAwareActionInterface
 {
 
     /**
@@ -40,7 +39,7 @@ class Notify extends Action
     private $suiteLogger;
 
     /** @var OrderRepository */
-    private $orderRepository;
+    private $_orderRepository;
 
     /** @var OrderSender */
     private $orderSender;
@@ -83,7 +82,7 @@ class Notify extends Action
      * Notify constructor.
      * @param Context $context
      * @param Logger $suiteLogger
-     * @param OrderFactory $orderFactory
+     * @param OrderRepository $orderRepository
      * @param OrderSender $orderSender
      * @param Config $config
      * @param Token $tokenModel
@@ -96,7 +95,7 @@ class Notify extends Action
     public function __construct(
         Context $context,
         Logger $suiteLogger,
-        OrderFactory $orderFactory,
+        OrderRepository $orderRepository,
         OrderSender $orderSender,
         Config $config,
         Token $tokenModel,
@@ -110,7 +109,7 @@ class Notify extends Action
 
         $this->suiteLogger          = $suiteLogger;
         $this->updateOrderCallback  = $updateOrderCallback;
-        $this->orderRepository      = $orderFactory;
+        $this->_orderRepository      = $orderRepository;
         $this->orderSender          = $orderSender;
         $this->config               = $config;
         $this->tokenModel           = $tokenModel;
@@ -126,7 +125,6 @@ class Notify extends Action
     {
         //get data from request
         $this->postData = $this->getRequest()->getPost();
-
         $storeId = $this->getRequest()->getParam("_store");
         $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
 
@@ -143,7 +141,7 @@ class Notify extends Action
             );
 
             $searchCriteria = $this->_repositoryQuery->buildSearchCriteriaWithOR(array($filter));
-            $order = $this->orderRepository->getList($searchCriteria);
+            $order = $this->_orderRepository->getList($searchCriteria);
             $order = current($order);
 
             if ($order === null || $order->getId() === null) {
@@ -228,6 +226,7 @@ class Notify extends Action
         } catch (ApiException $apiException) {
             $this->suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
 
+            //cancel pending payment order
             if (isset($order)) {
                 $this->cancelOrder($order);
             }
@@ -236,6 +235,7 @@ class Notify extends Action
         } catch (\Exception $e) {
             $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
+            //cancel pending payment order
             if (isset($order)) {
                 $this->cancelOrder($order);
             }
@@ -328,7 +328,6 @@ class Notify extends Action
         ]);
 
         $quoteId = $this->encryptor->encrypt($quoteId);
-
         $url .= "?quote=" . urlencode($quoteId) . "&message=Transaction cancelled by customer";
 
         return $url;
@@ -354,7 +353,6 @@ class Notify extends Action
         ]);
 
         $quoteId = $this->encryptor->encrypt($quoteId);
-
         $url .= "?message=" . $message . "&quote=" . urlencode($quoteId);
 
         return $url;
@@ -396,5 +394,31 @@ class Notify extends Action
                 $this->config->getVendorname()
             );
         }
+    }
+
+    /**
+     * Create exception in case CSRF validation failed.
+     * Return null if default exception will suffice.
+     *
+     * @param RequestInterface $request
+     *
+     * @return InvalidRequestException|null
+     */
+    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
+    {
+        return null;
+    }
+
+    /**
+     * Perform custom request validation.
+     * Return null if default validation is needed.
+     *
+     * @param RequestInterface $request
+     *
+     * @return bool|null
+     */
+    public function validateForCsrf(RequestInterface $request): ?bool
+    {
+        return true;
     }
 }
