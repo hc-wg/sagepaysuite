@@ -6,6 +6,9 @@
 
 namespace Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer;
 
+use Magento\Backend\Block\Context;
+use Magento\Sales\Model\OrderRepository;
+
 /**
  * grid block action item renderer
  */
@@ -13,21 +16,19 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
 {
 
     /**
-     * @var \Magento\Sales\Model\OrderFactory
+     * @var OrderRepository
      */
-    private $orderFactory;
+    private $_orderRepository;
 
     /**
-     * @param \Magento\Backend\Block\Context $context
+     * OrderId constructor.
+     * @param Context $context
+     * @param OrderRepository $orderRepository
      * @param array $data
      */
-    public function __construct(
-        \Magento\Backend\Block\Context $context,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        array $data = []
-    ) {
+    public function __construct(Context  $context, OrderRepository $orderRepository, array $data = []) {
         parent::__construct($context, $data);
-        $this->orderFactory = $orderFactory;
+        $this->_orderRepository = $orderRepository;
     }
 
     /**
@@ -41,9 +42,9 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
         $orderId = parent::render($row);
 
         //find order with quote id
-        $order = $this->orderFactory->create()->load($orderId);
+        $order = $this->_orderRepository->get($orderId);
 
-        $link = $this->getUrl('sales/order/view/', ['order_id'=>$order->getEntityId()]);
+        $link = $this->getUrl('sales/order/view/', ['order_id' => $order->getEntityId()]);
 
         return '<a href="' . $link . '">' . $order->getIncrementId() . '</a>';
     }
