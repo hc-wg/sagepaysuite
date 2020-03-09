@@ -9,6 +9,7 @@ namespace Ebizmarts\SagePaySuite\Controller\Adminhtml\Order;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\Validator\Exception as ValidatorException;
+use Magento\Sales\Model\OrderRepository;
 
 class SyncFromApi extends \Magento\Backend\App\AbstractAction
 {
@@ -19,9 +20,9 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
     private $_reportingApi;
 
     /**
-     * @var \Magento\Sales\Model\OrderFactory
+     * @var OrderRepository
      */
-    private $_orderFactory;
+    private $_orderRepository;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
@@ -44,12 +45,19 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
     private $_transactionRepository;
 
     /**
+     * SyncFromApi constructor.
      * @param \Magento\Backend\App\Action\Context $context
+     * @param \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi
+     * @param OrderRepository $orderRepository
+     * @param Logger $suiteLogger
+     * @param \Ebizmarts\SagePaySuite\Helper\Fraud $fraudHelper
+     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+     * @param \Magento\Sales\Model\Order\Payment\Transaction\Repository $transactionRepository
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
         \Ebizmarts\SagePaySuite\Model\Api\Reporting $reportingApi,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
+        \Magento\Sales\Model\OrderRepository $orderRepository,
         \Ebizmarts\SagePaySuite\Model\Logger\Logger $suiteLogger,
         \Ebizmarts\SagePaySuite\Helper\Fraud $fraudHelper,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
@@ -58,7 +66,7 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
 
         parent::__construct($context);
         $this->_reportingApi          = $reportingApi;
-        $this->_orderFactory          = $orderFactory;
+        $this->_orderRepository       = $orderRepository;
         $this->_suiteLogger           = $suiteLogger;
         $this->_fraudHelper           = $fraudHelper;
         $this->_suiteHelper           = $suiteHelper;
@@ -69,8 +77,10 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
     {
         try {
             //get order id
-            if (!empty($this->getRequest()->getParam("order_id"))) {
-                $order = $this->_orderFactory->create()->load($this->getRequest()->getParam("order_id"));
+            $orderId = $this->getRequest()->getParam("order_id");
+
+            if (!empty($orderId)) {
+                $order = $this->_orderRepository->get($orderId);
                 $payment = $order->getPayment();
             } else {
                 throw new ValidatorException(__('Unable to sync from API: Invalid order id.'));
