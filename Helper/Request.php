@@ -12,6 +12,7 @@ use Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\ObjectManager\ObjectManager;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Pricing\PriceCurrencyInterface;
 
 class Request extends AbstractHelper
 {
@@ -32,6 +33,9 @@ class Request extends AbstractHelper
     /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPost */
     private $transactionAmountPostFactory;
 
+    /** @var PriceCurrencyInterface */
+    private $priceCurrency;
+
     /**
      * Request constructor.
      * @param Config $config
@@ -41,12 +45,14 @@ class Request extends AbstractHelper
         Config $config,
         ObjectManager $objectManager,
         \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory $transactionAmountFactory,
-        \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPostFactory $transactionAmountPostFactory
+        \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPostFactory $transactionAmountPostFactory,
+        PriceCurrencyInterface $priceCurrency
     ) {
         $this->sagepaySuiteConfig = $config;
         $this->objectManager      = $objectManager;
         $this->transactionAmountFactory  = $transactionAmountFactory;
         $this->transactionAmountPostFactory  = $transactionAmountPostFactory;
+        $this->priceCurrency = $priceCurrency;
     }
 
     /**
@@ -176,17 +182,19 @@ class Request extends AbstractHelper
         $this->sagepaySuiteConfig->setConfigurationScopeId($quote->getStoreId());
 
         $amount = $this->sagepaySuiteConfig->getQuoteAmount($quote);
+        $roundedAmount = $this->priceCurrency->round($amount);
+
         $storeCurrencyCode = $this->sagepaySuiteConfig->getQuoteCurrencyCode($quote);
 
         $data = [];
         if ($isRestRequest) {
             /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmount  $transactionAmount */
-            $transactionAmount = $this->transactionAmountFactory->create(['amount' => $amount]);
+            $transactionAmount = $this->transactionAmountFactory->create(['amount' => $roundedAmount]);
             $data["amount"]   = $transactionAmount->getCommand($storeCurrencyCode)->execute();
             $data["currency"] = $storeCurrencyCode;
         } else {
             /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountPost  $transactionAmount */
-            $transactionAmountPost = $this->transactionAmountPostFactory->create(['amount' => $amount]);
+            $transactionAmountPost = $this->transactionAmountPostFactory->create(['amount' => $roundedAmount]);
             $data["Amount"]   = $transactionAmountPost->getCommand($storeCurrencyCode)->execute();
             $data["Currency"] = $storeCurrencyCode;
         }
