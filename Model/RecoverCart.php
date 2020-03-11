@@ -3,7 +3,7 @@
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
-use Magento\Checkout\Model\Session;
+use Magento\Checkout\Model\Session as Session;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
