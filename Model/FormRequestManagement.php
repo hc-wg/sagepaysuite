@@ -100,7 +100,7 @@ class FormRequestManagement implements FormManagementInterface
         FormCrypt $formCrypt,
         EncryptorInterface $encryptor
     ) {
-    
+
         $this->result             = $result;
         $this->quoteRepository    = $quoteRepository;
         $this->config             = $config;
@@ -128,6 +128,7 @@ class FormRequestManagement implements FormManagementInterface
             $this->quote = $this->getQuoteById($cartId);
             $this->quote->collectTotals();
             $this->quote->reserveOrderId();
+            $this->quote->save();
 
             $vendorname = $this->config->getVendorname();
             $this->transactionVendorTxCode = $this->suiteHelper->generateVendorTxCode(
