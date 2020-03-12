@@ -139,6 +139,8 @@ class EcommerceManagement extends RequestManagement
             $this->getResult()->setParEq($this->getPayResult()->getParEq());
             $this->getResult()->setCreq($this->getPayResult()->getCReq());
             $this->getResult()->setAcsUrl($this->getPayResult()->getAcsUrl());
+        } else {
+            $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::QUOTE_IS_ACTIVE, 1);
         }
     }
 
