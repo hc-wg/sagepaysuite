@@ -9,7 +9,6 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\Message\ManagerInterface;
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Magento\Theme\Block\Html\Header\Logo;
 use Magento\Framework\UrlInterface;
 
 class RecoverCart implements ObserverInterface
@@ -23,9 +22,6 @@ class RecoverCart implements ObserverInterface
     /** @var ManagerInterface */
     private $messageManager;
 
-    /** @var Logo */
-    private $logo;
-
     /** @var UrlInterface */
     private $urlInterface;
 
@@ -34,19 +30,16 @@ class RecoverCart implements ObserverInterface
      * @param Session $session
      * @param Logger $suiteLogger
      * @param ManagerInterface $messageManager
-     * @param Logo $logo
      */
     public function __construct(
         Session $session,
         Logger $suiteLogger,
         ManagerInterface $messageManager,
-        Logo $logo,
         UrlInterface $urlInterface
     ) {
         $this->session = $session;
         $this->suiteLogger     = $suiteLogger;
         $this->messageManager  = $messageManager;
-        $this->logo            = $logo;
         $this->urlInterface    = $urlInterface;
     }
 
@@ -55,24 +48,14 @@ class RecoverCart implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        if ($this->isHomePage()) {
-            $presavedOrderId = $this->session->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
-            $quoteIsActive = $this->session->getData(SagePaySession::QUOTE_IS_ACTIVE);
-            if ($this->checkIfRecoverCartIsPossible($presavedOrderId, $quoteIsActive)) {
-                $url = $this->urlInterface->getBaseUrl() . "sagepaysuite/cart/recover";
-                $message = "<a target='_self' href=$url>HERE</a>" ;
-                $message = __("There is an order in process. Click " . $message . " to recover the cart.");
-                $this->messageManager->addNotice($message);
-            }
+        $presavedOrderId = $this->session->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
+        $quoteIsActive = $this->session->getData(SagePaySession::QUOTE_IS_ACTIVE);
+        if ($this->checkIfRecoverCartIsPossible($presavedOrderId, $quoteIsActive)) {
+            $url = $this->urlInterface->getBaseUrl() . "sagepaysuite/cart/recover";
+            $message = "<a target='_self' href=$url>HERE</a>" ;
+            $message = __("There is an order in process. Click " . $message . " to recover the cart.");
+            $this->messageManager->addNotice($message);
         }
-    }
-
-    /**
-     * @return bool
-     */
-    private function isHomePage()
-    {
-        return $this->logo->isHomePage();
     }
 
     /**
