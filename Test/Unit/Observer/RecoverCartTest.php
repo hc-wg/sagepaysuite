@@ -39,6 +39,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
     {
         $this->sessionMock = $this
             ->getMockBuilder(Session::class)
+            ->setMethods(['getData', 'setData'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -76,11 +77,6 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
 
     public function testExecute()
     {
-        $this->logoMock
-            ->expects($this->once())
-            ->method('isHomePage')
-            ->willReturn(true);
-
         $this->sessionMock
             ->expects($this->exactly(2))
             ->method('getData')
@@ -98,26 +94,19 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->with(self::TEST_MESSAGE)
             ->willReturnSelf();
 
-        $this->recoverCart->execute($this->observerMock);
-    }
-
-    public function testExecuteIsNotHomePage()
-    {
-        $this->logoMock
+        $this->sessionMock
             ->expects($this->once())
-            ->method('isHomePage')
-            ->willReturn(false);
+            ->method('setData')
+            ->with(
+                $this->equalTo(SagePaySession::QUOTE_IS_ACTIVE),
+                $this->equalTo(1)
+            );
 
         $this->recoverCart->execute($this->observerMock);
     }
 
     public function testExecuteRecoverCartNotPossible()
     {
-        $this->logoMock
-            ->expects($this->once())
-            ->method('isHomePage')
-            ->willReturn(true);
-
         $this->sessionMock
             ->expects($this->exactly(2))
             ->method('getData')
