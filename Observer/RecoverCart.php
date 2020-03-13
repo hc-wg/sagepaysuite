@@ -55,6 +55,7 @@ class RecoverCart implements ObserverInterface
             $message = "<a target='_self' href=$url>HERE</a>" ;
             $message = __("There is an order in process. Click " . $message . " to recover the cart.");
             $this->messageManager->addNotice($message);
+            $this->session->setData(SagePaySession::QUOTE_IS_ACTIVE, 1);
         }
     }
 
