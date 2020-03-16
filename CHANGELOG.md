@@ -4,7 +4,7 @@
 - Enhance cart recovery to avoid orders cancelling when customer goes to checkout/cart
 
 ### Fixed
-- Orders cancelled when same IncrementId on different Store Views
+- Round amount when populating amount and currency to avoid 0.01 difference
 - Order not available error with FORM
 
 ## [1.2.21] - 2020-02-12
