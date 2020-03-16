@@ -80,21 +80,6 @@ class Success extends Action
     private $encryptor;
 
     /**
-     * @var FilterBuilder
-     */
-    private $_filterBuilder;
-
-    /**
-     * @var FilterGroupBuilder
-     */
-    private $_filterGroupBuilder;
-
-    /**
-     * @var SearchCriteriaBuilder
-     */
-    private $_searchCriteriaBuilder;
-
-    /**
      * @var RepositoryQuery
      */
     private $_repositoryQuery;
@@ -109,11 +94,9 @@ class Success extends Action
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
      * @param EncryptorInterface $encryptor
-     * @param FilterBuilder $filterBuilder
-     * @param FilterGroupBuilder $filterGroupBuilder
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param QuoteRepository $quoteRepository
      * @param OrderRepository $orderRepository
+     * @param RepositoryQuery $repositoryQuery
      */
     public function __construct(
         Context $context,
@@ -124,9 +107,6 @@ class Success extends Action
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
         EncryptorInterface $encryptor,
-        FilterBuilder $filterBuilder,
-        FilterGroupBuilder $filterGroupBuilder,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
         QuoteRepository $quoteRepository,
         OrderRepository $orderRepository,
         RepositoryQuery $repositoryQuery
@@ -143,9 +123,6 @@ class Success extends Action
         $this->encryptor = $encryptor;
         $this->_quoteRepository = $quoteRepository;
         $this->_orderRepository = $orderRepository;
-        $this->_filterBuilder = $filterBuilder;
-        $this->_filterGroupBuilder = $filterGroupBuilder;
-        $this->_searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->_repositoryQuery = $repositoryQuery;
     }
 
