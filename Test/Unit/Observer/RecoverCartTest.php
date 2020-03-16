@@ -39,6 +39,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
     {
         $this->sessionMock = $this
             ->getMockBuilder(Session::class)
+            ->setMethods(['getData', 'setData'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -76,16 +77,11 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
 
     public function testExecute()
     {
-        $this->logoMock
-            ->expects($this->once())
-            ->method('isHomePage')
-            ->willReturn(true);
-
         $this->sessionMock
             ->expects($this->exactly(2))
             ->method('getData')
-            ->withConsecutive([SagePaySession::PRESAVED_PENDING_ORDER_KEY], [SagePaySession::QUOTE_IS_ACTIVE])
-            ->willReturnOnConsecutiveCalls(self::TEST_ORDER_ID, 0);
+            ->withConsecutive([SagePaySession::PRESAVED_PENDING_ORDER_KEY], [SagePaySession::CONVERTING_QUOTE_TO_ORDER])
+            ->willReturnOnConsecutiveCalls(self::TEST_ORDER_ID, 1);
 
         $this->urlInterface
             ->expects($this->once())
@@ -98,31 +94,24 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->with(self::TEST_MESSAGE)
             ->willReturnSelf();
 
-        $this->recoverCart->execute($this->observerMock);
-    }
-
-    public function testExecuteIsNotHomePage()
-    {
-        $this->logoMock
+        $this->sessionMock
             ->expects($this->once())
-            ->method('isHomePage')
-            ->willReturn(false);
+            ->method('setData')
+            ->with(
+                $this->equalTo(SagePaySession::CONVERTING_QUOTE_TO_ORDER),
+                $this->equalTo(0)
+            );
 
         $this->recoverCart->execute($this->observerMock);
     }
 
     public function testExecuteRecoverCartNotPossible()
     {
-        $this->logoMock
-            ->expects($this->once())
-            ->method('isHomePage')
-            ->willReturn(true);
-
         $this->sessionMock
             ->expects($this->exactly(2))
             ->method('getData')
-            ->withConsecutive([SagePaySession::PRESAVED_PENDING_ORDER_KEY], [SagePaySession::QUOTE_IS_ACTIVE])
-            ->willReturnOnConsecutiveCalls(null, 1);
+            ->withConsecutive([SagePaySession::PRESAVED_PENDING_ORDER_KEY], [SagePaySession::CONVERTING_QUOTE_TO_ORDER])
+            ->willReturnOnConsecutiveCalls(null, 0);
 
         $this->recoverCart->execute($this->observerMock);
     }
