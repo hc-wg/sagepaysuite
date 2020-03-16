@@ -176,12 +176,12 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
                     $this->equalTo(self::TEST_ORDER_NUMBER)
                 ],
                 [
-                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::QUOTE_IS_ACTIVE),
-                    $this->equalTo(0)
+                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER),
+                    $this->equalTo(1)
                 ],
                 [
-                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::QUOTE_IS_ACTIVE),
-                    $this->equalTo(1)
+                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER),
+                    $this->equalTo(0)
                 ]
             );
         $checkoutSessionMock->expects($this->once())->method('clearHelperData');
@@ -376,8 +376,8 @@ class EcommerceManagementTest extends \PHPUnit\Framework\TestCase
                     $this->equalTo(self::TEST_ORDER_NUMBER)
                 ],
                 [
-                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::QUOTE_IS_ACTIVE),
-                    $this->equalTo(0)
+                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER),
+                    $this->equalTo(1)
                 ]
             );
         $checkoutSessionMock->expects($this->once())->method('clearHelperData');
