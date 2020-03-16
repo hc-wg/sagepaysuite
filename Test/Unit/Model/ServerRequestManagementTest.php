@@ -165,8 +165,8 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
                 $this->equalTo(456)
             ],
             [
-                $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::QUOTE_IS_ACTIVE),
-                $this->equalTo(0)
+                $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER),
+                $this->equalTo(1)
             ]
         );
 

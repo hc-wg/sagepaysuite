@@ -164,14 +164,18 @@ class EcommerceManagementTest extends \PHPUnit_Framework_TestCase
             ]
         )
         ->getMock();
-        $checkoutSessionMock->expects($this->exactly(2))->method('setData')
+        $checkoutSessionMock->expects($this->exactly(3))->method('setData')
             ->withConsecutive(
                 [
                     $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY),
                     $this->equalTo(self::TEST_ORDER_NUMBER)
                 ],
                 [
-                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::QUOTE_IS_ACTIVE),
+                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER),
+                    $this->equalTo(1)
+                ],
+                [
+                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER),
                     $this->equalTo(0)
                 ]
             );
@@ -361,15 +365,15 @@ class EcommerceManagementTest extends \PHPUnit_Framework_TestCase
             ]
         )
         ->getMock();
-        $checkoutSessionMock->expects($this->exactly(2))->method('setData')
+        $checkoutSessionMock->expects($this->exactly(3))->method('setData')
             ->withConsecutive(
                 [
                     $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY),
                     $this->equalTo(self::TEST_ORDER_NUMBER)
                 ],
                 [
-                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::QUOTE_IS_ACTIVE),
-                    $this->equalTo(0)
+                    $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER),
+                    $this->equalTo(1)
                 ]
             );
         $checkoutSessionMock->expects($this->once())->method('clearHelperData');
