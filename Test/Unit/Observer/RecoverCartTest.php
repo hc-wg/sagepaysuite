@@ -80,8 +80,8 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
         $this->sessionMock
             ->expects($this->exactly(2))
             ->method('getData')
-            ->withConsecutive([SagePaySession::PRESAVED_PENDING_ORDER_KEY], [SagePaySession::QUOTE_IS_ACTIVE])
-            ->willReturnOnConsecutiveCalls(self::TEST_ORDER_ID, 0);
+            ->withConsecutive([SagePaySession::PRESAVED_PENDING_ORDER_KEY], [SagePaySession::CONVERTING_QUOTE_TO_ORDER])
+            ->willReturnOnConsecutiveCalls(self::TEST_ORDER_ID, 1);
 
         $this->urlInterface
             ->expects($this->once())
@@ -98,8 +98,8 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('setData')
             ->with(
-                $this->equalTo(SagePaySession::QUOTE_IS_ACTIVE),
-                $this->equalTo(1)
+                $this->equalTo(SagePaySession::CONVERTING_QUOTE_TO_ORDER),
+                $this->equalTo(0)
             );
 
         $this->recoverCart->execute($this->observerMock);
@@ -110,8 +110,8 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
         $this->sessionMock
             ->expects($this->exactly(2))
             ->method('getData')
-            ->withConsecutive([SagePaySession::PRESAVED_PENDING_ORDER_KEY], [SagePaySession::QUOTE_IS_ACTIVE])
-            ->willReturnOnConsecutiveCalls(null, 1);
+            ->withConsecutive([SagePaySession::PRESAVED_PENDING_ORDER_KEY], [SagePaySession::CONVERTING_QUOTE_TO_ORDER])
+            ->willReturnOnConsecutiveCalls(null, 0);
 
         $this->recoverCart->execute($this->observerMock);
     }

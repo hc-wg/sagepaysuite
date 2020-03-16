@@ -290,7 +290,7 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
             ->method('setData')
             ->withConsecutive(
                 [SagePaySession::PRESAVED_PENDING_ORDER_KEY, null],
-                [SagePaySession::QUOTE_IS_ACTIVE, 1]
+                [SagePaySession::CONVERTING_QUOTE_TO_ORDER, 0]
             );
 
         $this->recoverCart->setShouldCancelOrder(true)->execute();
@@ -315,7 +315,7 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
             ->method('setData')
             ->withConsecutive(
                 [SagePaySession::PRESAVED_PENDING_ORDER_KEY, null],
-                [SagePaySession::QUOTE_IS_ACTIVE, 1]
+                [SagePaySession::CONVERTING_QUOTE_TO_ORDER, 0]
             );
 
         $this->recoverCart->setShouldCancelOrder(true)->execute();
@@ -359,7 +359,7 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
             ->method('setData')
             ->withConsecutive(
                 [SagePaySession::PRESAVED_PENDING_ORDER_KEY, null],
-                [SagePaySession::QUOTE_IS_ACTIVE, 1]
+                [SagePaySession::CONVERTING_QUOTE_TO_ORDER, 0]
             );
 
         $this->recoverCart->setShouldCancelOrder(true)->execute();
