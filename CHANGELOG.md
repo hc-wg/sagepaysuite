@@ -1,3 +1,12 @@
+## [1.2.22] - 2020-03-18
+### Changed
+- Store SecurityKey in Database when SyncFromApi
+- Enhance cart recovery to avoid orders cancelling when customer goes to checkout/cart
+
+### Fixed
+- Orders cancelled when same IncrementId on different Store Views
+- Order not available error with FORM
+
 ## [1.2.21] - 2020-02-12
 ### Added
 - Compatibility with Magento 2.2.11
@@ -242,6 +251,7 @@
 ### Added
 - First release with Magento 2.2.0 compatibility.
 
+[1.2.22]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.22
 [1.2.21]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.21
 [1.2.20]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.20
 [1.2.19]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.19
