@@ -7,144 +7,183 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Server;
 
 use Ebizmarts\SagePaySuite\Controller\Server\Success;
+use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger as SuiteLogger;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\Api\Search\SearchCriteria;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\App\Response\Http as HttpResponse;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Message\ManagerInterface as MessageManager;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Model\Quote;
-use Magento\Quote\Model\QuoteFactory;
+use Magento\Quote\Model\QuoteRepository;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\OrderFactory;
+use Magento\Sales\Model\OrderRepository;
 use Psr\Log\LoggerInterface as Logger;
 
 class SuccessTest extends \PHPUnit\Framework\TestCase
 {
     /** @var Session|\PHPUnit_Framework_MockObject_MockObject */
-    private $checkoutSession;
+    private $checkoutSessionMock;
 
     /** @var Context|\PHPUnit_Framework_MockObject_MockObject */
-    private $context;
+    private $contextMock;
 
     /** @var Logger|\PHPUnit_Framework_MockObject_MockObject */
-    private $logger;
+    private $loggerMock;
 
     /** @var MessageManager|\PHPUnit_Framework_MockObject_MockObject */
-    private $messageManager;
+    private $messageManagerMock;
 
     /** @var Order|\PHPUnit_Framework_MockObject_MockObject */
-    private $order;
+    private $orderMock;
 
-    /** @var OrderFactory|\PHPUnit_Framework_MockObject_MockObject */
-    private $orderFactory;
+    /** @var OrderRepository|\PHPUnit_Framework_MockObject_MockObject */
+    private $orderRepositoryMock;
 
     /** @var Quote|\PHPUnit_Framework_MockObject_MockObject */
-    private $quote;
+    private $quoteMock;
 
-    /** @var QuoteFactory|\PHPUnit_Framework_MockObject_MockObject */
-    private $quoteFactory;
+    /** @var QuoteRepository|\PHPUnit_Framework_MockObject_MockObject */
+    private $quoteRepositoryMock;
+
+    /** @var RepositoryQuery|\PHPUnit_Framework_MockObject_MockObject */
+    private $repositoryQueryMock;
 
     /** @var HttpRequest|\PHPUnit_Framework_MockObject_MockObject */
-    private $request;
+    private $requestMock;
 
     /** @var HttpResponse|\PHPUnit_Framework_MockObject_MockObject */
-    private $response;
+    private $responseMock;
 
     /** @var Success */
     private $serverSuccessController;
 
     /** @var SuiteLogger|\PHPUnit_Framework_MockObject_MockObject */
-    private $suiteLogger;
+    private $suiteLoggerMock;
 
     /** @var UrlInterface|\PHPUnit_Framework_MockObject_MockObject */
-    private $urlBuilder;
+    private $urlBuilderMock;
 
     /** @var EncryptorInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $encryptorMock;
 
+    /** @var ObjectManagerHelper|\PHPUnit_Framework_MockObject_MockObject */
+    private $objectManagerHelper;
+
     public function setUp()
     {
-        $this->context = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $this->suiteLogger = $this->getMockBuilder(SuiteLogger::class)->disableOriginalConstructor()->getMock();
-        $this->logger = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
-        $this->checkoutSession = $this->getMockBuilder(Session::class)->disableOriginalConstructor()->getMock();
+        $this->contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
+        $this->suiteLoggerMock = $this->getMockBuilder(SuiteLogger::class)->disableOriginalConstructor()->getMock();
+        $this->loggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
+        $this->checkoutSessionMock = $this->getMockBuilder(Session::class)->disableOriginalConstructor()->getMock();
 
-        $this->request = $this->getMockBuilder(HttpRequest::class)->disableOriginalConstructor()->getMock();
-        $this->response = $this->getMockBuilder(HttpResponse::class)->disableOriginalConstructor()->getMock();
-        $this->urlBuilder = $this->getMockBuilder(UrlInterface::class)->disableOriginalConstructor()->getMock();
+        $this->requestMock = $this->getMockBuilder(HttpRequest::class)->disableOriginalConstructor()->getMock();
+        $this->responseMock = $this->getMockBuilder(HttpResponse::class)->disableOriginalConstructor()->getMock();
+        $this->urlBuilderMock = $this->getMockBuilder(UrlInterface::class)->disableOriginalConstructor()->getMock();
         $this->messageManager = $this->getMockBuilder(MessageManager::class)->disableOriginalConstructor()->getMock();
 
-        $this->order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
-        $this->quote = $this->getMockBuilder(Quote::class)->disableOriginalConstructor()->getMock();
+        $this->orderMock = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
+        $this->quoteMock = $this->getMockBuilder(Quote::class)->disableOriginalConstructor()->getMock();
         $this->encryptorMock = $this->getMockBuilder(EncryptorInterface::class)->disableOriginalConstructor()->getMock();
+        $this->messageManagerMock = $this->getMockBuilder(MessageManager::class)->disableOriginalConstructor()->getMock();
 
-        $this->orderFactory = $this->getMockBuilder(OrderFactory::class)
+        $this->repositoryQueryMock = $this->getMockBuilder(RepositoryQuery::class)
             ->disableOriginalConstructor()
-            ->setMethods(['create'])
+            ->setMethods(['buildSearchCriteriaWithOR'])
             ->getMock();
 
-        $this->quoteFactory = $this->getMockBuilder(QuoteFactory::class)
+        $this->quoteRepositoryMock = $this->getMockBuilder(QuoteRepository::class)
             ->disableOriginalConstructor()
-            ->setMethods(['create'])
+            ->setMethods(['get'])
             ->getMock();
+
+        $this->objectManagerHelper = new ObjectManagerHelper($this);
+
+        $this->objectManagerHelper->getObject(
+            Success::class,
+            [
+                '_checkoutSession' => $this->checkoutSessionMock,
+                '_suiteLogger' => $this->suiteLoggerMock,
+                /*'_formModel' => $this->formModelMock,
+                'orderSender' => $this->orderSenderMock,
+                'updateOrderCallback' => $this->updateOrderCallbackMock,
+                'suiteHelper' => $this->suiteHelperMock,*/
+                'encryptor' => $this->encryptorMock,
+                '_quoteRepository' => $this->quoteRepositoryMock,
+                '_orderRepository' => $this->orderRepositoryMock,
+                '_repositoryQuery' => $this->repositoryQueryMock
+            ]
+        );
     }
 
     public function testExecute()
     {
-        $this->context->expects($this->any())->method('getRequest')->willReturn($this->request);
-        $this->context->expects($this->any())->method('getResponse')->willReturn($this->response);
-        $this->context->expects($this->any())->method('getUrl')->willReturn($this->urlBuilder);
+        $this->contextMock->expects($this->any())->method('getRequest')->willReturn($this->requestMock);
+        $this->contextMock->expects($this->any())->method('getResponse')->willReturn($this->responseMock);
+        $this->contextMock->expects($this->any())->method('getUrl')->willReturn($this->urlBuilderMock);
 
-        $this->quote->expects($this->once())->method('load')->willReturnSelf();
-        $this->quoteFactory->expects($this->once())->method('create')->willReturn($this->quote);
+        $this->quoteRepositoryMock->expects($this->once())->method('get')->with(1)->willReturn($this->quoteMock);
 
-        $this->order->expects($this->once())->method('loadByIncrementId')->willReturnSelf();
-        $this->orderFactory->expects($this->once())->method('create')->willReturn($this->order);
+        $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
+            ->with(array($searchCriteriaMock))->willReturn($searchCriteriaMock);
+
+        $this->orderRepositoryMock->expects($this->once())->method('getList')
+            ->with($searchCriteriaMock)->willReturn(array($this->orderMock));
 
         $this->_expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilder->getUrl('checkout/onepage/success', ['_secure' => true])
+            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true])
             . '";</script>'
         );
 
         $this->serverSuccessController = new Success(
-            $this->context,
-            $this->suiteLogger,
-            $this->logger,
-            $this->checkoutSession,
-            $this->orderFactory,
-            $this->quoteFactory,
-            $this->encryptorMock
+            $this->contextMock,
+            $this->suiteLoggerMock,
+            $this->loggerMock,
+            $this->checkoutSessionMock,
+            $this->orderRepositoryMock,
+            $this->quoteRepositoryMock,
+            $this->encryptorMock,
+            $this->repositoryQueryMock
         );
 
-        $this->serverSuccessController->execute();
+        //$this->serverSuccessController->execute();
+        $this->objectManagerHelper->execute();
     }
 
     public function testException()
     {
-        $this->context->expects($this->any())->method('getRequest')->willReturn($this->request);
-        $this->context->expects($this->any())->method('getResponse')->willReturn($this->response);
-        $this->context->expects($this->any())->method('getMessageManager')->willReturn($this->messageManager);
-        $this->context->expects($this->any())->method('getUrl')->willReturn($this->urlBuilder);
+        $this->contextMock->expects($this->any())->method('getRequest')->willReturn($this->requestMock);
+        $this->contextMock->expects($this->any())->method('getResponse')->willReturn($this->responseMock);
+        $this->contextMock->expects($this->any())->method('getMessageManager')->willReturn($this->messageManagerMock);
+        $this->contextMock->expects($this->any())->method('getUrl')->willReturn($this->urlBuilderMock);
 
         $expectedException = new \Exception("Could not load quote.");
-        $this->quoteFactory->expects($this->once())->method('create')->willThrowException($expectedException);
-        $this->logger->expects($this->once())->method('critical')->with($expectedException);
+        $this->quoteRepositoryMock->expects($this->once())->method('get')->willThrowException($expectedException);
+        $this->loggerMock->expects($this->once())->method('critical')->with($expectedException);
+        $this->messageManagerMock->expects($this->once())->method('addError')->with('An error ocurred.');
 
         $this->serverSuccessController = new Success(
-            $this->context,
-            $this->suiteLogger,
-            $this->logger,
-            $this->checkoutSession,
-            $this->orderFactory,
-            $this->quoteFactory,
-            $this->encryptorMock
+            $this->contextMock,
+            $this->suiteLoggerMock,
+            $this->loggerMock,
+            $this->checkoutSessionMock,
+            $this->orderRepositoryMock,
+            $this->quoteRepositoryMock,
+            $this->encryptorMock,
+            $this->repositoryQueryMock
         );
 
-        $this->serverSuccessController->execute();
+//        $this->serverSuccessController->execute();
+        $this->objectManagerHelper->execute();
     }
 
     /**
@@ -152,7 +191,7 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
      */
     private function _expectSetBody($body)
     {
-        $this->response->expects($this->once())
+        $this->responseMock->expects($this->once())
             ->method('setBody')
             ->with($body);
     }
