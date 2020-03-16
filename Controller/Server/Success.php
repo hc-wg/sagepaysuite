@@ -83,9 +83,7 @@ class Success extends Action
      * @param OrderRepository $orderRepository
      * @param QuoteRepository $quoteRepository
      * @param EncryptorInterface $encryptor
-     * @param FilterBuilder $filterBuilder
-     * @param FilterGroupBuilder $filterGroupBuilder
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param RepositoryQuery $repositoryQuery
      */
     public function __construct(
         Context $context,
@@ -95,9 +93,6 @@ class Success extends Action
         OrderRepository $orderRepository,
         QuoteRepository $quoteRepository,
         EncryptorInterface $encryptor,
-        FilterBuilder $filterBuilder,
-        FilterGroupBuilder $filterGroupBuilder,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
         RepositoryQuery $repositoryQuery
     ) {
 
@@ -109,9 +104,6 @@ class Success extends Action
         $this->_orderRepository    = $orderRepository;
         $this->_quoteRepository    = $quoteRepository;
         $this->encryptor        = $encryptor;
-        $this->_filterBuilder        = $filterBuilder;
-        $this->_filterGroupBuilder        = $filterGroupBuilder;
-        $this->_searchCriteriaBuilder        = $searchCriteriaBuilder;
         $this->_repositoryQuery        = $repositoryQuery;
     }
 
