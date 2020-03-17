@@ -92,7 +92,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
     public function testExecute()
     {
         $this->requestMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('getFrontName')
             ->willReturn(self::TEST_SUCCESS_FRONT_NAME);
         $this->requestMock
@@ -131,7 +131,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
     public function testExecuteRecoverCartNotPossible()
     {
         $this->requestMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('getFrontName')
             ->willReturn(self::TEST_SUCCESS_FRONT_NAME);
         $this->requestMock
