@@ -11,6 +11,7 @@ use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger as SuiteLogger;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Api\Search\SearchCriteria;
+use Magento\Framework\Api\SearchResults;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\App\Response\Http as HttpResponse;
@@ -74,6 +75,9 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
     /** @var ObjectManagerHelper|\PHPUnit_Framework_MockObject_MockObject */
     private $objectManagerHelper;
 
+    /** @var SearchResults|\PHPUnit_Framework_MockObject_MockObject */
+    private $searchResultsInterfaceMock;
+
     public function setUp()
     {
         $this->contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
@@ -87,18 +91,31 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $this->messageManager = $this->getMockBuilder(MessageManager::class)->disableOriginalConstructor()->getMock();
 
         $this->orderMock = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
-        $this->quoteMock = $this->getMockBuilder(Quote::class)->disableOriginalConstructor()->getMock();
-        $this->encryptorMock = $this->getMockBuilder(EncryptorInterface::class)->disableOriginalConstructor()->getMock();
-        $this->messageManagerMock = $this->getMockBuilder(MessageManager::class)->disableOriginalConstructor()->getMock();
+        $this->quoteMock = $this->getMockBuilder(Quote::class)
+            ->setMethods(['getReservedOrderId'])
+            ->disableOriginalConstructor()->getMock();
+
+        $this->encryptorMock = $this->getMockBuilder(EncryptorInterface::class)
+            ->disableOriginalConstructor()->getMock();
 
         $this->repositoryQueryMock = $this->getMockBuilder(RepositoryQuery::class)
             ->disableOriginalConstructor()
             ->setMethods(['buildSearchCriteriaWithOR'])
             ->getMock();
 
+        $this->orderRepositoryMock = $this->getMockBuilder(OrderRepository::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getList'])
+            ->getMock();
+
         $this->quoteRepositoryMock = $this->getMockBuilder(QuoteRepository::class)
             ->disableOriginalConstructor()
             ->setMethods(['get'])
+            ->getMock();
+
+        $this->searchResultsInterfaceMock = $this->getMockBuilder(SearchResults::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getTotalCount', 'getItems'])
             ->getMock();
 
         $this->objectManagerHelper = new ObjectManagerHelper($this);
@@ -122,21 +139,51 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
 
     public function testExecute()
     {
-        $this->contextMock->expects($this->any())->method('getRequest')->willReturn($this->requestMock);
+        $storeId = 1;
+        $quoteId = 69;
+        $encrypted = '0:2:Dwn8kCUk6nZU5B7b0Xn26uYQDeLUKBrD:S72utt9n585GrslZpDp+DRpW+8dpqiu/EiCHXwfEhS0=';
+        $reserverdOrderId = 1;
+
+        $this->contextMock->expects($this->once())->method('getRequest')->willReturn($this->requestMock);
         $this->contextMock->expects($this->any())->method('getResponse')->willReturn($this->responseMock);
         $this->contextMock->expects($this->any())->method('getUrl')->willReturn($this->urlBuilderMock);
 
-        $this->quoteRepositoryMock->expects($this->once())->method('get')->with(1)->willReturn($this->quoteMock);
+        $this->requestMock->expects($this->exactly(2))->method('getParam')
+            ->withConsecutive(['_store'], ['quoteid'])
+            ->willReturnOnConsecutiveCalls($storeId, $encrypted);
+
+        $this->encryptorMock->expects($this->once())->method('decrypt')
+            ->with($encrypted)
+            ->willReturn($quoteId);
+
+        $this->quoteRepositoryMock->expects($this->once())->method('get')
+            ->with($quoteId, [$storeId])
+            ->willReturn($this->quoteMock);
 
         $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
             ->disableOriginalConstructor()
             ->getMock();
 
+        $this->quoteMock->expects($this->once())->method('getReservedOrderId')
+            ->willReturn($reserverdOrderId);
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $reserverdOrderId,
+            'conditionType' => 'eq'
+        );
         $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
-            ->with(array($searchCriteriaMock))->willReturn($searchCriteriaMock);
+            ->with(array($filter))->willReturn($searchCriteriaMock);
 
         $this->orderRepositoryMock->expects($this->once())->method('getList')
-            ->with($searchCriteriaMock)->willReturn(array($this->orderMock));
+            ->with($searchCriteriaMock)->willReturn($this->searchResultsInterfaceMock);
+
+        $this->searchResultsInterfaceMock->expects($this->once())->method('getTotalCount')
+            ->willReturn(1);
+
+        $this->searchResultsInterfaceMock->expects($this->once())->method('getItems')
+            ->willReturn(array($this->orderMock));
+
 
         $this->_expectSetBody(
             '<script>window.top.location.href = "'
@@ -155,8 +202,7 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             $this->repositoryQueryMock
         );
 
-        //$this->serverSuccessController->execute();
-        $this->objectManagerHelper->execute();
+        $this->serverSuccessController->execute();
     }
 
     public function testException()
