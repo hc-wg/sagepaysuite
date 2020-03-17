@@ -59,8 +59,8 @@ class RecoverCart implements ObserverInterface
     {
         if ($this->filterActions()) {
             $presavedOrderId = $this->session->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
-            $quoteIsActive = $this->session->getData(SagePaySession::CONVERTING_QUOTE_TO_ORDER);
-            if ($this->checkIfRecoverCartIsPossible($presavedOrderId, $quoteIsActive)) {
+            $convertingQuoteToOrder = $this->session->getData(SagePaySession::CONVERTING_QUOTE_TO_ORDER);
+            if ($this->checkIfRecoverCartIsPossible($presavedOrderId, $convertingQuoteToOrder)) {
                 $url = $this->urlInterface->getBaseUrl() . "sagepaysuite/cart/recover";
                 $message = "<a target='_self' href=$url>HERE</a>";
                 $message = __("There is an order in process. Click " . $message . " to recover the cart.");
