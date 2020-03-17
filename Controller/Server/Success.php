@@ -110,8 +110,9 @@ class Success extends Action
     public function execute()
     {
         try {
-            $storeId = $this->getRequest()->getParam("_store");
-            $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
+            $request = $this->getRequest();
+            $storeId = $request->getParam("_store");
+            $quoteId = $this->encryptor->decrypt($request->getParam("quoteid"));
             $quote = $this->_quoteRepository->get($quoteId, array($storeId));
 
             $incrementIdFilter = array(
