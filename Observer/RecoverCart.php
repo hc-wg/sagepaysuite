@@ -98,6 +98,9 @@ class RecoverCart implements ObserverInterface
         return $quoteIsActive === 1;
     }
 
+    /**
+     * @return bool
+     */
     private function filterActions()
     {
           return $this->request->getFrontName() !== 'rest' &&
