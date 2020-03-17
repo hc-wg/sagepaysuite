@@ -16,6 +16,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\App\Response\Http as HttpResponse;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\Message\Manager;
 use Magento\Framework\Message\ManagerInterface as MessageManager;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Framework\UrlInterface;
@@ -36,7 +37,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     /** @var Logger|\PHPUnit_Framework_MockObject_MockObject */
     private $loggerMock;
 
-    /** @var MessageManager|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var Manager|\PHPUnit_Framework_MockObject_MockObject */
     private $messageManagerMock;
 
     /** @var Order|\PHPUnit_Framework_MockObject_MockObject */
@@ -88,7 +89,9 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
         $this->requestMock = $this->getMockBuilder(HttpRequest::class)->disableOriginalConstructor()->getMock();
         $this->responseMock = $this->getMockBuilder(HttpResponse::class)->disableOriginalConstructor()->getMock();
         $this->urlBuilderMock = $this->getMockBuilder(UrlInterface::class)->disableOriginalConstructor()->getMock();
-        $this->messageManager = $this->getMockBuilder(MessageManager::class)->disableOriginalConstructor()->getMock();
+        $this->messageManagerMock = $this->getMockBuilder(Manager::class)
+            ->setMethods(['addError'])
+            ->disableOriginalConstructor()->getMock();
 
         $this->orderMock = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
         $this->quoteMock = $this->getMockBuilder(Quote::class)
@@ -125,14 +128,11 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             [
                 '_checkoutSession' => $this->checkoutSessionMock,
                 '_suiteLogger' => $this->suiteLoggerMock,
-                /*'_formModel' => $this->formModelMock,
-                'orderSender' => $this->orderSenderMock,
-                'updateOrderCallback' => $this->updateOrderCallbackMock,
-                'suiteHelper' => $this->suiteHelperMock,*/
                 'encryptor' => $this->encryptorMock,
                 '_quoteRepository' => $this->quoteRepositoryMock,
                 '_orderRepository' => $this->orderRepositoryMock,
-                '_repositoryQuery' => $this->repositoryQueryMock
+                '_repositoryQuery' => $this->repositoryQueryMock,
+                'messageManager' => $this->messageManagerMock
             ]
         );
     }
@@ -207,13 +207,31 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
 
     public function testException()
     {
-        $this->contextMock->expects($this->any())->method('getRequest')->willReturn($this->requestMock);
+        $storeId = 1;
+        $quoteId = 69;
+        $encrypted = '0:2:Dwn8kCUk6nZU5B7b0Xn26uYQDeLUKBrD:S72utt9n585GrslZpDp+DRpW+8dpqiu/EiCHXwfEhS0=';
+
+        $this->contextMock->expects($this->once())->method('getRequest')->willReturn($this->requestMock);
         $this->contextMock->expects($this->any())->method('getResponse')->willReturn($this->responseMock);
-        $this->contextMock->expects($this->any())->method('getMessageManager')->willReturn($this->messageManagerMock);
         $this->contextMock->expects($this->any())->method('getUrl')->willReturn($this->urlBuilderMock);
+        $this->contextMock->expects($this->any())->method('getMessageManager')->willReturn($this->messageManagerMock);
+
+        $this->requestMock->expects($this->exactly(2))->method('getParam')
+            ->withConsecutive(['_store'], ['quoteid'])
+            ->willReturnOnConsecutiveCalls($storeId, $encrypted);
+
+        $this->encryptorMock->expects($this->once())->method('decrypt')
+            ->with($encrypted)
+            ->willReturn($quoteId);
 
         $expectedException = new \Exception("Could not load quote.");
-        $this->quoteRepositoryMock->expects($this->once())->method('get')->willThrowException($expectedException);
+
+        $this->quoteRepositoryMock->expects($this->once())->method('get')
+            ->with($quoteId, [$storeId])
+            ->willThrowException($expectedException);
+
+        $expectedException = new \Exception("Could not load quote.");
+
         $this->loggerMock->expects($this->once())->method('critical')->with($expectedException);
         $this->messageManagerMock->expects($this->once())->method('addError')->with('An error ocurred.');
 
@@ -228,8 +246,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             $this->repositoryQueryMock
         );
 
-//        $this->serverSuccessController->execute();
-        $this->objectManagerHelper->execute();
+        $this->serverSuccessController->execute();
     }
 
     /**
