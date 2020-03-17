@@ -100,6 +100,8 @@ class RecoverCart implements ObserverInterface
 
     private function filterActions()
     {
-          return $this->request->getFrontName() !== 'rest' && $this->request->getFullActionName() !== 'customer_section_load';
+          return $this->request->getFrontName() !== 'rest' &&
+              $this->request->getFrontName() !== 'sagepaysuite' &&
+              $this->request->getFullActionName() !== 'customer_section_load';
     }
 }
