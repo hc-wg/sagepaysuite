@@ -13,7 +13,7 @@ use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Type\AbstractType;
 use Magento\Framework\DataObject;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
-use Magento\Checkout\Model\Session;
+use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Quote\Model\Quote\Item;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Model\Order;
@@ -36,7 +36,7 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
     /** @var Quote */
     private $quoteMock;
 
-    /** @var Session */
+    /** @var CheckoutSession */
     private $checkoutSessionMock;
 
     /** @var RecoverCart */
@@ -63,7 +63,7 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->checkoutSessionMock = $this
-            ->getMockBuilder(Session::class)
+            ->getMockBuilder(CheckoutSession::class)
             ->setMethods(['setData', 'getData', 'getQuote', 'replaceQuote'])
             ->disableOriginalConstructor()
             ->getMock();

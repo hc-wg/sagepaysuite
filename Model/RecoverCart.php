@@ -3,7 +3,7 @@
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
-use Magento\Checkout\Model\Session as Session;
+use Magento\Checkout\Model\Session as CheckoutSession;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -20,7 +20,7 @@ class RecoverCart
     const QUOTE_ERROR_MESSAGE   = "Quote not availabe";
     const GENERAL_ERROR_MESSAGE = "Not possible to recover quote";
 
-    /** @var Session */
+    /** @var CheckoutSession */
     private $checkoutSession;
 
     /** @var Logger */
@@ -46,7 +46,7 @@ class RecoverCart
 
     /**
      * RecoverCart constructor.
-     * @param Session $checkoutSession
+     * @param CheckoutSession $checkoutSession
      * @param Logger $suiteLogger
      * @param OrderRepositoryInterface $orderRepository
      * @param QuoteFactory $quoteFactory
@@ -55,7 +55,7 @@ class RecoverCart
      * @param ManagerInterface $messageManager
      */
     public function __construct(
-        Session $checkoutSession,
+        CheckoutSession $checkoutSession,
         Logger $suiteLogger,
         OrderRepositoryInterface $orderRepository,
         QuoteFactory $quoteFactory,
