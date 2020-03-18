@@ -4,6 +4,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Observer;
 
 use Ebizmarts\SagePaySuite\Observer\RecoverCart;
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\Event\Observer;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Message\ManagerInterface;
@@ -16,6 +17,10 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
     const TEST_BASE_URL = "http://magento.test/";
     const TEST_MESSAGE  = "There is an order in process. Click <a target='_self' href=http://magento.test/sagepaysuite/cart/recover>HERE</a> to recover the cart.";
     const TEST_ORDER_ID = 7832;
+    const TEST_SUCCESS_ACTION_NAME = 'checkout_index_index';
+    const TEST_SUCCESS_FRONT_NAME = 'checkout';
+    const TEST_FAIL_ACTION_NAME = 'customer_section_load';
+    const TEST_FAIL_FRONT_NAME = 'rest';
 
     /** @var Session */
     private $sessionMock;
@@ -34,6 +39,9 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
 
     /** @var RecoverCart */
     private $recoverCart;
+
+    /** @var Http */
+    private $requestMock;
 
     protected function setUp()
     {
@@ -63,6 +71,11 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $this->requestMock = $this
+            ->getMockBuilder(Http::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $objectManagerHelper = new ObjectManagerHelper($this);
         $this->recoverCart = $objectManagerHelper->getObject(
             '\Ebizmarts\SagePaySuite\Observer\RecoverCart',
@@ -70,13 +83,23 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
                 'session'        => $this->sessionMock,
                 'messageManager' => $this->messageManagerMock,
                 'logo'           => $this->logoMock,
-                'urlInterface'   => $this->urlInterface
+                'urlInterface'   => $this->urlInterface,
+                'request'        => $this->requestMock
             ]
         );
     }
 
     public function testExecute()
     {
+        $this->requestMock
+            ->expects($this->exactly(2))
+            ->method('getFrontName')
+            ->willReturn(self::TEST_SUCCESS_FRONT_NAME);
+        $this->requestMock
+            ->expects($this->once())
+            ->method('getFullActionName')
+            ->willReturn(self::TEST_SUCCESS_ACTION_NAME);
+
         $this->sessionMock
             ->expects($this->exactly(2))
             ->method('getData')
@@ -107,11 +130,30 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
 
     public function testExecuteRecoverCartNotPossible()
     {
+        $this->requestMock
+            ->expects($this->exactly(2))
+            ->method('getFrontName')
+            ->willReturn(self::TEST_SUCCESS_FRONT_NAME);
+        $this->requestMock
+            ->expects($this->once())
+            ->method('getFullActionName')
+            ->willReturn(self::TEST_SUCCESS_ACTION_NAME);
+
         $this->sessionMock
             ->expects($this->exactly(2))
             ->method('getData')
             ->withConsecutive([SagePaySession::PRESAVED_PENDING_ORDER_KEY], [SagePaySession::CONVERTING_QUOTE_TO_ORDER])
             ->willReturnOnConsecutiveCalls(null, 0);
+
+        $this->recoverCart->execute($this->observerMock);
+    }
+
+    public function testExecuteFilterActionsFalse()
+    {
+        $this->requestMock
+            ->expects($this->once())
+            ->method('getFrontName')
+            ->willReturn(self::TEST_FAIL_FRONT_NAME);
 
         $this->recoverCart->execute($this->observerMock);
     }
