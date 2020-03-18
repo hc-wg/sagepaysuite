@@ -123,12 +123,17 @@ class Cancel extends Action
         $filter = array(
             'field' => 'increment_id',
             'value' => $this->quote->getReservedOrderId(),
-            'conditionType' => 'eq',
+            'conditionType' => 'eq'
         );
 
         $searchCriteria = $this->_repositoryQuery->buildSearchCriteriaWithOR(array($filter), 1, 1);
         $orders = $this->_orderRepository->getList($searchCriteria);
-        $order = current($orders);
+        $ordersCount = $orders->getTotalCount();
+        $orders = $orders->getItems();
+
+        if ($ordersCount > 0) {
+            $order = current($orders);
+        }
 
         if (empty($order->getId())) {
             throw new \Exception("Order not found.");
