@@ -6,9 +6,8 @@ use Ebizmarts\SagePaySuite\Observer\RecoverCart;
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Event\Observer;
-use Magento\Checkout\Model\Session;
+use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\Message\ManagerInterface;
-use Magento\Theme\Block\Html\Header\Logo;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
@@ -22,14 +21,11 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
     const TEST_FAIL_ACTION_NAME = 'customer_section_load';
     const TEST_FAIL_FRONT_NAME = 'rest';
 
-    /** @var Session */
-    private $sessionMock;
+    /** @var CheckoutSession */
+    private $checkoutSessionMock;
 
     /** @var ManagerInterface */
     private $messageManagerMock;
-
-    /** @var Logo */
-    private $logoMock;
 
     /** @var UrlInterface */
     private $urlInterface;
@@ -45,19 +41,14 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp()
     {
-        $this->sessionMock = $this
-            ->getMockBuilder(Session::class)
+        $this->checkoutSessionMock = $this
+            ->getMockBuilder(CheckoutSession::class)
             ->setMethods(['getData', 'setData'])
             ->disableOriginalConstructor()
             ->getMock();
 
         $this->messageManagerMock = $this
             ->getMockBuilder(ManagerInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->logoMock = $this
-            ->getMockBuilder(Logo::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -80,11 +71,10 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
         $this->recoverCart = $objectManagerHelper->getObject(
             '\Ebizmarts\SagePaySuite\Observer\RecoverCart',
             [
-                'session'        => $this->sessionMock,
-                'messageManager' => $this->messageManagerMock,
-                'logo'           => $this->logoMock,
-                'urlInterface'   => $this->urlInterface,
-                'request'        => $this->requestMock
+                'checkoutSession' => $this->checkoutSessionMock,
+                'messageManager'  => $this->messageManagerMock,
+                'urlInterface'    => $this->urlInterface,
+                'request'         => $this->requestMock
             ]
         );
     }
@@ -100,7 +90,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->method('getFullActionName')
             ->willReturn(self::TEST_SUCCESS_ACTION_NAME);
 
-        $this->sessionMock
+        $this->checkoutSessionMock
             ->expects($this->exactly(2))
             ->method('getData')
             ->withConsecutive([SagePaySession::PRESAVED_PENDING_ORDER_KEY], [SagePaySession::CONVERTING_QUOTE_TO_ORDER])
@@ -117,7 +107,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->with(self::TEST_MESSAGE)
             ->willReturnSelf();
 
-        $this->sessionMock
+        $this->checkoutSessionMock
             ->expects($this->once())
             ->method('setData')
             ->with(
@@ -139,7 +129,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->method('getFullActionName')
             ->willReturn(self::TEST_SUCCESS_ACTION_NAME);
 
-        $this->sessionMock
+        $this->checkoutSessionMock
             ->expects($this->exactly(2))
             ->method('getData')
             ->withConsecutive([SagePaySession::PRESAVED_PENDING_ORDER_KEY], [SagePaySession::CONVERTING_QUOTE_TO_ORDER])

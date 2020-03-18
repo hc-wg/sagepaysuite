@@ -6,7 +6,7 @@ namespace Ebizmarts\SagePaySuite\Observer;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Checkout\Model\Session;
+use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\Message\ManagerInterface;
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
@@ -14,8 +14,8 @@ use Magento\Framework\UrlInterface;
 
 class RecoverCart implements ObserverInterface
 {
-    /** @var Session */
-    private $session;
+    /** @var CheckoutSession */
+    private $checkoutSession;
 
     /** @var Logger */
     private $suiteLogger;
@@ -31,21 +31,21 @@ class RecoverCart implements ObserverInterface
 
     /**
      * RecoverCart constructor.
-     * @param Session $session
+     * @param CheckoutSession $checkoutSession
      * @param Logger $suiteLogger
      * @param ManagerInterface $messageManager
      * @param UrlInterface $urlInterface
      * @param Http $request
      */
     public function __construct(
-        Session $session,
+        CheckoutSession $checkoutSession,
         Logger $suiteLogger,
         ManagerInterface $messageManager,
         UrlInterface $urlInterface,
         Http $request
     )
     {
-        $this->session = $session;
+        $this->checkoutSession = $checkoutSession;
         $this->suiteLogger = $suiteLogger;
         $this->messageManager = $messageManager;
         $this->urlInterface = $urlInterface;
@@ -58,14 +58,14 @@ class RecoverCart implements ObserverInterface
     public function execute(Observer $observer)
     {
         if ($this->filterActions()) {
-            $presavedOrderId = $this->session->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
-            $convertingQuoteToOrder = $this->session->getData(SagePaySession::CONVERTING_QUOTE_TO_ORDER);
+            $presavedOrderId = $this->checkoutSession->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
+            $convertingQuoteToOrder = $this->checkoutSession->getData(SagePaySession::CONVERTING_QUOTE_TO_ORDER);
             if ($this->checkIfRecoverCartIsPossible($presavedOrderId, $convertingQuoteToOrder)) {
                 $url = $this->urlInterface->getBaseUrl() . "sagepaysuite/cart/recover";
                 $message = "<a target='_self' href=$url>HERE</a>";
                 $message = __("There is an order in process. Click " . $message . " to recover the cart.");
                 $this->messageManager->addNotice($message);
-                $this->session->setData(SagePaySession::CONVERTING_QUOTE_TO_ORDER, 0);
+                $this->checkoutSession->setData(SagePaySession::CONVERTING_QUOTE_TO_ORDER, 0);
             }
         }
     }
