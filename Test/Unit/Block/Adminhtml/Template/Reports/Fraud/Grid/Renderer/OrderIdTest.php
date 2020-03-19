@@ -6,60 +6,108 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer;
 
-class OrderIdTest extends \PHPUnit_Framework_TestCase
+use Magento\Backend\Block\Context;
+use Magento\Backend\Block\Widget\Grid\Column;
+use Magento\Framework\DataObject;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\OrderRepository;
+
+class OrderIdTest extends \PHPUnit\Framework\TestCase
 {
+    const TEST_ORDER_ENTITY_ID = 1;
+    const TEST_ORDER_INCREMENT_ID = 100000098;
     /**
      * @var \Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer\OrderId
      */
     private $orderIdRendererBlock;
 
+    /**
+     * @var OrderRepository
+     */
+    private $orderRepositoryMock;
+
+    /**
+     * @var Order
+     */
+    private $orderMock;
+
+    /**
+     * @var Context
+     */
+    private $contextMock;
+
+    /**
+     * @var DataObject
+     */
+    private $rowMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
-        $orderMock = $this
+        $urlBuilderMock = $this->getMockBuilder(\Magento\Framework\UrlInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $urlBuilderMock->expects($this->once())->method("getUrl")->with('sales/order/view/', ['order_id' => self::TEST_ORDER_ENTITY_ID])
+            ->willReturn("https://example.comsales/order/view/order_id/1");
+
+        $this->MakeContextMock($urlBuilderMock);
+
+        $columnMock = $this->getMockBuilder(Column::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["getIndex"])
+            ->getMock();
+        $columnMock->method("getIndex")->willReturn("order_id");
+
+        $this->orderRepositoryMock = $this
+            ->getMockBuilder(OrderRepository::class)
+            ->setMethods(['get'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->orderMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderMock->expects($this->once())
-            ->method('load')
-            ->willReturnSelf();
-
-        $orderFactoryMock = $this
-            ->getMockBuilder('Magento\Sales\Model\OrderFactory')
-            ->setMethods(['create'])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderFactoryMock->expects($this->once())
-            ->method('create')
-            ->will($this->returnValue($orderMock));
-
-        $columnMock = $this
-            ->getMockBuilder('Magento\Backend\Block\Widget\Grid\Column')
+            ->setMethods(['getEntityId', 'getIncrementId'])
             ->disableOriginalConstructor()
             ->getMock();
 
-        $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->orderMock->expects($this->once())->method('getEntityId')->willReturn(self::TEST_ORDER_ENTITY_ID);
+        $this->orderMock->expects($this->once())->method('getIncrementId')->willReturn(self::TEST_ORDER_INCREMENT_ID);
+
+        $this->rowMock = new DataObject(['order_id' => self::TEST_ORDER_ENTITY_ID]);
+
+        $objectManagerHelper = new ObjectManager($this);
         $this->orderIdRendererBlock = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer\OrderId',
             [
-                "orderFactory" => $orderFactoryMock
+                'context' => $this->contextMock,
+                'orderRepository' => $this->orderRepositoryMock
             ]
         );
 
+        $this->orderIdRendererBlock->setData('order_id', self::TEST_ORDER_ENTITY_ID);
         $this->orderIdRendererBlock->setColumn($columnMock);
     }
     // @codingStandardsIgnoreEnd
 
     public function testRender()
     {
-        $rowMock = $this
-            ->getMockBuilder('Magento\Framework\DataObject')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->orderRepositoryMock->expects($this->once())
+            ->method('get')->with(self::TEST_ORDER_ENTITY_ID)
+            ->willReturn($this->orderMock);
 
         $this->assertEquals(
-            '<a href=""></a>',
-            $this->orderIdRendererBlock->render($rowMock)
+            '<a href="https://example.comsales/order/view/order_id/1">' . self::TEST_ORDER_INCREMENT_ID . '</a>',
+            $this->orderIdRendererBlock->render(new DataObject(['order_id' => self::TEST_ORDER_ENTITY_ID]))
         );
+    }
+
+    /**
+     * @param \PHPUnit\Framework\MockObject\MockObject $urlBuilderMock
+     */
+    protected function MakeContextMock(\PHPUnit\Framework\MockObject\MockObject $urlBuilderMock): void
+    {
+        $this->contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->setMethods(['getUrlBuilder'])->getMock();
+        $this->contextMock->expects($this->once())->method('getUrlBuilder')->willReturn($urlBuilderMock);
     }
 }
