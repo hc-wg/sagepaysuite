@@ -18,7 +18,7 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
     /**
      * @var OrderRepository
      */
-    private $_orderRepository;
+    private $orderRepository;
 
     /**
      * OrderId constructor.
@@ -28,7 +28,7 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
      */
     public function __construct(Context  $context, OrderRepository $orderRepository, array $data = []) {
         parent::__construct($context, $data);
-        $this->_orderRepository = $orderRepository;
+        $this->orderRepository = $orderRepository;
     }
 
     /**
@@ -42,10 +42,11 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
         $orderId = parent::render($row);
 
         //find order with quote id
-        $order = $this->_orderRepository->get($orderId);
+        $order = $this->orderRepository->get($orderId);
 
         $link = $this->getUrl('sales/order/view/', ['order_id' => $order->getEntityId()]);
 
         return '<a href="' . $link . '">' . $order->getIncrementId() . '</a>';
     }
 }
+
