@@ -195,6 +195,7 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->_checkoutSession->setLastOrderStatus($this->_order->getStatus());
 
             $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
+            $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
 
             return $this->_redirect($redirect);
         } catch (\Exception $e) {

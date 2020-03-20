@@ -159,9 +159,15 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
         $quoteMock->expects($this->once())->method('getId')->willReturn(456);
 
         $checkoutSessionMock->method('getQuote')->willReturn($quoteMock);
-        $checkoutSessionMock->expects($this->once())->method('setData')->with(
-            "sagepaysuite_presaved_order_pending_payment",
-            456
+        $checkoutSessionMock->expects($this->exactly(2))->method('setData')->withConsecutive(
+            [
+                $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY),
+                $this->equalTo(456)
+            ],
+            [
+                $this->equalTo(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER),
+                $this->equalTo(1)
+            ]
         );
 
         $resultObject = $this->objectManagerHelper->getObject('\Ebizmarts\SagePaySuite\Api\Data\FormResult');

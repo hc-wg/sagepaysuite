@@ -71,7 +71,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
             ->willReturn('{' . self::TEST_VPS_TX_ID .'}');
 
         $paymentMock
-            ->expects($this->exactly(3))
+            ->expects($this->exactly(4))
             ->method('setAdditionalInformation')
             ->willReturnSelf();
 
@@ -113,6 +113,7 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
                 "vendortxcode" => "100000001-2016-12-12-123456",
                 "vpstxid" => "513C0BA4-E135-469B-DF3E-DF936FF69291",
                 "status" => "OK STATUS",
+                "securitykey" => "CDBE617TI9",
                 "threedresult" => "CHECKED"
             ]));
 
@@ -476,6 +477,149 @@ class SyncFromApiTest extends \PHPUnit_Framework_TestCase
         $suiteHelperMock = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Helper\Data'
         );
+
+        $syncFromApiController = $this->objectManagerHelper->getObject(
+            'Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi',
+            [
+                'context'               => $contextMock,
+                'orderFactory'          => $orderFactoryMock,
+                'reportingApi'          => $reportingApiMock,
+                'transactionRepository' => $trnRepoMock,
+                'fraudHelper'           => $fraudHelperMock,
+                'suiteHelper'           => $suiteHelperMock
+            ]
+        );
+
+        $syncFromApiController->execute();
+    }
+
+    public function testExecuteSecurityKeyNotSet()
+    {
+        $redirectMock = $this->getMockForAbstractClass('Magento\Framework\App\Response\RedirectInterface');
+
+        $responseMock = $this->makeResponseMock();
+
+        $messageManagerMock = $this->makeMessageManagerMock();
+        $messageManagerMock->expects($this->any())
+            ->method('addSuccess')
+            ->with(__('Successfully synced from Sage Pay\'s API'));
+
+        $requestMock = $this->makeRequestMock();
+        $requestMock->expects($this->any())
+            ->method('getParam')
+            ->will($this->returnValue(1));
+
+        $urlBuilderMock = $this->makeUrlBuilderMock();
+
+        $actionFlagMock = $this->makeActionFlagMock();
+
+        $sessionMock = $this->makeSessionMock();
+
+        $helperMock = $this->makeHelperMock();
+
+        $contextMock = $this->makeContextMock(
+            $responseMock,
+            $redirectMock,
+            $messageManagerMock,
+            $requestMock,
+            $urlBuilderMock,
+            $actionFlagMock,
+            $sessionMock,
+            $helperMock
+        );
+
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
+            ->setMethods(['getLastTransId', 'setAdditionalInformation', 'save', 'setLastTransId'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $paymentMock
+            ->expects($this->exactly(3))
+            ->method('getLastTransId')
+            ->willReturn('{' . self::TEST_VPS_TX_ID .'}');
+
+        $paymentMock
+            ->expects($this->exactly(3))
+            ->method('setAdditionalInformation')
+            ->willReturnSelf();
+
+        $paymentMock
+            ->expects($this->once())
+            ->method('setLastTransId')
+            ->willReturnSelf();
+
+        $orderMock = $this->makeOrderMock();
+
+        $orderMock->expects($this->any())
+            ->method('load')
+            ->willReturnSelf();
+
+        $orderMock->expects($this->any())
+            ->method('getPayment')
+            ->will($this->returnValue($paymentMock));
+
+        $orderMock->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(self::TEST_STORE_ID);
+
+        $orderFactoryMock = $this
+            ->getMockBuilder('Magento\Sales\Model\OrderFactory')
+            ->setMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderFactoryMock->expects($this->once())
+            ->method('create')
+            ->will($this->returnValue($orderMock));
+
+        $reportingApiMock = $this->makeReportingApiMock();
+
+        $reportingApiMock->expects($this->once())
+            ->method('getTransactionDetailsByVpstxid')
+            ->with(self::TEST_VPS_TX_ID, self::TEST_STORE_ID)
+            ->will($this->returnValue((object)[
+                "vendortxcode" => "100000001-2016-12-12-123456",
+                "vpstxid" => "513C0BA4-E135-469B-DF3E-DF936FF69291",
+                "status" => "OK STATUS",
+                "threedresult" => "CHECKED"
+            ]));
+
+        $trnRepoMock = $this
+            ->getMockBuilder(\Magento\Sales\Model\Order\Payment\Transaction\Repository::class)
+            ->setMethods(['getSagepaysuiteFraudCheck', 'getByTransactionId'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $trnRepoMock
+            ->expects($this->once())
+            ->method('getSagepaysuiteFraudCheck')
+            ->willReturn(false);
+
+        $trnRepoMock
+            ->expects($this->once())
+            ->method('getByTransactionId')
+            ->willReturnSelf();
+
+        $fraudHelperMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Fraud::class)
+            ->setMethods(['processFraudInformation'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $fraudHelperMock->expects($this->once())->method('processFraudInformation');
+
+        $suiteHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->setMethods(['clearTransactionId'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $suiteHelperMock
+            ->expects($this->once())
+            ->method('clearTransactionId')
+            ->with('{' . self::TEST_VPS_TX_ID .'}')
+            ->willReturn(self::TEST_VPS_TX_ID);
 
         $syncFromApiController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi',
