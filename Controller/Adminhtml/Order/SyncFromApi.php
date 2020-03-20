@@ -55,7 +55,7 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Magento\Sales\Model\Order\Payment\Transaction\Repository $transactionRepository
     ) {
-    
+
         parent::__construct($context);
         $this->_reportingApi          = $reportingApi;
         $this->_orderFactory          = $orderFactory;
@@ -90,6 +90,10 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
                 $payment->setAdditionalInformation('vendorTxCode', (string)$transactionDetails->vendortxcode);
                 $payment->setAdditionalInformation('statusDetail', (string)$transactionDetails->status);
 
+                if (isset($transactionDetails->securitykey)){
+                    $payment->setAdditionalInformation('securityKey', (string)$transactionDetails->securitykey);
+                }
+                
                 if (isset($transactionDetails->threedresult)) {
                     $payment->setAdditionalInformation('threeDStatus', (string)$transactionDetails->threedresult);
                 }
