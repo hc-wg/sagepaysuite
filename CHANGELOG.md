@@ -1,3 +1,11 @@
+## [1.1.34] - 2020-03-18
+### Changed
+- Store SecurityKey in Database when SyncFromApi
+- Enhance cart recovery to avoid orders cancelling when customer goes to checkout/cart
+
+### Fixed
+- Order not available error with FORM
+
 ## [1.1.33] - 2020-02-12
 ### Changed
 - Look transaction by vendorTxCode if not VPSTxId when SyncFromApi
@@ -366,6 +374,7 @@
    - PI integration (frontend)
    - Online Refunds
    
+[1.1.34]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.34
 [1.1.33]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.33
 [1.1.32]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.32
 [1.1.31]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.31
