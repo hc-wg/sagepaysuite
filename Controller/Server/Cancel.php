@@ -13,8 +13,9 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteIdMaskFactory;
-use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
 class Cancel extends Action
 {
@@ -46,14 +47,15 @@ class Cancel extends Action
     private $quoteIdMaskFactory;
 
     /**
-     * @var OrderFactory
-     */
-    private $orderFactory;
-
-    /**
      * @var EncryptorInterface
      */
     private $encryptor;
+
+    /** @var RecoverCart */
+    private $recoverCart;
+
+    /** @var OrderLoader */
+    private $orderLoader;
 
     /**
      * Cancel constructor.
@@ -64,7 +66,8 @@ class Cancel extends Action
      * @param Session $checkoutSession
      * @param Quote $quote
      * @param QuoteIdMaskFactory $quoteIdMaskFactory
-     * @param OrderFactory $orderFactory
+     * @param EncryptorInterface $encryptor
+     * @param RecoverCart $recoverCart
      */
     public function __construct(
         Context $context,
@@ -74,20 +77,23 @@ class Cancel extends Action
         Session $checkoutSession,
         Quote $quote,
         QuoteIdMaskFactory $quoteIdMaskFactory,
-        OrderFactory $orderFactory,
-        EncryptorInterface $encryptor
+        EncryptorInterface $encryptor,
+        RecoverCart $recoverCart,
+        OrderLoader $orderLoader
     ) {
     
         parent::__construct($context);
-        $this->suiteLogger = $suiteLogger;
-        $this->config      = $config;
-        $this->config->setMethodCode(Config::METHOD_SERVER);
+        $this->suiteLogger        = $suiteLogger;
+        $this->config             = $config;
         $this->logger             = $logger;
         $this->checkoutSession    = $checkoutSession;
         $this->quote              = $quote;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
-        $this->orderFactory       = $orderFactory;
         $this->encryptor          = $encryptor;
+        $this->recoverCart        = $recoverCart;
+        $this->orderLoader        = $orderLoader;
+
+        $this->config->setMethodCode(Config::METHOD_SERVER);
     }
 
     public function execute()
@@ -104,12 +110,9 @@ class Cancel extends Action
             throw new \Exception("Quote not found.");
         }
 
-        $order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
-        if (empty($order->getId())) {
-            throw new \Exception("Order not found.");
-        }
+        $order = $this->orderLoader->loadOrderFromQuote($this->quote);
 
-        $this->recoverCart($order);
+        $this->recoverCart->setShouldCancelOrder(true)->execute();
 
         $this->inactivateQuote($this->quote);
 
@@ -130,25 +133,6 @@ class Cancel extends Action
         if (!empty($message)) {
             $this->messageManager->addError($message);
         }
-    }
-
-    /**
-     * @param \Magento\Sales\Model\Order $order
-     */
-    private function recoverCart($order)
-    {
-        /** @var \Magento\Checkout\Model\Cart $cart */
-        $cart = $this->_objectManager->get("Magento\Checkout\Model\Cart");
-        $cart->setQuote($this->checkoutSession->getQuote());
-        $items = $order->getItemsCollection();
-        foreach ($items as $item) {
-            try {
-                $cart->addOrderItem($item);
-            } catch (\Exception $e) {
-                $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
-            }
-        }
-        $cart->save();
     }
 
     /**

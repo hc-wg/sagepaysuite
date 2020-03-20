@@ -22,8 +22,9 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteFactory;
-use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
 class Callback extends Action implements CsrfAwareActionInterface
 {
@@ -51,9 +52,6 @@ class Callback extends Action implements CsrfAwareActionInterface
 
     private $postData;
 
-    /** @var OrderFactory */
-    private $orderFactory;
-
     /** @var Post */
     private $postApi;
 
@@ -76,6 +74,12 @@ class Callback extends Action implements CsrfAwareActionInterface
      */
     private $encryptor;
 
+    /** @var RecoverCart */
+    private $recoverCart;
+
+    /** @var OrderLoader */
+    private $orderLoader;
+
     /**
      * Callback constructor.
      * @param Context $context
@@ -84,11 +88,12 @@ class Callback extends Action implements CsrfAwareActionInterface
      * @param Logger $suiteLogger
      * @param Post $postApi
      * @param Quote $quote
-     * @param OrderFactory $orderFactory
      * @param QuoteFactory $quoteFactory
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
      * @param EncryptorInterface $encryptor
+     * @param RecoverCart $recoverCart
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
@@ -97,11 +102,12 @@ class Callback extends Action implements CsrfAwareActionInterface
         Logger $suiteLogger,
         Post $postApi,
         Quote $quote,
-        OrderFactory $orderFactory,
         QuoteFactory $quoteFactory,
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
-        EncryptorInterface $encryptor
+        EncryptorInterface $encryptor,
+        RecoverCart $recoverCart,
+        OrderLoader $orderLoader
     ) {
     
         parent::__construct($context);
@@ -110,11 +116,12 @@ class Callback extends Action implements CsrfAwareActionInterface
         $this->suiteLogger         = $suiteLogger;
         $this->postApi             = $postApi;
         $this->quote               = $quote;
-        $this->orderFactory        = $orderFactory;
         $this->quoteFactory        = $quoteFactory;
         $this->updateOrderCallback = $updateOrderCallback;
         $this->suiteHelper         = $suiteHelper;
         $this->encryptor           = $encryptor;
+        $this->recoverCart         = $recoverCart;
+        $this->orderLoader         = $orderLoader;
 
         $this->config->setMethodCode(Config::METHOD_PAYPAL);
     }
@@ -137,7 +144,7 @@ class Callback extends Action implements CsrfAwareActionInterface
 
             $this->loadQuoteFromDataSource();
 
-            $order = $this->loadOrderFromDataSource();
+            $order = $this->orderLoader->loadOrderFromQuote($this->quote);
 
             $completionResponse = $this->sendCompletionPost()["data"];
 
@@ -148,7 +155,7 @@ class Callback extends Action implements CsrfAwareActionInterface
 
             $this->updatePaymentInformation($transactionId, $payment, $completionResponse);
 
-            $this->updateOrderCallback->setOrder($this->order);
+            $this->updateOrderCallback->setOrder($order);
             $this->updateOrderCallback->confirmPayment($transactionId);
 
             //prepare session to success or cancellation page
@@ -164,6 +171,7 @@ class Callback extends Action implements CsrfAwareActionInterface
 
             return;
         } catch (\Exception $e) {
+            $this->recoverCart->setShouldCancelOrder(true)->execute();
             $this->suiteLogger->logException($e);
             $this->redirectToCartAndShowError('We can\'t place the order: ' . $e->getMessage());
         }
@@ -238,20 +246,6 @@ class Callback extends Action implements CsrfAwareActionInterface
     }
 
     /**
-     * @return mixed
-     * @throws LocalizedException
-     */
-    private function loadOrderFromDataSource()
-    {
-        $order = $this->order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
-        if ($order === null || $order->getId() === null) {
-            throw new LocalizedException(__("Invalid order."));
-        }
-
-        return $order;
-    }
-
-    /**
      * @param $transactionId
      * @param $payment
      * @param $completionResponse
@@ -259,6 +253,8 @@ class Callback extends Action implements CsrfAwareActionInterface
      */
     private function updatePaymentInformation($transactionId, $payment, $completionResponse)
     {
+        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag TransactionId: " . $transactionId, [__METHOD__, __LINE__]);
+        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag getLastTransId: " . $payment->getLastTransId(), [__METHOD__, __LINE__]);
         if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) {
             $payment->setAdditionalInformation('statusDetail', $completionResponse['StatusDetail']);
             $payment->setAdditionalInformation('threeDStatus', $completionResponse['3DSecureStatus']);

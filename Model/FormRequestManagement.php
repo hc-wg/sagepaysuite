@@ -100,7 +100,7 @@ class FormRequestManagement implements FormManagementInterface
         FormCrypt $formCrypt,
         EncryptorInterface $encryptor
     ) {
-    
+
         $this->result             = $result;
         $this->quoteRepository    = $quoteRepository;
         $this->config             = $config;
@@ -128,6 +128,7 @@ class FormRequestManagement implements FormManagementInterface
             $this->quote = $this->getQuoteById($cartId);
             $this->quote->collectTotals();
             $this->quote->reserveOrderId();
+            $this->quote->save();
 
             $vendorname = $this->config->getVendorname();
             $this->transactionVendorTxCode = $this->suiteHelper->generateVendorTxCode(
@@ -144,6 +145,7 @@ class FormRequestManagement implements FormManagementInterface
             if ($order->getEntityId()) {
                 //set pre-saved order flag in checkout session
                 $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, $order->getId());
+                $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 1);
 
                 //set payment data
                 $payment = $order->getPayment();

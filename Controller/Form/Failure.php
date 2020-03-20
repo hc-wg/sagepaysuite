@@ -17,6 +17,7 @@ use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 
 class Failure extends Action
 {
@@ -64,11 +65,20 @@ class Failure extends Action
      */
     private $encryptor;
 
+    /** @var RecoverCart */
+    private $recoverCart;
+
     /**
+     * Failure constructor.
      * @param Context $context
      * @param Logger $suiteLogger
      * @param LoggerInterface $logger
      * @param Form $formModel
+     * @param OrderFactory $orderFactory
+     * @param QuoteFactory $quoteFactory
+     * @param Session $checkoutSession
+     * @param EncryptorInterface $encryptor
+     * @param RecoverCart $recoverCart
      */
     public function __construct(
         Context $context,
@@ -78,7 +88,8 @@ class Failure extends Action
         OrderFactory $orderFactory,
         QuoteFactory $quoteFactory,
         Session $checkoutSession,
-        EncryptorInterface $encryptor
+        EncryptorInterface $encryptor,
+        RecoverCart $recoverCart
     ) {
     
         parent::__construct($context);
@@ -89,6 +100,7 @@ class Failure extends Action
         $this->quoteFactory    = $quoteFactory;
         $this->checkoutSession = $checkoutSession;
         $this->encryptor       = $encryptor;
+        $this->recoverCart     = $recoverCart;
     }
 
     /**
@@ -107,13 +119,7 @@ class Failure extends Action
                 throw new LocalizedException(__('Invalid response from Sage Pay'));
             }
 
-            $this->quote = $this->quoteFactory->create()->load(
-                $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"))
-            );
-            $this->order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
-
-            //cancel pending payment order
-            $this->cancelOrder();
+            $this->recoverCart->setShouldCancelOrder(true)->execute();
 
             $statusDetail = $this->extractStatusDetail($response);
 
@@ -124,27 +130,6 @@ class Failure extends Action
         } catch (\Exception $e) {
             $this->messageManager->addError($e->getMessage());
             $this->logger->critical($e);
-        }
-    }
-
-    private function cancelOrder()
-    {
-        try {
-            $this->order->cancel()->save();
-
-            //recover quote
-            if ($this->quote->getId()) {
-                $this->quote->setIsActive(1);
-                $this->quote->setReservedOrderId(null);
-                $this->quote->save();
-
-                $this->checkoutSession->replaceQuote($this->quote);
-            }
-
-            //Unset data
-            $this->checkoutSession->unsLastRealOrderId();
-        } catch (\Exception $e) {
-            $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
         }
     }
 

@@ -191,10 +191,17 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         $configMock->expects($this->exactly(2))->method('getCurrencyConfig')->willReturn($data['currency_setting']);
         $configMock->expects($this->exactly(3))->method('setConfigurationScopeId')->with(1234);
 
-        $amount = $data['base_grand_total'];
-        if ($data['currency_setting'] !== Config::CURRENCY_BASE) {
-            $amount = $data['grand_total'];
-        }
+        $priceCurrencyMock = $this
+            ->getMockBuilder(\Magento\Framework\Pricing\PriceCurrencyInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $priceCurrencyMock
+            ->expects($this->once())
+            ->method('round')
+            ->with($data['expectedAmounToRound'])
+            ->willReturn($data['roundedAmount']);
+
+        $roundedAmount = $data['roundedAmount'];
 
         $transactionAmountFactory = $this->getMockBuilder('\Ebizmarts\SagePaySuite\Model\PiRequestManagement\TransactionAmountFactory')
             ->disableOriginalConstructor()
@@ -204,9 +211,9 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             ->getMock();
 
         if ($data['isRestRequest']) {
-            $transactionAmountFactory->expects($this->once())->method('create')->willReturn(new TransactionAmount($amount));
+            $transactionAmountFactory->expects($this->once())->method('create')->willReturn(new TransactionAmount($roundedAmount));
         } else {
-            $transactionAmountPostFactory->expects($this->once())->method('create')->willReturn(new TransactionAmountPost($amount));
+            $transactionAmountPostFactory->expects($this->once())->method('create')->willReturn(new TransactionAmountPost($roundedAmount));
         }
 
         $this->requestHelper = $this->objectManagerHelper->getObject(
@@ -215,7 +222,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                 'config'        => $configMock,
                 'objectManager' => $this->objectManagerMock,
                 'transactionAmountFactory' => $transactionAmountFactory,
-                'transactionAmountPostFactory' => $transactionAmountPostFactory
+                'transactionAmountPostFactory' => $transactionAmountPostFactory,
+                'priceCurrency' => $priceCurrencyMock
             ]
         );
 
@@ -238,6 +246,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     'isRestRequest' => true,
                     'base_grand_total' => 100,
                     'grand_total' => 200,
+                    'expectedAmounToRound' => 100,
+                    'roundedAmount' => 100,
                     'result' => [
                         'amount' => 10000,
                         'currency' => 'GBP'
@@ -250,6 +260,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     'isRestRequest' => true,
                     'base_grand_total' => 100,
                     'grand_total' => 200,
+                    'expectedAmounToRound' => 100,
+                    'roundedAmount' => 100,
                     'result' => [
                         'amount' => 10000,
                         'currency' => 'GBP'
@@ -262,6 +274,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     'isRestRequest' => true,
                     'base_grand_total' => 100,
                     'grand_total' => 200,
+                    'expectedAmounToRound' => 200,
+                    'roundedAmount' => 200,
                     'result' => [
                         'amount' => 20000,
                         'currency' => 'EUR'
@@ -274,6 +288,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     'isRestRequest' => false,
                     'base_grand_total' => 100,
                     'grand_total' => 200,
+                    'expectedAmounToRound' => 100,
+                    'roundedAmount' => 100,
                     'result' => [
                         'Amount' => 100.00,
                         'Currency' => 'GBP'
@@ -286,6 +302,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     'isRestRequest' => false,
                     'base_grand_total' => 100,
                     'grand_total' => 200,
+                    'expectedAmounToRound' => 100,
+                    'roundedAmount' => 100,
                     'result' => [
                         'Amount' => '100.00',
                         'Currency' => 'GBP'
@@ -298,6 +316,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     'isRestRequest' => true,
                     'base_grand_total' => 43.40,
                     'grand_total' => 9539.84,
+                    'expectedAmounToRound' => 9539.84,
+                    'roundedAmount' => 9539.84,
                     'result' => [
                         'amount' => 9540,
                         'currency' => 'JPY'
@@ -310,12 +330,28 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     'isRestRequest' => true,
                     'base_grand_total' => 43.40,
                     'grand_total' => 64731.10,
+                    'expectedAmounToRound' => 64731.10,
+                    'roundedAmount' => 64731.10,
                     'result' => [
                         'amount' => 64731,
                         'currency' => 'KRW'
                     ]
                 ]
-            ]
+            ],
+            'test with PI base round amount' => [
+                [
+                    'currency_setting' => Config::CURRENCY_BASE,
+                    'isRestRequest' => true,
+                    'base_grand_total' => 170.2575,
+                    'grand_total' => 170.26,
+                    'expectedAmounToRound' => 170.2575,
+                    'roundedAmount' => 170.26,
+                    'result' => [
+                        'amount' => 17026,
+                        'currency' => 'GBP'
+                    ]
+                ]
+            ],
         ];
     }
 

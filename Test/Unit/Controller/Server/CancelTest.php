@@ -23,8 +23,9 @@ use Magento\Checkout\Model\Cart;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
 use Magento\Framework\Encryption\EncryptorInterface;
 
@@ -57,9 +58,6 @@ class CancelTest extends \PHPUnit\Framework\TestCase
     /** @var Order|\PHPUnit_Framework_MockObject_MockObject */
     private $order;
 
-    /** @var OrderFactory|\PHPUnit_Framework_MockObject_MockObject */
-    private $orderFactory;
-
     /** @var Quote|\PHPUnit_Framework_MockObject_MockObject */
     private $quote;
 
@@ -84,6 +82,12 @@ class CancelTest extends \PHPUnit\Framework\TestCase
     /** @var EncryptorInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $encryptorMock;
 
+    /** @var RecoverCart */
+    private $recoverCartMock;
+
+    /** @var OrderLoader */
+    private $orderLoaderMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -101,15 +105,16 @@ class CancelTest extends \PHPUnit\Framework\TestCase
         $this->suiteLogger = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $this->urlBuilder = $this->getMockBuilder(UrlInterface::class)->disableOriginalConstructor()->getMock();
         $this->encryptorMock = $this->getMockBuilder(EncryptorInterface::class)->disableOriginalConstructor()->getMock();
-
-        $this->orderFactory = $this->getMockBuilder(OrderFactory::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['create'])
-            ->getMock();
+        $this->orderLoaderMock = $this->getMockBuilder(OrderLoader::class) ->disableOriginalConstructor()->getMock();
 
         $this->quoteIdMaskFactory = $this->getMockBuilder(QuoteIdMaskFactory::class)
             ->disableOriginalConstructor()
             ->setMethods(['create'])
+            ->getMock();
+
+        $this->recoverCartMock = $this
+            ->getMockBuilder(RecoverCart::class)
+            ->disableOriginalConstructor()
             ->getMock();
 
         $this->context->expects($this->atLeastOnce())->method('getRequest')->willReturn($this->request);
@@ -126,35 +131,39 @@ class CancelTest extends \PHPUnit\Framework\TestCase
             $this->checkoutSession,
             $this->quote,
             $this->quoteIdMaskFactory,
-            $this->orderFactory,
-            $this->encryptorMock
+            $this->encryptorMock,
+            $this->recoverCartMock,
+            $this->orderLoaderMock
         );
     }
     // @codingStandardsIgnoreEnd
 
     public function testExecute()
     {
-        $this->cart->expects($this->once())->method("setQuote");
-        $this->cart->expects($this->once())->method("save");
-
         $this->request->expects($this->exactly(3))
             ->method('getParam')
             ->withConsecutive(['message'], ['_store'], ['quote'])
             ->willReturnOnConsecutiveCalls("Error Message", self::QUOTE_ID);
 
         $this->messageManager->expects($this->once())->method('addError')->willReturn($this->request);
-        $this->om->expects($this->once())->method("get")->with("Magento\Checkout\Model\Cart")->willReturn($this->cart);
 
         $this->quote->expects($this->once())->method("getId")->willReturn(self::QUOTE_ID);
         $this->quote->expects($this->once())->method("load")->willReturnSelf();
-        $this->quote->expects($this->once())->method("getReservedOrderId")->willReturn(self::RESERVED_ORDER_ID);
 
-        $this->orderFactory->expects($this->once())->method("create")->willReturn($this->order);
-        $this->order->expects($this->once())->method("loadByIncrementId")->with(self::RESERVED_ORDER_ID)->willReturnSelf();
-        $this->order->expects($this->once())->method("getId")->willReturn(self::RESERVED_ORDER_ID);
-        $this->order->expects($this->once())->method("getItemsCollection")->willReturn([]);
+        $this->orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($this->quote)
+            ->willReturn($this->order);
 
-        $this->checkoutSession->expects($this->once())->method("getQuote")->willReturn($this->quote);
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('setShouldCancelOrder')
+            ->with(true)
+            ->willReturnSelf();
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('execute');
 
         $this->expectSetBody(
             '<script>window.top.location.href = "'

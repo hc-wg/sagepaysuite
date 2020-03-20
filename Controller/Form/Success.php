@@ -9,6 +9,7 @@ namespace Ebizmarts\SagePaySuite\Controller\Form;
 use Ebizmarts\SagePaySuite\Helper\Checkout;
 use Ebizmarts\SagePaySuite\Model\Form;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
@@ -17,7 +18,6 @@ use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
-use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
 
 class Success extends \Magento\Framework\App\Action\Action
@@ -49,11 +49,6 @@ class Success extends \Magento\Framework\App\Action\Action
     private $_quoteFactory;
 
     /**
-     * @var OrderFactory
-     */
-    private $_orderFactory;
-
-    /**
      * @var \Magento\Sales\Model\Order
      */
     private $_order;
@@ -74,6 +69,9 @@ class Success extends \Magento\Framework\App\Action\Action
      */
     private $encryptor;
 
+    /** @var OrderLoader */
+    private $orderLoader;
+
     /**
      * Success constructor.
      * @param Context $context
@@ -82,10 +80,11 @@ class Success extends \Magento\Framework\App\Action\Action
      * @param Checkout $checkoutHelper
      * @param Form $formModel
      * @param QuoteFactory $quoteFactory
-     * @param OrderFactory $orderFactory
      * @param OrderSender $orderSender
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
+     * @param EncryptorInterface $encryptor
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
@@ -94,11 +93,11 @@ class Success extends \Magento\Framework\App\Action\Action
         Checkout $checkoutHelper,
         Form $formModel,
         QuoteFactory $quoteFactory,
-        OrderFactory $orderFactory,
         OrderSender $orderSender,
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
-        EncryptorInterface $encryptor
+        EncryptorInterface $encryptor,
+        OrderLoader $orderLoader
     ) {
     
         parent::__construct($context);
@@ -106,11 +105,11 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_quoteFactory       = $quoteFactory;
         $this->_suiteLogger        = $suiteLogger;
         $this->_formModel          = $formModel;
-        $this->_orderFactory       = $orderFactory;
         $this->orderSender         = $orderSender;
         $this->updateOrderCallback = $updateOrderCallback;
         $this->suiteHelper         = $suiteHelper;
         $this->encryptor           = $encryptor;
+        $this->orderLoader         = $orderLoader;
     }
 
     /**
@@ -131,10 +130,7 @@ class Success extends \Magento\Framework\App\Action\Action
                 $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"))
             );
 
-            $this->_order = $this->_orderFactory->create()->loadByIncrementId($this->_quote->getReservedOrderId());
-            if ($this->_order === null || $this->_order->getId() === null) {
-                throw new LocalizedException(__('Order not available.'));
-            }
+            $this->_order = $this->orderLoader->loadOrderFromQuote($this->_quote);
 
             $transactionId = $response["VPSTxId"];
             $transactionId = $this->suiteHelper->removeCurlyBraces($transactionId); //strip brackets
@@ -195,6 +191,7 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->_checkoutSession->setLastOrderStatus($this->_order->getStatus());
 
             $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
+            $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
 
             return $this->_redirect($redirect);
         } catch (\Exception $e) {

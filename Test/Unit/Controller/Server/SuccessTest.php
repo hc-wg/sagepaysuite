@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Server;
 
 use Ebizmarts\SagePaySuite\Controller\Server\Success;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger as SuiteLogger;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\Http as HttpRequest;
@@ -18,7 +19,6 @@ use Magento\Framework\UrlInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface as Logger;
 
 class SuccessTest extends \PHPUnit\Framework\TestCase
@@ -37,9 +37,6 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
 
     /** @var Order|\PHPUnit_Framework_MockObject_MockObject */
     private $order;
-
-    /** @var OrderFactory|\PHPUnit_Framework_MockObject_MockObject */
-    private $orderFactory;
 
     /** @var Quote|\PHPUnit_Framework_MockObject_MockObject */
     private $quote;
@@ -65,6 +62,9 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
     /** @var EncryptorInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $encryptorMock;
 
+    /** @var OrderLoader */
+    private $orderLoaderMock;
+
     public function setUp()
     {
         $this->context = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
@@ -81,9 +81,9 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $this->quote = $this->getMockBuilder(Quote::class)->disableOriginalConstructor()->getMock();
         $this->encryptorMock = $this->getMockBuilder(EncryptorInterface::class)->disableOriginalConstructor()->getMock();
 
-        $this->orderFactory = $this->getMockBuilder(OrderFactory::class)
+        $this->orderLoaderMock = $this
+            ->getMockBuilder(OrderLoader::class)
             ->disableOriginalConstructor()
-            ->setMethods(['create'])
             ->getMock();
 
         $this->quoteFactory = $this->getMockBuilder(QuoteFactory::class)
@@ -101,8 +101,11 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $this->quote->expects($this->once())->method('load')->willReturnSelf();
         $this->quoteFactory->expects($this->once())->method('create')->willReturn($this->quote);
 
-        $this->order->expects($this->once())->method('loadByIncrementId')->willReturnSelf();
-        $this->orderFactory->expects($this->once())->method('create')->willReturn($this->order);
+        $this->orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($this->quote)
+            ->willReturn($this->order);
 
         $this->_expectSetBody(
             '<script>window.top.location.href = "'
@@ -115,9 +118,9 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             $this->suiteLogger,
             $this->logger,
             $this->checkoutSession,
-            $this->orderFactory,
             $this->quoteFactory,
-            $this->encryptorMock
+            $this->encryptorMock,
+            $this->orderLoaderMock
         );
 
         $this->serverSuccessController->execute();
@@ -139,9 +142,9 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             $this->suiteLogger,
             $this->logger,
             $this->checkoutSession,
-            $this->orderFactory,
             $this->quoteFactory,
-            $this->encryptorMock
+            $this->encryptorMock,
+            $this->orderLoaderMock
         );
 
         $this->serverSuccessController->execute();

@@ -7,6 +7,12 @@
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
+use Magento\Checkout\Model\Session;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Quote\Model\QuoteFactory;
+use Psr\Log\LoggerInterface;
 
 class Success extends \Magento\Framework\App\Action\Action
 {
@@ -18,46 +24,48 @@ class Success extends \Magento\Framework\App\Action\Action
     private $_suiteLogger;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     private $_logger;
 
     /**
-     * @var \Magento\Checkout\Model\Session
+     * @var Session
      */
     private $_checkoutSession;
 
     /**
-     * @var \Magento\Sales\Model\OrderFactory
-     */
-    private $_orderFactory;
-
-    /**
-     * @var \Magento\Quote\Model\QuoteFactory
+     * @var QuoteFactory
      */
     private $_quoteFactory;
 
     /**
-     * @var \Magento\Framework\Encryption\EncryptorInterface
+     * @var EncryptorInterface
      */
     private $encryptor;
 
     /**
-     * @param \Magento\Framework\App\Action\Context $context
+     * @var OrderLoader
+     */
+    private $orderLoader;
+
+    /**
+     * Success constructor.
+     * @param Context $context
      * @param Logger $suiteLogger
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Checkout\Model\Session $checkoutSession
-     * @param \Magento\Sales\Model\OrderFactory $orderFactory
-     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
+     * @param LoggerInterface $logger
+     * @param Session $checkoutSession
+     * @param QuoteFactory $quoteFactory
+     * @param EncryptorInterface $encryptor
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
+        Context $context,
         Logger $suiteLogger,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory,
-        \Magento\Framework\Encryption\EncryptorInterface $encryptor
+        LoggerInterface $logger,
+        Session $checkoutSession,
+        QuoteFactory $quoteFactory,
+        EncryptorInterface $encryptor,
+        OrderLoader $orderLoader
     ) {
     
         parent::__construct($context);
@@ -65,9 +73,9 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_suiteLogger     = $suiteLogger;
         $this->_logger          = $logger;
         $this->_checkoutSession = $checkoutSession;
-        $this->_orderFactory    = $orderFactory;
         $this->_quoteFactory    = $quoteFactory;
         $this->encryptor        = $encryptor;
+        $this->orderLoader      = $orderLoader;
     }
 
     public function execute()
@@ -80,7 +88,7 @@ class Success extends \Magento\Framework\App\Action\Action
             $quote->setStoreId($storeId);
             $quote->load($quoteId);
 
-            $order = $this->_orderFactory->create()->loadByIncrementId($quote->getReservedOrderId());
+            $order = $this->orderLoader->loadOrderFromQuote($quote);
 
             //prepare session to success page
             $this->_checkoutSession->clearHelperData();
@@ -92,6 +100,7 @@ class Success extends \Magento\Framework\App\Action\Action
 
             //remove order pre-saved flag from checkout
             $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
+            $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             $this->messageManager->addError(__('An error ocurred.'));
