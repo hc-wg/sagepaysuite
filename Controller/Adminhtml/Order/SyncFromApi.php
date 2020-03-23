@@ -89,10 +89,12 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
             $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
 
             if ($transactionId != null) {
-                $transactionDetails = $this->_reportingApi->getTransactionDetailsByVpstxid($transactionId, $order->getStoreId());
+                $transactionDetails = $this->_reportingApi->
+                getTransactionDetailsByVpstxid($transactionId, $order->getStoreId());
             } else {
                 $vendorTxCode = $payment->getAdditionalInformation("vendorTxCode");
-                $transactionDetails = $this->_reportingApi->getTransactionDetailsByVendorTxCode($vendorTxCode, $order->getStoreId());
+                $transactionDetails = $this->_reportingApi
+                    ->getTransactionDetailsByVendorTxCode($vendorTxCode, $order->getStoreId());
             }
 
             if ($this->issetTransactionDetails($transactionDetails)) {
