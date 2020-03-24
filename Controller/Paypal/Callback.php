@@ -246,7 +246,7 @@ class Callback extends Action implements CsrfAwareActionInterface
         $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
         $this->quote = $this->quoteRepository->get($quoteId);
 
-        if (empty($this->quote->getId())) {
+        if (!isset($this->quote) || empty($this->quote->getId())) {
             throw new LocalizedException(__("Unable to find payment data."));
         }
     }
