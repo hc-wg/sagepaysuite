@@ -422,9 +422,6 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
     public function testExecuteERRORInvalidQuote()
     {
         $this->encryptorMock->expects($this->once())->method('decrypt');
-        /*$this->encryptorMock->expects($this->once())->method('decrypt')->with(self::QUOTE_ID_ENCRYPTED)
-            ->willReturn(self::QUOTE_ID);*/
-        //$this->quoteMock->expects($this->once())->method('getId')->willReturn(null);
 
         $this->requestMock->expects($this->once())
             ->method('getPost')
@@ -449,7 +446,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteERRORInvalidOrder()
     {
-        $this->quoteMock->method('getId')->willReturn(69);
+        $this->quoteMock->method('getId')->willReturn(self::QUOTE_ID);
         $this->orderMock->method('getId')->willReturn(null);
 
         $this->encryptorMock->expects($this->once())->method('decrypt');
