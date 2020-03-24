@@ -222,7 +222,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $vendorTxCode = $this->suiteHelper->generateVendorTxCode($order->getIncrementId(), Config::ACTION_REFUND);
             $description  = 'Magento backend refund.';
 
-            $refundAmount = $baseAmount * 100;
+            $refundAmount = (int)($baseAmount * 100);
 
             if ($this->config->getCurrencyConfig() === CONFIG::CURRENCY_SWITCHER) {
                 $refundAmount = $this->calculateRefundAmount($baseAmount, $order, $refundAmount);
