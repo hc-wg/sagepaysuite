@@ -206,7 +206,6 @@ class Callback extends Action implements CsrfAwareActionInterface
     {
         $quoteAmount = $this->config->getQuoteAmount($this->quote);
         $amount = number_format($quoteAmount, 2, '.', '');
-
         return $amount;
     }
 
@@ -266,8 +265,16 @@ class Callback extends Action implements CsrfAwareActionInterface
             'conditionType' => 'eq'
         );
 
-        $searchCriteria = $this->_repositoryQuery->buildSearchCriteriaWithOR(array($filter), 1, 1);
-        $order = $this->order = current($this->orderRepository->getList($searchCriteria));
+        $searchCriteria = $this->_repositoryQuery
+            ->buildSearchCriteriaWithOR(array($filter), 1, 1);
+
+        $orders = $this->orderRepository->getList($searchCriteria);
+
+        $orderCount = $orders->getTotalCount();
+
+        if($orderCount > 0){
+            $order = $this->order = current($orders->getItems());
+        }
 
         if ($order === null || $order->getId() === null) {
             throw new LocalizedException(__("Invalid order."));
