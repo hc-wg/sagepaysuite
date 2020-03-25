@@ -11,9 +11,6 @@ use Ebizmarts\SagePaySuite\Model\Form;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Magento\Checkout\Model\Session;
-use Magento\Framework\Api\FilterBuilder;
-use Magento\Framework\Api\Search\FilterGroupBuilder;
-use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\AlreadyExistsException;
@@ -133,14 +130,17 @@ class Success extends Action
     public function execute()
     {
         try {
-            $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
+            $request = $this->getRequest();
+            $crypt = $request->getParam("crypt");
+            $response = $this->_formModel->decodeSagePayResponse($crypt);
 
             if (!array_key_exists("VPSTxId", $response)) {
                 throw new LocalizedException(__('Invalid response from Sage Pay.'));
             }
 
             $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
-            $quoteIDFromParams = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
+            $quoteIdEncrypted = $request->getParam("quoteid");
+            $quoteIDFromParams = $this->encryptor->decrypt($quoteIdEncrypted);
             $this->_quote = $this->_quoteRepository->get((int)$quoteIDFromParams);
             $reservedOrderId = $this->_quote->getReservedOrderId();
 
@@ -151,7 +151,6 @@ class Success extends Action
             );
 
             $searchCriteria = $this->_repositoryQuery->buildSearchCriteriaWithOR(array($incrementIdFilter));
-
 
             /**
              * @var Order
@@ -219,11 +218,12 @@ class Success extends Action
                 $redirect = 'checkout/onepage/success';
             }
 
+            $quoteId = $this->_quote->getId();
             //prepare session to success page
             $this->_checkoutSession->start();
             $this->_checkoutSession->clearHelperData();
-            $this->_checkoutSession->setLastQuoteId($this->_quote->getId());
-            $this->_checkoutSession->setLastSuccessQuoteId($this->_quote->getId());
+            $this->_checkoutSession->setLastQuoteId($quoteId);
+            $this->_checkoutSession->setLastSuccessQuoteId($quoteId);
             $this->_checkoutSession->setLastOrderId($this->_order->getId());
             $this->_checkoutSession->setLastRealOrderId($this->_order->getIncrementId());
             $this->_checkoutSession->setLastOrderStatus($this->_order->getStatus());
