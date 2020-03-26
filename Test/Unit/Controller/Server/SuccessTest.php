@@ -77,7 +77,7 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
     private $objectManagerHelper;
 
     /** @var SearchResults|\PHPUnit_Framework_MockObject_MockObject */
-    private $searchResultsInterfaceMock;
+    private $searchResultsMock;
 
     public function setUp()
     {
@@ -116,7 +116,7 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             ->setMethods(['get'])
             ->getMock();
 
-        $this->searchResultsInterfaceMock = $this->getMockBuilder(SearchResults::class)
+        $this->searchResultsMock = $this->getMockBuilder(SearchResults::class)
             ->disableOriginalConstructor()
             ->setMethods(['getTotalCount', 'getItems'])
             ->getMock();
@@ -176,14 +176,13 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             ->with(array($filter))->willReturn($searchCriteriaMock);
 
         $this->orderRepositoryMock->expects($this->once())->method('getList')
-            ->with($searchCriteriaMock)->willReturn($this->searchResultsInterfaceMock);
+            ->with($searchCriteriaMock)->willReturn($this->searchResultsMock);
 
-        $this->searchResultsInterfaceMock->expects($this->once())->method('getTotalCount')
+        $this->searchResultsMock->expects($this->once())->method('getTotalCount')
             ->willReturn(1);
 
-        $this->searchResultsInterfaceMock->expects($this->once())->method('getItems')
+        $this->searchResultsMock->expects($this->once())->method('getItems')
             ->willReturn(array($this->orderMock));
-
 
         $this->_expectSetBody(
             '<script>window.top.location.href = "'
