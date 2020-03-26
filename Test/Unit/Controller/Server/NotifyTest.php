@@ -8,11 +8,13 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Server;
 
 use Ebizmarts\SagePaySuite\Controller\Server\Notify;
 use Ebizmarts\SagePaySuite\Helper\Data;
+use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Ebizmarts\SagePaySuite\Model\Token;
 
+use Magento\Framework\Api\SearchCriteria;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Response\Http as HttpResponse;
 use Magento\Framework\App\Request\Http as HttpRequest;
@@ -23,11 +25,13 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHe
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteRepository;
+use Magento\Sales\Api\Data\OrderSearchResultInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\Order\Payment\TransactionFactory;
 use Magento\Sales\Model\OrderFactory;
+use Magento\Sales\Model\OrderRepository;
 use function urlencode;
 
 class NotifyTest extends \PHPUnit\Framework\TestCase
@@ -47,8 +51,11 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
     /** @var TransactionFactory|\PHPUnit_Framework_MockObject_MockObject */
     private $transactionFactory;
 
-    /** @var OrderFactory|\PHPUnit_Framework_MockObject_MockObject */
-    private $orderFactory;
+    /** @var OrderRepository|\PHPUnit_Framework_MockObject_MockObject */
+    private $orderRepository;
+
+    /** @var RepositoryQuery|\PHPUnit_Framework_MockObject_MockObject */
+    private $repositoryQueryMock;
 
     /** @var Context|\PHPUnit_Framework_MockObject_MockObject */
     private $context;
@@ -102,7 +109,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
 
         // Initialize common constructor args
         $this->makeSuiteLogger();
-        $this->makeOrderFactoryMock();
+        $this->makeOrderRepositoryMock();
         $this->makeOrderSender();
         $this->makeConfig();
         $this->makeSuiteHelper();
@@ -113,6 +120,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeContext();
         $this->makeToken();
         $this->makeEncryptor();
+        $this->makeRepositoryQueryMock();
     }
     // @codingStandardsIgnoreEnd
 
@@ -125,8 +133,34 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
+
+        $reservedOrderId = "000000001";
+
+        $this->quote->expects($this->once())->method('getReservedOrderId')->willReturn($reservedOrderId);
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $reservedOrderId,
+            'conditionType' => 'eq',
+        );
+
+        $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderSearchInterface = $this->getMockBuilder(OrderSearchResultInterface::class)
+            ->getMockForAbstractClass();
+
+        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
+            ->with(array($filter))->willReturn($searchCriteriaMock);
+
+        $this->orderRepository->expects($this->once())->method('getlist')
+            ->with($searchCriteriaMock)->willReturn($orderSearchInterface);
+
+        $orderSearchInterface->expects($this->once())->method('getTotalCount')->willReturn(1);
+        $orderSearchInterface->expects($this->once())->method('getItems')->willReturn(array($this->order));
 
         $this->order->expects($this->never())
             ->method('cancel')
@@ -184,7 +218,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->updateOrderCallback->expects($this->once())->method('confirmPayment')->with(self::TEST_VPSTXID);
 
         $this->controllerInstantiate();
-         $this->serverNotifyController->execute();
+        $this->serverNotifyController->execute();
     }
 
     public function testExecuteOkSagePayRetry()
@@ -196,7 +230,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->never())
@@ -267,7 +301,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->never())
@@ -339,12 +373,38 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
-        $this->order->expects($this->once())
-            ->method('cancel')
-            ->willReturnSelf();
+        $reservedOrderId = "000000001";
+
+        $this->quote->expects($this->once())->method('getReservedOrderId')->willReturn($reservedOrderId);
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $reservedOrderId,
+            'conditionType' => 'eq',
+        );
+
+        $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderSearchInterface = $this->getMockBuilder(OrderSearchResultInterface::class)
+            ->getMockForAbstractClass();
+
+        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
+            ->with(array($filter))->willReturn($searchCriteriaMock);
+
+        $this->orderRepository->expects($this->once())->method('getlist')
+            ->with($searchCriteriaMock)->willReturn($orderSearchInterface);
+
+        $orderSearchInterface->expects($this->once())->method('getTotalCount')->willReturn(1);
+        $orderSearchInterface->expects($this->once())->method('getItems')->willReturn(array($this->order));
+
+//        $this->order->expects($this->never())
+//            ->method('cancel')
+//            ->willReturnSelf();
 
         $transactionMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
@@ -403,7 +463,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order
@@ -474,7 +534,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1, 'INVALID_TRANSACTION');
 
         $this->order->expects($this->any())
@@ -538,7 +598,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->never())
@@ -605,7 +665,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->never())
@@ -672,7 +732,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->never())
@@ -750,7 +810,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder();
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(0);
         $this->controllerInstantiate();
 
@@ -773,7 +833,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->once())
@@ -862,7 +922,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $transactionMock = $this
@@ -929,14 +989,15 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $args = [
             'context'            => $this->context,
             'suiteLogger'        => $this->logger,
-            'orderFactory'       => $this->orderFactory,
+            '_orderRepository'   => $this->orderRepository,
             'orderSender'        => $this->orderSender,
             'config'             => $this->config,
             'tokenModel'         => $this->token,
             'updateOrderCallback'=> $this->updateOrderCallback,
             'suiteHelper'        => $this->suiteHelper,
             'cartRepository'     => $this->cartRepository,
-            'encryptor'          => $this->encryptor
+            'encryptor'          => $this->encryptor,
+            '_repositoryQuery'   => $this->repositoryQueryMock
         ];
 
         $this->serverNotifyController = $this->objectManagerHelper->getObject(Notify::class, $args);
@@ -980,8 +1041,12 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
 
     private function makeCartRepositoryWithFoundQuote($quoteId, $sharedStoreIds = [])
     {
-        $this->cartRepository = $this->getMockBuilder(QuoteRepository::class)->disableOriginalConstructor()->getMock();
-        $this->cartRepository->expects($this->once())->method('get')->with($quoteId, $sharedStoreIds)->willReturn($this->quote);
+        $this->cartRepository = $this->getMockBuilder(QuoteRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->cartRepository->expects($this->once())->method('get')
+            ->with($quoteId, $sharedStoreIds)->willReturn($this->quote);
     }
 
     private function makeCartRepositoryWithException($quoteId, $sharedStoreIds = [])
@@ -1045,21 +1110,24 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
             $this->order->expects($this->any())->method('getPayment')->will($this->returnValue($paymentMock));
         }
 
-        $this->order->expects($this->once())->method('loadByIncrementId')->willReturnSelf();
         $this->order->expects($this->any())->method('place')->willReturnSelf();
         $this->order->expects($this->atLeastOnce())->method('getId')->will($this->returnValue($id));
     }
 
-    private function makeOrderFactoryMock($order = null)
+    private function makeOrderRepositoryMock($order = null)
     {
-        $this->orderFactory = $this->getMockBuilder(OrderFactory::class)
+        $this->orderRepository = $this->getMockBuilder(OrderRepository::class)
             ->disableOriginalConstructor()
-            ->setMethods(['create'])
+            ->setMethods(['getList'])
             ->getMock();
+    }
 
-        if ($order) {
-            $this->orderFactory->expects($this->atLeastOnce())->method('create')->willReturn($order);
-        }
+    private function makeRepositoryQueryMock()
+    {
+        $this->repositoryQueryMock = $this->getMockBuilder(RepositoryQuery::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['buildSearchCriteriaWithOR'])
+            ->getMock();
     }
 
     private function makeOrderSender()
@@ -1083,6 +1151,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
     {
         $this->encryptor = $this->getMockBuilder(EncryptorInterface::class)
             ->disableOriginalConstructor()->getMock();
+
         $this->encryptor->expects($this->once())->method('decrypt')
             ->with(self::ENC_QUOTE_ID)
             ->willReturn(self::QUOTE_ID);
