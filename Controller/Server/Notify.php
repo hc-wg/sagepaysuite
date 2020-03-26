@@ -36,7 +36,7 @@ class Notify extends Action
     private $suiteLogger;
 
     /** @var OrderRepository */
-    private $orderRepository;
+    private $_orderRepository;
 
     /** @var OrderSender */
     private $orderSender;
@@ -106,7 +106,7 @@ class Notify extends Action
 
         $this->suiteLogger          = $suiteLogger;
         $this->updateOrderCallback  = $updateOrderCallback;
-        $this->_orderRepository      = $orderRepository;
+        $this->_orderRepository     = $orderRepository;
         $this->orderSender          = $orderSender;
         $this->config               = $config;
         $this->tokenModel           = $tokenModel;
@@ -138,17 +138,22 @@ class Notify extends Action
             );
 
             $searchCriteria = $this->_repositoryQuery->buildSearchCriteriaWithOR(array($filter));
-            $order = $this->orderRepository->getList($searchCriteria);
-            $order = current($order);
+            $orders = $this->_orderRepository->getList($searchCriteria);
+            $ordersCount = $orders->getTotalCount();
+            $order = null;
+
+            if($ordersCount > 0){
+                $order = current($orders->getItems());
+            }
 
             if ($order === null || $order->getId() === null) {
                 return $this->returnInvalid(__("Order was not found"));
             }
 
-            $this->order = $order;
-            $payment     = $order->getPayment();
-            $status = $this->postData->Status;
-            $statusDetail = $this->postData->StatusDetail;
+            $this->order   = $order;
+            $payment       = $order->getPayment();
+            $status        = $this->postData->Status;
+            $statusDetail  = $this->postData->StatusDetail;
             $transactionId = $this->suiteHelper->removeCurlyBraces($this->postData->VPSTxId);
 
             try {
