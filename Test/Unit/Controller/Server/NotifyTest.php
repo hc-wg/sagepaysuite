@@ -235,6 +235,32 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
+        $reservedOrderId = "000000001";
+
+        $this->quote->expects($this->once())->method('getReservedOrderId')->willReturn($reservedOrderId);
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $reservedOrderId,
+            'conditionType' => 'eq',
+        );
+
+        $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderSearchInterface = $this->getMockBuilder(OrderSearchResultInterface::class)
+            ->getMockForAbstractClass();
+
+        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
+            ->with(array($filter))->willReturn($searchCriteriaMock);
+
+        $this->orderRepository->expects($this->once())->method('getlist')
+            ->with($searchCriteriaMock)->willReturn($orderSearchInterface);
+
+        $orderSearchInterface->expects($this->once())->method('getTotalCount')->willReturn(1);
+        $orderSearchInterface->expects($this->once())->method('getItems')->willReturn(array($this->order));
+
         $this->order->expects($this->never())
             ->method('cancel')
             ->willReturnSelf();
@@ -249,6 +275,11 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->transactionFactory->expects($this->any())
             ->method('create')
             ->will($this->returnValue($transactionMock));
+        $this->order
+            ->expects($this->never())
+            ->method('getInvoiceCollection');
+
+        $this->encryptor->expects($this->once())->method('decrypt')->willReturn(self::QUOTE_ID);
 
         $this->encryptor->expects($this->any())->method('encrypt')
             ->with(self::QUOTE_ID)
@@ -308,8 +339,35 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
+        $reservedOrderId = "000000001";
+
+        $this->quote->expects($this->once())->method('getReservedOrderId')->willReturn($reservedOrderId);
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $reservedOrderId,
+            'conditionType' => 'eq',
+        );
+
+        $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderSearchInterface = $this->getMockBuilder(OrderSearchResultInterface::class)
+            ->getMockForAbstractClass();
+
+        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
+            ->with(array($filter))->willReturn($searchCriteriaMock);
+
+        $this->orderRepository->expects($this->once())->method('getlist')
+            ->with($searchCriteriaMock)->willReturn($orderSearchInterface);
+
+        $orderSearchInterface->expects($this->once())->method('getTotalCount')->willReturn(1);
+        $orderSearchInterface->expects($this->once())->method('getItems')->willReturn(array($this->order));
+
         $this->order->expects($this->never())
-            ->method('cancel');
+            ->method('cancel')
+            ->willReturnSelf();
 
         $transactionMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
@@ -408,9 +466,9 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $orderSearchInterface->expects($this->once())->method('getTotalCount')->willReturn(1);
         $orderSearchInterface->expects($this->once())->method('getItems')->willReturn(array($this->order));
 
-//        $this->order->expects($this->never())
-//            ->method('cancel')
-//            ->willReturnSelf();
+        $this->order->expects($this->once())
+            ->method('cancel')
+            ->willReturnSelf();
 
         $transactionMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
@@ -474,8 +532,33 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
-        $this->order
-            ->expects($this->once())
+        $reservedOrderId = "000000001";
+
+        $this->quote->expects($this->once())->method('getReservedOrderId')->willReturn($reservedOrderId);
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $reservedOrderId,
+            'conditionType' => 'eq',
+        );
+
+        $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderSearchInterface = $this->getMockBuilder(OrderSearchResultInterface::class)
+            ->getMockForAbstractClass();
+
+        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
+            ->with(array($filter))->willReturn($searchCriteriaMock);
+
+        $this->orderRepository->expects($this->once())->method('getlist')
+            ->with($searchCriteriaMock)->willReturn($orderSearchInterface);
+
+        $orderSearchInterface->expects($this->once())->method('getTotalCount')->willReturn(1);
+        $orderSearchInterface->expects($this->once())->method('getItems')->willReturn(array($this->order));
+
+        $this->order->expects($this->once())
             ->method('cancel')
             ->willReturnSelf();
         $this->order
@@ -547,7 +630,33 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1, 'INVALID_TRANSACTION');
 
-        $this->order->expects($this->any())
+        $reservedOrderId = "000000001";
+
+        $this->quote->expects($this->once())->method('getReservedOrderId')->willReturn($reservedOrderId);
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $reservedOrderId,
+            'conditionType' => 'eq',
+        );
+
+        $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderSearchInterface = $this->getMockBuilder(OrderSearchResultInterface::class)
+            ->getMockForAbstractClass();
+
+        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
+            ->with(array($filter))->willReturn($searchCriteriaMock);
+
+        $this->orderRepository->expects($this->once())->method('getlist')
+            ->with($searchCriteriaMock)->willReturn($orderSearchInterface);
+
+        $orderSearchInterface->expects($this->once())->method('getTotalCount')->willReturn(1);
+        $orderSearchInterface->expects($this->once())->method('getItems')->willReturn(array($this->order));
+
+        $this->order->expects($this->once())
             ->method('cancel')
             ->willReturnSelf();
 
@@ -612,6 +721,32 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeOrder($paymentMock, self::ORDER_ID);
         $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
+
+        $reservedOrderId = "000000001";
+
+        $this->quote->expects($this->once())->method('getReservedOrderId')->willReturn($reservedOrderId);
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $reservedOrderId,
+            'conditionType' => 'eq',
+        );
+
+        $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderSearchInterface = $this->getMockBuilder(OrderSearchResultInterface::class)
+            ->getMockForAbstractClass();
+
+        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
+            ->with(array($filter))->willReturn($searchCriteriaMock);
+
+        $this->orderRepository->expects($this->once())->method('getlist')
+            ->with($searchCriteriaMock)->willReturn($orderSearchInterface);
+
+        $orderSearchInterface->expects($this->once())->method('getTotalCount')->willReturn(1);
+        $orderSearchInterface->expects($this->once())->method('getItems')->willReturn(array($this->order));
 
         $this->order->expects($this->never())
             ->method('cancel')
@@ -682,6 +817,32 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
+        $reservedOrderId = "000000001";
+
+        $this->quote->expects($this->once())->method('getReservedOrderId')->willReturn($reservedOrderId);
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $reservedOrderId,
+            'conditionType' => 'eq',
+        );
+
+        $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderSearchInterface = $this->getMockBuilder(OrderSearchResultInterface::class)
+            ->getMockForAbstractClass();
+
+        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
+            ->with(array($filter))->willReturn($searchCriteriaMock);
+
+        $this->orderRepository->expects($this->once())->method('getlist')
+            ->with($searchCriteriaMock)->willReturn($orderSearchInterface);
+
+        $orderSearchInterface->expects($this->once())->method('getTotalCount')->willReturn(1);
+        $orderSearchInterface->expects($this->once())->method('getItems')->willReturn(array($this->order));
+
         $this->order->expects($this->never())
             ->method('cancel')
             ->willReturnSelf();
@@ -750,6 +911,32 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeOrder($paymentMock, self::ORDER_ID);
         $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
+
+        $reservedOrderId = "000000001";
+
+        $this->quote->expects($this->once())->method('getReservedOrderId')->willReturn($reservedOrderId);
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $reservedOrderId,
+            'conditionType' => 'eq',
+        );
+
+        $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderSearchInterface = $this->getMockBuilder(OrderSearchResultInterface::class)
+            ->getMockForAbstractClass();
+
+        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
+            ->with(array($filter))->willReturn($searchCriteriaMock);
+
+        $this->orderRepository->expects($this->once())->method('getlist')
+            ->with($searchCriteriaMock)->willReturn($orderSearchInterface);
+
+        $orderSearchInterface->expects($this->once())->method('getTotalCount')->willReturn(1);
+        $orderSearchInterface->expects($this->once())->method('getItems')->willReturn(array($this->order));
 
         $this->order->expects($this->never())
             ->method('cancel')
@@ -830,6 +1017,37 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeOrder();
         $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(0);
+
+        $reservedOrderId = "000000001";
+
+        $this->quote->expects($this->once())->method('getReservedOrderId')->willReturn($reservedOrderId);
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $reservedOrderId,
+            'conditionType' => 'eq',
+        );
+
+        $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderSearchInterface = $this->getMockBuilder(OrderSearchResultInterface::class)
+            ->getMockForAbstractClass();
+
+        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
+            ->with(array($filter))->willReturn($searchCriteriaMock);
+
+        $this->orderRepository->expects($this->once())->method('getlist')
+            ->with($searchCriteriaMock)->willReturn($orderSearchInterface);
+
+        $orderSearchInterface->expects($this->once())->method('getTotalCount')->willReturn(1);
+        $orderSearchInterface->expects($this->once())->method('getItems')->willReturn(array($this->order));
+
+        $transactionMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->controllerInstantiate();
 
         $this->responseExpectsSetBody(
@@ -860,6 +1078,32 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->order->expects($this->any())
             ->method('cancel')
             ->willReturnSelf();
+
+            $reservedOrderId = "000000001";
+
+        $this->quote->expects($this->once())->method('getReservedOrderId')->willReturn($reservedOrderId);
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $reservedOrderId,
+            'conditionType' => 'eq',
+        );
+
+        $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderSearchInterface = $this->getMockBuilder(OrderSearchResultInterface::class)
+            ->getMockForAbstractClass();
+
+        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
+            ->with(array($filter))->willReturn($searchCriteriaMock);
+
+        $this->orderRepository->expects($this->once())->method('getlist')
+            ->with($searchCriteriaMock)->willReturn($orderSearchInterface);
+
+        $orderSearchInterface->expects($this->once())->method('getTotalCount')->willReturn(1);
+        $orderSearchInterface->expects($this->once())->method('getItems')->willReturn(array($this->order));
 
         $transactionMock = $this
             ->getMockBuilder(Transaction::class)
@@ -944,6 +1188,36 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeOrder($paymentMock, self::ORDER_ID);
         $this->makeOrderRepositoryMock($this->order);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
+
+        $reservedOrderId = "000000001";
+
+        $this->quote->expects($this->once())->method('getReservedOrderId')->willReturn($reservedOrderId);
+
+        $filter = array(
+            'field' => 'increment_id',
+            'value' => $reservedOrderId,
+            'conditionType' => 'eq',
+        );
+
+        $searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderSearchInterface = $this->getMockBuilder(OrderSearchResultInterface::class)
+            ->getMockForAbstractClass();
+
+        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
+            ->with(array($filter))->willReturn($searchCriteriaMock);
+
+        $this->orderRepository->expects($this->once())->method('getlist')
+            ->with($searchCriteriaMock)->willReturn($orderSearchInterface);
+
+        $orderSearchInterface->expects($this->once())->method('getTotalCount')->willReturn(1);
+        $orderSearchInterface->expects($this->once())->method('getItems')->willReturn(array($this->order));
+
+        $this->order->expects($this->never())
+            ->method('cancel')
+            ->willReturnSelf();
 
         $transactionMock = $this
             ->getMockBuilder(Transaction::class)
