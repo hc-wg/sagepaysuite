@@ -26,6 +26,7 @@ use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
 use Magento\Framework\Encryption\EncryptorInterface;
 
