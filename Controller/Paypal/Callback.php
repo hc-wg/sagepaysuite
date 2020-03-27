@@ -151,7 +151,7 @@ class Callback extends Action implements CsrfAwareActionInterface
 
             $this->loadQuoteFromDataSource();
 
-            $order = $this->orderLoader->loadOrderFromQuote($this->quote);
+            $order = $this->loadOrderFromDataSource();
 
             $completionResponse = $this->sendCompletionPost()["data"];
 
@@ -162,7 +162,7 @@ class Callback extends Action implements CsrfAwareActionInterface
 
             $this->updatePaymentInformation($transactionId, $payment, $completionResponse);
 
-            $this->updateOrderCallback->setOrder($order);
+            $this->updateOrderCallback->setOrder($this->order);
             $this->updateOrderCallback->confirmPayment($transactionId);
 
             //prepare session to success or cancellation page

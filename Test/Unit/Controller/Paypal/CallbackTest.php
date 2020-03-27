@@ -278,11 +278,6 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->orderLoaderMock = $this
-            ->getMockBuilder(OrderLoader::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $this->quoteRepositoryMock = $this->getMockBuilder(\Magento\Quote\Model\QuoteRepository::class)
             ->setMethods(['get'])
             ->disableOriginalConstructor()
@@ -327,15 +322,10 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
      */
     public function testExecuteSUCCESS($mode, $paymentAction)
     {
-        $this->orderLoaderMock
-            ->expects($this->once())
-            ->method('loadOrderFromQuote')
-            ->with($this->quoteMock)
-            ->willReturn($this->orderMock);
         $this->configMock->method('getMode')->willReturn($mode);
         $this->configMock->method('getSagepayPaymentAction')->willReturn($paymentAction);
         $this->paymentMock->method('getLastTransId')->willReturn(self::TEST_VPSTXID);
-        $this->orderMock->expects($this->once())->method('getId')->willReturn(self::ORDER_ID);
+        $this->orderMock->expects($this->exactly(2))->method('getId')->willReturn(self::ORDER_ID);
         $this->quoteMock->expects($this->exactly(3))->method('getId')->willReturn(self::QUOTE_ID);
         $this->checkoutSessionMock->expects($this->once())->method("clearHelperData")->willReturn(null);
         $this->checkoutSessionMock
@@ -481,11 +471,6 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
 
     public function testExecuteERRORInvalidTrnId()
     {
-        $this->orderLoaderMock
-            ->expects($this->once())
-            ->method('loadOrderFromQuote')
-            ->with($this->quoteMock)
-            ->willReturn($this->orderMock);
         $this->quoteMock->method('getId')->willReturn(self::QUOTE_ID);
         $this->orderMock->method('getId')->willReturn(self::ORDER_ID);
         $this->paymentMock->method('getLastTransId')->willReturn('notequal');
