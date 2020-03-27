@@ -7,16 +7,15 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Paypal;
 
 use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
-use Ebizmarts\SagePaySuite\Model\Api\Http;
 use Ebizmarts\SagePaySuite\Model\Payment;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Framework\Api\Search\SearchCriteria;
-use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteRepository;
 use Magento\Sales\Api\Data\OrderSearchResultInterface;
+use Magento\Sales\Controller\Guest\OrderLoader;
 use Magento\Sales\Model\OrderRepository;
 
 class CallbackTest extends \PHPUnit_Framework_TestCase
@@ -268,7 +267,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
 
         $this->suiteHelperMock = $this->getMockBuilder("Ebizmarts\SagePaySuite\Helper\Data")
             ->disableOriginalConstructor()
-            ->setMethods(["removeCurlyBraces"])
+            ->setMethods(["methodCodeIsSagePay"])
             ->getMock();
 
         $this->encryptorMock = $this->getMockBuilder(EncryptorInterface::class)
@@ -277,6 +276,11 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
 
         $this->recoverCartMock = $this
             ->getMockBuilder(RecoverCart::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->orderLoaderMock = $this
+            ->getMockBuilder(OrderLoader::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -291,7 +295,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             [
                 'context'            => $contextMock,
                 'config'             => $this->configMock,
-                'checkoutSession'    => $checkoutSessionMock,
+                'checkoutSession'    => $this->checkoutSessionMock,
                 'checkoutHelper'     => $checkoutHelperMock,
                 'postApi'            => $postApiMock,
                 'transactionFactory' => $transactionFactoryMock,
@@ -324,11 +328,10 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecuteSUCCESS($mode, $paymentAction)
     {
-        $this->suiteHelperMock->expects($this->once())->method("removeCurlyBraces")->willReturn(self::TEST_VPSTXID);
         $this->configMock->method('getMode')->willReturn($mode);
         $this->configMock->method('getSagepayPaymentAction')->willReturn($paymentAction);
         $this->paymentMock->method('getLastTransId')->willReturn(self::TEST_VPSTXID);
-        $this->orderMock->expects($this->exactly(2))->method('getId')->willReturn(self::ORDER_ID);
+        $this->orderMock->expects($this->once())->method('getId')->willReturn(self::ORDER_ID);
         $this->quoteMock->expects($this->exactly(3))->method('getId')->willReturn(self::QUOTE_ID);
         $this->checkoutSessionMock->expects($this->once())->method("clearHelperData")->willReturn(null);
         $this->checkoutSessionMock
@@ -367,7 +370,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ->method('getPost')
             ->will($this->returnValue((object)[
                 "Status" => "PAYPALOK",
-                "StatusDetail" => "OK STATUS",
+                "StatusDetail" => "OK STATUS SUCCESS",
                 "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
             ]));
 
@@ -474,9 +477,15 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteERRORInvalidTrnId()
     {
+        $this->orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($this->quoteMock)
+            ->willReturn($this->orderMock);
         $this->quoteMock->method('getId')->willReturn(self::QUOTE_ID);
         $this->orderMock->method('getId')->willReturn(self::ORDER_ID);
         $this->paymentMock->method('getLastTransId')->willReturn('notequal');
+        $this->paymentMock->method('save')->willReturnSelf();
 
         $this->encryptorMock->expects($this->once())->method('decrypt');
 
