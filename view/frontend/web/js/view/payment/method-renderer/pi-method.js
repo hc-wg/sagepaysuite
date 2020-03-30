@@ -99,7 +99,6 @@ define(
                 var self = this;
                 storage.get(urlBuilder.createUrl('/sagepay/pi-msk', {})).done(
                     function (response) {
-
                         if (response.success) {
                             self.sagepayTokeniseCard(response.response);
                         } else {
@@ -115,18 +114,25 @@ define(
             savePaymentInfo: function () {
                 var self = this;
 
+                var defer = $.Deferred();
+
                 $.when(
                     setPaymentInformation(this.messageContainer, self.getData())
                 ).done(
                     function (response) {
                         if (response === true) {
                             self.createMerchantSessionKey();
+                            defer.resolve();
                         } else {
+                            defer.reject();
+
                             self.showPaymentError("Unable to save payment info.");
                         }
                     }
                 ).fail(
                     function (response) {
+                        defer.reject();
+
                         if (response.responseJSON) {
                             self.showPaymentError(response.responseJSON.message);
                         } else {
@@ -134,6 +140,7 @@ define(
                         }
                     }
                 );
+                return defer;
             },
             preparePayment: function () {
                 var self = this;
@@ -163,6 +170,13 @@ define(
                     ).done(
                         function () {
                             self.savePaymentInfo();
+                            if (!self.dropInEnabled()) {
+                                self.savePaymentInfo().done(function () {
+                                    self.createMerchantSessionKey();
+                                });
+                            } else {
+                                self.createMerchantSessionKey();
+                            }
                         }
                     ).fail(
                         function (response) {
