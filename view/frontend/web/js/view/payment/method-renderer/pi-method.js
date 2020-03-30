@@ -231,7 +231,7 @@ define(
                     self.selectPaymentMethod();
                 }
 
-                if (self.dropInEnabled()) {
+                if (self.dropInEnabled() && quote.billingAddress() != null) {
                     self.preparePayment();
                 }
             },

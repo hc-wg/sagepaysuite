@@ -128,7 +128,7 @@ class EcommerceManagement extends RequestManagement
         if ($order !== null) {
             //set pre-saved order flag in checkout session
             $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, $order->getId());
-            $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::QUOTE_IS_ACTIVE, 0);
+            $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 1);
 
             $payment = $order->getPayment();
             $payment->setTransactionId($this->getPayResult()->getTransactionId());
@@ -157,6 +157,8 @@ class EcommerceManagement extends RequestManagement
             $this->getResult()->setParEq($this->getPayResult()->getParEq());
             $this->getResult()->setCreq($this->getPayResult()->getCReq());
             $this->getResult()->setAcsUrl($this->getPayResult()->getAcsUrl());
+        } else {
+            $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
         }
     }
 
