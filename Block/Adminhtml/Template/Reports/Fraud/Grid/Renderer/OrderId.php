@@ -45,7 +45,7 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
     {
         $orderId = parent::render($row);
 
-        //find order with quote id
+        //Find order by order id
         $order = $this->_orderRepository->get($orderId);
 
         $link = $this->getUrl('sales/order/view/', ['order_id' => $order->getEntityId()]);
