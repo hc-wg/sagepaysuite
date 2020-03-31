@@ -9,6 +9,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Adminhtml\Order;
 use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
+use Magento\Sales\Model\OrderRepository;
 
 class SyncFromApiTest extends \PHPUnit\Framework\TestCase
 {
@@ -154,7 +155,7 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi',
             [
                 'context'               => $contextMock,
-                '_orderRepository'      => $orderRepositoryMock,
+                'orderRepository'       => $orderRepositoryMock,
                 'reportingApi'          => $reportingApiMock,
                 'transactionRepository' => $trnRepoMock,
                 'fraudHelper'           => $fraudHelperMock,
@@ -287,7 +288,7 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi',
             [
                 'context'               => $contextMock,
-                '_orderRepository'      => $orderRepositoryMock,
+                'orderRepository'       => $orderRepositoryMock,
                 'reportingApi'          => $reportingApiMock,
                 'transactionRepository' => $trnRepoMock,
                 'fraudHelper'           => $fraudHelperMock,
@@ -493,12 +494,12 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi',
             [
                 'context'                => $contextMock,
-                '_orderRepository'       => $orderRepositoryMock,
-                '_reportingApi'          => $reportingApiMock,
-                '_transactionRepository' => $trnRepoMock,
-                '_fraudHelper'           => $fraudHelperMock,
-                '_suiteLogger'           => $loggerMock,
-                '_suiteHelper'           => $suiteHelperMock
+                'orderRepository'       => $orderRepositoryMock,
+                'reportingApi'          => $reportingApiMock,
+                'transactionRepository' => $trnRepoMock,
+                'fraudHelper'           => $fraudHelperMock,
+                'suiteLogger'           => $loggerMock,
+                'suiteHelper'           => $suiteHelperMock
             ]
         );
 
@@ -633,7 +634,7 @@ class SyncFromApiTest extends \PHPUnit\Framework\TestCase
             'Ebizmarts\SagePaySuite\Controller\Adminhtml\Order\SyncFromApi',
             [
                 'context'               => $contextMock,
-                '_orderRepository'          => $orderRepositoryMock,
+                'orderRepository'          => $orderRepositoryMock,
                 'reportingApi'          => $reportingApiMock,
                 'transactionRepository' => $trnRepoMock,
                 'fraudHelper'           => $fraudHelperMock,
