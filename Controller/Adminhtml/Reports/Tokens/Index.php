@@ -20,12 +20,12 @@ class Index extends \Magento\Backend\App\Action
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    private $_logger;
+    private $logger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
      */
-    private $_reportingApi;
+    private $reportingApi;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -39,8 +39,8 @@ class Index extends \Magento\Backend\App\Action
     
         parent::__construct($context);
 
-        $this->_logger       = $logger;
-        $this->_reportingApi = $reportingApi;
+        $this->logger       = $logger;
+        $this->reportingApi = $reportingApi;
     }
 
     public function execute()
@@ -49,17 +49,17 @@ class Index extends \Magento\Backend\App\Action
 
         try {
             //check token count in sagepay
-            $tokenCount = $this->_reportingApi->getTokenCount();
+            $tokenCount = $this->reportingApi->getTokenCount();
             $tokenCount = (string)$tokenCount->totalnumber;
 
             $this->messageManager->addWarning(__('Registered tokens in Sage Pay: %1', $tokenCount));
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
-            $this->_logger->critical($apiException);
+            $this->logger->critical($apiException);
             $this->messageManager->addError(
                 __("Unable to check registered tokens in Sage Pay: %1", $apiException->getUserMessage())
             );
         } catch (\Exception $e) {
-            $this->_logger->critical($e);
+            $this->logger->critical($e);
             $this->messageManager->addError(__('Unable to check registered tokens in Sage Pay: %1', $e->getMessage()));
         }
 

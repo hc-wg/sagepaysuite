@@ -26,33 +26,33 @@ class Success extends Action
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    private $_quote;
+    private $quote;
 
     /**
      * @var Session
      */
-    private $_checkoutSession;
+    private $checkoutSession;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
      * @var Form
      */
-    private $_formModel;
+    private $formModel;
 
     /**
      * @var QuoteRepository
      */
-    private $_quoteRepository;
+    private $quoteRepository;
 
     /**
      * @var \Magento\Sales\Model\Order
      */
-    private $_order;
+    private $order;
 
     /** @var OrderSender */
     private $orderSender;
@@ -101,14 +101,14 @@ class Success extends Action
     {
 
         parent::__construct($context);
-        $this->_checkoutSession = $checkoutSession;
-        $this->_suiteLogger = $suiteLogger;
-        $this->_formModel = $formModel;
+        $this->checkoutSession = $checkoutSession;
+        $this->suiteLogger = $suiteLogger;
+        $this->formModel = $formModel;
         $this->orderSender = $orderSender;
         $this->updateOrderCallback = $updateOrderCallback;
         $this->suiteHelper = $suiteHelper;
         $this->encryptor = $encryptor;
-        $this->_quoteRepository = $quoteRepository;
+        $this->quoteRepository = $quoteRepository;
         $this->orderLoader         = $orderLoader;
     }
 
@@ -121,22 +121,22 @@ class Success extends Action
         try {
             $request = $this->getRequest();
             $crypt = $request->getParam("crypt");
-            $response = $this->_formModel->decodeSagePayResponse($crypt);
+            $response = $this->formModel->decodeSagePayResponse($crypt);
 
             if (!array_key_exists("VPSTxId", $response)) {
                 throw new LocalizedException(__('Invalid response from Sage Pay.'));
             }
 
-            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
+            $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
             $quoteIdEncrypted = $request->getParam("quoteid");
             $quoteIDFromParams = $this->encryptor->decrypt($quoteIdEncrypted);
-            $this->_quote = $this->_quoteRepository->get((int)$quoteIDFromParams);
+            $this->quote = $this->quoteRepository->get((int)$quoteIDFromParams);
 
-            $this->_order = $this->orderLoader->loadOrderFromQuote($this->_quote);
+            $this->order = $this->orderLoader->loadOrderFromQuote($this->quote);
 
             $transactionId = $response["VPSTxId"];
             $transactionId = $this->suiteHelper->removeCurlyBraces($transactionId); //strip brackets
-            $payment = $this->_order->getPayment();
+            $payment = $this->order->getPayment();
             $vendorTxCode = $payment->getAdditionalInformation("vendorTxCode");
 
             if (!empty($transactionId) && ($vendorTxCode == $response['VendorTxCode'])) {
@@ -166,12 +166,12 @@ class Success extends Action
             $status   = $response['Status'];
 
             if ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
-                $this->updateOrderCallback->setOrder($this->_order);
+                $this->updateOrderCallback->setOrder($this->order);
 
                 try {
                     $this->updateOrderCallback->confirmPayment($transactionId);
                 } catch (AlreadyExistsException $ex) {
-                    $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, "Sage Pay retry. $transactionId", [__METHOD__, __LINE__]);
+                    $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Sage Pay retry. $transactionId", [__METHOD__, __LINE__]);
                 }
                 $redirect = 'checkout/onepage/success';
             } elseif ($status == "PENDING") {
@@ -179,25 +179,25 @@ class Success extends Action
                 $payment->setAdditionalInformation('euroPayment', true);
 
                 //send order email
-                $this->orderSender->send($this->_order);
+                $this->orderSender->send($this->order);
 
                 $redirect = 'checkout/onepage/success';
             }
 
-            $quoteId = $this->_quote->getId();
+            $quoteId = $this->quote->getId();
             //prepare session to success page
-            $this->_checkoutSession->start();
-            $this->_checkoutSession->clearHelperData();
-            $this->_checkoutSession->setLastQuoteId($quoteId);
-            $this->_checkoutSession->setLastSuccessQuoteId($quoteId);
-            $this->_checkoutSession->setLastOrderId($this->_order->getId());
-            $this->_checkoutSession->setLastRealOrderId($this->_order->getIncrementId());
-            $this->_checkoutSession->setLastOrderStatus($this->_order->getStatus());
-            $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
+            $this->checkoutSession->start();
+            $this->checkoutSession->clearHelperData();
+            $this->checkoutSession->setLastQuoteId($quoteId);
+            $this->checkoutSession->setLastSuccessQuoteId($quoteId);
+            $this->checkoutSession->setLastOrderId($this->order->getId());
+            $this->checkoutSession->setLastRealOrderId($this->order->getIncrementId());
+            $this->checkoutSession->setLastOrderStatus($this->order->getStatus());
+            $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
 
             return $this->_redirect($redirect);
         } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e);
+            $this->suiteLogger->logException($e);
             $this->_redirectToCartAndShowError(
                 __('Your payment was successful but the order was NOT created, please contact us: %1', $e->getMessage())
             );
