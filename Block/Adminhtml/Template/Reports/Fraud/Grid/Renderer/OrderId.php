@@ -26,7 +26,11 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
      * @param OrderRepository $orderRepository
      * @param array $data
      */
-    public function __construct(Context  $context, OrderRepository $orderRepository, array $data = []) {
+    public function __construct(
+        Context $context,
+        OrderRepository $orderRepository,
+        array $data = []
+    ) {
         parent::__construct($context, $data);
         $this->_orderRepository = $orderRepository;
     }
