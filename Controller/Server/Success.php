@@ -6,21 +6,15 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
-use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Magento\Checkout\Model\Session;
-use Magento\Framework\Api\FilterBuilder;
-use Magento\Framework\Api\Search\FilterGroupBuilder;
-use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Quote\Model\QuoteRepository;
-use Magento\Sales\Model\Order;
-use Magento\Sales\Model\OrderRepository;
 use Psr\Log\LoggerInterface;
 
-class Success extends Action
+class Success extends \Magento\Framework\App\Action\Action
 {
 
     /**
@@ -30,19 +24,14 @@ class Success extends Action
     private $_suiteLogger;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     private $_logger;
 
     /**
-     * @var \Magento\Checkout\Model\Session
+     * @var Session
      */
     private $_checkoutSession;
-
-    /**
-     * @var OrderRepository
-     */
-    private $_orderRepository;
 
     /**
      * @var QuoteRepository
@@ -50,29 +39,14 @@ class Success extends Action
     private $_quoteRepository;
 
     /**
-     * @var \Magento\Framework\Encryption\EncryptorInterface
+     * @var EncryptorInterface
      */
     private $encryptor;
 
     /**
-     * @var FilterBuilder
+     * @var OrderLoader
      */
-    private $_filterBuilder;
-
-    /**
-     * @var FilterGroupBuilder
-     */
-    private $_filterGroupBuilder;
-
-    /**
-     * @var SearchCriteriaBuilder
-     */
-    private $_searchCriteriaBuilder;
-
-    /**
-     * @var RepositoryQuery
-     */
-    private $_repositoryQuery;
+    private $orderLoader;
 
     /**
      * Success constructor.
@@ -80,20 +54,18 @@ class Success extends Action
      * @param Logger $suiteLogger
      * @param LoggerInterface $logger
      * @param Session $checkoutSession
-     * @param OrderRepository $orderRepository
      * @param QuoteRepository $quoteRepository
      * @param EncryptorInterface $encryptor
-     * @param RepositoryQuery $repositoryQuery
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
         Logger $suiteLogger,
         LoggerInterface $logger,
         Session $checkoutSession,
-        OrderRepository $orderRepository,
         QuoteRepository $quoteRepository,
         EncryptorInterface $encryptor,
-        RepositoryQuery $repositoryQuery
+        OrderLoader $orderLoader
     ) {
 
         parent::__construct($context);
@@ -101,39 +73,22 @@ class Success extends Action
         $this->_suiteLogger     = $suiteLogger;
         $this->_logger          = $logger;
         $this->_checkoutSession = $checkoutSession;
-        $this->_orderRepository    = $orderRepository;
-        $this->_quoteRepository    = $quoteRepository;
+        $this->_quoteRepository = $quoteRepository;
         $this->encryptor        = $encryptor;
-        $this->_repositoryQuery        = $repositoryQuery;
+        $this->orderLoader      = $orderLoader;
     }
 
     public function execute()
     {
         try {
             $request = $this->getRequest();
+
             $storeId = $request->getParam("_store");
             $quoteId = $this->encryptor->decrypt($request->getParam("quoteid"));
+
             $quote = $this->_quoteRepository->get($quoteId, array($storeId));
 
-            $incrementIdFilter = array(
-                'field' => 'increment_id',
-                'conditionType' => 'eq',
-                'value' => $quote->getReservedOrderId()
-            );
-
-            $searchCriteria = $this->_repositoryQuery->buildSearchCriteriaWithOR(array($incrementIdFilter));
-
-            /**
-             * @var Order
-             */
-            $order = null;
-            $orders = $this->_orderRepository->getList($searchCriteria);
-            $ordersCount = $orders->getTotalCount();
-            $orders = $orders->getItems();
-
-            if ($ordersCount > 0) {
-                $order = current($orders);
-            }
+            $order = $this->orderLoader->loadOrderFromQuote($quote);
 
             //prepare session to success page
             $this->_checkoutSession->clearHelperData();
