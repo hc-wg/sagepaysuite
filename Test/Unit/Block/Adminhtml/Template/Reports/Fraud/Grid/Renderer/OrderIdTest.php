@@ -51,7 +51,9 @@ class OrderIdTest extends \PHPUnit\Framework\TestCase
         $urlBuilderMock->expects($this->once())->method("getUrl")->with('sales/order/view/', ['order_id' => self::TEST_ORDER_ENTITY_ID])
             ->willReturn("https://example.comsales/order/view/order_id/1");
 
-        $this->MakeContextMock($urlBuilderMock);
+        //$this->MakeContextMock($urlBuilderMock);
+        $this->contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->setMethods(['getUrlBuilder'])->getMock();
+        $this->contextMock->expects($this->once())->method('getUrlBuilder')->willReturn($urlBuilderMock);
 
         $columnMock = $this->getMockBuilder(Column::class)
             ->disableOriginalConstructor()
@@ -100,14 +102,5 @@ class OrderIdTest extends \PHPUnit\Framework\TestCase
             '<a href="https://example.comsales/order/view/order_id/1">' . self::TEST_ORDER_INCREMENT_ID . '</a>',
             $this->orderIdRendererBlock->render(new DataObject(['order_id' => self::TEST_ORDER_ENTITY_ID]))
         );
-    }
-
-    /**
-     * @param \PHPUnit\Framework\MockObject\MockObject $urlBuilderMock
-     */
-    protected function MakeContextMock(\PHPUnit\Framework\MockObject\MockObject $urlBuilderMock): void
-    {
-        $this->contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->setMethods(['getUrlBuilder'])->getMock();
-        $this->contextMock->expects($this->once())->method('getUrlBuilder')->willReturn($urlBuilderMock);
     }
 }
