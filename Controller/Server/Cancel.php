@@ -5,7 +5,6 @@
  */
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
-use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Checkout\Model\Session;
@@ -14,9 +13,9 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteIdMaskFactory;
-use Magento\Sales\Model\OrderRepository;
 use Psr\Log\LoggerInterface;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
 class Cancel extends Action
 {
@@ -25,45 +24,30 @@ class Cancel extends Action
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
     private $suiteLogger;
-    /**
-     * @var Config
-     */
+
+    /** @var Config */
     private $config;
-    /**
-     * @var LoggerInterface
-     */
+
+    /** @var LoggerInterface */
     private $logger;
 
-    /**
-     * @var Session
-     */
+    /** @var Session */
     private $checkoutSession;
 
-    /**
-     * @var Quote
-     */
+    /** @var Quote */
     private $quote;
 
     /** @var QuoteIdMaskFactory */
     private $quoteIdMaskFactory;
 
-    /**
-     * @var OrderRepository
-     */
-    private $_orderRepository;
-
-    /**
-     * @var EncryptorInterface
-     */
+    /** @var EncryptorInterface */
     private $encryptor;
 
     /** @var RecoverCart */
     private $recoverCart;
 
-    /**
-     * @var RepositoryQuery
-     */
-    private $_repositoryQuery;
+    /** @var OrderLoader */
+    private $orderLoader;
 
     /**
      * Cancel constructor.
@@ -74,10 +58,9 @@ class Cancel extends Action
      * @param Session $checkoutSession
      * @param Quote $quote
      * @param QuoteIdMaskFactory $quoteIdMaskFactory
-     * @param OrderRepository $orderRepository
      * @param EncryptorInterface $encryptor
      * @param RecoverCart $recoverCart
-     * @param RepositoryQuery $repositoryQuery
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
@@ -87,10 +70,9 @@ class Cancel extends Action
         Session $checkoutSession,
         Quote $quote,
         QuoteIdMaskFactory $quoteIdMaskFactory,
-        OrderRepository $orderRepository,
         EncryptorInterface $encryptor,
         RecoverCart $recoverCart,
-        RepositoryQuery $repositoryQuery
+        OrderLoader $orderLoader
     ) {
     
         parent::__construct($context);
@@ -100,10 +82,9 @@ class Cancel extends Action
         $this->checkoutSession    = $checkoutSession;
         $this->quote              = $quote;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
-        $this->_orderRepository   = $orderRepository;
         $this->encryptor          = $encryptor;
         $this->recoverCart        = $recoverCart;
-        $this->_repositoryQuery   = $repositoryQuery;
+        $this->orderLoader        = $orderLoader;
 
         $this->config->setMethodCode(Config::METHOD_SERVER);
     }
@@ -111,8 +92,10 @@ class Cancel extends Action
     public function execute()
     {
         $this->saveErrorMessage();
+
         $storeId = $this->getRequest()->getParam("_store");
         $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quote"));
+
         $this->quote->setStoreId($storeId);
         $this->quote->load($quoteId);
 
@@ -120,21 +103,11 @@ class Cancel extends Action
             throw new \Exception("Quote not found.");
         }
 
-        $filter = array(
-            'field' => 'increment_id',
-            'value' => $this->quote->getReservedOrderId(),
-            'conditionType' => 'eq',
-        );
-
-        $searchCriteria = $this->_repositoryQuery->buildSearchCriteriaWithOR(array($filter), 1, 1);
-        $orders = $this->_orderRepository->getList($searchCriteria);
-        $order = current($orders);
-
-        if (empty($order->getId())) {
-            throw new \Exception("Order not found.");
-        }
+        //Todo: Where is this order used???
+        $order = $this->orderLoader->loadOrderFromQuote($this->quote);
 
         $this->recoverCart->setShouldCancelOrder(true)->execute();
+
         $this->inactivateQuote($this->quote);
 
         $this
@@ -151,7 +124,6 @@ class Cancel extends Action
     private function saveErrorMessage()
     {
         $message = $this->getRequest()->getParam("message");
-
         if (!empty($message)) {
             $this->messageManager->addError($message);
         }
