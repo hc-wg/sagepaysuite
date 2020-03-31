@@ -7,7 +7,6 @@
 namespace Ebizmarts\SagePaySuite\Controller\Paypal;
 
 use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
-use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Api\Post;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
@@ -25,7 +24,7 @@ use Magento\Quote\Model\QuoteRepository;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
-use Magento\Sales\Model\OrderRepository;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
 class Callback extends Action implements CsrfAwareActionInterface
 {
@@ -53,19 +52,8 @@ class Callback extends Action implements CsrfAwareActionInterface
 
     private $postData;
 
-    /**
-     * @var QuoteRepository
-     */
-    private $quoteRepository;
-
-    /** @var OrderRepository */
-    private $orderRepository;
-
     /** @var Post */
     private $postApi;
-
-    /** @var \Magento\Sales\Model\Order */
-    private $order;
 
     /** @var OrderUpdateOnCallback */
     private $updateOrderCallback;
@@ -81,10 +69,11 @@ class Callback extends Action implements CsrfAwareActionInterface
     /** @var RecoverCart */
     private $recoverCart;
 
-    /**
-     * @var RepositoryQuery
-     */
-    private $_repositoryQuery;
+    /** @var OrderLoader */
+    private $orderLoader;
+
+    /** @var QuoteRepository */
+    private $quoteRepository;
 
     /**
      * Callback constructor.
@@ -94,13 +83,12 @@ class Callback extends Action implements CsrfAwareActionInterface
      * @param Logger $suiteLogger
      * @param Post $postApi
      * @param Quote $quote
-     * @param OrderRepository $orderRepository
      * @param QuoteRepository $quoteRepository
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
      * @param EncryptorInterface $encryptor
      * @param RecoverCart $recoverCart
-     * @param RepositoryQuery $repositoryQuery
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
@@ -109,13 +97,12 @@ class Callback extends Action implements CsrfAwareActionInterface
         Logger $suiteLogger,
         Post $postApi,
         Quote $quote,
-        OrderRepository $orderRepository,
         QuoteRepository $quoteRepository,
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
         EncryptorInterface $encryptor,
         RecoverCart $recoverCart,
-        RepositoryQuery $repositoryQuery
+        OrderLoader $orderLoader
     ) {
     
         parent::__construct($context);
@@ -124,13 +111,12 @@ class Callback extends Action implements CsrfAwareActionInterface
         $this->suiteLogger          = $suiteLogger;
         $this->postApi              = $postApi;
         $this->quote                = $quote;
-        $this->orderRepository      = $orderRepository;
         $this->quoteRepository      = $quoteRepository;
         $this->updateOrderCallback  = $updateOrderCallback;
         $this->suiteHelper          = $suiteHelper;
         $this->encryptor            = $encryptor;
         $this->recoverCart          = $recoverCart;
-        $this->_repositoryQuery     = $repositoryQuery;
+        $this->orderLoader         = $orderLoader;
 
         $this->config->setMethodCode(Config::METHOD_PAYPAL);
     }
@@ -152,7 +138,7 @@ class Callback extends Action implements CsrfAwareActionInterface
 
             $this->loadQuoteFromDataSource();
 
-            $order = $this->loadOrderFromDataSource();
+            $order = $this->orderLoader->loadOrderFromQuote($this->quote);
 
             $completionResponse = $this->sendCompletionPost()["data"];
 
@@ -163,7 +149,7 @@ class Callback extends Action implements CsrfAwareActionInterface
 
             $this->updatePaymentInformation($transactionId, $payment, $completionResponse);
 
-            $this->updateOrderCallback->setOrder($this->order);
+            $this->updateOrderCallback->setOrder($order);
             $this->updateOrderCallback->confirmPayment($transactionId);
 
             //prepare session to success or cancellation page
@@ -253,38 +239,6 @@ class Callback extends Action implements CsrfAwareActionInterface
     }
 
     /**
-     * @return mixed
-     * @throws LocalizedException
-     */
-    private function loadOrderFromDataSource()
-    {
-        $incrementId = $this->quote->getReservedOrderId();
-
-        $filter = array(
-            'field' => 'increment_id',
-            'value' => $incrementId,
-            'conditionType' => 'eq'
-        );
-
-        $searchCriteria = $this->_repositoryQuery
-            ->buildSearchCriteriaWithOR(array($filter), 1, 1);
-
-        $orders = $this->orderRepository->getList($searchCriteria);
-
-        $orderCount = $orders->getTotalCount();
-
-        if($orderCount > 0){
-            $order = $this->order = current($orders->getItems());
-        }
-
-        if ($order === null || $order->getId() === null) {
-            throw new LocalizedException(__("Invalid order."));
-        }
-
-        return $order;
-    }
-
-    /**
      * @param $transactionId
      * @param $payment
      * @param $completionResponse
@@ -292,11 +246,12 @@ class Callback extends Action implements CsrfAwareActionInterface
      */
     private function updatePaymentInformation($transactionId, $payment, $completionResponse)
     {
-        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag TransactionId: "
-            . $transactionId, [__METHOD__, __LINE__]);
-
-        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag getLastTransId: "
-            . $payment->getLastTransId(), [__METHOD__, __LINE__]);
+        $this->suiteLogger->sageLog(
+            Logger::LOG_REQUEST, "Flag TransactionId: " . $transactionId, [__METHOD__, __LINE__]
+        );
+        $this->suiteLogger->sageLog(
+            Logger::LOG_REQUEST, "Flag getLastTransId: " . $payment->getLastTransId(), [__METHOD__, __LINE__]
+        );
 
         if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) {
             $payment->setAdditionalInformation('statusDetail', $completionResponse['StatusDetail']);
