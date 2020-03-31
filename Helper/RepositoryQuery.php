@@ -32,34 +32,37 @@ class RepositoryQuery extends AbstractHelper
     /**
      * @var FilterBuilder
      */
-    private $_filterBuilder;
+    private $filterBuilder;
 
     /**
      * @var FilterGroupBuilder
      */
-    private $_filterGroupBuilder;
+    private $filterGroupBuilder;
 
     /**
      * @var SearchCriteriaBuilder
      */
-    private $_searchCriteriaBuilder;
+    private $searchCriteriaBuilder;
 
 
+    /**
+     * RepositoryQuery constructor.
+     * @param Context $context
+     * @param FilterBuilder $filterBuilder
+     * @param FilterGroupBuilder $filterGroupBuilder
+     * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     */
     public function __construct(
         Context $context,
         FilterBuilder $filterBuilder,
         FilterGroupBuilder $filterGroupBuilder,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
-        QuoteRepository $quoteRepository,
-        OrderRepository $orderRepository
+        SearchCriteriaBuilder $searchCriteriaBuilder
     )
     {
         parent::__construct($context);
-        $this->_quoteRepository = $quoteRepository;
-        $this->_orderRepository = $orderRepository;
-        $this->_filterBuilder = $filterBuilder;
-        $this->_filterGroupBuilder = $filterGroupBuilder;
-        $this->_searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->filterBuilder = $filterBuilder;
+        $this->filterGroupBuilder = $filterGroupBuilder;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
     }
 
     /**
@@ -76,7 +79,7 @@ class RepositoryQuery extends AbstractHelper
     public function buildSearchCriteriaWithOR(array $filters, $pageSize = null, $currentPage = null){
 
         foreach ($filters as $index => $filter) {
-            $filters[$index] = $this->_filterBuilder
+            $filters[$index] = $this->filterBuilder
                 ->setField($filter['field'])
                 ->setValue($filter['value'])
                 ->setConditionType($filter['conditionType'])
@@ -84,8 +87,8 @@ class RepositoryQuery extends AbstractHelper
         }
 
         //Filters in the same FilterGroup will be search with OR
-        $filterGroup = $this->_filterGroupBuilder->setFilters($filters)->create();
-        $searchCriteria = $this->_searchCriteriaBuilder->setFilterGroups(array($filterGroup));
+        $filterGroup = $this->filterGroupBuilder->setFilters($filters)->create();
+        $searchCriteria = $this->searchCriteriaBuilder->setFilterGroups(array($filterGroup));
 
         if (isset($pageSize)) {
             $searchCriteria->setPageSize($pageSize);
