@@ -6,7 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
-use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\InvalidSignatureException;
@@ -26,7 +25,7 @@ use Magento\Quote\Model\QuoteRepository;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use \Ebizmarts\SagePaySuite\Helper\Data;
-use Magento\Sales\Model\OrderRepository;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use function urlencode;
 
 class Notify extends Action implements CsrfAwareActionInterface
@@ -37,9 +36,6 @@ class Notify extends Action implements CsrfAwareActionInterface
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
     private $suiteLogger;
-
-    /** @var OrderRepository */
-    private $_orderRepository;
 
     /** @var OrderSender */
     private $orderSender;
@@ -74,15 +70,14 @@ class Notify extends Action implements CsrfAwareActionInterface
     private $encryptor;
 
     /**
-     * @var RepositoryQuery
+     * @var OrderLoader
      */
-    private $_repositoryQuery;
+    private $orderLoader;
 
     /**
      * Notify constructor.
      * @param Context $context
      * @param Logger $suiteLogger
-     * @param OrderRepository $orderRepository
      * @param OrderSender $orderSender
      * @param Config $config
      * @param Token $tokenModel
@@ -90,12 +85,11 @@ class Notify extends Action implements CsrfAwareActionInterface
      * @param Data $suiteHelper
      * @param QuoteRepository $cartRepository
      * @param EncryptorInterface $encryptor
-     * @param RepositoryQuery $repositoryQuery
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
         Logger $suiteLogger,
-        OrderRepository $orderRepository,
         OrderSender $orderSender,
         Config $config,
         Token $tokenModel,
@@ -103,20 +97,19 @@ class Notify extends Action implements CsrfAwareActionInterface
         Data $suiteHelper,
         QuoteRepository $cartRepository,
         EncryptorInterface $encryptor,
-        RepositoryQuery $repositoryQuery
+        OrderLoader $orderLoader
     ) {
         parent::__construct($context);
 
-        $this->suiteLogger          = $suiteLogger;
-        $this->updateOrderCallback  = $updateOrderCallback;
-        $this->_orderRepository     = $orderRepository;
-        $this->orderSender          = $orderSender;
-        $this->config               = $config;
-        $this->tokenModel           = $tokenModel;
-        $this->suiteHelper          = $suiteHelper;
-        $this->cartRepository       = $cartRepository;
-        $this->encryptor            = $encryptor;
-        $this->_repositoryQuery     = $repositoryQuery;
+        $this->suiteLogger         = $suiteLogger;
+        $this->updateOrderCallback = $updateOrderCallback;
+        $this->orderSender         = $orderSender;
+        $this->config              = $config;
+        $this->tokenModel          = $tokenModel;
+        $this->suiteHelper         = $suiteHelper;
+        $this->cartRepository      = $cartRepository;
+        $this->encryptor           = $encryptor;
+        $this->orderLoader         = $orderLoader;
 
         $this->config->setMethodCode(Config::METHOD_SERVER);
     }
@@ -125,6 +118,7 @@ class Notify extends Action implements CsrfAwareActionInterface
     {
         //get data from request
         $this->postData = $this->getRequest()->getPost();
+
         $storeId = $this->getRequest()->getParam("_store");
         $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
 
@@ -134,29 +128,13 @@ class Notify extends Action implements CsrfAwareActionInterface
         try {
             $this->quote = $this->cartRepository->get($quoteId, [$storeId]);
 
-            $filter = array(
-                'field' => 'increment_id',
-                'value' => $this->quote->getReservedOrderId(),
-                'conditionType' => 'eq',
-            );
+            $order = $this->orderLoader->loadOrderFromQuote($this->quote);
 
-            $searchCriteria = $this->_repositoryQuery->buildSearchCriteriaWithOR(array($filter));
-            $orders = $this->_orderRepository->getList($searchCriteria);
-            $ordersCount = $orders->getTotalCount();
-            $order = null;
+            $this->order = $order;
+            $payment     = $order->getPayment();
 
-            if($ordersCount > 0){
-                $order = current($orders->getItems());
-            }
-
-            if ($order === null || $order->getId() === null) {
-                return $this->returnInvalid(__("Order was not found"));
-            }
-
-            $this->order   = $order;
-            $payment       = $order->getPayment();
-            $status        = $this->postData->Status;
-            $statusDetail  = $this->postData->StatusDetail;
+            $status = $this->postData->Status;
+            $statusDetail = $this->postData->StatusDetail;
             $transactionId = $this->suiteHelper->removeCurlyBraces($this->postData->VPSTxId);
 
             try {
@@ -171,14 +149,12 @@ class Notify extends Action implements CsrfAwareActionInterface
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
                 $payment->setAdditionalInformation('statusDetail', $statusDetail);
                 $payment->setAdditionalInformation('threeDStatus', $this->postData->{'3DSecureStatus'});
-
                 if (isset($this->postData->{'BankAuthCode'})) {
                     $payment->setAdditionalInformation('bankAuthCode', $this->postData->{'BankAuthCode'});
                 }
                 if (isset($this->postData->{'TxAuthNo'})) {
                     $payment->setAdditionalInformation('txAuthNo', $this->postData->{'TxAuthNo'});
                 }
-
                 $payment->setCcType($this->postData->CardType);
                 $payment->setCcLast4($this->postData->Last4Digits);
                 $payment->setCcExpMonth(substr($this->postData->ExpiryDate, 0, 2));
