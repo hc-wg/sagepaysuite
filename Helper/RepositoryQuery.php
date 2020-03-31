@@ -75,7 +75,7 @@ class RepositoryQuery extends AbstractHelper
      */
     public function buildSearchCriteriaWithOR(array $filters, $pageSize = null, $currentPage = null){
 
-        foreach ($filters as $index => $filter){
+        foreach ($filters as $index => $filter) {
             $filters[$index] = $this->_filterBuilder
                 ->setField($filter['field'])
                 ->setValue($filter['value'])
@@ -87,11 +87,11 @@ class RepositoryQuery extends AbstractHelper
         $filterGroup = $this->_filterGroupBuilder->setFilters($filters)->create();
         $searchCriteria = $this->_searchCriteriaBuilder->setFilterGroups(array($filterGroup));
 
-        if(isset($pageSize)){
+        if (isset($pageSize)) {
             $searchCriteria->setPageSize($pageSize);
         }
 
-        if(isset($currentPage)) {
+        if (isset($currentPage)) {
             $searchCriteria->setCurrentPage($currentPage);
         }
 
