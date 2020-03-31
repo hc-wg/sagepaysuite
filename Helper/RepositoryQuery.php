@@ -75,7 +75,7 @@ class RepositoryQuery extends AbstractHelper
      */
     public function buildSearchCriteriaWithOR(array $filters, $pageSize = null, $currentPage = null){
 
-        foreach ($filters as $index => $filter){
+        foreach ($filters as $index => $filter) {
             $filters[$index] = $this->_filterBuilder
                 ->setField($filter['field'])
                 ->setValue($filter['value'])
