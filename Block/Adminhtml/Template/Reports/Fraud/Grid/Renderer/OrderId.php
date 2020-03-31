@@ -36,7 +36,7 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
     }
 
     /**
-     * Render grid column
+     * Render grid row
      *
      * @param \Magento\Framework\DataObject $row
      * @return string
