@@ -10,29 +10,24 @@ use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Api\Http;
 use Ebizmarts\SagePaySuite\Model\Form;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
-use Magento\Framework\Api\SearchCriteria;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use \Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Quote\Model\QuoteRepository;
-use Magento\Sales\Api\Data\OrderSearchResultInterface;
 use Magento\Sales\Model\OrderRepository;
 
 class SuccessTest extends \PHPUnit\Framework\TestCase
 {
-    /** @var OrderSearchResultInterface|\PHPUnit_Framework_MockObject_MockObject */
-    private $orderSearchInterfaceMock;
 
     /** @var Form|\PHPUnit_Framework_MockObject_MockObject */
     private $formModelMock;
 
     /** @var QuoteRepository|\PHPUnit_Framework_MockObject_MockObject */
     private $quoteRepositoryMock;
-
-    /** @var SearchCriteria|\PHPUnit_Framework_MockObject_MockObject */
-    private $searchCriteriaMock;
 
     /** @var OrderRepository|\PHPUnit_Framework_MockObject_MockObject */
     private $orderRepositoryMock;
@@ -71,6 +66,9 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
     /** @var \Ebizmarts\SagePaySuite\Helper\Data|\PHPUnit_Framework_MockObject_MockObject */
     private $suiteHelperMock;
 
+    /** @var OrderLoader|\PHPUnit_Framework_MockObject_MockObject */
+    private $orderLoaderMock;
+
 
     const quoteIDFromParams = 69;
     const encryptedQuoteId = '0:2:Dwn8kCUk6nZU5B7b0Xn26uYQDeLUKBrD:S72utt9n585GrslZpDp+DRpW+8dpqiu/EiCHXwfEhS0=';
@@ -91,14 +89,14 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
     public function setUp()
     {
         $this->makeQuoteRepositoryMock();
-        $this->makeOrderRepositoryMock();
         $this->makeResponseMock();
         $this->makeRequestMock();
         $this->makeRedirectMock();
         $checkoutSessionMock = $this->makeCheckoutSessionMock();
         $messageManagerMock = $this->makeMessageManagerMock();
 
-        $this->orderSearchInterfaceMock = $this->getMockBuilder(OrderSearchResultInterface::class)
+        $this->orderLoaderMock = $this
+            ->getMockBuilder(OrderLoader::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -108,14 +106,6 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
 
         $this->encryptorMock = $this->getMockBuilder(EncryptorInterface::class)
             ->disableOriginalConstructor()->getMock();
-
-        $this->repositoryQueryMock = $this->getMockBuilder(RepositoryQuery::class)
-            ->setMethods(['buildSearchCriteriaWithOR'])
-            ->disableOriginalConstructor()->getMock();
-
-        $this->searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
-            ->disableOriginalConstructor()
-            ->getMock();
 
         $this->checkoutHelperMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Checkout')
@@ -138,11 +128,11 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
                 'checkoutHelper'      => $this->checkoutHelperMock,
                 '_formModel'          => $this->formModelMock,
                 '_quoteRepository'    => $this->quoteRepositoryMock,
-                '_orderRepository'    => $this->orderRepositoryMock,
                 'suiteHelper'         => $this->suiteHelperMock,
                 'updateOrderCallback' => $this->updateOrderCallbackMock,
                 'encryptor'           => $this->encryptorMock,
                 '_repositoryQuery'    => $this->repositoryQueryMock,
+                'orderLoader'         => $this->orderLoaderMock,
             ]
         );
     }
@@ -204,31 +194,13 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             ->with(self::quoteIDFromParams)
             ->willReturn($quoteMock1);
 
-        $quoteMock1->expects($this->once())->method('getReservedOrderId')->willReturn(self::reservedOrderId);
+        $this->orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($quoteMock1)
+            ->willReturn($this->orderMock);
 
-        $incrementIdFilter = array(
-            'field' => 'increment_id',
-            'conditionType' => 'eq',
-            'value' => self::reservedOrderId
-        );
-
-        $this->repositoryQueryMock->expects($this->once())
-            ->method('buildSearchCriteriaWithOR')
-            ->with(array($incrementIdFilter))
-            ->willReturn($this->searchCriteriaMock);
-
-        $this->orderRepositoryMock->expects($this->once())
-            ->method('getList')
-            ->with($this->searchCriteriaMock)
-            ->willReturn($this->orderSearchInterfaceMock);
-
-        $this->orderSearchInterfaceMock->expects($this->once())
-            ->method('getTotalCount')->willReturn(1);
-
-        $this->orderSearchInterfaceMock->expects($this->once())
-            ->method('getItems')->willReturn(array($this->orderMock));
-
-        $this->orderMock->expects($this->exactly(2))->method('getId')->willReturnOnConsecutiveCalls(1, 1);
+        $this->orderMock->expects($this->once())->method('getId')->willReturn(1);
         $this->orderMock->expects($this->any())->method('getPayment')->willReturn($paymentMock);
 
         $paymentMock->expects($this->once())->method('getAdditionalInformation')
@@ -284,31 +256,13 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             ->with(self::quoteIDFromParams)
             ->willReturn($quoteMock1);
 
-        $quoteMock1->expects($this->once())->method('getReservedOrderId')->willReturn(self::reservedOrderId);
+        $this->orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($quoteMock1)
+            ->willReturn($this->orderMock);
 
-        $incrementIdFilter = array(
-            'field' => 'increment_id',
-            'conditionType' => 'eq',
-            'value' => self::reservedOrderId
-        );
-
-        $this->repositoryQueryMock->expects($this->once())
-            ->method('buildSearchCriteriaWithOR')
-            ->with(array($incrementIdFilter))
-            ->willReturn($this->searchCriteriaMock);
-
-        $this->orderRepositoryMock->expects($this->once())
-            ->method('getList')
-            ->with($this->searchCriteriaMock)
-            ->willReturn($this->orderSearchInterfaceMock);
-
-        $this->orderSearchInterfaceMock->expects($this->once())
-            ->method('getTotalCount')->willReturn(1);
-
-        $this->orderSearchInterfaceMock->expects($this->once())
-            ->method('getItems')->willReturn(array($this->orderMock));
-
-        $this->orderMock->expects($this->exactly(2))->method('getId')->willReturnOnConsecutiveCalls(1, 1);
+        $this->orderMock->expects($this->once(1))->method('getId')->willReturn(1);
         $this->orderMock->expects($this->any())->method('getPayment')->willReturn($paymentMock);
 
         $paymentMock->expects($this->once())->method('getAdditionalInformation')
@@ -364,31 +318,13 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             ->with(self::quoteIDFromParams)
             ->willReturn($quoteMock1);
 
-        $quoteMock1->expects($this->once())->method('getReservedOrderId')->willReturn(self::reservedOrderId);
+        $this->orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($quoteMock1)
+            ->willReturn($this->orderMock);
 
-        $incrementIdFilter = array(
-            'field' => 'increment_id',
-            'conditionType' => 'eq',
-            'value' => self::reservedOrderId
-        );
-
-        $this->repositoryQueryMock->expects($this->once())
-            ->method('buildSearchCriteriaWithOR')
-            ->with(array($incrementIdFilter))
-            ->willReturn($this->searchCriteriaMock);
-
-        $this->orderRepositoryMock->expects($this->once())
-            ->method('getList')
-            ->with($this->searchCriteriaMock)
-            ->willReturn($this->orderSearchInterfaceMock);
-
-        $this->orderSearchInterfaceMock->expects($this->once())
-            ->method('getTotalCount')->willReturn(1);
-
-        $this->orderSearchInterfaceMock->expects($this->once())
-            ->method('getItems')->willReturn(array($this->orderMock));
-
-        $this->orderMock->expects($this->exactly(2))->method('getId')->willReturnOnConsecutiveCalls(1, 1);
+        $this->orderMock->expects($this->once())->method('getId')->willReturn(1);
         $this->orderMock->expects($this->any())->method('getPayment')->willReturn($paymentMock);
 
         $paymentMock->expects($this->once())->method('getAdditionalInformation')
@@ -399,6 +335,10 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
 
     public function testExecuteError()
     {
+        $quoteMock1 = $this->getMockBuilder('\Magento\Quote\Model\Quote')
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
@@ -407,10 +347,6 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
 
         $this->checkoutHelperMock = $this
             ->getMockBuilder('Ebizmarts\SagePaySuite\Helper\Checkout')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $quoteMock1 = $this->getMockBuilder('\Magento\Quote\Model\Quote')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -441,31 +377,11 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             ->with(self::quoteIDFromParams)
             ->willReturn($quoteMock1);
 
-        $quoteMock1->expects($this->once())->method('getReservedOrderId')->willReturn(self::reservedOrderId);
-
-        $incrementIdFilter = array(
-            'field' => 'increment_id',
-            'conditionType' => 'eq',
-            'value' => self::reservedOrderId
-        );
-
-        $this->repositoryQueryMock->expects($this->once())
-            ->method('buildSearchCriteriaWithOR')
-            ->with(array($incrementIdFilter))
-            ->willReturn($this->searchCriteriaMock);
-
-        $this->orderRepositoryMock->expects($this->once())
-            ->method('getList')
-            ->with($this->searchCriteriaMock)
-            ->willReturn($this->orderSearchInterfaceMock);
-
-        $this->orderSearchInterfaceMock->expects($this->once())
-            ->method('getTotalCount')->willReturn(1);
-
-        $this->orderSearchInterfaceMock->expects($this->once())
-            ->method('getItems')->willReturn(array($this->orderMock));
-
-        $this->orderMock->expects($this->once())->method('getId')->willReturn(null);
+            $this->orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($quoteMock1)
+            ->willThrowException(new LocalizedException(__("Invalid order.")));
 
         $this->formSuccessController->execute();
     }
@@ -491,7 +407,6 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             ->method('decodeSagePayResponse')
             ->with(self::crypt)
             ->willReturn([
-                //"VPSTxId"        => "{" . self::TEST_VPSTXID . "}",
                 "CardType"       => "VISA",
                 "Last4Digits"    => "0006",
                 "StatusDetail"   => "OK_STATUS_DETAIL",
@@ -548,31 +463,12 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             ->with(self::quoteIDFromParams)
             ->willReturn($quoteMock1);
 
-        $quoteMock1->expects($this->once())->method('getReservedOrderId')->willReturn(self::reservedOrderId);
+        $this->orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($quoteMock1)
+            ->willReturn($this->orderMock);
 
-        $incrementIdFilter = array(
-            'field' => 'increment_id',
-            'conditionType' => 'eq',
-            'value' => self::reservedOrderId
-        );
-
-        $this->repositoryQueryMock->expects($this->once())
-            ->method('buildSearchCriteriaWithOR')
-            ->with(array($incrementIdFilter))
-            ->willReturn($this->searchCriteriaMock);
-
-        $this->orderRepositoryMock->expects($this->once())
-            ->method('getList')
-            ->with($this->searchCriteriaMock)
-            ->willReturn($this->orderSearchInterfaceMock);
-
-        $this->orderSearchInterfaceMock->expects($this->once())
-            ->method('getTotalCount')->willReturn(1);
-
-        $this->orderSearchInterfaceMock->expects($this->once())
-            ->method('getItems')->willReturn(array($this->orderMock));
-
-        $this->orderMock->expects($this->once())->method('getId')->willReturn(1);
         $this->orderMock->expects($this->any())->method('getPayment')->willReturn($paymentMock);
 
         $paymentMock->expects($this->once())->method('getAdditionalInformation')
