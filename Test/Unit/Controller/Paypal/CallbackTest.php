@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Paypal;
 
 use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\Payment;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Framework\Api\Search\SearchCriteria;
@@ -14,7 +15,6 @@ use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteRepository;
-use Magento\Sales\Api\Data\OrderSearchResultInterface;
 use Magento\Sales\Model\OrderRepository;
 
 class CallbackTest extends \PHPUnit\Framework\TestCase
@@ -95,10 +95,8 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
     /** @var RecoverCart */
     private $recoverCartMock;
 
-    /**
-     * @var SearchCriteria|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $searchCriteriaMock;
+    /** @var OrderLoader */
+    private $orderLoaderMock;
 
     // @codingStandardsIgnoreStart
     protected function setUp()
@@ -119,11 +117,6 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
         $this->quoteMock->expects($this->any())
             ->method('getPayment')
             ->will($this->returnValue($this->paymentMock));
-
-        $this->repositoryQueryMock = $this->getMockBuilder(RepositoryQuery::class)
-            ->setMethods(['buildSearchCriteriaWithOR'])
-            ->disableOriginalConstructor()
-            ->getMock();
 
         $this->checkoutSessionMock = $this->getMockBuilder(\Magento\Checkout\Model\Session::class)
             ->setMethods(
@@ -240,25 +233,17 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->getMock();
 
         $this->orderRepositoryMock = $this->getMockBuilder(OrderRepository::class)
-            ->setMethods(['create', 'loadByIncrementId', 'getList'])
+            ->setMethods(['getList'])
             ->disableOriginalConstructor()
             ->getMock();
 
         $this->searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
             ->disableOriginalConstructor()->getMock();
 
-        /*$this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
-            ->with(array($filter), 1, 1)->willReturn($this->searchCriteriaMock);
-
-        $this->orderRepositoryMock->expects($this->once())->method('getList')->willReturn($searchResultMock);
-        $searchResultMock->expects($this->once())->method('getTotalCount')->willReturn(1);
-        $searchResultMock->expects($this->once())->method('getItems')->willReturn(array($this->orderMock));*/
-
         $closedForActionFactoryMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory::class)
             ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
-
         $closedForActionMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config\ClosedForAction::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -283,6 +268,11 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $this->orderLoaderMock = $this
+            ->getMockBuilder(OrderLoader::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $objectManagerHelper            = new ObjectManagerHelper($this);
         $this->paypalCallbackController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Paypal\Callback',
@@ -294,13 +284,13 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
                 'postApi'            => $postApiMock,
                 'transactionFactory' => $transactionFactoryMock,
                 'quoteRepository'    => $this->quoteRepositoryMock,
-                'orderRepository'    => $this->orderRepositoryMock,
-                "actionFactory"      => $closedForActionFactoryMock,
-                "suiteHelper"        => $this->suiteHelperMock,
-                "encryptor"          => $this->encryptorMock,
-                "recoverCart"        => $this->recoverCartMock,
-                "quote"              => $this->quoteMock,
-                "_repositoryQuery"   => $this->repositoryQueryMock,
+                'actionFactory'      => $closedForActionFactoryMock,
+                'suiteHelper'        => $this->suiteHelperMock,
+                'encryptor'          => $this->encryptorMock,
+                'recoverCart'        => $this->recoverCartMock,
+                'quote'              => $this->quoteMock,
+                '_repositoryQuery'   => $this->repositoryQueryMock,
+                'orderLoader'        => $this->orderLoaderMock
 
             ]
         );
@@ -322,10 +312,15 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
      */
     public function testExecuteSUCCESS($mode, $paymentAction)
     {
+        $this->orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($this->quoteMock)
+            ->willReturn($this->orderMock);
         $this->configMock->method('getMode')->willReturn($mode);
         $this->configMock->method('getSagepayPaymentAction')->willReturn($paymentAction);
         $this->paymentMock->method('getLastTransId')->willReturn(self::TEST_VPSTXID);
-        $this->orderMock->expects($this->exactly(2))->method('getId')->willReturn(self::ORDER_ID);
+        $this->orderMock->expects($this->once())->method('getId')->willReturn(self::ORDER_ID);
         $this->quoteMock->expects($this->exactly(3))->method('getId')->willReturn(self::QUOTE_ID);
         $this->checkoutSessionMock->expects($this->once())->method("clearHelperData")->willReturn(null);
         $this->checkoutSessionMock
@@ -335,30 +330,11 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
         $this->checkoutSessionMock
             ->expects($this->once())->method("setLastOrderId")->with(self::ORDER_ID);
 
-        $this->quoteRepositoryMock->expects($this->once())->method('get')
-            ->with(self::QUOTE_ID)->willReturn($this->quoteMock);
-
         $this->encryptorMock->expects($this->once())->method('decrypt')->with(self::QUOTE_ID_ENCRYPTED)
             ->willReturn(self::QUOTE_ID);
 
-        $filter = array(
-            'field' => 'increment_id',
-            'value' => self::ORDER_INCREMENT_ID,
-            'conditionType' => 'eq'
-        );
-
-        $this->repositoryQueryMock->expects($this->once())->method('buildSearchCriteriaWithOR')
-            ->with(array($filter), 1, 1)->willReturn($this->searchCriteriaMock);
-
-        $searchResultMock = $this->getMockBuilder(OrderSearchResultInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->quoteMock->expects($this->once())->method('getReservedOrderId')->willReturn(self::ORDER_INCREMENT_ID);
-
-        $this->orderRepositoryMock->expects($this->once())->method('getList')->willReturn($searchResultMock);
-        $searchResultMock->expects($this->once())->method('getTotalCount')->willReturn(1);
-        $searchResultMock->expects($this->once())->method('getItems')->willReturn(array($this->orderMock));
+        $this->quoteRepositoryMock->expects($this->once())->method('get')
+            ->with(self::QUOTE_ID)->willReturn($this->quoteMock);
 
         $this->requestMock->expects($this->once())
             ->method('getPost')
