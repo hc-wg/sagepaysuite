@@ -97,42 +97,4 @@ class RepositoryQuery extends AbstractHelper
 
         return $searchCriteria->create();
     }
-
-    /**
-     * @param array $filters
-     * @param null $pageSize
-     * @param null $currentPage
-     * @return \Magento\Framework\Api\SearchCriteria
-     * @example
-     *          $filters = array(
-     *                              array('field' => 'name', 'value' => 'John', 'conditionType' => 'eq'),
-     *                              array('field' => 'age', 'value' => '50', 'conditionType' => 'gt')
-     *                          )
-     */
-    public function buildSearchCriteriaWithAND(array $filters, $pageSize = null, $currentPage = null){
-
-        $filterGroupsArray = array();
-
-        foreach ($filters as $index => $filter){
-            $filter = $this->_filterBuilder
-                ->setField($filter['field'])
-                ->setValue($filter['value'])
-                ->setConditionType($filter['conditionType'])
-                ->create();
-
-            $filterGroupsArray[] = $this->_filterGroupBuilder->setFilters(array($filter))->create();
-        }
-
-        $searchCriteria = $this->_searchCriteriaBuilder->setFilterGroups($filterGroupsArray);
-
-        if(isset($pageSize)){
-            $searchCriteria->setPageSize($pageSize);
-        }
-
-        if(isset($currentPage)) {
-            $searchCriteria->setCurrentPage($currentPage);
-        }
-
-        return $searchCriteria->create();
-    }
 }
