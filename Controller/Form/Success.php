@@ -45,11 +45,6 @@ class Success extends Action
     private $_formModel;
 
     /**
-     * @var OrderRepository
-     */
-    private $_orderRepository;
-
-    /**
      * @var QuoteRepository
      */
     private $_quoteRepository;
