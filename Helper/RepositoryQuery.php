@@ -87,7 +87,7 @@ class RepositoryQuery extends AbstractHelper
         $filterGroup = $this->_filterGroupBuilder->setFilters($filters)->create();
         $searchCriteria = $this->_searchCriteriaBuilder->setFilterGroups(array($filterGroup));
 
-        if(isset($pageSize)){
+        if (isset($pageSize)) {
             $searchCriteria->setPageSize($pageSize);
         }
 
