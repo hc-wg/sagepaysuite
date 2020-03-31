@@ -86,11 +86,13 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
                 throw new ValidatorException(__('Unable to sync from API: Invalid order id.'));
             }
 
-            $transactionId = $this->_suiteHelper->clearTransactionId($payment->getLastTransId());
+            $transactionIdDirty = $payment->getLastTransId();
+
+            $transactionId = $this->_suiteHelper->clearTransactionId($transactionIdDirty);
 
             if ($transactionId != null) {
-                $transactionDetails = $this->_reportingApi->
-                getTransactionDetailsByVpstxid($transactionId, $order->getStoreId());
+                $transactionDetails = $this->_reportingApi
+                    ->getTransactionDetailsByVpstxid($transactionId, $order->getStoreId());
             } else {
                 $vendorTxCode = $payment->getAdditionalInformation("vendorTxCode");
                 $transactionDetails = $this->_reportingApi
