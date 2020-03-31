@@ -13,43 +13,43 @@ class Success extends \Magento\Backend\App\AbstractAction
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Config
      */
-    private $_config;
+    private $config;
 
     /**
      * @var \Magento\Quote\Model\Quote
      */
-    private $_quote;
+    private $quote;
 
     /**
      * @var \Magento\Sales\Model\Order\Payment\TransactionFactory
      */
-    private $_transactionFactory;
+    private $transactionFactory;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Checkout
      */
-    private $_checkoutHelper;
+    private $checkoutHelper;
 
     /**
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Form
      */
-    private $_formModel;
+    private $formModel;
 
     /**
      * @var \Magento\Backend\Model\Session\Quote
      */
-    private $_quoteSession;
+    private $quoteSession;
 
     /**
      * @var \Magento\Quote\Model\QuoteManagement
      */
-    private $_quoteManagement;
+    private $quoteManagement;
 
     /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory */
     private $actionFactory;
@@ -79,15 +79,15 @@ class Success extends \Magento\Backend\App\AbstractAction
     ) {
 
         parent::__construct($context);
-        $this->_config = $config;
-        $this->_config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
-        $this->_formModel          = $formModel;
-        $this->_suiteLogger        = $suiteLogger;
-        $this->_quoteSession       = $quoteSession;
-        $this->actionFactory       = $actionFactory;
-        $this->_checkoutHelper     = $checkoutHelper;
-        $this->_quoteManagement    = $quoteManagement;
-        $this->_transactionFactory = $transactionFactory;
+        $this->config = $config;
+        $this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
+        $this->formModel          = $formModel;
+        $this->suiteLogger        = $suiteLogger;
+        $this->quoteSession       = $quoteSession;
+        $this->actionFactory      = $actionFactory;
+        $this->checkoutHelper     = $checkoutHelper;
+        $this->quoteManagement    = $quoteManagement;
+        $this->transactionFactory = $transactionFactory;
     }
 
     /**
@@ -100,21 +100,21 @@ class Success extends \Magento\Backend\App\AbstractAction
 
         try {
             //decode response
-            $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
+            $response = $this->formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
             if (!array_key_exists("VPSTxId", $response)) {
                 throw new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay'));
             }
 
             //log response
-            $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
+            $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
 
-            $this->_quote = $this->_quoteSession->getQuote();
+            $this->quote = $this->quoteSession->getQuote();
 
             $transactionId = $response["VPSTxId"];
             $transactionId = str_replace("{", "", str_replace("}", "", $transactionId)); //strip brackets
 
             //import payment info for save order
-            $payment = $this->_quote->getPayment();
+            $payment = $this->quote->getPayment();
             $payment->setMethod(\Ebizmarts\SagePaySuite\Model\Config::METHOD_FORM);
             $payment->setTransactionId($transactionId);
             $payment->setCcType($response["CardType"]);
@@ -128,16 +128,16 @@ class Success extends \Magento\Backend\App\AbstractAction
             }
             $payment->setAdditionalInformation('statusDetail', $response["StatusDetail"]);
             $payment->setAdditionalInformation('vendorTxCode', $response["VendorTxCode"]);
-            $payment->setAdditionalInformation('vendorname', $this->_config->getVendorname());
-            $payment->setAdditionalInformation('mode', $this->_config->getMode());
-            $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
+            $payment->setAdditionalInformation('vendorname', $this->config->getVendorname());
+            $payment->setAdditionalInformation('mode', $this->config->getMode());
+            $payment->setAdditionalInformation('paymentAction', $this->config->getSagepayPaymentAction());
 
-            $order = $this->_quoteManagement->submit($this->_quote);
+            $order = $this->quoteManagement->submit($this->quote);
 
             //an order may be created
             if ($order) {
                 //send email
-                $this->_checkoutHelper->sendOrderEmail($order);
+                $this->checkoutHelper->sendOrderEmail($order);
             } else {
                 throw new \Magento\Framework\Exception\LocalizedException(__('Can not create order'));
             }
@@ -148,11 +148,11 @@ class Success extends \Magento\Backend\App\AbstractAction
             $order->place()->save();
 
             /** @var \Ebizmarts\SagePaySuite\Model\Config\ClosedForAction $actionClosed */
-            $actionClosed = $this->actionFactory->create(['paymentAction' => $this->_config->getSagepayPaymentAction()]);
+            $actionClosed = $this->actionFactory->create(['paymentAction' => $this->config->getSagepayPaymentAction()]);
             list($action, $closed) = $actionClosed->getActionClosedForPaymentAction();
 
             //create transaction record
-            $transaction = $this->_transactionFactory->create();
+            $transaction = $this->transactionFactory->create();
             $transaction->setOrderPaymentObject($payment);
             $transaction->setTxnId($transactionId);
             $transaction->setOrderId($order->getEntityId());
@@ -174,7 +174,7 @@ class Success extends \Magento\Backend\App\AbstractAction
 
             return;
         } catch (\Exception $e) {
-            $this->_suiteLogger->logException($e, [__METHOD__, __LINE__]);
+            $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
             if ($order) {
                 $this->messageManager->addError($e->getMessage());
