@@ -173,10 +173,9 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             $this->suiteLoggerMock,
             $this->loggerMock,
             $this->checkoutSessionMock,
-            $this->orderRepositoryMock,
             $this->quoteRepositoryMock,
             $this->encryptorMock,
-            $this->repositoryQueryMock
+            $this->orderLoaderMock
         );
 
         $this->serverSuccessController->execute();
