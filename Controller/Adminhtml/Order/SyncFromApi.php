@@ -17,32 +17,32 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Api\Reporting
      */
-    private $_reportingApi;
+    private $reportingApi;
 
     /**
      * @var OrderRepository
      */
-    private $_orderRepository;
+    private $orderRepository;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $_suiteLogger;
+    private $suiteLogger;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Fraud
      */
-    private $_fraudHelper;
+    private $fraudHelper;
 
     /**
      * @var \Ebizmarts\SagePaySuite\Helper\Data
      */
-    private $_suiteHelper;
+    private $suiteHelper;
 
     /**
      * @var \Magento\Sales\Model\Order\Payment\Transaction\Repository
      */
-    private $_transactionRepository;
+    private $transactionRepository;
 
     /**
      * SyncFromApi constructor.
@@ -65,12 +65,12 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
     ) {
 
         parent::__construct($context);
-        $this->_reportingApi          = $reportingApi;
-        $this->_orderRepository       = $orderRepository;
-        $this->_suiteLogger           = $suiteLogger;
-        $this->_fraudHelper           = $fraudHelper;
-        $this->_suiteHelper           = $suiteHelper;
-        $this->_transactionRepository = $transactionRepository;
+        $this->reportingApi          = $reportingApi;
+        $this->orderRepository       = $orderRepository;
+        $this->suiteLogger           = $suiteLogger;
+        $this->fraudHelper           = $fraudHelper;
+        $this->suiteHelper           = $suiteHelper;
+        $this->transactionRepository = $transactionRepository;
     }
 
     public function execute()
@@ -80,7 +80,7 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
             $orderId = $this->getRequest()->getParam("order_id");
 
             if (!empty($orderId)) {
-                $order = $this->_orderRepository->get($orderId);
+                $order = $this->orderRepository->get($orderId);
                 $payment = $order->getPayment();
             } else {
                 throw new ValidatorException(__('Unable to sync from API: Invalid order id.'));
@@ -88,14 +88,14 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
 
             $transactionIdDirty = $payment->getLastTransId();
 
-            $transactionId = $this->_suiteHelper->clearTransactionId($transactionIdDirty);
+            $transactionId = $this->suiteHelper->clearTransactionId($transactionIdDirty);
 
             if ($transactionId != null) {
-                $transactionDetails = $this->_reportingApi
+                $transactionDetails = $this->reportingApi
                     ->getTransactionDetailsByVpstxid($transactionId, $order->getStoreId());
             } else {
                 $vendorTxCode = $payment->getAdditionalInformation("vendorTxCode");
-                $transactionDetails = $this->_reportingApi
+                $transactionDetails = $this->reportingApi
                     ->getTransactionDetailsByVendorTxCode($vendorTxCode, $order->getStoreId());
             }
 
@@ -116,19 +116,19 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
 
             //update fraud status
             if (!empty($payment->getLastTransId())) {
-                $transaction = $this->_transactionRepository
+                $transaction = $this->transactionRepository
                                 ->getByTransactionId($payment->getLastTransId(), $payment->getId(), $order->getId());
                 if ($transaction !== false && $this->isFraudNotChecked($transaction)) {
-                    $this->_fraudHelper->processFraudInformation($transaction, $payment);
+                    $this->fraudHelper->processFraudInformation($transaction, $payment);
                 }
             }
 
             $this->messageManager->addSuccess(__('Successfully synced from Sage Pay\'s API'));
         } catch (ApiException $apiException) {
-            $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__($this->cleanExceptionString($apiException)));
         } catch (\Exception $e) {
-            $this->_suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__('Something went wrong: %1', $e->getMessage()));
         }
 
