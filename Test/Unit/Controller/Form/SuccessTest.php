@@ -501,18 +501,6 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @param $paymentMock
-     * @return \PHPUnit_Framework_MockObject_MockObject
-     */
-    private function makeQuoteMock($paymentMock)
-    {
-        $quoteMock = $this->getMockBuilder('Magento\Quote\Model\Quote')->disableOriginalConstructor()->getMock();
-        $quoteMock->expects($this->any())->method('getPayment')->will($this->returnValue($paymentMock));
-
-        return $quoteMock;
-    }
-
-    /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
     private function makeCheckoutSessionMock()
@@ -583,36 +571,6 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $this->orderMock = $this->getMockBuilder('Magento\Sales\Model\Order')
             ->setMethods(['getId', 'getPayment'])
             ->disableOriginalConstructor()->getMock();
-    }
-
-    /**
-     * @return \PHPUnit_Framework_MockObject_MockObject
-     */
-    private function makeTransactionMock()
-    {
-        $transactionMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')->disableOriginalConstructor()->getMock();
-
-        return $transactionMock;
-    }
-
-    /**
-     * @param $transactionMock
-     * @return \PHPUnit_Framework_MockObject_MockObject
-     */
-    private function makeTransactionFactoryMock($transactionMock)
-    {
-        $transactionFactoryMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')->setMethods(['create'])->disableOriginalConstructor()->getMock();
-        $transactionFactoryMock->expects($this->any())->method('create')->will($this->returnValue($transactionMock));
-
-        return $transactionFactoryMock;
-    }
-
-    private function makeOrderRepositoryMock()
-    {
-        $this->orderRepositoryMock = $this->getMockBuilder(OrderRepository::class)
-            ->disableOriginalConstructor()
-            ->setMethods(["getList"])
-            ->getMock();
     }
 
     private function makeQuoteRepositoryMock()
