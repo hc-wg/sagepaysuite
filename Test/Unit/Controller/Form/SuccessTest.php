@@ -124,14 +124,14 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             'Ebizmarts\SagePaySuite\Controller\Form\Success',
             [
                 'context'             => $this->contextMock,
-                '_checkoutSession'    => $checkoutSessionMock,
+                'checkoutSession'    => $checkoutSessionMock,
                 'checkoutHelper'      => $this->checkoutHelperMock,
-                '_formModel'          => $this->formModelMock,
-                '_quoteRepository'    => $this->quoteRepositoryMock,
+                'formModel'          => $this->formModelMock,
+                'quoteRepository'    => $this->quoteRepositoryMock,
                 'suiteHelper'         => $this->suiteHelperMock,
                 'updateOrderCallback' => $this->updateOrderCallbackMock,
                 'encryptor'           => $this->encryptorMock,
-                '_repositoryQuery'    => $this->repositoryQueryMock,
+                'repositoryQuery'    => $this->repositoryQueryMock,
                 'orderLoader'         => $this->orderLoaderMock,
             ]
         );
