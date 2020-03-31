@@ -91,7 +91,7 @@ class RepositoryQuery extends AbstractHelper
             $searchCriteria->setPageSize($pageSize);
         }
 
-        if(isset($currentPage)) {
+        if (isset($currentPage)) {
             $searchCriteria->setCurrentPage($currentPage);
         }
 
