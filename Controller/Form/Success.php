@@ -6,9 +6,9 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Form;
 
-use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Form;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
@@ -17,7 +17,6 @@ use Magento\Framework\Exception\AlreadyExistsException;
 use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\QuoteRepository;
-use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Sales\Model\OrderRepository;
@@ -76,10 +75,8 @@ class Success extends Action
      */
     private $encryptor;
 
-    /**
-     * @var RepositoryQuery
-     */
-    private $_repositoryQuery;
+    /** @var OrderLoader */
+    private $orderLoader;
 
     /**
      * Success constructor.
@@ -92,8 +89,7 @@ class Success extends Action
      * @param SuiteHelper $suiteHelper
      * @param EncryptorInterface $encryptor
      * @param QuoteRepository $quoteRepository
-     * @param OrderRepository $orderRepository
-     * @param RepositoryQuery $repositoryQuery
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
@@ -105,8 +101,7 @@ class Success extends Action
         SuiteHelper $suiteHelper,
         EncryptorInterface $encryptor,
         QuoteRepository $quoteRepository,
-        OrderRepository $orderRepository,
-        RepositoryQuery $repositoryQuery
+        OrderLoader $orderLoader
     )
     {
 
@@ -119,8 +114,7 @@ class Success extends Action
         $this->suiteHelper = $suiteHelper;
         $this->encryptor = $encryptor;
         $this->_quoteRepository = $quoteRepository;
-        $this->_orderRepository = $orderRepository;
-        $this->_repositoryQuery = $repositoryQuery;
+        $this->orderLoader         = $orderLoader;
     }
 
     /**
@@ -142,31 +136,8 @@ class Success extends Action
             $quoteIdEncrypted = $request->getParam("quoteid");
             $quoteIDFromParams = $this->encryptor->decrypt($quoteIdEncrypted);
             $this->_quote = $this->_quoteRepository->get((int)$quoteIDFromParams);
-            $reservedOrderId = $this->_quote->getReservedOrderId();
 
-            $incrementIdFilter = array(
-                'field' => 'increment_id',
-                'conditionType' => 'eq',
-                'value' => $reservedOrderId
-            );
-
-            $searchCriteria = $this->_repositoryQuery->buildSearchCriteriaWithOR(array($incrementIdFilter));
-
-            /**
-             * @var Order
-             */
-            $this->_order = null;
-            $orders = $this->_orderRepository->getList($searchCriteria);
-            $ordersCount = $orders->getTotalCount();
-            $orders = $orders->getItems();
-
-            if ($ordersCount > 0) {
-                $this->_order = current($orders);
-            }
-
-            if ($this->_order === null || $this->_order->getId() === null) {
-                throw new LocalizedException(__('Order not available.'));
-            }
+            $this->_order = $this->orderLoader->loadOrderFromQuote($this->_quote);
 
             $transactionId = $response["VPSTxId"];
             $transactionId = $this->suiteHelper->removeCurlyBraces($transactionId); //strip brackets
@@ -197,7 +168,7 @@ class Success extends Action
             }
 
             $redirect = 'sagepaysuite/form/failure';
-            $status = $response['Status'];
+            $status   = $response['Status'];
 
             if ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
                 $this->updateOrderCallback->setOrder($this->_order);
