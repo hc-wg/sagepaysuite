@@ -13,7 +13,7 @@ class Tokens extends \Magento\Framework\App\Action\Action
     /**
      * @var \Magento\Customer\Model\Session
      */
-    private $_customerSession;
+    private $customerSession;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -23,7 +23,7 @@ class Tokens extends \Magento\Framework\App\Action\Action
         \Magento\Framework\App\Action\Context $context,
         \Magento\Customer\Model\Session $customerSession
     ) {
-        $this->_customerSession = $customerSession;
+        $this->customerSession = $customerSession;
         parent::__construct($context);
     }
 
@@ -37,7 +37,7 @@ class Tokens extends \Magento\Framework\App\Action\Action
     {
         $loginUrl = $this->_objectManager->get('Magento\Customer\Model\Url')->getLoginUrl();
 
-        if (!$this->_customerSession->authenticate($loginUrl)) {
+        if (!$this->customerSession->authenticate($loginUrl)) {
             $this->_actionFlag->set('', self::FLAG_NO_DISPATCH, true);
         }
         return parent::dispatch($request);
