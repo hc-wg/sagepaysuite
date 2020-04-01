@@ -7,6 +7,8 @@
 namespace Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer;
 
 use Magento\Backend\Block\Context;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Model\OrderRepository;
 
 /**
@@ -45,8 +47,15 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
     {
         $orderId = parent::render($row);
 
-        //Find order by order id
-        $order = $this->_orderRepository->get($orderId);
+        try{
+            //Find order by order id
+            $order = $this->_orderRepository->get($orderId);
+        } catch (NoSuchEntityException $exception){
+            return '<a href=""></a>';
+        }
+        catch (InputException $exception){
+            return '<a href=""></a>';
+        }
 
         $link = $this->getUrl('sales/order/view/', ['order_id' => $order->getEntityId()]);
 
