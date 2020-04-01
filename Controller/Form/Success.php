@@ -194,7 +194,7 @@ class Success extends Action
             $this->checkoutSession->setLastRealOrderId($this->order->getIncrementId());
             $this->checkoutSession->setLastOrderStatus($this->order->getStatus());
             $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
-            $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
+            $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
 
             return $this->_redirect($redirect);
         } catch (\Exception $e) {
