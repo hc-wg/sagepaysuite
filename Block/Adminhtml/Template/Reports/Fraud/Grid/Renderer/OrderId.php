@@ -48,7 +48,6 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
         $orderId = parent::render($row);
 
         try {
-            //Find order by order id
             $order = $this->orderRepository->get($orderId);
         } catch (NoSuchEntityException $exception) {
             return '';
