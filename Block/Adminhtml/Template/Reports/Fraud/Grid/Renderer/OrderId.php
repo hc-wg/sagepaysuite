@@ -20,7 +20,7 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
     /**
      * @var OrderRepository
      */
-    private $_orderRepository;
+    private $orderRepository;
 
     /**
      * OrderId constructor.
@@ -34,7 +34,7 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
         array $data = []
     ) {
         parent::__construct($context, $data);
-        $this->_orderRepository = $orderRepository;
+        $this->orderRepository = $orderRepository;
     }
 
     /**
@@ -48,8 +48,7 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
         $orderId = parent::render($row);
 
         try {
-            //Find order by order id
-            $order = $this->_orderRepository->get($orderId);
+            $order = $this->orderRepository->get($orderId);
         } catch (NoSuchEntityException $exception) {
             return '';
         } catch (InputException $exception) {
