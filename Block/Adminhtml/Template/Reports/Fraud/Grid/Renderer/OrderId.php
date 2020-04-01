@@ -50,7 +50,7 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
         try {
             //Find order by order id
             $order = $this->orderRepository->get($orderId);
-        } catch (NoSuchEntityException $exception){
+        } catch (NoSuchEntityException $exception) {
             return '<a href=""></a>';
         }
         catch (InputException $exception){
