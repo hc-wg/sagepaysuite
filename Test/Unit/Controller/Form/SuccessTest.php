@@ -16,9 +16,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
-use \Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Quote\Model\QuoteRepository;
-use Magento\Sales\Model\OrderRepository;
 
 class SuccessTest extends \PHPUnit\Framework\TestCase
 {
@@ -28,9 +26,6 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
 
     /** @var QuoteRepository|\PHPUnit_Framework_MockObject_MockObject */
     private $quoteRepositoryMock;
-
-    /** @var OrderRepository|\PHPUnit_Framework_MockObject_MockObject */
-    private $orderRepositoryMock;
 
     /**  @var RepositoryQuery|\PHPUnit_Framework_MockObject_MockObject */
     private $repositoryQueryMock;
@@ -514,13 +509,8 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
 
     private function makeResponseMock()
     {
-        $this->responseMock = $this->getMockBuilder(
-            'Magento\Framework\App\Response\Http',
-            [],
-            [],
-            '',
-            false
-        )->disableOriginalConstructor()->getMock();
+        $this->responseMock = $this->getMockBuilder('Magento\Framework\App\Response\Http')
+            ->disableOriginalConstructor()->getMock();
     }
 
     private function makeRequestMock()
@@ -541,7 +531,8 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
      */
     private function makeContextMock($messageManagerMock)
     {
-        $contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')->disableOriginalConstructor()->getMock();
+        $contextMock = $this->getMockBuilder('Magento\Framework\App\Action\Context')
+            ->disableOriginalConstructor()->getMock();
         $contextMock->expects($this->any())->method('getRequest')->will($this->returnValue($this->requestMock));
         $contextMock->expects($this->any())->method('getResponse')->will($this->returnValue($this->responseMock));
         $contextMock->expects($this->any())->method('getRedirect')->will($this->returnValue($this->redirectMock));
