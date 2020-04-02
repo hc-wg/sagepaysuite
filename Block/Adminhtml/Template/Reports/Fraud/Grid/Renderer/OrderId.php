@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer;
 
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Backend\Block\Context;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -16,25 +17,34 @@ use Magento\Sales\Model\OrderRepository;
  */
 class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
 {
-
     /**
      * @var OrderRepository
      */
     private $orderRepository;
 
     /**
+     * Logging instance
+     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     */
+    private $suiteLogger;
+
+    /**
      * OrderId constructor.
      * @param Context $context
      * @param OrderRepository $orderRepository
+     * @param Logger $suiteLogger
      * @param array $data
      */
     public function __construct(
         Context $context,
         OrderRepository $orderRepository,
+        Logger $suiteLogger,
         array $data = []
-    ) {
+    )
+    {
         parent::__construct($context, $data);
         $this->orderRepository = $orderRepository;
+        $this->suiteLogger = $suiteLogger;
     }
 
     /**
@@ -50,8 +60,10 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
         try {
             $order = $this->orderRepository->get($orderId);
         } catch (NoSuchEntityException $exception) {
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $exception->getMessage());
             return '';
         } catch (InputException $exception) {
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $exception->getMessage());
             return '';
         }
 
