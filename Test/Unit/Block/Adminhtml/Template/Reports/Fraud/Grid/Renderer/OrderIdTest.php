@@ -10,7 +10,6 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Backend\Block\Context;
 use Magento\Backend\Block\Widget\Grid\Column;
 use Magento\Framework\DataObject;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderRepository;
@@ -59,11 +58,14 @@ class OrderIdTest extends \PHPUnit\Framework\TestCase
         $this->suiteLoggerMock = $this->getMockBuilder(Logger::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $urlBuilderMock->expects($this->once())->method("getUrl")->with('sales/order/view/', ['order_id' => self::TEST_ORDER_ENTITY_ID])
+        $urlBuilderMock->expects($this->once())->method("getUrl")
+            ->with('sales/order/view/', ['order_id' => self::TEST_ORDER_ENTITY_ID])
             ->willReturn("https://example.comsales/order/view/order_id/1");
 
         //$this->MakeContextMock($urlBuilderMock);
-        $this->contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->setMethods(['getUrlBuilder'])->getMock();
+        $this->contextMock = $this->getMockBuilder(Context::class)
+            ->disableOriginalConstructor()->setMethods(['getUrlBuilder'])->getMock();
+
         $this->contextMock->expects($this->once())->method('getUrlBuilder')->willReturn($urlBuilderMock);
 
         $columnMock = $this->getMockBuilder(Column::class)
