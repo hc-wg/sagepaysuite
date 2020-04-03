@@ -24,31 +24,23 @@ class Cancel extends Action
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
     private $suiteLogger;
-    /**
-     * @var Config
-     */
+
+    /** @var Config */
     private $config;
-    /**
-     * @var LoggerInterface
-     */
+
+    /** @var LoggerInterface */
     private $logger;
 
-    /**
-     * @var Session
-     */
+    /** @var Session */
     private $checkoutSession;
 
-    /**
-     * @var Quote
-     */
+    /** @var Quote */
     private $quote;
 
     /** @var QuoteIdMaskFactory */
     private $quoteIdMaskFactory;
 
-    /**
-     * @var EncryptorInterface
-     */
+    /** @var EncryptorInterface */
     private $encryptor;
 
     /** @var RecoverCart */
@@ -68,6 +60,7 @@ class Cancel extends Action
      * @param QuoteIdMaskFactory $quoteIdMaskFactory
      * @param EncryptorInterface $encryptor
      * @param RecoverCart $recoverCart
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
@@ -110,6 +103,7 @@ class Cancel extends Action
             throw new \Exception("Quote not found.");
         }
 
+        //Todo: Where is this order used???
         $order = $this->orderLoader->loadOrderFromQuote($this->quote);
 
         $this->recoverCart->setShouldCancelOrder(true)->execute();

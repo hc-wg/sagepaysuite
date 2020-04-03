@@ -3,22 +3,28 @@
 namespace Ebizmarts\SagePaySuite\Model\ObjectLoader;
 
 use Magento\Quote\Model\Quote;
-use Magento\Sales\Model\OrderFactory;
+use Magento\Sales\Model\OrderRepository;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Sales\Model\Order;
+use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 
 class OrderLoader
 {
-    /** @var OrderFactory */
-    private $orderFactory;
+    /** @var OrderRepository */
+    private $orderRepository;
+
+    /** @var RepositoryQuery */
+    private $repositoryQuery;
 
     /**
      * OrderLoader constructor.
-     * @param OrderFactory $orderFactory
+     * @param OrderRepository $orderRepository
+     * @param RepositoryQuery $repositoryQuery
      */
-    public function __construct(
-        OrderFactory $orderFactory
-    ){
-        $this->orderFactory = $orderFactory;
+    public function __construct(OrderRepository $orderRepository, RepositoryQuery $repositoryQuery)
+    {
+        $this->orderRepository = $orderRepository;
+        $this->repositoryQuery = $repositoryQuery;
     }
 
     /**
@@ -29,8 +35,25 @@ class OrderLoader
     public function loadOrderFromQuote(Quote $quote)
     {
         $incrementId = $quote->getReservedOrderId();
-        $storeId = $quote->getStoreId();
-        $order = $this->orderFactory->create()->loadByIncrementIdAndStoreId($incrementId, $storeId);
+
+        $incrementIdFilter = array(
+            'field' => 'increment_id',
+            'conditionType' => 'eq',
+            'value' => $incrementId
+        );
+
+        $searchCriteria = $this->repositoryQuery->buildSearchCriteriaWithOR(array($incrementIdFilter));
+
+        /** @var Order */
+        $order = null;
+        $orders = $this->orderRepository->getList($searchCriteria);
+        $ordersCount = $orders->getTotalCount();
+
+        if ($ordersCount > 0) {
+            $orders = $orders->getItems();
+            $order = current($orders);
+        }
+
         if ($order === null || $order->getId() === null) {
             throw new LocalizedException(__("Invalid order."));
         }
