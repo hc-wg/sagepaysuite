@@ -242,13 +242,13 @@ define(
                 var self = this;
 
                 if (additionalValidators.validate()) {
-                    self.savePaymentInfo();
+                    self.savePaymentInfo().done(function () {
+                        if (self.dropInInstance !== null) {
+                            self.dropInInstance.tokenise();
+                        }
+                    })
                 } else {
                     return false;
-                }
-
-                if (self.dropInInstance !== null) {
-                    self.dropInInstance.tokenise();
                 }
             },
             destroyInstanceSagePay: function () {
