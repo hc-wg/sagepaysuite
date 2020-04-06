@@ -27,9 +27,6 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
     /** @var QuoteRepository|\PHPUnit_Framework_MockObject_MockObject */
     private $quoteRepositoryMock;
 
-    /** @var OrderRepository|\PHPUnit_Framework_MockObject_MockObject */
-    private $orderRepositoryMock;
-
     /**  @var RepositoryQuery|\PHPUnit_Framework_MockObject_MockObject */
     private $repositoryQueryMock;
 
@@ -150,7 +147,8 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
      */
     public function testExecuteSuccess($mode, $paymentAction)
     {
-        $paymentMock = $this->getMockBuilder('Magento\Sales\Model\Order\Payment')
+        $paymentMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
 

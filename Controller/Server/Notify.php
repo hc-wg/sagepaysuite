@@ -15,7 +15,6 @@ use Ebizmarts\SagePaySuite\Model\Token;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Encryption\EncryptorInterface;
-use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
@@ -28,7 +27,7 @@ use \Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use function urlencode;
 
-class Notify extends Action implements CsrfAwareActionInterface
+class Notify extends Action
 {
 
     /**

@@ -6,26 +6,11 @@
 
 namespace Ebizmarts\SagePaySuite\Helper;
 
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Magento\Checkout\Helper\Data as CheckoutHelper;
-use Magento\Checkout\Model\Type\Onepage;
-use Magento\Customer\Api\CustomerRepositoryInterface;
-use Magento\Customer\Api\Data\GroupInterface;
-use Magento\Customer\Model\Session;
-use Magento\Framework\Api\DataObjectHelper;
 use Magento\Framework\Api\FilterBuilder;
 use Magento\Framework\Api\Search\FilterGroupBuilder;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Magento\Framework\DataObject\Copy;
-use Magento\Framework\Encryption\EncryptorInterface;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Quote\Model\QuoteManagement;
-use Magento\Quote\Model\QuoteRepository;
-use Magento\Sales\Model\Order\Email\Sender\OrderSender;
-use \Magento\Checkout\Model\Session as CheckoutSession;
-use Magento\Sales\Model\OrderRepository;
 
 class RepositoryQuery extends AbstractHelper
 {

@@ -8,7 +8,6 @@ use Magento\Framework\Api\Search\SearchCriteria;
 use Magento\Framework\Api\Search\SearchResult;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Sales\Model\OrderRepository;
 use PHPUnit\Framework\TestCase;
