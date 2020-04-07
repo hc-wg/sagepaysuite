@@ -127,7 +127,6 @@ class Callback extends Action
         $this->encryptor            = $encryptor;
         $this->recoverCart          = $recoverCart;
         $this->_repositoryQuery     = $repositoryQuery;
-
         $this->config->setMethodCode(Config::METHOD_PAYPAL);
     }
 
