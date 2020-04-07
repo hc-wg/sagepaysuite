@@ -129,8 +129,8 @@ class Success extends Action
 
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
             $quoteIdEncrypted = $request->getParam("quoteid");
-            $quoteIDFromParams = $this->encryptor->decrypt($quoteIdEncrypted);
-            $this->quote = $this->quoteRepository->get((int)$quoteIDFromParams);
+            $quoteIdFromParams = $this->encryptor->decrypt($quoteIdEncrypted);
+            $this->quote = $this->quoteRepository->get((int)$quoteIdFromParams);
 
             $this->order = $this->orderLoader->loadOrderFromQuote($this->quote);
 
