@@ -7,10 +7,12 @@
 namespace Ebizmarts\SagePaySuite\Controller\Paypal;
 
 use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
+use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Api\Post;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
+use Klarna\Kp\Model\QuoteRepository;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
