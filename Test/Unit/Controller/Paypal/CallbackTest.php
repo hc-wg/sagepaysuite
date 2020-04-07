@@ -7,10 +7,13 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Paypal;
 
 use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
+use Ebizmarts\SagePaySuite\Model\Api\Http;
+use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\Payment;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Framework\Api\Search\SearchCriteria;
+use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Quote\Model\Quote;
@@ -26,32 +29,32 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
     const ORDER_INCREMENT_ID = '000000001';
 
     /**
-     * @var Quote|\PHPUnit\Framework\MockObject\MockObject
+     * @var Quote|\PHPUnit\Framework\MockObject
      */
     private $quoteMock;
 
     /**
-     * @var OrderRepository|\PHPUnit\Framework\MockObject\MockObject
+     * @var OrderRepository | \PHPUnit_Framework_MockObject_MockObject
      */
     private $orderRepositoryMock;
 
     /**
-     * @var QuoteRepository|\PHPUnit\Framework\MockObject\MockObject
+     * @var QuoteRepository | \PHPUnit_Framework_MockObject_MockObject
      */
     private $quoteRepositoryMock;
 
     /**
-     * @var Config\PHPUnit\Framework\MockObject\MockObject
+     * @var Config | \PHPUnit_Framework_MockObject_MockObject
      */
     private $configMock;
 
     /**
-     * @var Payment|\PHPUnit\Framework\MockObject\MockObject
+     * @var Payment | \PHPUnit_Framework_MockObject_MockObject
      */
     private $paymentMock;
 
     /**
-     * @var RepositoryQuery|\PHPUnit_Framework_MockObject_MockObject
+     * @var RepositoryQuery | \PHPUnit_Framework_MockObject_MockObject
      */
     private $repositoryQueryMock;
 
@@ -273,11 +276,6 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->orderLoaderMock = $this
-            ->getMockBuilder(OrderLoader::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $objectManagerHelper            = new ObjectManagerHelper($this);
         $this->paypalCallbackController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Paypal\Callback',
@@ -294,9 +292,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
                 'encryptor'          => $this->encryptorMock,
                 'recoverCart'        => $this->recoverCartMock,
                 'quote'              => $this->quoteMock,
-                '_repositoryQuery'   => $this->repositoryQueryMock,
                 'orderLoader'        => $this->orderLoaderMock
-
             ]
         );
     }
@@ -452,11 +448,6 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
 
     public function testExecuteERRORInvalidTrnId()
     {
-        $this->orderLoaderMock
-            ->expects($this->once())
-            ->method('loadOrderFromQuote')
-            ->with($this->quoteMock)
-            ->willReturn($this->orderMock);
         $this->quoteMock->method('getId')->willReturn(self::QUOTE_ID);
         $this->orderMock->method('getId')->willReturn(self::ORDER_ID);
         $this->paymentMock->method('getLastTransId')->willReturn('notequal');

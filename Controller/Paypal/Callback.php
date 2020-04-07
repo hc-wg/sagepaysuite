@@ -11,13 +11,13 @@ use Ebizmarts\SagePaySuite\Model\Api\Post;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
-use Klarna\Kp\Model\QuoteRepository;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\QuoteRepository;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
@@ -113,6 +113,7 @@ class Callback extends Action
         $this->encryptor            = $encryptor;
         $this->recoverCart          = $recoverCart;
         $this->orderLoader         = $orderLoader;
+
         $this->config->setMethodCode(Config::METHOD_PAYPAL);
     }
 
