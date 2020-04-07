@@ -7,7 +7,6 @@
 namespace Ebizmarts\SagePaySuite\Controller\Paypal;
 
 use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
-use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Api\Post;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
@@ -204,7 +203,6 @@ class Callback extends Action
     {
         $quoteAmount = $this->config->getQuoteAmount($this->quote);
         $amount = number_format($quoteAmount, 2, '.', '');
-
         return $amount;
     }
 
