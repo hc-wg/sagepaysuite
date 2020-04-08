@@ -1,3 +1,9 @@
+## [1.2.23] - 2020-04-13
+### Fixed
+- Fix PI not working with virtual product and guest checkout
+- Problem with js calls not being sequential and causing errors on checkout with PI
+- Amount is not an integer when trying to make a refund
+
 ## [1.2.22] - 2020-03-18
 ### Changed
 - Store SecurityKey in Database when SyncFromApi
@@ -251,6 +257,7 @@
 ### Added
 - First release with Magento 2.2.0 compatibility.
 
+[1.2.23]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.23
 [1.2.22]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.22
 [1.2.21]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.21
 [1.2.20]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.20
