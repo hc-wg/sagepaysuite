@@ -2262,7 +2262,9 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                 "getExtensionAttributes",
                 "setExtensionAttributes",
                 "getDefaultCurrencyCode",
-                "getCurrentCurrencyCode"
+                "getCurrentCurrencyCode",
+                "setIsActive",
+                "getIsActive"
             ])->disableOriginalConstructor()->getMock();
 
         if ($data["currency_setting"] == "base_currency") {
