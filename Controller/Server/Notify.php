@@ -12,7 +12,6 @@ use Ebizmarts\SagePaySuite\Model\InvalidSignatureException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Ebizmarts\SagePaySuite\Model\Token;
-use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Encryption\EncryptorInterface;
@@ -21,11 +20,9 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Validator\Exception;
 use Magento\Quote\Model\QuoteRepository;
 use Magento\Quote\Model\Quote;
-use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
-use Magento\Sales\Model\OrderFactory;
-use \Magento\Sales\Model\Order;
 use \Ebizmarts\SagePaySuite\Helper\Data;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use function urlencode;
 
 class Notify extends Action
@@ -36,9 +33,6 @@ class Notify extends Action
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
     private $suiteLogger;
-
-    /** @var OrderFactory */
-    private $orderFactory;
 
     /** @var OrderSender */
     private $orderSender;
@@ -73,40 +67,47 @@ class Notify extends Action
     private $encryptor;
 
     /**
+     * @var OrderLoader
+     */
+    private $orderLoader;
+
+    /**
      * Notify constructor.
      * @param Context $context
      * @param Logger $suiteLogger
-     * @param OrderFactory $orderFactory
      * @param OrderSender $orderSender
      * @param Config $config
      * @param Token $tokenModel
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param Data $suiteHelper
      * @param QuoteRepository $cartRepository
+     * @param EncryptorInterface $encryptor
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
         Logger $suiteLogger,
-        OrderFactory $orderFactory,
         OrderSender $orderSender,
         Config $config,
         Token $tokenModel,
         OrderUpdateOnCallback $updateOrderCallback,
         Data $suiteHelper,
         QuoteRepository $cartRepository,
-        EncryptorInterface $encryptor
+        EncryptorInterface $encryptor,
+        OrderLoader $orderLoader
     ) {
         parent::__construct($context);
 
         $this->suiteLogger         = $suiteLogger;
         $this->updateOrderCallback = $updateOrderCallback;
-        $this->orderFactory        = $orderFactory;
         $this->orderSender         = $orderSender;
         $this->config              = $config;
         $this->tokenModel          = $tokenModel;
         $this->suiteHelper         = $suiteHelper;
         $this->cartRepository      = $cartRepository;
         $this->encryptor           = $encryptor;
+        $this->orderLoader         = $orderLoader;
+
         $this->config->setMethodCode(Config::METHOD_SERVER);
     }
 
@@ -124,10 +125,7 @@ class Notify extends Action
         try {
             $this->quote = $this->cartRepository->get($quoteId, [$storeId]);
 
-            $order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
-            if ($order === null || $order->getId() === null) {
-                return $this->returnInvalid(__("Order was not found"));
-            }
+            $order = $this->orderLoader->loadOrderFromQuote($this->quote);
 
             $this->order = $order;
             $payment     = $order->getPayment();
@@ -206,6 +204,7 @@ class Notify extends Action
         } catch (ApiException $apiException) {
             $this->suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
 
+            //cancel pending payment order
             if (isset($order)) {
                 $this->cancelOrder($order);
             }
@@ -214,6 +213,7 @@ class Notify extends Action
         } catch (\Exception $e) {
             $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
+            //cancel pending payment order
             if (isset($order)) {
                 $this->cancelOrder($order);
             }
@@ -306,7 +306,6 @@ class Notify extends Action
         ]);
 
         $quoteId = $this->encryptor->encrypt($quoteId);
-
         $url .= "?quote=" . urlencode($quoteId) . "&message=Transaction cancelled by customer";
 
         return $url;
@@ -332,7 +331,6 @@ class Notify extends Action
         ]);
 
         $quoteId = $this->encryptor->encrypt($quoteId);
-
         $url .= "?message=" . $message . "&quote=" . urlencode($quoteId);
 
         return $url;

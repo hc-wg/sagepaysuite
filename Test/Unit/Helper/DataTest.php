@@ -27,11 +27,6 @@ class DataTest extends \PHPUnit_Framework_TestCase
     private $dataHelper;
 
     /**
-     * @var \Magento\Framework\Module\ModuleList\Loader|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $loaderMock;
-
-    /**
      * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
      */
     private $configMock;

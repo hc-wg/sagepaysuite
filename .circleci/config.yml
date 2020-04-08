@@ -116,7 +116,7 @@ jobs:
         - attach_workspace:
             at: ~/magento2
         - sagepay/run-php-unit-tests:
-            coverage: --coverage-text
+            coverage:
 workflows:
   version: 2.1
   build_test_dist:
