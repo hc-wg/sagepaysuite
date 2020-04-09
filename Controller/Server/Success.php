@@ -7,12 +7,6 @@
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
-use Magento\Checkout\Model\Session;
-use Magento\Framework\App\Action\Context;
-use Magento\Framework\Encryption\EncryptorInterface;
-use Magento\Quote\Model\QuoteRepository;
-use Psr\Log\LoggerInterface;
 
 class Success extends \Magento\Framework\App\Action\Action
 {
@@ -21,88 +15,86 @@ class Success extends \Magento\Framework\App\Action\Action
      * Logging instance
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
      */
-    private $suiteLogger;
+    private $_suiteLogger;
 
     /**
-     * @var LoggerInterface
+     * @var \Psr\Log\LoggerInterface
      */
-    private $logger;
+    private $_logger;
 
     /**
-     * @var Session
+     * @var \Magento\Checkout\Model\Session
      */
-    private $checkoutSession;
+    private $_checkoutSession;
 
     /**
-     * @var QuoteRepository
+     * @var \Magento\Sales\Model\OrderFactory
      */
-    private $quoteRepository;
+    private $_orderFactory;
 
     /**
-     * @var EncryptorInterface
+     * @var \Magento\Quote\Model\QuoteFactory
+     */
+    private $_quoteFactory;
+
+    /**
+     * @var \Magento\Framework\Encryption\EncryptorInterface
      */
     private $encryptor;
 
     /**
-     * @var OrderLoader
-     */
-    private $orderLoader;
-
-    /**
-     * Success constructor.
-     * @param Context $context
+     * @param \Magento\Framework\App\Action\Context $context
      * @param Logger $suiteLogger
-     * @param LoggerInterface $logger
-     * @param Session $checkoutSession
-     * @param QuoteRepository $quoteRepository
-     * @param EncryptorInterface $encryptor
-     * @param OrderLoader $orderLoader
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Magento\Sales\Model\OrderFactory $orderFactory
+     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
      */
     public function __construct(
-        Context $context,
+        \Magento\Framework\App\Action\Context $context,
         Logger $suiteLogger,
-        LoggerInterface $logger,
-        Session $checkoutSession,
-        QuoteRepository $quoteRepository,
-        EncryptorInterface $encryptor,
-        OrderLoader $orderLoader
+        \Psr\Log\LoggerInterface $logger,
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Sales\Model\OrderFactory $orderFactory,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory,
+        \Magento\Framework\Encryption\EncryptorInterface $encryptor
     ) {
-
+    
         parent::__construct($context);
 
-        $this->suiteLogger     = $suiteLogger;
-        $this->logger          = $logger;
-        $this->checkoutSession = $checkoutSession;
-        $this->quoteRepository = $quoteRepository;
+        $this->_suiteLogger     = $suiteLogger;
+        $this->_logger          = $logger;
+        $this->_checkoutSession = $checkoutSession;
+        $this->_orderFactory    = $orderFactory;
+        $this->_quoteFactory    = $quoteFactory;
         $this->encryptor        = $encryptor;
-        $this->orderLoader      = $orderLoader;
     }
 
     public function execute()
     {
         try {
-            $request = $this->getRequest();
+            $storeId = $this->getRequest()->getParam("_store");
+            $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
 
-            $storeId = $request->getParam("_store");
-            $quoteId = $this->encryptor->decrypt($request->getParam("quoteid"));
+            $quote = $this->_quoteFactory->create();
+            $quote->setStoreId($storeId);
+            $quote->load($quoteId);
 
-            $quote = $this->quoteRepository->get($quoteId, array($storeId));
-
-            $order = $this->orderLoader->loadOrderFromQuote($quote);
+            $order = $this->_orderFactory->create()->loadByIncrementId($quote->getReservedOrderId());
 
             //prepare session to success page
-            $this->checkoutSession->clearHelperData();
-            $this->checkoutSession->setLastQuoteId($quote->getId());
-            $this->checkoutSession->setLastSuccessQuoteId($quote->getId());
-            $this->checkoutSession->setLastOrderId($order->getEntityId());
-            $this->checkoutSession->setLastRealOrderId($order->getIncrementId());
-            $this->checkoutSession->setLastOrderStatus($order->getStatus());
+            $this->_checkoutSession->clearHelperData();
+            $this->_checkoutSession->setLastQuoteId($quote->getId());
+            $this->_checkoutSession->setLastSuccessQuoteId($quote->getId());
+            $this->_checkoutSession->setLastOrderId($order->getId());
+            $this->_checkoutSession->setLastRealOrderId($order->getIncrementId());
+            $this->_checkoutSession->setLastOrderStatus($order->getStatus());
 
             //remove order pre-saved flag from checkout
-            $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
-            $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
+            $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
+            $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
         } catch (\Exception $e) {
-            $this->logger->critical($e);
+            $this->_logger->critical($e);
             $this->messageManager->addError(__('An error ocurred.'));
         }
 

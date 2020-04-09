@@ -6,49 +6,32 @@
 
 namespace Ebizmarts\SagePaySuite\Block\Adminhtml\Template\Reports\Fraud\Grid\Renderer;
 
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Magento\Backend\Block\Context;
-use Magento\Framework\Exception\InputException;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Sales\Model\OrderRepository;
-
 /**
  * grid block action item renderer
  */
 class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
 {
-    /**
-     * @var OrderRepository
-     */
-    private $orderRepository;
 
     /**
-     * Logging instance
-     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     * @var \Magento\Sales\Model\OrderFactory
      */
-    private $suiteLogger;
+    private $orderFactory;
 
     /**
-     * OrderId constructor.
-     * @param Context $context
-     * @param OrderRepository $orderRepository
-     * @param Logger $suiteLogger
+     * @param \Magento\Backend\Block\Context $context
      * @param array $data
      */
     public function __construct(
-        Context $context,
-        OrderRepository $orderRepository,
-        Logger $suiteLogger,
+        \Magento\Backend\Block\Context $context,
+        \Magento\Sales\Model\OrderFactory $orderFactory,
         array $data = []
-    )
-    {
+    ) {
         parent::__construct($context, $data);
-        $this->orderRepository = $orderRepository;
-        $this->suiteLogger = $suiteLogger;
+        $this->orderFactory = $orderFactory;
     }
 
     /**
-     * Render grid row
+     * Render grid column
      *
      * @param \Magento\Framework\DataObject $row
      * @return string
@@ -57,17 +40,10 @@ class OrderId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Number
     {
         $orderId = parent::render($row);
 
-        try {
-            $order = $this->orderRepository->get($orderId);
-        } catch (NoSuchEntityException $exception) {
-            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $exception->getMessage());
-            return '';
-        } catch (InputException $exception) {
-            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $exception->getMessage());
-            return '';
-        }
+        //find order with quote id
+        $order = $this->orderFactory->create()->load($orderId);
 
-        $link = $this->getUrl('sales/order/view/', ['order_id' => $order->getEntityId()]);
+        $link = $this->getUrl('sales/order/view/', ['order_id'=>$order->getEntityId()]);
 
         return '<a href="' . $link . '">' . $order->getIncrementId() . '</a>';
     }
