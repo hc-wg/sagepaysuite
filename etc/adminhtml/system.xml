@@ -30,7 +30,7 @@
                     </field>
                     <field id="protocol" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="0" showInStore="0">
                         <label>Protocol</label>
-                        <comment><![CDATA[Protocol 4.00 may not available for live mode yet. Please check the link <a target="_blank" href="https://www.sagepay.co.uk/strong-customer-authentication-faqs">HERE</a> for more information]]></comment>
+                        <comment><![CDATA[Protocol 4.00 may not be available for live mode yet. Please check the link <a target="_blank" href="https://www.sagepay.co.uk/strong-customer-authentication-faqs">HERE</a> for more information]]></comment>
                         <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\Protocol</source_model>
                         <config_path>sagepaysuite/global/protocol</config_path>
                     </field>
