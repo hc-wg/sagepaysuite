@@ -20,7 +20,7 @@ class Index extends \Magento\Backend\App\Action
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    private $logger;
+    private $_logger;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -30,7 +30,7 @@ class Index extends \Magento\Backend\App\Action
         \Magento\Backend\App\Action\Context $context,
         \Psr\Log\LoggerInterface $logger
     ) {
-        $this->logger = $logger;
+        $this->_logger = $logger;
         parent::__construct($context);
     }
 
