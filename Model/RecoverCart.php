@@ -77,7 +77,8 @@ class RecoverCart
         if ($this->verifyIfOrderIsValid($order)) {
             $quote = $this->checkoutSession->getQuote();
             if (!empty($quote)) {
-                if ($this->_shouldCancelOrder) {
+                if ($this->_shouldCancelOrder && $order->getState() === Order::STATE_PENDING_PAYMENT) {
+                    //The order might be cancelled on Controller/Server/Notify. This checks if the order is not cancelled before trying to cancel it.
                     $order->cancel()->save();
                 }
                 try {
@@ -151,8 +152,7 @@ class RecoverCart
     private function verifyIfOrderIsValid($order)
     {
         return $order !== null &&
-            $order->getId() !== null &&
-            $order->getState() === Order::STATE_PENDING_PAYMENT;
+            $order->getId() !== null;
     }
 
     private function removeFlag()
