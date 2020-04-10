@@ -167,7 +167,10 @@ class Notify extends Action
 
             if ($status == "ABORT") { //Transaction canceled by customer
                 //cancel pending payment order
-                $this->cancelOrder($order);
+                if ($order->getState() === Order::STATE_PENDING_PAYMENT) {
+                    //The order might be cancelled on Model/recoverCart if SagePay takes too long in sending the notify. This checks if the order is not cancelled before trying to cancel it.
+                    $this->cancelOrder($order);
+                }
                 return $this->returnAbort($this->quote->getId());
             } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
                 $this->updateOrderCallback->setOrder($this->order);
