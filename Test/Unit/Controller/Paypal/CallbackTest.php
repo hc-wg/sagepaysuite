@@ -6,16 +6,54 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Paypal;
 
+use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
+use Ebizmarts\SagePaySuite\Model\Payment;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Magento\Framework\Api\Search\SearchCriteria;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
+use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\QuoteRepository;
+use Magento\Sales\Model\OrderRepository;
 
 class CallbackTest extends \PHPUnit\Framework\TestCase
 {
+
+    const QUOTE_ID_ENCRYPTED = '0:2:Dwn8kCUk6nZU5B7b0Xn26uYQDeLUKBrD:S72utt9n585GrslZpDp+DRpW+8dpqiu/EiCHXwfEhS0=';
+    const QUOTE_ID = 69;
+    const ORDER_ID = 70;
+    const ORDER_INCREMENT_ID = '000000001';
+
+    /**
+     * @var Quote|\PHPUnit\Framework\MockObject\MockObject
+     */
     private $quoteMock;
-    private $orderFactoryMock;
+
+    /**
+     * @var OrderRepository|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $orderRepositoryMock;
+
+    /**
+     * @var QuoteRepository|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $quoteRepositoryMock;
+
+    /**
+     * @var Config\PHPUnit\Framework\MockObject\MockObject
+     */
     private $configMock;
+
+    /**
+     * @var Payment|\PHPUnit\Framework\MockObject\MockObject
+     */
     private $paymentMock;
+
+    /**
+     * @var RepositoryQuery|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private $repositoryQueryMock;
 
     /** @var \Magento\Checkout\Model\Session|\PHPUnit_Framework_MockObject_MockObject */
     private $checkoutSessionMock;
@@ -57,6 +95,9 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
     /** @var RecoverCart */
     private $recoverCartMock;
 
+    /** @var OrderLoader */
+    private $orderLoaderMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -65,15 +106,15 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()->getMock();
         $this->paymentMock->method('getMethodInstance')->willReturnSelf();
 
-        $quoteMock = $this
+        $this->quoteMock = $this
             ->getMockBuilder('Magento\Quote\Model\Quote')
-            ->setMethods(["getGrandTotal", "getPayment"])
+            ->setMethods(['getGrandTotal', 'getPayment', 'getReservedOrderId'])
             ->disableOriginalConstructor()
             ->getMock();
-        $quoteMock->expects($this->any())
+        $this->quoteMock->expects($this->any())
             ->method('getGrandTotal')
             ->will($this->returnValue(100));
-        $quoteMock->expects($this->any())
+        $this->quoteMock->expects($this->any())
             ->method('getPayment')
             ->will($this->returnValue($this->paymentMock));
 
@@ -94,7 +135,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $this->checkoutSessionMock->expects($this->any())
             ->method('getQuote')
-            ->will($this->returnValue($quoteMock));
+            ->will($this->returnValue($this->quoteMock));
 
         $this->responseMock = $this
             ->getMockBuilder('Magento\Framework\App\Response\Http')
@@ -105,7 +146,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->requestMock->expects($this->any())->method('getParam')->with('quoteid')->willReturn(69);
+        $this->requestMock->expects($this->any())->method('getParam')->with('quoteid')->willReturn(self::QUOTE_ID_ENCRYPTED);
 
         $this->redirectMock = $this->getMockBuilder(\Magento\Store\App\Response\Redirect::class)
             ->disableOriginalConstructor()
@@ -188,19 +229,16 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
 
         $this->quoteMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)
             ->disableOriginalConstructor()
-            ->setMethods(["getId"])
+            ->setMethods(["getId", 'getReservedOrderId'])
             ->getMock();
 
-        $quoteFactoryMock = $this->getMockBuilder(\Magento\Quote\Model\QuoteFactory::class)
-            ->setMethods(['create', 'load'])
+        $this->orderRepositoryMock = $this->getMockBuilder(OrderRepository::class)
+            ->setMethods(['getList'])
             ->disableOriginalConstructor()
             ->getMock();
-        $quoteFactoryMock->method('create')->willReturnSelf();
-        $quoteFactoryMock->method('load')->willReturn($this->quoteMock);
 
-        $this->orderFactoryMock = $this->getMockBuilder(\Magento\Sales\Model\OrderFactory::class)->setMethods(['create', 'loadByIncrementId'])->disableOriginalConstructor()->getMock();
-        $this->orderFactoryMock->method('create')->willReturnSelf();
-        $this->orderFactoryMock->method('loadByIncrementId')->willReturn($this->orderMock);
+        $this->searchCriteriaMock = $this->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()->getMock();
 
         $closedForActionFactoryMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory::class)
             ->setMethods(['create'])
@@ -225,6 +263,16 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $this->quoteRepositoryMock = $this->getMockBuilder(\Magento\Quote\Model\QuoteRepository::class)
+            ->setMethods(['get'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->orderLoaderMock = $this
+            ->getMockBuilder(OrderLoader::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $objectManagerHelper            = new ObjectManagerHelper($this);
         $this->paypalCallbackController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Paypal\Callback',
@@ -235,12 +283,15 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
                 'checkoutHelper'     => $checkoutHelperMock,
                 'postApi'            => $postApiMock,
                 'transactionFactory' => $transactionFactoryMock,
-                'quoteFactory'       => $quoteFactoryMock,
-                'orderFactory'       => $this->orderFactoryMock,
-                "actionFactory"      => $closedForActionFactoryMock,
-                "suiteHelper"        => $this->suiteHelperMock,
-                "encryptor"          => $this->encryptorMock,
-                "recoverCart"        => $this->recoverCartMock
+                'quoteRepository'    => $this->quoteRepositoryMock,
+                'actionFactory'      => $closedForActionFactoryMock,
+                'suiteHelper'        => $this->suiteHelperMock,
+                'encryptor'          => $this->encryptorMock,
+                'recoverCart'        => $this->recoverCartMock,
+                'quote'              => $this->quoteMock,
+                '_repositoryQuery'   => $this->repositoryQueryMock,
+                'orderLoader'        => $this->orderLoaderMock
+
             ]
         );
     }
@@ -261,21 +312,29 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
      */
     public function testExecuteSUCCESS($mode, $paymentAction)
     {
+        $this->orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($this->quoteMock)
+            ->willReturn($this->orderMock);
         $this->configMock->method('getMode')->willReturn($mode);
         $this->configMock->method('getSagepayPaymentAction')->willReturn($paymentAction);
         $this->paymentMock->method('getLastTransId')->willReturn(self::TEST_VPSTXID);
-        $this->orderMock->expects($this->exactly(2))->method('getId')->willReturn(70);
-        $this->quoteMock->expects($this->exactly(3))->method('getId')->willReturn(69);
+        $this->orderMock->expects($this->once())->method('getId')->willReturn(self::ORDER_ID);
+        $this->quoteMock->expects($this->exactly(3))->method('getId')->willReturn(self::QUOTE_ID);
         $this->checkoutSessionMock->expects($this->once())->method("clearHelperData")->willReturn(null);
         $this->checkoutSessionMock
-            ->expects($this->once())->method("setLastQuoteId")->with(69);
+            ->expects($this->once())->method("setLastQuoteId")->with(self::QUOTE_ID);
         $this->checkoutSessionMock
-            ->expects($this->once())->method("setLastSuccessQuoteId")->with(69);
+            ->expects($this->once())->method("setLastSuccessQuoteId")->with(self::QUOTE_ID);
         $this->checkoutSessionMock
-            ->expects($this->once())->method("setLastOrderId")->with(70);
+            ->expects($this->once())->method("setLastOrderId")->with(self::ORDER_ID);
 
-        $this->encryptorMock->expects($this->once())->method('decrypt')->with(69)
-        ->willReturn('0:2:Dwn8kCUk6nZU5B7b0Xn26uYQDeLUKBrD:S72utt9n585GrslZpDp+DRpW+8dpqiu/EiCHXwfEhS0=');
+        $this->encryptorMock->expects($this->once())->method('decrypt')->with(self::QUOTE_ID_ENCRYPTED)
+            ->willReturn(self::QUOTE_ID);
+
+        $this->quoteRepositoryMock->expects($this->once())->method('get')
+            ->with(self::QUOTE_ID)->willReturn($this->quoteMock);
 
         $this->requestMock->expects($this->once())
             ->method('getPost')
@@ -335,8 +394,6 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
 
     public function testExecuteERRORInvalidQuote()
     {
-        $this->quoteMock->method('getId')->willReturn(null);
-
         $this->encryptorMock->expects($this->once())->method('decrypt');
 
         $this->requestMock->expects($this->once())
@@ -362,7 +419,7 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
 
     public function testExecuteERRORInvalidOrder()
     {
-        $this->quoteMock->method('getId')->willReturn(69);
+        $this->quoteMock->method('getId')->willReturn(self::QUOTE_ID);
         $this->orderMock->method('getId')->willReturn(null);
 
         $this->encryptorMock->expects($this->once())->method('decrypt');
@@ -390,8 +447,8 @@ class CallbackTest extends \PHPUnit\Framework\TestCase
 
     public function testExecuteERRORInvalidTrnId()
     {
-        $this->quoteMock->method('getId')->willReturn(69);
-        $this->orderMock->method('getId')->willReturn(70);
+        $this->quoteMock->method('getId')->willReturn(self::QUOTE_ID);
+        $this->orderMock->method('getId')->willReturn(self::ORDER_ID);
         $this->paymentMock->method('getLastTransId')->willReturn('notequal');
         $this->paymentMock->method('save')->willReturnSelf();
 
