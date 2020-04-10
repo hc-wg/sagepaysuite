@@ -2,11 +2,15 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\ObjectLoader;
 
+use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
+use Magento\Framework\Api\Search\SearchCriteria;
+use Magento\Framework\Api\Search\SearchResult;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
+use Magento\Sales\Model\OrderRepository;
 use PHPUnit\Framework\TestCase;
 
 class OrderLoaderTest extends TestCase
@@ -21,8 +25,11 @@ class OrderLoaderTest extends TestCase
     /** @var Order */
     private $orderMock;
 
-    /** @var OrderFactory */
-    private $orderFactoryMock;
+    /** @var OrderRepository */
+    private $orderRepositoryMock;
+
+    /** @var RepositoryQuery */
+    private $repositoryQueryMock;
 
     /** @var ObjectManagerHelper */
     private $objectManagerHelper;
@@ -31,6 +38,26 @@ class OrderLoaderTest extends TestCase
 
     public function setUp()
     {
+        $this->orderRepositoryMock = $this
+            ->getMockBuilder(OrderRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->repositoryQueryMock = $this
+            ->getMockBuilder(RepositoryQuery::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $searchCriteriaMock = $this
+            ->getMockBuilder(SearchCriteria::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $searchResultMock = $this
+            ->getMockBuilder(SearchResult::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $this->quoteMock = $this
             ->getMockBuilder(Quote::class)
             ->disableOriginalConstructor()
@@ -39,36 +66,37 @@ class OrderLoaderTest extends TestCase
             ->expects($this->once())
             ->method('getReservedOrderId')
             ->willReturn(self::RESERVER_ORDER_ID);
-        $this->quoteMock
-            ->expects($this->once())
-            ->method('getStoreId')
-            ->willReturn(self::STORE_ID);
 
         $this->orderMock = $this
             ->getMockBuilder(Order::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->orderFactoryMock = $this
-            ->getMockBuilder(OrderFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->orderFactoryMock
-            ->expects($this->once())
-            ->method('create')
-            ->willReturn($this->orderMock);
+        $this->repositoryQueryMock->expects($this->once())
+            ->method('buildSearchCriteriaWithOR')
+            ->willReturn($searchCriteriaMock);
 
-        $this->orderMock
+        $this->orderRepositoryMock
             ->expects($this->once())
-            ->method('loadByIncrementIdAndStoreId')
-            ->with(self::RESERVER_ORDER_ID, self::STORE_ID)
-            ->willReturnSelf();
+            ->method('getList')
+            ->willReturn($searchResultMock);
+
+        $searchResultMock
+            ->expects($this->once())
+            ->method('getTotalCount')
+            ->willReturn(1);
+
+        $searchResultMock
+            ->expects($this->once())
+            ->method('getItems')
+            ->willReturn(array($this->orderMock));
 
         $this->objectManagerHelper = new ObjectManagerHelper($this);
         $this->sut = $this->objectManagerHelper->getObject(
             OrderLoader::class,
             [
-                'orderFactory' => $this->orderFactoryMock
+                'orderRepository' => $this->orderRepositoryMock,
+                'repositoryQuery' => $this->repositoryQueryMock,
             ]
         );
     }

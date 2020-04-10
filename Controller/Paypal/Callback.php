@@ -6,7 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Paypal;
 
-use Ebizmarts\SagePaySuite\Helper\Checkout;
 use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
 use Ebizmarts\SagePaySuite\Model\Api\Post;
 use Ebizmarts\SagePaySuite\Model\Config;
@@ -21,7 +20,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Magento\Quote\Model\Quote;
-use Magento\Quote\Model\QuoteFactory;
+use Magento\Quote\Model\QuoteRepository;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
@@ -55,14 +54,6 @@ class Callback extends Action implements CsrfAwareActionInterface
     /** @var Post */
     private $postApi;
 
-    /** @var \Magento\Sales\Model\Order */
-    private $order;
-
-    /**
-     * @var QuoteFactory
-     */
-    private $quoteFactory;
-
     /** @var OrderUpdateOnCallback */
     private $updateOrderCallback;
 
@@ -80,6 +71,9 @@ class Callback extends Action implements CsrfAwareActionInterface
     /** @var OrderLoader */
     private $orderLoader;
 
+    /** @var QuoteRepository */
+    private $quoteRepository;
+
     /**
      * Callback constructor.
      * @param Context $context
@@ -88,7 +82,7 @@ class Callback extends Action implements CsrfAwareActionInterface
      * @param Logger $suiteLogger
      * @param Post $postApi
      * @param Quote $quote
-     * @param QuoteFactory $quoteFactory
+     * @param QuoteRepository $quoteRepository
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
      * @param EncryptorInterface $encryptor
@@ -102,7 +96,7 @@ class Callback extends Action implements CsrfAwareActionInterface
         Logger $suiteLogger,
         Post $postApi,
         Quote $quote,
-        QuoteFactory $quoteFactory,
+        QuoteRepository $quoteRepository,
         OrderUpdateOnCallback $updateOrderCallback,
         SuiteHelper $suiteHelper,
         EncryptorInterface $encryptor,
@@ -111,24 +105,23 @@ class Callback extends Action implements CsrfAwareActionInterface
     ) {
     
         parent::__construct($context);
-        $this->config              = $config;
-        $this->checkoutSession     = $checkoutSession;
-        $this->suiteLogger         = $suiteLogger;
-        $this->postApi             = $postApi;
-        $this->quote               = $quote;
-        $this->quoteFactory        = $quoteFactory;
-        $this->updateOrderCallback = $updateOrderCallback;
-        $this->suiteHelper         = $suiteHelper;
-        $this->encryptor           = $encryptor;
-        $this->recoverCart         = $recoverCart;
+        $this->config               = $config;
+        $this->checkoutSession      = $checkoutSession;
+        $this->suiteLogger          = $suiteLogger;
+        $this->postApi              = $postApi;
+        $this->quote                = $quote;
+        $this->quoteRepository      = $quoteRepository;
+        $this->updateOrderCallback  = $updateOrderCallback;
+        $this->suiteHelper          = $suiteHelper;
+        $this->encryptor            = $encryptor;
+        $this->recoverCart          = $recoverCart;
         $this->orderLoader         = $orderLoader;
 
         $this->config->setMethodCode(Config::METHOD_PAYPAL);
     }
 
     /**
-     * Paypal callback
-     * @throws LocalizedException
+     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|void
      * @throws LocalizedException
      */
     public function execute()
@@ -236,11 +229,10 @@ class Callback extends Action implements CsrfAwareActionInterface
 
     private function loadQuoteFromDataSource()
     {
-        $this->quote = $this->quoteFactory->create()->load(
-            $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"))
-        );
+        $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
+        $this->quote = $this->quoteRepository->get($quoteId);
 
-        if (empty($this->quote->getId())) {
+        if (!isset($this->quote) || empty($this->quote->getId())) {
             throw new LocalizedException(__("Unable to find payment data."));
         }
     }
@@ -253,8 +245,13 @@ class Callback extends Action implements CsrfAwareActionInterface
      */
     private function updatePaymentInformation($transactionId, $payment, $completionResponse)
     {
-        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag TransactionId: " . $transactionId, [__METHOD__, __LINE__]);
-        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag getLastTransId: " . $payment->getLastTransId(), [__METHOD__, __LINE__]);
+        $this->suiteLogger->sageLog(
+            Logger::LOG_REQUEST, "Flag TransactionId: " . $transactionId, [__METHOD__, __LINE__]
+        );
+        $this->suiteLogger->sageLog(
+            Logger::LOG_REQUEST, "Flag getLastTransId: " . $payment->getLastTransId(), [__METHOD__, __LINE__]
+        );
+
         if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) {
             $payment->setAdditionalInformation('statusDetail', $completionResponse['StatusDetail']);
             $payment->setAdditionalInformation('threeDStatus', $completionResponse['3DSecureStatus']);

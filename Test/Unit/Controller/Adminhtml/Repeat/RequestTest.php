@@ -7,7 +7,6 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Adminhtml\Request;
 
 use Ebizmarts\SagePaySuite\Model\Config;
-use http\Exception;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForAction;
 use Magento\Sales\Model\Order\Payment\Transaction;

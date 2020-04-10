@@ -271,7 +271,8 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->never())
-            ->method('cancel');
+            ->method('cancel')
+            ->willReturnSelf();
 
         $transactionMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')

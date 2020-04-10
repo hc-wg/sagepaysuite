@@ -133,7 +133,6 @@ define(
                 var self = this;
                 storage.get(urlBuilder.createUrl('/sagepay/pi-msk', {})).done(
                     function (response) {
-
                         if (response.success) {
                             self.sagepayTokeniseCard(response.response);
                         } else {
@@ -149,18 +148,24 @@ define(
             savePaymentInfo: function () {
                 var self = this;
 
+                var defer = $.Deferred();
+
                 $.when(
                     setPaymentInformation(this.messageContainer, self.getData())
                 ).done(
                     function (response) {
                         if (response === true) {
-                            return true;
+                            defer.resolve();
                         } else {
+                            defer.reject();
+
                             self.showPaymentError("Unable to save payment info.");
                         }
                     }
                 ).fail(
                     function (response) {
+                        defer.reject();
+
                         if (response.responseJSON) {
                             self.showPaymentError(response.responseJSON.message);
                         } else {
@@ -168,7 +173,8 @@ define(
                         }
                     }
                 );
-                return false;
+
+                return defer;
             },
             preparePayment: function () {
                 var self = this;
@@ -202,9 +208,12 @@ define(
                     ).done(
                         function () {
                             if (!self.dropInEnabled()) {
-                                self.savePaymentInfo();
+                                self.savePaymentInfo().done(function () {
+                                    self.createMerchantSessionKey();
+                                });
+                            } else {
+                                self.createMerchantSessionKey();
                             }
-                            self.createMerchantSessionKey();
                         }
                     ).fail(
                         function (response) {
@@ -222,7 +231,7 @@ define(
                     self.selectPaymentMethod();
                 }
 
-                if (self.dropInEnabled()) {
+                if (self.dropInEnabled() && quote.billingAddress() != null) {
                     self.preparePayment();
                 }
             },
@@ -233,13 +242,13 @@ define(
                 var self = this;
 
                 if (additionalValidators.validate()) {
-                    self.savePaymentInfo();
+                    self.savePaymentInfo().done(function () {
+                        if (self.dropInInstance !== null) {
+                            self.dropInInstance.tokenise();
+                        }
+                    })
                 } else {
                     return false;
-                }
-
-                if (self.dropInInstance !== null) {
-                    self.dropInInstance.tokenise();
                 }
             },
             destroyInstanceSagePay: function () {
