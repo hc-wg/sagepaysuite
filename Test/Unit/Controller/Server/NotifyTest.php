@@ -344,6 +344,11 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $this->makeOrder($paymentMock, self::ORDER_ID);
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
+        $this->order
+            ->expects($this->once())
+            ->method('getState')
+            ->willReturn(Order::STATE_PENDING_PAYMENT);
+
         $this->order->expects($this->once())
             ->method('cancel')
             ->willReturnSelf();
