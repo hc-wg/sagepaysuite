@@ -338,10 +338,6 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getId')
             ->willReturn(self::TEST_ORDER_ID);
-        $this->orderMock
-            ->expects($this->once())
-            ->method('getState')
-            ->willReturn(Order::STATE_PENDING_PAYMENT);
 
         $this->checkoutSessionMock
             ->expects($this->once())
