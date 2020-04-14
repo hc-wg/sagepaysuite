@@ -77,9 +77,12 @@ class RecoverCart
         if ($this->verifyIfOrderIsValid($order)) {
             $quote = $this->checkoutSession->getQuote();
             if (!empty($quote)) {
-                if ($this->_shouldCancelOrder && $order->getState() === Order::STATE_PENDING_PAYMENT) {
+                $state = $order->getState();
+                if ($this->_shouldCancelOrder && $state === Order::STATE_PENDING_PAYMENT) {
                     //The order might be cancelled on Controller/Server/Notify. This checks if the order is not cancelled before trying to cancel it.
                     $order->cancel()->save();
+                } elseif ($state !== Order::STATE_CANCELED) {
+                    $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Incorrect state found on order " . $order->getIncrementId() . " when trying to cancel it. State found: " . $state, [__METHOD__, __LINE__]);
                 }
                 try {
                     $this->cloneQuoteAndReplaceInSession($order);
