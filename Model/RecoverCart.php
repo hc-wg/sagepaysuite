@@ -13,6 +13,7 @@ use Magento\Sales\Model\Order;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Framework\DataObjectFactory;
 use Magento\Framework\Message\ManagerInterface;
+use Magento\Sales\Api\Data\OrderInterface;
 
 class RecoverCart
 {
@@ -78,7 +79,7 @@ class RecoverCart
             $quote = $this->checkoutSession->getQuote();
             if (!empty($quote)) {
                 if ($this->_shouldCancelOrder) {
-                    $order->cancel()->save();
+                    $this->tryCancelOrder($order);
                 }
                 try {
                     $this->cloneQuoteAndReplaceInSession($order);
@@ -97,11 +98,11 @@ class RecoverCart
     }
 
     /**
-     * @param Order $order
+     * @param OrderInterface $order
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    private function cloneQuoteAndReplaceInSession(Order $order)
+    private function cloneQuoteAndReplaceInSession(OrderInterface $order)
     {
         $quote = $this->quoteRepository->get($order->getQuoteId());
         $items = $quote->getAllVisibleItems();
@@ -128,7 +129,7 @@ class RecoverCart
     }
 
     /**
-     * @return \Magento\Sales\Api\Data\OrderInterface|null
+     * @return OrderInterface|null
      */
     private function getOrder()
     {
@@ -151,8 +152,7 @@ class RecoverCart
     private function verifyIfOrderIsValid($order)
     {
         return $order !== null &&
-            $order->getId() !== null &&
-            $order->getState() === Order::STATE_PENDING_PAYMENT;
+            $order->getId() !== null;
     }
 
     private function removeFlag()
@@ -188,5 +188,23 @@ class RecoverCart
     {
         $this->addError($message);
         $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $exception->getTraceAsString(), [__METHOD__, __LINE__]);
+    }
+
+    /**
+     * @param OrderInterface $order
+     */
+    private function tryCancelOrder(OrderInterface $order)
+    {
+        try {
+            $state = $order->getState();
+            if ($state === Order::STATE_PENDING_PAYMENT) {
+                //The order might be cancelled on Controller/Server/Notify. This checks if the order is not cancelled before trying to cancel it.
+                $order->cancel()->save();
+            } elseif ($state !== Order::STATE_CANCELED) {
+                $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Incorrect state found on order " . $order->getIncrementId() . " when trying to cancel it. State found: " . $state, [__METHOD__, __LINE__]);
+            }
+        } catch (\Exception $e) {
+            $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
+        }
     }
 }

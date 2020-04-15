@@ -169,13 +169,7 @@ class CancelTest extends \PHPUnit\Framework\TestCase
 
         $this->quoteMock->expects($this->once())->method("getId")->willReturn($quoteId);//self::QUOTE_ID
         $this->quoteMock->expects($this->once())->method("load")->with($quoteId)->willReturnSelf();//self::QUOTE_ID
-
-        $this->orderLoaderMock
-            ->expects($this->once())
-            ->method('loadOrderFromQuote')
-            ->with($this->quoteMock)
-            ->willReturn($this->orderMock);
-
+        
         $this->recoverCartMock
             ->expects($this->once())
             ->method('setShouldCancelOrder')

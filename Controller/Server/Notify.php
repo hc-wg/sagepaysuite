@@ -26,6 +26,7 @@ use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use \Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
+use Magento\Sales\Model\Order;
 use function urlencode;
 
 class Notify extends Action implements CsrfAwareActionInterface
@@ -168,7 +169,13 @@ class Notify extends Action implements CsrfAwareActionInterface
 
             if ($status == "ABORT") { //Transaction canceled by customer
                 //cancel pending payment order
-                $this->cancelOrder($order);
+                $state = $order->getState();
+                if ($state === Order::STATE_PENDING_PAYMENT) {
+                    //The order might be cancelled on Model/recoverCart if SagePay takes too long in sending the notify. This checks if the order is not cancelled before trying to cancel it.
+                    $this->cancelOrder($order);
+                } elseif ($state !== Order::STATE_CANCELED) {
+                    $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Incorrect state found on order " . $order->getIncrementId() . " when trying to cancel it. State found: " . $state, [__METHOD__, __LINE__]);
+                }
                 return $this->returnAbort($this->quote->getId());
             } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
                 $this->updateOrderCallback->setOrder($this->order);
