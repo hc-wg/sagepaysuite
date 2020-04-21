@@ -15,6 +15,9 @@ use Psr\Log\LoggerInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Magento\Checkout\Model\Session;
+use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 class Callback3D extends Action implements CsrfAwareActionInterface
 {
@@ -23,6 +26,8 @@ class Callback3D extends Action implements CsrfAwareActionInterface
 
     /** @var LoggerInterface */
     private $logger;
+
+    private $suiteLogger;
 
     /** @var ThreeDSecureCallbackManagement */
     private $requester;
@@ -39,6 +44,9 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     /** @var RecoverCart */
     private $recoverCart;
 
+    /** @var Session */
+    private $checkoutSession;
+
     /**
      * Callback3D constructor.
      * @param Context $context
@@ -49,6 +57,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
      * @param OrderRepositoryInterface $orderRepository
      * @param CryptAndCodeData $cryptAndCode
      * @param RecoverCart $recoverCart
+     * @param Session $checkoutSession
      */
     public function __construct(
         Context $context,
@@ -58,7 +67,9 @@ class Callback3D extends Action implements CsrfAwareActionInterface
         PiRequestManagerFactory $piReqManagerFactory,
         OrderRepositoryInterface $orderRepository,
         CryptAndCodeData $cryptAndCode,
-        RecoverCart $recoverCart
+        RecoverCart $recoverCart,
+        Session $checkoutSession,
+        Logger $suiteLogger
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -69,6 +80,8 @@ class Callback3D extends Action implements CsrfAwareActionInterface
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
         $this->cryptAndCode                = $cryptAndCode;
         $this->recoverCart                 = $recoverCart;
+        $this->checkoutSession             = $checkoutSession;
+        $this->suiteLogger                 = $suiteLogger;
     }
 
     public function execute()
@@ -90,15 +103,19 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $data->setMode($this->config->getMode());
             $data->setPaymentAction($this->config->getSagepayPaymentAction());
 
-            $this->requester->setRequestData($data);
+            if(!$this->isParesDuplicated($sanitizedPares)) {
+                $this->checkoutSession->setData(SagePaySession::PARES_SENT, $sanitizedPares);
 
-            $response = $this->requester->placeOrder();
+                $this->requester->setRequestData($data);
 
-            if ($response->getErrorMessage() === null) {
-                $this->javascriptRedirect('checkout/onepage/success');
-            } else {
-                $this->messageManager->addError($response->getErrorMessage());
-                $this->javascriptRedirect('checkout/cart');
+                $response = $this->requester->placeOrder();
+
+                if ($response->getErrorMessage() === null) {
+                    $this->javascriptRedirect('checkout/onepage/success');
+                } else {
+                    $this->messageManager->addError($response->getErrorMessage());
+                    $this->javascriptRedirect('checkout/cart');
+                }
             }
         } catch (ApiException $apiException) {
             $this->recoverCart->setShouldCancelOrder(true)->execute();
@@ -167,5 +184,11 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     public function decodeAndDecrypt($data)
     {
         return $this->cryptAndCode->decodeAndDecrypt($data);
+    }
+
+    private function isParesDuplicated($pares)
+    {
+        $sessionPares = $this->checkoutSession->getData(SagePaySession::PARES_SENT);
+        return ($sessionPares !== null) && ($pares === $sessionPares);
     }
 }
