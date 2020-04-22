@@ -92,6 +92,24 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
         $this->makeRequestMock($pares);
 
+        $inSessionPares = "987654321";
+
+        $checkoutSessionMock = $this
+            ->getMockBuilder(\Magento\Checkout\Model\Session::class)
+            ->setMethods(['setData', 'getData'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $checkoutSessionMock
+            ->expects($this->once())
+            ->method('getData')
+            ->with(\Ebizmarts\SagePaySuite\Model\Session::PARES_SENT)
+            ->willReturn($inSessionPares);
+        $checkoutSessionMock
+            ->expects($this->once())
+            ->method('setData')
+            ->with(\Ebizmarts\SagePaySuite\Model\Session::PARES_SENT, $pares)
+            ->willReturnSelf();
+
         $cryptAndCodeMock = $this
             ->getMockBuilder(CryptAndCodeData::class)
             ->disableOriginalConstructor()
@@ -140,7 +158,8 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
                 'piRequestManagerDataFactory' => $piRequestManagerDataFactoryMock,
                 'requester'                   => $threeDCallbackManagementMock,
                 'orderRepository'             => $orderRepositoryMock,
-                'cryptAndCode'                => $cryptAndCodeMock
+                'cryptAndCode'                => $cryptAndCodeMock,
+                'checkoutSession'             => $checkoutSessionMock
             ]
         );
 
@@ -193,6 +212,24 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
         $this->makeRequestMock($pares);
 
+        $inSessionPares = "987654321";
+
+        $checkoutSessionMock = $this
+            ->getMockBuilder(\Magento\Checkout\Model\Session::class)
+            ->setMethods(['setData', 'getData'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $checkoutSessionMock
+            ->expects($this->once())
+            ->method('getData')
+            ->with(\Ebizmarts\SagePaySuite\Model\Session::PARES_SENT)
+            ->willReturn($inSessionPares);
+        $checkoutSessionMock
+            ->expects($this->once())
+            ->method('setData')
+            ->with(\Ebizmarts\SagePaySuite\Model\Session::PARES_SENT, $sanitizedPares)
+            ->willReturnSelf();
+
         $cryptAndCodeMock = $this
             ->getMockBuilder(CryptAndCodeData::class)
             ->disableOriginalConstructor()
@@ -241,7 +278,8 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
                 'piRequestManagerDataFactory' => $piRequestManagerDataFactoryMock,
                 'requester'                   => $threeDCallbackManagementMock,
                 'orderRepository'             => $orderRepositoryMock,
-                'cryptAndCode'                => $cryptAndCodeMock
+                'cryptAndCode'                => $cryptAndCodeMock,
+                'checkoutSession'             => $checkoutSessionMock
             ]
         );
 
@@ -390,6 +428,24 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
         $this->makeRequestMock($pares);
 
+        $inSessionPares = "987654321";
+
+        $checkoutSessionMock = $this
+            ->getMockBuilder(\Magento\Checkout\Model\Session::class)
+            ->setMethods(['setData', 'getData'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $checkoutSessionMock
+            ->expects($this->once())
+            ->method('getData')
+            ->with(\Ebizmarts\SagePaySuite\Model\Session::PARES_SENT)
+            ->willReturn($inSessionPares);
+        $checkoutSessionMock
+            ->expects($this->once())
+            ->method('setData')
+            ->with(\Ebizmarts\SagePaySuite\Model\Session::PARES_SENT, $pares)
+            ->willReturnSelf();
+
         $cryptAndCodeMock = $this
             ->getMockBuilder(CryptAndCodeData::class)
             ->disableOriginalConstructor()
@@ -439,7 +495,8 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
                 'piRequestManagerDataFactory' => $piRequestManagerDataFactoryMock,
                 'requester'                   => $threeDCallbackManagementMock,
                 'orderRepository'             => $orderRepositoryMock,
-                'cryptAndCode'                => $cryptAndCodeMock
+                'cryptAndCode'                => $cryptAndCodeMock,
+                'checkoutSession'             => $checkoutSessionMock
             ]
         );
         $this->expectSetBody(
@@ -470,6 +527,24 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
         $pares = "123456780";
         $this->makeRequestMock($pares);
+
+        $inSessionPares = "987654321";
+
+        $checkoutSessionMock = $this
+            ->getMockBuilder(\Magento\Checkout\Model\Session::class)
+            ->setMethods(['setData', 'getData'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $checkoutSessionMock
+            ->expects($this->once())
+            ->method('getData')
+            ->with(\Ebizmarts\SagePaySuite\Model\Session::PARES_SENT)
+            ->willReturn($inSessionPares);
+        $checkoutSessionMock
+            ->expects($this->once())
+            ->method('setData')
+            ->with(\Ebizmarts\SagePaySuite\Model\Session::PARES_SENT, $pares)
+            ->willReturnSelf();
 
         $orderRepositoryMock = $this
             ->getMockBuilder(OrderRepositoryInterface::class)
@@ -550,7 +625,8 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
                 'piRequestManagerDataFactory' => $piRequestManagerDataFactoryMock,
                 'requester'                   => $threeDCallbackManagementMock,
                 'orderRepository'             => $orderRepositoryMock,
-                'cryptAndCode'                => $cryptAndCodeMock
+                'cryptAndCode'                => $cryptAndCodeMock,
+                'checkoutSession'             => $checkoutSessionMock
             ]
         );
 
