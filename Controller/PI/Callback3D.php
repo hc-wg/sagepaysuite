@@ -186,6 +186,10 @@ class Callback3D extends Action implements CsrfAwareActionInterface
         return $this->cryptAndCode->decodeAndDecrypt($data);
     }
 
+    /**
+     * @param $pares
+     * @return bool
+     */
     private function isParesDuplicated($pares)
     {
         $sessionPares = $this->checkoutSession->getData(SagePaySession::PARES_SENT);
