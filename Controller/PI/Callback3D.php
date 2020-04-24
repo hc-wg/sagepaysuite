@@ -8,9 +8,7 @@ use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Psr\Log\LoggerInterface;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Checkout\Model\Session;
@@ -21,9 +19,6 @@ class Callback3D extends Action
 {
     /** @var Config */
     private $config;
-
-    /** @var LoggerInterface */
-    private $logger;
 
     private $suiteLogger;
 
@@ -49,7 +44,6 @@ class Callback3D extends Action
      * Callback3D constructor.
      * @param Context $context
      * @param Config $config
-     * @param LoggerInterface $logger
      * @param ThreeDSecureCallbackManagement $requester
      * @param PiRequestManagerFactory $piReqManagerFactory
      * @param OrderRepositoryInterface $orderRepository
@@ -60,7 +54,6 @@ class Callback3D extends Action
     public function __construct(
         Context $context,
         Config $config,
-        LoggerInterface $logger,
         ThreeDSecureCallbackManagement $requester,
         PiRequestManagerFactory $piReqManagerFactory,
         OrderRepositoryInterface $orderRepository,
@@ -72,7 +65,6 @@ class Callback3D extends Action
         parent::__construct($context);
         $this->config = $config;
         $this->config->setMethodCode(Config::METHOD_PI);
-        $this->logger                      = $logger;
         $this->orderRepository             = $orderRepository;
         $this->requester                   = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
@@ -85,6 +77,7 @@ class Callback3D extends Action
     public function execute()
     {
         try {
+            $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->getRequest()->getPost(), [__METHOD__, __LINE__]);
             $orderId = $this->getRequest()->getParam("orderId");
             $orderId = $this->decodeAndDecrypt($orderId);
             $order = $this->orderRepository->get($orderId);
@@ -117,12 +110,12 @@ class Callback3D extends Action
             }
         } catch (ApiException $apiException) {
             $this->recoverCart->setShouldCancelOrder(true)->execute();
-            $this->logger->critical($apiException);
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
             $this->recoverCart->setShouldCancelOrder(true)->execute();
-            $this->logger->critical($e);
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
         }
