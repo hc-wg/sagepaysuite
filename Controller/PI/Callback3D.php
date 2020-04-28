@@ -80,24 +80,25 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     public function execute()
     {
         try {
-            $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->getRequest()->getPost(), [__METHOD__, __LINE__]);
-            $orderId = $this->getRequest()->getParam("orderId");
-            $orderId = $this->decodeAndDecrypt($orderId);
-            $order = $this->orderRepository->get($orderId);
-            if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
-                $this->javascriptRedirect('checkout/onepage/success');
-                return;
-            }
-            /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
-            $data = $this->piRequestManagerDataFactory->create();
-            $data->setTransactionId($this->getRequest()->getParam("transactionId"));
             $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
-            $data->setParEs($sanitizedPares);
-            $data->setVendorName($this->config->getVendorname());
-            $data->setMode($this->config->getMode());
-            $data->setPaymentAction($this->config->getSagepayPaymentAction());
-
             if(!$this->isParesDuplicated($sanitizedPares)) {
+                $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->getRequest()->getPost(), [__METHOD__, __LINE__]);
+                $orderId = $this->getRequest()->getParam("orderId");
+                $orderId = $this->decodeAndDecrypt($orderId);
+                $order = $this->orderRepository->get($orderId);
+                if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
+                    $this->javascriptRedirect('checkout/onepage/success');
+                    return;
+                }
+                /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
+                $data = $this->piRequestManagerDataFactory->create();
+                $data->setTransactionId($this->getRequest()->getParam("transactionId"));
+
+                $data->setParEs($sanitizedPares);
+                $data->setVendorName($this->config->getVendorname());
+                $data->setMode($this->config->getMode());
+                $data->setPaymentAction($this->config->getSagepayPaymentAction());
+
                 $this->checkoutSession->setData(SagePaySession::PARES_SENT, $sanitizedPares);
 
                 $this->requester->setRequestData($data);
