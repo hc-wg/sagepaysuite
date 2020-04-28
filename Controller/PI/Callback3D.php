@@ -80,6 +80,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     public function execute()
     {
         try {
+            $duplicatedCallbacks = false;
             $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
             if(!$this->isParesDuplicated($sanitizedPares)) {
                 $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->getRequest()->getPost(), [__METHOD__, __LINE__]);
@@ -112,7 +113,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
                     $this->javascriptRedirect('checkout/cart');
                 }
             } else {
-                throw new \RuntimeException('Duplicated POST request received');
+                $duplicatedCallbacks = true;
             }
         } catch (ApiException $apiException) {
             $this->recoverCart->setShouldCancelOrder(true)->execute();
@@ -124,6 +125,10 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
+        }
+
+        if ($duplicatedCallbacks) {
+            throw new \RuntimeException('Duplicated POST request received');
         }
     }
 
