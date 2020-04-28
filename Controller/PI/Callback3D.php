@@ -111,6 +111,8 @@ class Callback3D extends Action implements CsrfAwareActionInterface
                     $this->messageManager->addError($response->getErrorMessage());
                     $this->javascriptRedirect('checkout/cart');
                 }
+            } else {
+                throw new \RuntimeException('Duplicated POST request received');
             }
         } catch (ApiException $apiException) {
             $this->recoverCart->setShouldCancelOrder(true)->execute();
