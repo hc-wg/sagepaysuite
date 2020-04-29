@@ -121,6 +121,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $this->javascriptRedirect('checkout/cart');
         } catch (\RuntimeException $runtimeException) {
             $orderId = $this->getRequest()->getParam("orderId");
+            $orderId = $this->decodeAndDecrypt($orderId);
             $vpstxid = $this->getRequest()->getParam("transactionId");
             $message = 'Duplicated 3D security callback received for order: ' . $orderId . ' and transaction: ' . $vpstxid;
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $message, [__METHOD__, __LINE__]);
