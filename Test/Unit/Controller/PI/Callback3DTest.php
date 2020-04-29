@@ -748,7 +748,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @expectedException \RuntimeException
-     * @expectedExceptionMessage Duplicated POST request received
+     * @expectedExceptionMessage Duplicated 3D security callback received.
      */
     public function testDuplicatedCallbacks()
     {
@@ -768,13 +768,37 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
             ->method('getPost')
             ->with('PaRes')
             ->willReturn($pares);
+        $this->requestMock
+            ->expects($this->exactly(2))
+            ->method('getParam')
+            ->withConsecutive(['orderId'], ['transactionId'])
+            ->willReturnOnConsecutiveCalls(
+                self::ENCODED_ORDER_ID,
+                $this->returnValue(self::TEST_VPSTXID)
+            );
+        $cryptAndCodeMock = $this
+            ->getMockBuilder(CryptAndCodeData::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $cryptAndCodeMock
+            ->expects($this->once())
+            ->method('decodeAndDecrypt')
+            ->with(self::ENCODED_ORDER_ID)
+            ->willReturn(self::ORDER_ID);
 
         $inSessionPares = "123456780";
+
+        $message = 'Duplicated 3D security callback received for order: ' . self::ORDER_ID . ' and transaction: ' . self::TEST_VPSTXID;
 
         $suiteLoggerMock = $this
             ->getMockBuilder(Logger::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $suiteLoggerMock
+            ->expects($this->once())
+            ->method('sageLog')
+            ->with(Logger::LOG_REQUEST, $message)
+            ->willReturnSelf();
 
         $checkoutSessionMock = $this
             ->getMockBuilder(\Magento\Checkout\Model\Session::class)
@@ -810,6 +834,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
             [
                 'context'                     => $contextMock,
                 'orderRepository'             => $orderRepositoryMock,
+                'cryptAndCode'                => $cryptAndCodeMock,
                 'checkoutSession'             => $checkoutSessionMock,
                 'suiteLogger'                 => $suiteLoggerMock
             ]
