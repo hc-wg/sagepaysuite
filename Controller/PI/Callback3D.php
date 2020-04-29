@@ -80,9 +80,10 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     public function execute()
     {
         try {
-            $duplicatedCallbacks = false;
             $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
-            if(!$this->isParesDuplicated($sanitizedPares)) {
+            if($this->isParesDuplicated($sanitizedPares)) {
+                throw new \RuntimeException(__('Duplicated 3D security callback received.'));
+            } else {
                 $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->getRequest()->getPost(), [__METHOD__, __LINE__]);
                 $orderId = $this->getRequest()->getParam("orderId");
                 $orderId = $this->decodeAndDecrypt($orderId);
@@ -112,23 +113,23 @@ class Callback3D extends Action implements CsrfAwareActionInterface
                     $this->messageManager->addError($response->getErrorMessage());
                     $this->javascriptRedirect('checkout/cart');
                 }
-            } else {
-                $duplicatedCallbacks = true;
             }
         } catch (ApiException $apiException) {
             $this->recoverCart->setShouldCancelOrder(true)->execute();
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
+        } catch (\RuntimeException $runtimeException) {
+            $orderId = $this->getRequest()->getParam("orderId");
+            $vpstxid = $this->getRequest()->getParam("transactionId");
+            $message = 'Duplicated 3D security callback received for order: ' . $orderId . ' and transaction: ' . $vpstxid;
+            $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $message, [__METHOD__, __LINE__]);
+            throw new \RuntimeException(__('Duplicated 3D security callback received.'));
         } catch (\Exception $e) {
             $this->recoverCart->setShouldCancelOrder(true)->execute();
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
-        }
-
-        if ($duplicatedCallbacks) {
-            throw new \RuntimeException('Duplicated POST request received');
         }
     }
 
