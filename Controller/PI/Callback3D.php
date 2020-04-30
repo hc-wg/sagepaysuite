@@ -20,6 +20,7 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 class Callback3D extends Action implements CsrfAwareActionInterface
 {
+    const DUPLICATED_CALLBACK_ERROR_MESSAGE = 'Duplicated 3D security callback received.';
     /** @var Config */
     private $config;
 
@@ -82,7 +83,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
         try {
             $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
             if($this->isParesDuplicated($sanitizedPares)) {
-                throw new \RuntimeException(__('Duplicated 3D security callback received.'));
+                throw new \RuntimeException(__(self::DUPLICATED_CALLBACK_ERROR_MESSAGE));
             }
 
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->getRequest()->getPost(), [__METHOD__, __LINE__]);
@@ -123,9 +124,9 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $orderId = $this->getRequest()->getParam("orderId");
             $orderId = $this->decodeAndDecrypt($orderId);
             $vpstxid = $this->getRequest()->getParam("transactionId");
-            $message = 'Duplicated 3D security callback received for order: ' . $orderId . ' and transaction: ' . $vpstxid;
+            $message = self::DUPLICATED_CALLBACK_ERROR_MESSAGE . ' OrderId: ' . $orderId . ' VPSTxId: ' . $vpstxid;
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $message, [__METHOD__, __LINE__]);
-            throw new \RuntimeException(__('Duplicated 3D security callback received.'));
+            throw new \RuntimeException(__(self::DUPLICATED_CALLBACK_ERROR_MESSAGE));
         } catch (\Exception $e) {
             $this->recoverCart->setShouldCancelOrder(true)->execute();
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
