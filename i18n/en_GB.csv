@@ -206,3 +206,4 @@ Action,Action
 "If after a few minutes the customer does not complete the order, you can click the Sync from API link to query Sage Pay for the latest information on this transaction.","If after a few minutes the customer does not complete the order, you can click the Sync from API link to query Sage Pay for the latest information on this transaction."
 "There is an order in process. Click HERE to recover the cart.","There is an order in process. Click HERE to recover the cart."
 "Not possible to recover quote", "Not possible to recover quote"
+"Duplicated 3D security callback received.", "Duplicated 3D security callback received."
