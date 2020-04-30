@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\PI;
 
+use Ebizmarts\SagePaySuite\Controller\PI\Callback3D;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Sales\Api\OrderRepositoryInterface;
@@ -788,7 +789,7 @@ class Callback3DTest extends \PHPUnit_Framework_TestCase
 
         $inSessionPares = "123456780";
 
-        $message = 'Duplicated 3D security callback received for order: ' . self::ORDER_ID . ' and transaction: ' . self::TEST_VPSTXID;
+        $message = Callback3D::DUPLICATED_CALLBACK_ERROR_MESSAGE . ' OrderId: ' . self::ORDER_ID . ' VPSTxId: ' . self::TEST_VPSTXID;
 
         $suiteLoggerMock = $this
             ->getMockBuilder(Logger::class)
