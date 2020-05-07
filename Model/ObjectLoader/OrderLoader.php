@@ -2,11 +2,11 @@
 
 namespace Ebizmarts\SagePaySuite\Model\ObjectLoader;
 
-use Magento\Quote\Model\Quote;
-use Magento\Sales\Model\OrderRepository;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Sales\Model\Order;
 use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Quote\Model\Quote;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\OrderRepository;
 
 class OrderLoader
 {
@@ -21,8 +21,10 @@ class OrderLoader
      * @param OrderRepository $orderRepository
      * @param RepositoryQuery $repositoryQuery
      */
-    public function __construct(OrderRepository $orderRepository, RepositoryQuery $repositoryQuery)
-    {
+    public function __construct(
+        OrderRepository $orderRepository,
+        RepositoryQuery $repositoryQuery
+    ) {
         $this->orderRepository = $orderRepository;
         $this->repositoryQuery = $repositoryQuery;
     }
@@ -34,15 +36,7 @@ class OrderLoader
      */
     public function loadOrderFromQuote(Quote $quote)
     {
-        $incrementId = $quote->getReservedOrderId();
-
-        $incrementIdFilter = array(
-            'field' => 'increment_id',
-            'conditionType' => 'eq',
-            'value' => $incrementId
-        );
-
-        $searchCriteria = $this->repositoryQuery->buildSearchCriteriaWithOR(array($incrementIdFilter));
+        $searchCriteria = $this->createSearchCriteria($quote);
 
         /** @var Order */
         $order = null;
@@ -59,5 +53,29 @@ class OrderLoader
         }
 
         return $order;
+    }
+
+    /**
+     * @param Quote $quote
+     * @return \Magento\Framework\Api\SearchCriteria
+     */
+    private function createSearchCriteria(Quote $quote)
+    {
+        $incrementId = $quote->getReservedOrderId();
+        $storeId = $quote->getStoreId();
+
+        $incrementIdFilter = [
+            'field' => 'increment_id',
+            'conditionType' => 'eq',
+            'value' => $incrementId
+        ];
+        $storeIdFilter = [
+            'field' => 'store_id',
+            'conditionType' => 'eq',
+            'value' => $storeId
+        ];
+
+        $searchCriteria = $this->repositoryQuery->buildSearchCriteriaANDWithTwoFilters($incrementIdFilter, $storeIdFilter);
+        return $searchCriteria;
     }
 }
