@@ -6,9 +6,9 @@ use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Magento\Framework\Api\Search\SearchCriteria;
 use Magento\Framework\Api\Search\SearchResult;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Sales\Model\OrderRepository;
 use PHPUnit\Framework\TestCase;
 
@@ -65,14 +65,30 @@ class OrderLoaderTest extends TestCase
             ->expects($this->once())
             ->method('getReservedOrderId')
             ->willReturn(self::RESERVER_ORDER_ID);
+        $this->quoteMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(self::STORE_ID);
 
         $this->orderMock = $this
             ->getMockBuilder(Order::class)
             ->disableOriginalConstructor()
             ->getMock();
 
+        $incrementIdFilter = [
+            'field' => 'increment_id',
+            'conditionType' => 'eq',
+            'value' => self::RESERVER_ORDER_ID
+        ];
+        $storeIdFilter = [
+            'field' => 'store_id',
+            'conditionType' => 'eq',
+            'value' => self::STORE_ID
+        ];
+
         $this->repositoryQueryMock->expects($this->once())
-            ->method('buildSearchCriteriaWithOR')
+            ->method('buildSearchCriteriaANDWithTwoFilters')
+            ->with($incrementIdFilter, $storeIdFilter)
             ->willReturn($searchCriteriaMock);
 
         $this->orderRepositoryMock
@@ -88,7 +104,7 @@ class OrderLoaderTest extends TestCase
         $searchResultMock
             ->expects($this->once())
             ->method('getItems')
-            ->willReturn(array($this->orderMock));
+            ->willReturn([$this->orderMock]);
 
         $this->objectManagerHelper = new ObjectManagerHelper($this);
         $this->sut = $this->objectManagerHelper->getObject(
