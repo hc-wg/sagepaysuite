@@ -6,26 +6,12 @@
 
 namespace Ebizmarts\SagePaySuite\Helper;
 
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
-use Magento\Checkout\Helper\Data as CheckoutHelper;
-use Magento\Checkout\Model\Type\Onepage;
-use Magento\Customer\Api\CustomerRepositoryInterface;
-use Magento\Customer\Api\Data\GroupInterface;
-use Magento\Customer\Model\Session;
-use Magento\Framework\Api\DataObjectHelper;
 use Magento\Framework\Api\FilterBuilder;
 use Magento\Framework\Api\Search\FilterGroupBuilder;
+use Magento\Framework\Api\SearchCriteria;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Magento\Framework\DataObject\Copy;
-use Magento\Framework\Encryption\EncryptorInterface;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Quote\Model\QuoteManagement;
-use Magento\Quote\Model\QuoteRepository;
-use Magento\Sales\Model\Order\Email\Sender\OrderSender;
-use \Magento\Checkout\Model\Session as CheckoutSession;
-use Magento\Sales\Model\OrderRepository;
 
 class RepositoryQuery extends AbstractHelper
 {
@@ -44,7 +30,6 @@ class RepositoryQuery extends AbstractHelper
      */
     private $searchCriteriaBuilder;
 
-
     /**
      * RepositoryQuery constructor.
      * @param Context $context
@@ -57,8 +42,7 @@ class RepositoryQuery extends AbstractHelper
         FilterBuilder $filterBuilder,
         FilterGroupBuilder $filterGroupBuilder,
         SearchCriteriaBuilder $searchCriteriaBuilder
-    )
-    {
+    ) {
         parent::__construct($context);
         $this->filterBuilder = $filterBuilder;
         $this->filterGroupBuilder = $filterGroupBuilder;
@@ -69,15 +53,15 @@ class RepositoryQuery extends AbstractHelper
      * @param array $filters
      * @param null $pageSize
      * @param null $currentPage
-     * @return \Magento\Framework\Api\SearchCriteria
+     * @return SearchCriteria
      * @example
      *          $filters = array(
      *                              array('field' => 'name', 'value' => 'John', 'conditionType' => 'eq'),
      *                              array('field' => 'age', 'value' => '50', 'conditionType' => 'gt')
      *                          )
      */
-    public function buildSearchCriteriaWithOR(array $filters, $pageSize = null, $currentPage = null){
-
+    public function buildSearchCriteriaWithOR(array $filters, $pageSize = null, $currentPage = null)
+    {
         foreach ($filters as $index => $filter) {
             $filters[$index] = $this->filterBuilder
                 ->setField($filter['field'])
@@ -88,8 +72,51 @@ class RepositoryQuery extends AbstractHelper
 
         //Filters in the same FilterGroup will be search with OR
         $filterGroup = $this->filterGroupBuilder->setFilters($filters)->create();
-        $searchCriteria = $this->searchCriteriaBuilder->setFilterGroups(array($filterGroup));
+        $searchCriteria = $this->searchCriteriaBuilder->setFilterGroups([$filterGroup]);
 
+        $searchCriteria = $this->setPageSizeAndCurrentPage($searchCriteria, $pageSize, $currentPage);
+
+        return $searchCriteria->create();
+    }
+
+    /**
+     * @param array $filter1
+     * @param array $filter2
+     * @param null $pageSize
+     * @param null $currentPage
+     * @return SearchCriteria
+     */
+    public function buildSearchCriteriaANDWithTwoFilters(array $filter1, array $filter2, $pageSize = null, $currentPage = null)
+    {
+        $filter1 = $this->filterBuilder
+            ->setField($filter1['field'])
+            ->setValue($filter1['value'])
+            ->setConditionType($filter1['conditionType'])
+            ->create();
+        $filterGroup1 = $this->filterGroupBuilder->setFilters([$filter1])->create();
+
+        $filter2 = $this->filterBuilder
+            ->setField($filter2['field'])
+            ->setValue($filter2['value'])
+            ->setConditionType($filter2['conditionType'])
+            ->create();
+        $filterGroup2 = $this->filterGroupBuilder->setFilters([$filter2])->create();
+
+        $searchCriteria = $this->searchCriteriaBuilder->setFilterGroups([$filterGroup1, $filterGroup2]);
+
+        $searchCriteria = $this->setPageSizeAndCurrentPage($searchCriteria, $pageSize, $currentPage);
+
+        return $searchCriteria->create();
+    }
+
+    /**
+     * @param $pageSize
+     * @param $currentPage
+     * @param $searchCriteria
+     * @return SearchCriteria $searchCriteria
+     */
+    private function setPageSizeAndCurrentPage($searchCriteria, $pageSize, $currentPage)
+    {
         if (isset($pageSize)) {
             $searchCriteria->setPageSize($pageSize);
         }
@@ -98,6 +125,6 @@ class RepositoryQuery extends AbstractHelper
             $searchCriteria->setCurrentPage($currentPage);
         }
 
-        return $searchCriteria->create();
+        return $searchCriteria;
     }
 }
