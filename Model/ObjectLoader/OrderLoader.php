@@ -75,7 +75,7 @@ class OrderLoader
             'value' => $storeId
         ];
 
-        $searchCriteria = $this->repositoryQuery->buildSearchCriteriaANDWithTwoFilters($incrementIdFilter, $storeIdFilter);
+        $searchCriteria = $this->repositoryQuery->buildSearchCriteriaWithAND([$incrementIdFilter, $storeIdFilter]);
         return $searchCriteria;
     }
 }
