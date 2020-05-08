@@ -55,50 +55,64 @@ class RepositoryQuery extends AbstractHelper
      * @param null $currentPage
      * @return SearchCriteria
      * @example
-     *          $filters = array(
-     *                              array('field' => 'name', 'value' => 'John', 'conditionType' => 'eq'),
-     *                              array('field' => 'age', 'value' => '50', 'conditionType' => 'gt')
-     *                          )
+     *      $filters = [
+     *          ['field' => 'name', 'value' => 'John', 'conditionType' => 'eq'],
+     *          ['field' => 'age', 'value' => '50', 'conditionType' => 'gt']
+     *      ]
      */
     public function buildSearchCriteriaWithOR(array $filters, $pageSize = null, $currentPage = null)
     {
-        foreach ($filters as $index => $filter) {
-            $filters[$index] = $this->filterBuilder
-                ->setField($filter['field'])
-                ->setValue($filter['value'])
-                ->setConditionType($filter['conditionType'])
-                ->create();
-        }
-
+        $filtersBuilt = $this->buildFilters($filters);
         //Filters in the same FilterGroup will be search with OR
-        $filterGroup = $this->filterGroupBuilder->setFilters($filters)->create();
-        $searchCriteria = $this->searchCriteriaBuilder->setFilterGroups([$filterGroup]);
+        $filterGroup = $this->filterGroupBuilder->setFilters($filtersBuilt)->create();
 
-        $searchCriteria = $this->setPageSizeAndCurrentPage($searchCriteria, $pageSize, $currentPage);
-
-        return $searchCriteria->create();
+        return $this->createSearchCriteria([$filterGroup], $pageSize, $currentPage);
     }
 
     /**
-     * @param array $filter1
-     * @param array $filter2
+     * @param array $filters
      * @param null $pageSize
      * @param null $currentPage
      * @return SearchCriteria
      */
     public function buildSearchCriteriaWithAND(array $filters, $pageSize = null, $currentPage = null)
     {
+        $filtersBuilt = $this->buildFilters($filters);
         $filterGroups = [];
+        foreach ($filtersBuilt as $index => $filter) {
+            $filterGroups[] = $this->filterGroupBuilder->setFilters([$filter])->create();
+        }
+
+        return $this->createSearchCriteria($filterGroups, $pageSize, $currentPage);
+    }
+
+    /**
+     * @param array $filters
+     * @return array
+     */
+    private function buildFilters(array $filters)
+    {
+        $filtersBuilt = [];
         foreach ($filters as $index => $filter) {
-            $filterBuilt = $this->filterBuilder
+            $filtersBuilt[$index] = $this->filterBuilder
                 ->setField($filter['field'])
                 ->setValue($filter['value'])
                 ->setConditionType($filter['conditionType'])
                 ->create();
-            $filterGroups[] = $this->filterGroupBuilder->setFilters([$filterBuilt])->create();
         }
 
-        $searchCriteria = $this->searchCriteriaBuilder->setFilterGroups($filterGroups);
+        return $filtersBuilt;
+    }
+
+    /**
+     * @param array $filtersGroups
+     * @param $pageSize
+     * @param $currentPage
+     * @return mixed
+     */
+    private function createSearchCriteria(array $filtersGroups, $pageSize, $currentPage)
+    {
+        $searchCriteria = $this->searchCriteriaBuilder->setFilterGroups($filtersGroups);
 
         $searchCriteria = $this->setPageSizeAndCurrentPage($searchCriteria, $pageSize, $currentPage);
 
