@@ -86,23 +86,19 @@ class RepositoryQuery extends AbstractHelper
      * @param null $currentPage
      * @return SearchCriteria
      */
-    public function buildSearchCriteriaANDWithTwoFilters(array $filter1, array $filter2, $pageSize = null, $currentPage = null)
+    public function buildSearchCriteriaWithAND(array $filters, $pageSize = null, $currentPage = null)
     {
-        $filter1 = $this->filterBuilder
-            ->setField($filter1['field'])
-            ->setValue($filter1['value'])
-            ->setConditionType($filter1['conditionType'])
-            ->create();
-        $filterGroup1 = $this->filterGroupBuilder->setFilters([$filter1])->create();
+        $filterGroups = [];
+        foreach ($filters as $index => $filter) {
+            $filterBuilt = $this->filterBuilder
+                ->setField($filter['field'])
+                ->setValue($filter['value'])
+                ->setConditionType($filter['conditionType'])
+                ->create();
+            $filterGroups[] = $this->filterGroupBuilder->setFilters([$filterBuilt])->create();
+        }
 
-        $filter2 = $this->filterBuilder
-            ->setField($filter2['field'])
-            ->setValue($filter2['value'])
-            ->setConditionType($filter2['conditionType'])
-            ->create();
-        $filterGroup2 = $this->filterGroupBuilder->setFilters([$filter2])->create();
-
-        $searchCriteria = $this->searchCriteriaBuilder->setFilterGroups([$filterGroup1, $filterGroup2]);
+        $searchCriteria = $this->searchCriteriaBuilder->setFilterGroups($filterGroups);
 
         $searchCriteria = $this->setPageSizeAndCurrentPage($searchCriteria, $pageSize, $currentPage);
 
