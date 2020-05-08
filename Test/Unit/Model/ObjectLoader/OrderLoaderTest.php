@@ -87,7 +87,7 @@ class OrderLoaderTest extends TestCase
         ];
 
         $this->repositoryQueryMock->expects($this->once())
-            ->method('buildSearchCriteriaANDWithTwoFilters')
+            ->method('buildSearchCriteriaWithAND')
             ->with($incrementIdFilter, $storeIdFilter)
             ->willReturn($searchCriteriaMock);
 
