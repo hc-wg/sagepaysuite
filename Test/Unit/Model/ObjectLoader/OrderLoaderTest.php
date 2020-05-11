@@ -75,20 +75,14 @@ class OrderLoaderTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $incrementIdFilter = [
-            'field' => 'increment_id',
-            'conditionType' => 'eq',
-            'value' => self::RESERVER_ORDER_ID
+        $filters = [
+            ['field' => 'increment_id', 'value' => self::RESERVER_ORDER_ID, 'conditionType' => 'eq'],
+            ['field' => 'store_id', 'value' => self::STORE_ID, 'conditionType' => 'eq']
         ];
-        $storeIdFilter = [
-            'field' => 'store_id',
-            'conditionType' => 'eq',
-            'value' => self::STORE_ID
-        ];
-
-        $this->repositoryQueryMock->expects($this->once())
+        $this->repositoryQueryMock
+            ->expects($this->once())
             ->method('buildSearchCriteriaWithAND')
-            ->with($incrementIdFilter, $storeIdFilter)
+            ->with($filters)
             ->willReturn($searchCriteriaMock);
 
         $this->orderRepositoryMock
