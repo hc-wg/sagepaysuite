@@ -106,78 +106,15 @@ class RepositoryQueryTest extends \PHPUnit\Framework\TestCase
             ['field' => 'increment_id', 'value' => '000000003', 'conditionType' => 'eq'],
             ['field' => 'store_id', 'value' => '1', 'conditionType' => 'eq']
         ];
-        $filtersBuilt = [
-            [
-                [
-                    'field' => 'increment_id',
-                    'value' => '000000003',
-                    'conditionType' => 'eq'
-                ]
-            ],
-            [
-                [
-                    'field' => 'store_id',
-                    'value' => '1',
-                    'conditionType' => 'eq'
-                ]
-
-            ]
-        ];
-        $filtersGroups = [
-            [
-                [
-                    [
-                        [
-                            'field' => 'increment_id',
-                            'value' => '000000003',
-                            'conditionType' => 'eq'
-                        ]
-                    ]
-                ]
-            ],
-            [
-                [
-                    [
-                        [
-                            'field' => 'store_id',
-                            'value' => '1',
-                            'conditionType' => 'eq'
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $filterBuilt1 = [$filters[0]];
+        $filterBuilt2 = [$filters[1]];
+        $filterGroup1 = [[[$filterBuilt1]]];
+        $filterGroup2 = [[[$filterBuilt2]]];
         $expectedSearchCriteria = [
             [
-                [
-                    [
-                        [
-                            [
-                                [
-                                    'field' => 'increment_id',
-                                    'value' => '000000003',
-                                    'conditionType' => 'eq'
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ],
-            [
-                [
-                    [
-                        [
-                            [
-                                [
-                                    'field' => 'store_id',
-                                    'value' => '1',
-                                    'conditionType' => 'eq'
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ],
+                $filterGroup1,
+                $filterGroup2
+            ]
         ];
 
         $this->filterBuilderMock
@@ -198,27 +135,27 @@ class RepositoryQueryTest extends \PHPUnit\Framework\TestCase
         $this->filterBuilderMock
             ->expects($this->exactly(2))
             ->method('create')
-            ->willReturnOnConsecutiveCalls($filters[0], $filters[1]);
+            ->willReturnOnConsecutiveCalls($filterBuilt1, $filterBuilt2);
 
         $this->filterGroupBuilderMock
             ->expects($this->exactly(2))
             ->method('setFilters')
-            ->withConsecutive([$filtersBuilt[0]], [$filtersBuilt[1]])
+            ->withConsecutive([[$filterBuilt1]], [[$filterBuilt2]])
             ->willReturnSelf();
         $this->filterGroupBuilderMock
             ->expects($this->exactly(2))
             ->method('create')
-            ->willReturnOnConsecutiveCalls($filtersGroups[0], $filtersGroups[1]);
+            ->willReturnOnConsecutiveCalls($filterGroup1, $filterGroup2);
 
         $this->searchCriteriaBuilderMock
             ->expects($this->once())
             ->method('setFilterGroups')
-            ->with([$filtersGroups])
+            ->with([$filterGroup1, $filterGroup2])
             ->willReturnSelf();
         $this->searchCriteriaBuilderMock
             ->expects($this->once())
             ->method('create')
-            ->willReturnSelf();
+            ->willReturn($expectedSearchCriteria);
 
         $this->assertEquals($expectedSearchCriteria, $this->repositoryQuery->buildSearchCriteriaWithAND($filters));
     }
