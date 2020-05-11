@@ -78,10 +78,10 @@ class RepositoryQueryTest extends \PHPUnit\Framework\TestCase
 
     public function testBuildSearchCriteriaWithOR()
     {
-        $filters = array(
-            array('field' => 'increment_id', 'value' => '00000001', 'conditionType' => 'eq')
-        );
-        $filtersAsObjects = array();
+        $filters = [
+            ['field' => 'increment_id', 'value' => '00000001', 'conditionType' => 'eq']
+        ];
+        $filtersAsObjects = [];
 
         $this->filterBuilderMock->method('setField')->with($filters[0]['field'])->willReturnSelf();
         $this->filterBuilderMock->method('setValue')->with($filters[0]['value'])->willReturnSelf();
@@ -92,11 +92,134 @@ class RepositoryQueryTest extends \PHPUnit\Framework\TestCase
         $this->filterGroupBuilderMock->method('setFilters')->with($filtersAsObjects)->willReturnSelf();
         $this->filterGroupBuilderMock->method('create')->willReturnSelf();
 
-        $this->searchCriteriaBuilderMock->method('setFilterGroups')->with(array($this->filterGroupBuilderMock))
+        $this->searchCriteriaBuilderMock->method('setFilterGroups')->with([$this->filterGroupBuilderMock])
             ->willReturnSelf();
 
         $this->searchCriteriaBuilderMock->method('create')->willReturnSelf();
 
         $this->assertNotNull($this->repositoryQuery->buildSearchCriteriaWithOR($filters));
+    }
+
+    public function testBuildSearchCriteriaWithAND()
+    {
+        $filters = [
+            ['field' => 'increment_id', 'value' => '000000003', 'conditionType' => 'eq'],
+            ['field' => 'store_id', 'value' => '1', 'conditionType' => 'eq']
+        ];
+        $filtersBuilt = [
+            [
+                [
+                    'field' => 'increment_id',
+                    'value' => '000000003',
+                    'conditionType' => 'eq'
+                ]
+            ],
+            [
+                [
+                    'field' => 'store_id',
+                    'value' => '1',
+                    'conditionType' => 'eq'
+                ]
+
+            ]
+        ];
+        $filtersGroups = [
+            [
+                [
+                    [
+                        [
+                            'field' => 'increment_id',
+                            'value' => '000000003',
+                            'conditionType' => 'eq'
+                        ]
+                    ]
+                ]
+            ],
+            [
+                [
+                    [
+                        [
+                            'field' => 'store_id',
+                            'value' => '1',
+                            'conditionType' => 'eq'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $expectedSearchCriteria = [
+            [
+                [
+                    [
+                        [
+                            [
+                                [
+                                    'field' => 'increment_id',
+                                    'value' => '000000003',
+                                    'conditionType' => 'eq'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                [
+                    [
+                        [
+                            [
+                                [
+                                    'field' => 'store_id',
+                                    'value' => '1',
+                                    'conditionType' => 'eq'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ];
+
+        $this->filterBuilderMock
+            ->expects($this->exactly(2))
+            ->method('setField')
+            ->withConsecutive([$filters[0]['field']], [$filters[1]['field']])
+            ->willReturnSelf();
+        $this->filterBuilderMock
+            ->expects($this->exactly(2))
+            ->method('setValue')
+            ->withConsecutive([$filters[0]['value']], [$filters[1]['value']])
+            ->willReturnSelf();
+        $this->filterBuilderMock
+            ->expects($this->exactly(2))
+            ->method('setConditionType')
+            ->withConsecutive([$filters[0]['conditionType']], [$filters[1]['conditionType']])
+            ->willReturnSelf();
+        $this->filterBuilderMock
+            ->expects($this->exactly(2))
+            ->method('create')
+            ->willReturnOnConsecutiveCalls($filters[0], $filters[1]);
+
+        $this->filterGroupBuilderMock
+            ->expects($this->exactly(2))
+            ->method('setFilters')
+            ->withConsecutive([$filtersBuilt[0]], [$filtersBuilt[1]])
+            ->willReturnSelf();
+        $this->filterGroupBuilderMock
+            ->expects($this->exactly(2))
+            ->method('create')
+            ->willReturnOnConsecutiveCalls($filtersGroups[0], $filtersGroups[1]);
+
+        $this->searchCriteriaBuilderMock
+            ->expects($this->once())
+            ->method('setFilterGroups')
+            ->with([$filtersGroups])
+            ->willReturnSelf();
+        $this->searchCriteriaBuilderMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturnSelf();
+
+        $this->assertEquals($expectedSearchCriteria, $this->repositoryQuery->buildSearchCriteriaWithAND($filters));
     }
 }
