@@ -20,6 +20,8 @@ use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface as Logger;
+use Magento\Framework\Controller\Result\RedirectFactory;
+use Magento\Framework\Controller\Result\Redirect;
 
 class SuccessTest extends \PHPUnit_Framework_TestCase
 {
@@ -62,6 +64,12 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
     /** @var UrlInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $urlBuilder;
 
+    /** @var RedirectFactory|\PHPUnit_Framework_MockObject_MockObject */
+    private $resultRedirectFactoryMock;
+
+    /** @var Redirect */
+    private $resultRedirectMock;
+
     public function setUp()
     {
         $this->context = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
@@ -88,6 +96,18 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->setMethods(['create'])
             ->getMock();
+
+        $this->resultRedirectFactoryMock = $this
+            ->getMockBuilder(RedirectFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+
+        $this->resultRedirectMock = $this
+            ->getMockBuilder(Redirect::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['setPath'])
+            ->getMock();
     }
 
     public function testExecute()
@@ -108,6 +128,16 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             . '";</script>'
         );
 
+        $this->resultRedirectFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($this->resultRedirectMock);
+
+        $this->resultRedirectMock
+            ->expects($this->once())
+            ->method('setPath')
+            ->with('checkout/onepage/success', ['_secure' => true]);
+
         $this->serverSuccessController = new Success(
             $this->context,
             $this->suiteLogger,
@@ -115,7 +145,8 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             $this->checkoutSession,
             $this->orderFactory,
             $this->quoteFactory,
-            $this->encryptorMock
+            $this->encryptorMock,
+            $this->resultRedirectFactoryMock
         );
 
         $this->serverSuccessController->execute();
@@ -132,6 +163,16 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
         $this->quoteFactory->expects($this->once())->method('create')->willThrowException($expectedException);
         $this->logger->expects($this->once())->method('critical')->with($expectedException);
 
+        $this->resultRedirectFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($this->resultRedirectMock);
+
+        $this->resultRedirectMock
+            ->expects($this->once())
+            ->method('setPath')
+            ->with('checkout/onepage/success', ['_secure' => true]);
+
         $this->serverSuccessController = new Success(
             $this->context,
             $this->suiteLogger,
@@ -139,7 +180,8 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             $this->checkoutSession,
             $this->orderFactory,
             $this->quoteFactory,
-            $this->encryptorMock
+            $this->encryptorMock,
+            $this->resultRedirectFactoryMock
         );
 
         $this->serverSuccessController->execute();
