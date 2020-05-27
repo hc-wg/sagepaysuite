@@ -19,6 +19,8 @@ use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteRepository;
 use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface as Logger;
+use Magento\Framework\Controller\Result\RedirectFactory;
+use Magento\Framework\Controller\Result\Redirect;
 
 class SuccessTest extends \PHPUnit\Framework\TestCase
 {
@@ -64,6 +66,12 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
     /** @var OrderLoader */
     private $orderLoaderMock;
 
+    /** @var RedirectFactory|\PHPUnit_Framework_MockObject_MockObject */
+    private $resultRedirectFactoryMock;
+
+    /** @var Redirect */
+    private $resultRedirectMock;
+
     public function setUp()
     {
         $this->contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
@@ -88,6 +96,18 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $this->quoteRepositoryMock = $this->getMockBuilder(QuoteRepository::class)
             ->disableOriginalConstructor()
             ->setMethods(['get'])
+            ->getMock();
+
+        $this->resultRedirectFactoryMock = $this
+            ->getMockBuilder(RedirectFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+
+        $this->resultRedirectMock = $this
+            ->getMockBuilder(Redirect::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['setPath'])
             ->getMock();
     }
 
@@ -119,11 +139,15 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             ->with($this->quoteMock)
             ->willReturn($this->orderMock);
 
-        $this->_expectSetBody(
-            '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true])
-            . '";</script>'
-        );
+        $this->resultRedirectFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($this->resultRedirectMock);
+
+        $this->resultRedirectMock
+            ->expects($this->once())
+            ->method('setPath')
+            ->with('checkout/onepage/success', ['_secure' => true]);
 
         $this->serverSuccessController = new Success(
             $this->contextMock,
@@ -132,7 +156,8 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             $this->checkoutSessionMock,
             $this->quoteRepositoryMock,
             $this->encryptorMock,
-            $this->orderLoaderMock
+            $this->orderLoaderMock,
+            $this->resultRedirectFactoryMock
         );
 
         $this->serverSuccessController->execute();
@@ -168,6 +193,16 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $this->loggerMock->expects($this->once())->method('critical')->with($expectedException);
         $this->messageManagerMock->expects($this->once())->method('addError')->with('An error ocurred.');
 
+        $this->resultRedirectFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($this->resultRedirectMock);
+
+        $this->resultRedirectMock
+            ->expects($this->once())
+            ->method('setPath')
+            ->with('checkout/onepage/success', ['_secure' => true]);
+
         $this->serverSuccessController = new Success(
             $this->contextMock,
             $this->suiteLoggerMock,
@@ -175,7 +210,8 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             $this->checkoutSessionMock,
             $this->quoteRepositoryMock,
             $this->encryptorMock,
-            $this->orderLoaderMock
+            $this->orderLoaderMock,
+            $this->resultRedirectFactoryMock
         );
 
         $this->serverSuccessController->execute();
