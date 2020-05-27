@@ -320,7 +320,7 @@ class Notify extends Action
 
     private function getSuccessRedirectUrl()
     {
-        $url = $this->_url->getUrl('*/*/success', [
+        $url = $this->_url->getUrl('*/*/redirectToSuccess', [
             '_secure' => true,
             '_store'  => $this->quote->getStoreId()
         ]);
