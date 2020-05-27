@@ -106,11 +106,6 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->messageManager->addError(__('An error ocurred.'));
         }
 
-        //redirect to success via javascript
-        $this->getResponse()->setBody(
-            '<script>window.top.location.href = "'
-            . $this->_url->getUrl('checkout/onepage/success', ['_secure' => true])
-            . '";</script>'
-        );
+        return $this->resultRedirectFactory->create()->setPath('checkout/onepage/success', ['_secure' => true]);
     }
 }
