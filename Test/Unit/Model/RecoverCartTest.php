@@ -13,7 +13,6 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\DataObject;
-use Magento\Framework\DataObjectFactory;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Quote\Api\CartRepositoryInterface;
@@ -53,9 +52,6 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
 
     /** @var Logger */
     private $suiteLoggerMock;
-
-    /** @var DataObjectFactory */
-    private $dataObjectFactoryMock;
 
     /** @var ManagerInterface */
     private $messageManagerMock;
@@ -101,11 +97,6 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->dataObjectFactoryMock = $this
-            ->getMockBuilder(DataObjectFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $this->messageManagerMock = $this
             ->getMockBuilder(ManagerInterface::class)
             ->disableOriginalConstructor()
@@ -125,7 +116,6 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
                 'orderRepository'   => $this->orderRepositoryMock,
                 'quoteFactory'      => $this->quoteFactoryMock,
                 'quoteRepository'   => $this->quoteRepositoryMock,
-                'dataObjectFactory' => $this->dataObjectFactoryMock,
                 'messageManager'    => $this->messageManagerMock,
                 'productRepository' => $this->productRepositoryMock
             ]
@@ -238,12 +228,6 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->method('getById')
             ->with($productId)
             ->willReturn($productMock);
-
-//        $info = [
-//            'uenc'    => 'aHR0cDovL20yMzMubG9jYWwv',
-//            'product' => 6,
-//            'qty'     => 1
-//        ];
 
         $requestMock = $this
             ->getMockBuilder(DataObject::class)

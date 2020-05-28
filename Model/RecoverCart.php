@@ -6,7 +6,6 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Checkout\Model\Session;
-use Magento\Framework\DataObjectFactory;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
@@ -37,9 +36,6 @@ class RecoverCart
     /** @var CartRepositoryInterface */
     private $quoteRepository;
 
-    /** @var DataObjectFactory */
-    private $dataObjectFactory;
-
     /** @var ManagerInterface */
     private $messageManager;
 
@@ -56,7 +52,6 @@ class RecoverCart
      * @param OrderRepositoryInterface $orderRepository
      * @param QuoteFactory $quoteFactory
      * @param CartRepositoryInterface $quoteRepository
-     * @param DataObjectFactory $dataObjectFactory
      * @param ManagerInterface $messageManager
      * @param ProductRepositoryInterface $productRepository
      */
@@ -66,7 +61,6 @@ class RecoverCart
         OrderRepositoryInterface $orderRepository,
         QuoteFactory $quoteFactory,
         CartRepositoryInterface $quoteRepository,
-        DataObjectFactory $dataObjectFactory,
         ManagerInterface $messageManager,
         ProductRepositoryInterface $productRepository
     ) {
@@ -75,7 +69,6 @@ class RecoverCart
         $this->orderRepository   = $orderRepository;
         $this->quoteFactory      = $quoteFactory;
         $this->quoteRepository   = $quoteRepository;
-        $this->dataObjectFactory = $dataObjectFactory;
         $this->messageManager    = $messageManager;
         $this->productRepository = $productRepository;
     }
