@@ -2,18 +2,19 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Checkout\Model\Session as CheckoutSession;
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\DataObjectFactory;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Message\ManagerInterface;
+use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Model\QuoteFactory;
+use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Magento\Quote\Api\CartRepositoryInterface;
-use Magento\Framework\DataObjectFactory;
-use Magento\Framework\Message\ManagerInterface;
-use Magento\Sales\Api\Data\OrderInterface;
 
 class RecoverCart
 {
@@ -45,6 +46,9 @@ class RecoverCart
     /** @var bool */
     private $_shouldCancelOrder;
 
+    /** @var ProductRepositoryInterface */
+    private $productRepository;
+
     /**
      * RecoverCart constructor.
      * @param CheckoutSession $checkoutSession
@@ -54,6 +58,7 @@ class RecoverCart
      * @param CartRepositoryInterface $quoteRepository
      * @param DataObjectFactory $dataObjectFactory
      * @param ManagerInterface $messageManager
+     * @param ProductRepositoryInterface $productRepository
      */
     public function __construct(
         CheckoutSession $checkoutSession,
@@ -62,7 +67,8 @@ class RecoverCart
         QuoteFactory $quoteFactory,
         CartRepositoryInterface $quoteRepository,
         DataObjectFactory $dataObjectFactory,
-        ManagerInterface $messageManager
+        ManagerInterface $messageManager,
+        ProductRepositoryInterface $productRepository
     ) {
         $this->checkoutSession   = $checkoutSession;
         $this->suiteLogger       = $suiteLogger;
@@ -71,8 +77,8 @@ class RecoverCart
         $this->quoteRepository   = $quoteRepository;
         $this->dataObjectFactory = $dataObjectFactory;
         $this->messageManager    = $messageManager;
+        $this->productRepository = $productRepository;
     }
-
 
     public function execute()
     {
@@ -115,18 +121,17 @@ class RecoverCart
         $newQuote->setIsActive(1);
         $newQuote->setReservedOrderId(null);
         foreach ($items as $item) {
-            $product = $item->getProduct();
+            try {
+                $product = $this->productRepository->getById($item->getProductId(), false, $quote->getStoreId(), true);
+                $request = $item->getBuyRequest();
 
-            $options = $product->getTypeInstance(true)->getOrderOptions($product);
-
-            $info = $options['info_buyRequest'];
-            $request = $this->dataObjectFactory->create();
-            $request->setData($info);
-
-            $newQuote->addProduct($product, $request);
+                $newQuote->addProduct($product, $request);
+            } catch (NoSuchEntityException $e) {
+                $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
+            }
         }
         $newQuote->collectTotals();
-        $newQuote->save();
+        $this->quoteRepository->save($newQuote);
 
         $this->checkoutSession->replaceQuote($newQuote);
     }
