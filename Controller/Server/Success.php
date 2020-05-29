@@ -43,12 +43,19 @@ class Success extends \Magento\Framework\App\Action\Action
     private $encryptor;
 
     /**
+     * @var \Magento\Framework\Controller\Result\RedirectFactory
+     */
+    protected $resultRedirectFactory;
+
+    /**
      * @param \Magento\Framework\App\Action\Context $context
      * @param Logger $suiteLogger
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Magento\Sales\Model\OrderFactory $orderFactory
      * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
+     * @param \Magento\Framework\Encryption\EncryptorInterface $encryptor
+     * @param \Magento\Framework\Controller\Result\RedirectFactory $resultRedirectFactory
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -57,24 +64,28 @@ class Success extends \Magento\Framework\App\Action\Action
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Quote\Model\QuoteFactory $quoteFactory,
-        \Magento\Framework\Encryption\EncryptorInterface $encryptor
+        \Magento\Framework\Encryption\EncryptorInterface $encryptor,
+        \Magento\Framework\Controller\Result\RedirectFactory $resultRedirectFactory
     ) {
-    
+
         parent::__construct($context);
 
-        $this->_suiteLogger     = $suiteLogger;
-        $this->_logger          = $logger;
-        $this->_checkoutSession = $checkoutSession;
-        $this->_orderFactory    = $orderFactory;
-        $this->_quoteFactory    = $quoteFactory;
-        $this->encryptor        = $encryptor;
+        $this->_suiteLogger            = $suiteLogger;
+        $this->_logger                 = $logger;
+        $this->_checkoutSession        = $checkoutSession;
+        $this->_orderFactory           = $orderFactory;
+        $this->_quoteFactory           = $quoteFactory;
+        $this->encryptor               = $encryptor;
+        $this->resultRedirectFactory   =  $resultRedirectFactory;
     }
 
     public function execute()
     {
         try {
-            $storeId = $this->getRequest()->getParam("_store");
-            $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
+            $request = $this->getRequest();
+
+            $storeId = $request->getParam("_store");
+            $quoteId = $this->encryptor->decrypt($request->getParam("quoteid"));
 
             $quote = $this->_quoteFactory->create();
             $quote->setStoreId($storeId);
@@ -98,11 +109,6 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->messageManager->addError(__('An error ocurred.'));
         }
 
-        //redirect to success via javascript
-        $this->getResponse()->setBody(
-            '<script>window.top.location.href = "'
-            . $this->_url->getUrl('checkout/onepage/success', ['_secure' => true])
-            . '";</script>'
-        );
+        return $this->resultRedirectFactory->create()->setPath('checkout/onepage/success', ['_secure' => true]);
     }
 }
