@@ -13,6 +13,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Quote\Model\QuoteRepository;
 use Psr\Log\LoggerInterface;
+use Magento\Framework\Controller\Result\RedirectFactory;
 
 class Success extends \Magento\Framework\App\Action\Action
 {
@@ -49,6 +50,11 @@ class Success extends \Magento\Framework\App\Action\Action
     private $orderLoader;
 
     /**
+     * @var RedirectFactory
+     */
+    protected $resultRedirectFactory;
+
+    /**
      * Success constructor.
      * @param Context $context
      * @param Logger $suiteLogger
@@ -57,6 +63,7 @@ class Success extends \Magento\Framework\App\Action\Action
      * @param QuoteRepository $quoteRepository
      * @param EncryptorInterface $encryptor
      * @param OrderLoader $orderLoader
+     * @param RedirectFactory $resultRedirectFactory
      */
     public function __construct(
         Context $context,
@@ -65,7 +72,8 @@ class Success extends \Magento\Framework\App\Action\Action
         Session $checkoutSession,
         QuoteRepository $quoteRepository,
         EncryptorInterface $encryptor,
-        OrderLoader $orderLoader
+        OrderLoader $orderLoader,
+        RedirectFactory $resultRedirectFactory
     ) {
 
         parent::__construct($context);
@@ -76,6 +84,7 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->quoteRepository = $quoteRepository;
         $this->encryptor        = $encryptor;
         $this->orderLoader      = $orderLoader;
+        $this->resultRedirectFactory   =  $resultRedirectFactory;
     }
 
     public function execute()
@@ -106,11 +115,6 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->messageManager->addError(__('An error ocurred.'));
         }
 
-        //redirect to success via javascript
-        $this->getResponse()->setBody(
-            '<script>window.top.location.href = "'
-            . $this->_url->getUrl('checkout/onepage/success', ['_secure' => true])
-            . '";</script>'
-        );
+        return $this->resultRedirectFactory->create()->setPath('checkout/onepage/success', ['_secure' => true]);
     }
 }
