@@ -9,19 +9,18 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\Product\Type\AbstractType;
-use Magento\Framework\DataObject;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Checkout\Model\Session;
-use Magento\Quote\Model\Quote\Item;
-use Magento\Quote\Api\CartRepositoryInterface;
-use Magento\Sales\Model\Order;
-use Magento\Quote\Model\Quote;
-use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Quote\Model\QuoteFactory;
-use Magento\Framework\DataObjectFactory;
+use Magento\Framework\DataObject;
 use Magento\Framework\Message\ManagerInterface;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\Quote\Item;
+use Magento\Quote\Model\QuoteFactory;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
 
 class RecoverCartTest extends \PHPUnit\Framework\TestCase
 {
@@ -54,11 +53,11 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
     /** @var Logger */
     private $suiteLoggerMock;
 
-    /** @var DataObjectFactory */
-    private $dataObjectFactoryMock;
-
     /** @var ManagerInterface */
     private $messageManagerMock;
+
+    /** @var ProductRepositoryInterface */
+    private $productRepositoryMock;
 
     protected function setUp()
     {
@@ -98,13 +97,13 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->dataObjectFactoryMock = $this
-            ->getMockBuilder(DataObjectFactory::class)
+        $this->messageManagerMock = $this
+            ->getMockBuilder(ManagerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->messageManagerMock = $this
-            ->getMockBuilder(ManagerInterface::class)
+        $this->productRepositoryMock = $this
+            ->getMockBuilder(ProductRepositoryInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -117,12 +116,15 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
                 'orderRepository'   => $this->orderRepositoryMock,
                 'quoteFactory'      => $this->quoteFactoryMock,
                 'quoteRepository'   => $this->quoteRepositoryMock,
-                'dataObjectFactory' => $this->dataObjectFactoryMock,
-                'messageManager'    => $this->messageManagerMock
+                'messageManager'    => $this->messageManagerMock,
+                'productRepository' => $this->productRepositoryMock
             ]
         );
     }
 
+    /**
+     *
+     */
     public function testExecute()
     {
         $this->checkoutSessionMock
@@ -171,6 +173,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
 
         $itemMock = $this
             ->getMockBuilder(Item::class)
+            ->setMethods(['getProductId', 'getBuyRequest'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -196,7 +199,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->willReturnSelf();
 
         $this->quoteMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('getStoreId')
             ->willReturn(self::TEST_STORE_ID);
 
@@ -214,57 +217,27 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $productId = 6;
         $itemMock
             ->expects($this->once())
-            ->method('getProduct')
+            ->method('getProductId')
+            ->willReturn($productId);
+
+        $this->productRepositoryMock
+            ->expects($this->once())
+            ->method('getById')
+            ->with($productId)
             ->willReturn($productMock);
-
-        $productAbstractTypeMock = $this
-            ->getMockBuilder(AbstractType::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $productMock
-            ->expects($this->once())
-            ->method('getTypeInstance')
-            ->with(true)
-            ->willReturn($productAbstractTypeMock);
-
-        $options = [
-            'info_buyRequest' => [
-                'uenc'    => 'aHR0cDovL20yMzMubG9jYWwv',
-                'product' => 6,
-                'qty'     => 1
-            ]
-        ];
-
-        $info = [
-            'uenc'    => 'aHR0cDovL20yMzMubG9jYWwv',
-            'product' => 6,
-            'qty'     => 1
-        ];
-
-        $productAbstractTypeMock
-            ->expects($this->once())
-            ->method('getOrderOptions')
-            ->with($productMock)
-            ->willReturn($options);
 
         $requestMock = $this
             ->getMockBuilder(DataObject::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->dataObjectFactoryMock
+        $itemMock
             ->expects($this->once())
-            ->method('create')
+            ->method('getBuyRequest')
             ->willReturn($requestMock);
-
-        $requestMock
-            ->expects($this->once())
-            ->method('setData')
-            ->with($info)
-            ->willReturnSelf();
 
         $newQuoteMock
             ->expects($this->once())
@@ -275,9 +248,11 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('collectTotals')
             ->willReturnSelf();
-        $newQuoteMock
+
+        $this->quoteRepositoryMock
             ->expects($this->once())
             ->method('save')
+            ->with($newQuoteMock)
             ->willReturnSelf();
 
         $this->checkoutSessionMock
