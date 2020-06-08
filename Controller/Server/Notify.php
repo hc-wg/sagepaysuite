@@ -147,12 +147,6 @@ class Notify extends Action implements CsrfAwareActionInterface
                 );
             }
 
-            error_log("AVSCV2: ".$this->postData->{'AVSCV2'}."\n", 3, '/Users/juan/Sites/m234/var/log/ebizmarts.log');
-            error_log("AddressResult: ".$this->postData->{'AddressResult'}."\n", 3, '/Users/juan/Sites/m234/var/log/ebizmarts.log');
-            error_log("PostCodeResult: ".$this->postData->{'PostCodeResult'}."\n", 3, '/Users/juan/Sites/m234/var/log/ebizmarts.log');
-            error_log("CV2Result: ".$this->postData->{'CV2Result'}."\n", 3, '/Users/juan/Sites/m234/var/log/ebizmarts.log');
-            error_log("3DSecureStatus: ".$this->postData->{'3DSecureStatus'}."\n", 3, '/Users/juan/Sites/m234/var/log/ebizmarts.log');
-
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
                 $payment->setAdditionalInformation('statusDetail', $statusDetail);
                 $payment->setAdditionalInformation('AVSCV2', $this->postData->{'AVSCV2'});
