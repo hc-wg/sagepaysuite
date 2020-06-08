@@ -147,8 +147,18 @@ class Notify extends Action implements CsrfAwareActionInterface
                 );
             }
 
+            error_log("AVSCV2: ".$this->postData->{'AVSCV2'}."\n", 3, '/Users/juan/Sites/m234/var/log/ebizmarts.log');
+            error_log("AddressResult: ".$this->postData->{'AddressResult'}."\n", 3, '/Users/juan/Sites/m234/var/log/ebizmarts.log');
+            error_log("PostCodeResult: ".$this->postData->{'PostCodeResult'}."\n", 3, '/Users/juan/Sites/m234/var/log/ebizmarts.log');
+            error_log("CV2Result: ".$this->postData->{'CV2Result'}."\n", 3, '/Users/juan/Sites/m234/var/log/ebizmarts.log');
+            error_log("3DSecureStatus: ".$this->postData->{'3DSecureStatus'}."\n", 3, '/Users/juan/Sites/m234/var/log/ebizmarts.log');
+
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
                 $payment->setAdditionalInformation('statusDetail', $statusDetail);
+                $payment->setAdditionalInformation('AVSCV2', $this->postData->{'AVSCV2'});
+                $payment->setAdditionalInformation('AddressResult', $this->postData->{'AddressResult'});
+                $payment->setAdditionalInformation('PostCodeResult', $this->postData->{'PostCodeResult'});
+                $payment->setAdditionalInformation('CV2Result', $this->postData->{'CV2Result'});
                 $payment->setAdditionalInformation('threeDStatus', $this->postData->{'3DSecureStatus'});
                 if (isset($this->postData->{'BankAuthCode'})) {
                     $payment->setAdditionalInformation('bankAuthCode', $this->postData->{'BankAuthCode'});
