@@ -152,7 +152,7 @@ class Notify extends Action
                 $payment->setAdditionalInformation('AddressResult', $this->postData->{'AddressResult'});
                 $payment->setAdditionalInformation('PostCodeResult', $this->postData->{'PostCodeResult'});
                 $payment->setAdditionalInformation('CV2Result', $this->postData->{'CV2Result'});
-                $payment->setAdditionalInformation('threeDStatus', $this->postData->{'3DSecureStatus'});
+                $payment->setAdditionalInformation('3DSecureStatus', $this->postData->{'3DSecureStatus'});
                 if (isset($this->postData->{'BankAuthCode'})) {
                     $payment->setAdditionalInformation('bankAuthCode', $this->postData->{'BankAuthCode'});
                 }
