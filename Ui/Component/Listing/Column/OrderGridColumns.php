@@ -57,7 +57,7 @@ class OrderGridColumns extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
      * @return string
      */
     public function getIndexForIntegration($index){
-        //This function returns the index needed to use for FORM integration
+        //This function returns the index needed to use for SERVER, FORM and PayPal integrations
         $integrationIndex = "";
         switch ($index){
             case 'avsCvcCheckAddress':
