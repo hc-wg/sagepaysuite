@@ -106,7 +106,7 @@ class Callback extends Action
         EncryptorInterface $encryptor,
         RecoverCart $recoverCart
     ) {
-    
+
         parent::__construct($context);
         $this->config              = $config;
         $this->checkoutSession     = $checkoutSession;
@@ -268,7 +268,11 @@ class Callback extends Action
         $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Flag getLastTransId: " . $payment->getLastTransId(), [__METHOD__, __LINE__]);
         if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) {
             $payment->setAdditionalInformation('statusDetail', $completionResponse['StatusDetail']);
-            $payment->setAdditionalInformation('threeDStatus', $completionResponse['3DSecureStatus']);
+            $payment->setAdditionalInformation('AVSCV2', $this->postData->{'AVSCV2'});
+            $payment->setAdditionalInformation('AddressResult', $this->postData->{'AddressResult'});
+            $payment->setAdditionalInformation('PostCodeResult', $this->postData->{'PostCodeResult'});
+            $payment->setAdditionalInformation('CV2Result', $this->postData->{'CV2Result'});
+            $payment->setAdditionalInformation('3DSecureStatus', $completionResponse['3DSecureStatus']);
             $payment->setCcType("PayPal");
             $payment->setLastTransId($transactionId);
             $payment->save();
