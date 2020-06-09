@@ -46,11 +46,6 @@ class OrderGridInfo implements AdminGridColumnInterface
     private $assetRepository;
 
     /**
-     * @var string
-     */
-    private $methodCode;
-
-    /**
      * OrderGridInfo constructor.
      * @param RequestInterface $requestInterface
      * @param AdditionalInformation $serialize
@@ -71,22 +66,6 @@ class OrderGridInfo implements AdminGridColumnInterface
         $this->orderRepository = $orderRepository;
         $this->suiteLogger = $suiteLogger;
         $this->assetRepository = $assetRepository;
-    }
-
-    /**
-     * @return string
-     */
-    public function getMethodCode()
-    {
-        return $this->methodCode;
-    }
-
-    /**
-     * @param string $methodCode
-     */
-    public function setMethodCode($methodCode)
-    {
-        $this->methodCode = $methodCode;
     }
 
     /**
@@ -112,8 +91,6 @@ class OrderGridInfo implements AdminGridColumnInterface
                         continue;
                     }
                     $payment = $order->getPayment();
-                    $paymentMethodCode = $payment->getMethod();
-                    $this->setMethodCode($paymentMethodCode);
 
                     if ($payment !== null) {
                         $additional = $payment->getAdditionalInformation();
