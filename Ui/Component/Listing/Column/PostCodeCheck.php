@@ -44,7 +44,7 @@ class PostCodeCheck extends Column
     public function prepareDataSource(array $dataSource)
     {
         $fieldName = $this->getFieldName();
-        return $this->orderGridColumns->prepareColumn($dataSource, "avsCvcCheckPostalCode", $fieldName);
+        return $this->orderGridColumns->prepareColumn($dataSource, "PostCodeResult", $fieldName);
     }
 
     /**
