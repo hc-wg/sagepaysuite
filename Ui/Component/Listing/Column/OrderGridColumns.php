@@ -17,64 +17,14 @@ class OrderGridColumns extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
      */
     public function getImage(array $additional, $index)
     {
-        $integrationIndex = $this->getIndex($index);
-
-        $status = $this->getStatus($additional, $integrationIndex);
-        if ($index == "threeDStatus") {
+        $status = $this->getStatus($additional, $index);
+        if ($index == "3DSecureStatus") {
             $image = $this->getThreeDStatus($status);
         } else {
             $image = $this->getStatusImage($status);
         }
 
         return $image;
-    }
-
-    /**
-     * @param string $index
-     * @return string
-     */
-    public function getIndex($index)
-    {
-        $paymentMethodCode = $this->getMethodCode();
-        $integrationIndex = "";
-        switch ($paymentMethodCode){
-            case 'sagepaysuiteform':
-            case 'sagepaysuiteserver':
-            case 'sagepaysuitepaypal':
-                $integrationIndex = $this->getIndexForIntegration($index);
-                break;
-            case 'sagepaysuitepi':
-            default:
-                $integrationIndex = $index;
-                break;
-        }
-
-        return $integrationIndex;
-    }
-
-    /**
-     * @param string $index
-     * @return string
-     */
-    public function getIndexForIntegration($index){
-        //This function returns the index needed to use for SERVER, FORM and PayPal integrations
-        $integrationIndex = "";
-        switch ($index){
-            case 'avsCvcCheckAddress':
-                $integrationIndex = 'AddressResult';
-                break;
-            case 'avsCvcCheckPostalCode':
-                $integrationIndex = 'PostCodeResult';
-                break;
-            case 'avsCvcCheckSecurityCode':
-                $integrationIndex = 'CV2Result';
-                break;
-            case 'threeDStatus':
-                $integrationIndex = '3DSecureStatus';
-                break;
-        }
-
-        return $integrationIndex;
     }
 
     /**
