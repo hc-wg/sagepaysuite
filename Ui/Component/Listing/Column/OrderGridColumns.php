@@ -45,9 +45,12 @@ class OrderGridColumns extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
             case 'ISSUERNOTENROLLED':
             case 'ATTEMPTONLY':
             case 'NOTAVAILABLE':
-            case 'INCOMPLETE':
+            case 'NOTAUTHED':
             default:
                 $threeDStatus = 'outline.png';
+                break;
+            case 'INCOMPLETE':
+                $threeDStatus = 'zebra.png';
                 break;
             case 'ERROR':
             case 'MALFORMEDORINVALID':
@@ -68,7 +71,6 @@ class OrderGridColumns extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
 
         switch($status){
             case 'MATCHED':
-            case 'SECURITYCODEMATCHONLY':
                 $imageUrl = 'check.png';
                 break;
             case 'NOTCHECKED':
