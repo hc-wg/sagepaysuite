@@ -88,7 +88,7 @@ class OrderGridColumns extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
 
         return self::IMAGE_PATH . $imageUrl;
     }
-    
+
     /**
      * @param $additional
      * @param $index
@@ -101,13 +101,13 @@ class OrderGridColumns extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
         //If it's not set, it tries to get the status with other indexes which were used on other versions of the module
         if (isset($additional[$index])) {
             $status = $additional[$index];
-        } elseif (isset($additional['threeDStatus'])) {
+        } elseif (isset($additional['threeDStatus']) && $index == '3DSecureStatus') {
             $status = $additional['threeDStatus'];
-        } elseif (isset($additional['avsCvcCheckAddress'])) {
+        } elseif (isset($additional['avsCvcCheckAddress']) && $index == 'AddressResult') {
             $status = $additional['avsCvcCheckAddress'];
-        } elseif (isset($additional['avsCvcCheckPostalCode'])) {
+        } elseif (isset($additional['avsCvcCheckPostalCode']) && $index == 'PostCodeResult') {
             $status = $additional['avsCvcCheckPostalCode'];
-        } elseif (isset($additional['avsCvcCheckSecurityCode'])) {
+        } elseif (isset($additional['avsCvcCheckSecurityCode']) && $index == 'CV2Result') {
             $status = $additional['avsCvcCheckSecurityCode'];
         } else {
             $status = "NOTPROVIDED";
