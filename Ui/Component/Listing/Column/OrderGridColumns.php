@@ -88,7 +88,7 @@ class OrderGridColumns extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
 
         return self::IMAGE_PATH . $imageUrl;
     }
-
+    
     /**
      * @param $additional
      * @param $index
@@ -96,8 +96,19 @@ class OrderGridColumns extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
      */
     public function getStatus($additional, $index)
     {
+        //This function returns the status from the 'additional_information' field of the transactions table
+        //First it tries to get the status with the index received as parameter
+        //If it's not set, it tries to get the status with other indexes which were used on other versions of the module
         if (isset($additional[$index])) {
             $status = $additional[$index];
+        } elseif (isset($additional['threeDStatus'])) {
+            $status = $additional['threeDStatus'];
+        } elseif (isset($additional['avsCvcCheckAddress'])) {
+            $status = $additional['avsCvcCheckAddress'];
+        } elseif (isset($additional['avsCvcCheckPostalCode'])) {
+            $status = $additional['avsCvcCheckPostalCode'];
+        } elseif (isset($additional['avsCvcCheckSecurityCode'])) {
+            $status = $additional['avsCvcCheckSecurityCode'];
         } else {
             $status = "NOTPROVIDED";
         }
