@@ -93,12 +93,12 @@ class OrderGridColumns extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
      * @param $additional
      * @param $index
      * @return string
+     * This function returns the status from the 'additional_information' field of the transactions table.
+     * First it tries to get the status with the index received as parameter.
+     * If it's not set, it tries to get the status with other indexes which were used on other versions of the module.
      */
     public function getStatus($additional, $index)
     {
-        //This function returns the status from the 'additional_information' field of the transactions table
-        //First it tries to get the status with the index received as parameter
-        //If it's not set, it tries to get the status with other indexes which were used on other versions of the module
         if (isset($additional[$index])) {
             $status = $additional[$index];
         } elseif (isset($additional['threeDStatus']) && $index == '3DSecureStatus') {
