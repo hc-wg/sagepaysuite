@@ -9,6 +9,14 @@ namespace Ebizmarts\SagePaySuite\Ui\Component\Listing\Column;
 class OrderGridColumns extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
 {
     const IMAGE_PATH = 'Ebizmarts_SagePaySuite::images/icon-shield-';
+    const OLD_INDEX_3D = 'threeDStatus';
+    const OLD_INDEX_ADDRESS = 'avsCvcCheckAddress';
+    const OLD_INDEX_POSTCODE = 'avsCvcCheckPostalCode';
+    const OLD_INDEX_CV2 = 'avsCvcCheckSecurityCode';
+    const INDEX_3D = '3DSecureStatus';
+    const INDEX_ADDRESS = 'AddressResult';
+    const INDEX_POSTCODE = 'PostCodeResult';
+    const INDEX_CV2 = 'CV2Result';
 
     /**
      * @param array $additional
@@ -18,7 +26,7 @@ class OrderGridColumns extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
     public function getImage(array $additional, $index)
     {
         $status = $this->getStatus($additional, $index);
-        if ($index == "3DSecureStatus") {
+        if ($index == self::INDEX_3D) {
             $image = $this->getThreeDStatus($status);
         } else {
             $image = $this->getStatusImage($status);
@@ -101,14 +109,14 @@ class OrderGridColumns extends \Ebizmarts\SagePaySuite\Model\OrderGridInfo
     {
         if (isset($additional[$index])) {
             $status = $additional[$index];
-        } elseif (isset($additional['threeDStatus']) && $index == '3DSecureStatus') {
-            $status = $additional['threeDStatus'];
-        } elseif (isset($additional['avsCvcCheckAddress']) && $index == 'AddressResult') {
-            $status = $additional['avsCvcCheckAddress'];
-        } elseif (isset($additional['avsCvcCheckPostalCode']) && $index == 'PostCodeResult') {
-            $status = $additional['avsCvcCheckPostalCode'];
-        } elseif (isset($additional['avsCvcCheckSecurityCode']) && $index == 'CV2Result') {
-            $status = $additional['avsCvcCheckSecurityCode'];
+        } elseif (isset($additional[self::OLD_INDEX_3D]) && $index == self::INDEX_3D) {
+            $status = $additional[self::OLD_INDEX_3D];
+        } elseif (isset($additional[self::OLD_INDEX_ADDRESS]) && $index == self::INDEX_ADDRESS) {
+            $status = $additional[self::OLD_INDEX_ADDRESS];
+        } elseif (isset($additional[self::OLD_INDEX_POSTCODE]) && $index == self::INDEX_POSTCODE) {
+            $status = $additional[self::OLD_INDEX_POSTCODE];
+        } elseif (isset($additional[self::OLD_INDEX_CV2]) && $index == self::INDEX_CV2) {
+            $status = $additional[self::OLD_INDEX_CV2];
         } else {
             $status = "NOTPROVIDED";
         }
