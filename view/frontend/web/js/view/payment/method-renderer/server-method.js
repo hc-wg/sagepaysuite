@@ -139,6 +139,7 @@ define(
                                         if (response.success) {
 
                                             customerData.invalidate(['cart']);
+                                            customerData.invalidate(['checkout-data']);
 
                                             var sagePayResponse = $.parseJSON(response.response[1]);
                                             self.openSERVERModal(sagePayResponse.NextURL);
