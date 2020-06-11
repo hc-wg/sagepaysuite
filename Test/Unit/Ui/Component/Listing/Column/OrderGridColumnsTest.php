@@ -18,7 +18,7 @@ class OrderGridColumnsTest extends \PHPUnit\Framework\TestCase
 
     public function testGetImageThreeDS()
     {
-        $additional = ['threeDStatus' => 'AUTHENTICATED'];
+        $additional = ['3DSecureStatus' => 'AUTHENTICATED'];
         $index = '3DSecureStatus';
         $status = 'AUTHENTICATED';
 
