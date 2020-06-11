@@ -142,11 +142,14 @@ class Success extends Action
             if (!empty($transactionId) && ($vendorTxCode == $response['VendorTxCode'])) {
                 foreach ($response as $name => $value) {
                     $payment->setTransactionAdditionalInfo($name, $value);
-                    $payment->setAdditionalInformation($name, $value);
+                    if ($name != '3DSecureStatus' && $name != 'StatusDetail' && $name != 'VendorTxCode')
+                    {
+                        $payment->setAdditionalInformation($name, $value);
+                    }
                 }
 
                 $payment->setLastTransId($transactionId);
-                $payment->setAdditionalInformation('statusDetail', $response['StatusDetail']);
+                $payment->setAdditionalInformation('StatusDetail', $response['StatusDetail']);
                 $payment->setCcType($response['CardType']);
                 $payment->setCcLast4($response['Last4Digits']);
 
@@ -155,7 +158,7 @@ class Success extends Action
                     $payment->setCcExpYear(substr($response["ExpiryDate"], 2));
                 }
                 if (array_key_exists("3DSecureStatus", $response)) {
-                    $payment->setAdditionalInformation('threeDStatus', $response["3DSecureStatus"]);
+                    $payment->setAdditionalInformation('3DSecureStatus', $response["3DSecureStatus"]);
                 }
                 $payment->save();
             } else {
