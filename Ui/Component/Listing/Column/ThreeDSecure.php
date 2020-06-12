@@ -44,7 +44,7 @@ class ThreeDSecure extends Column
     public function prepareDataSource(array $dataSource)
     {
         $fieldName = $this->getFieldName();
-        return $this->orderGridColumns->prepareColumn($dataSource, "threeDStatus", $fieldName);
+        return $this->orderGridColumns->prepareColumn($dataSource, "3DSecureStatus", $fieldName);
     }
 
     /**
