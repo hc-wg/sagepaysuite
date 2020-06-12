@@ -18,8 +18,8 @@ class OrderGridColumnsTest extends \PHPUnit\Framework\TestCase
 
     public function testGetImageThreeDS()
     {
-        $additional = ['threeDStatus' => 'AUTHENTICATED'];
-        $index = 'threeDStatus';
+        $additional = ['3DSecureStatus' => 'AUTHENTICATED'];
+        $index = '3DSecureStatus';
         $status = 'AUTHENTICATED';
 
         $orderGridColumnsMock = $this->getMockBuilder(OrderGridColumns::class)
@@ -44,8 +44,8 @@ class OrderGridColumnsTest extends \PHPUnit\Framework\TestCase
 
     public function testGetImageColumns()
     {
-        $additional = ['avsCvcCheckAddress' => 'MATCHED'];
-        $index = 'avsCvcCheckAddress';
+        $additional = ['PostCodeResult' => 'MATCHED'];
+        $index = 'PostCodeResult';
         $status = 'MATCHED';
 
         $orderGridColumnsMock = $this->getMockBuilder(OrderGridColumns::class)

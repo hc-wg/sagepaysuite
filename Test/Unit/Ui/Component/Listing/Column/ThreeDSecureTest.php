@@ -14,7 +14,7 @@ use Magento\Framework\View\Element\UiComponentFactory;
 class ThreeDSecureTest extends \PHPUnit\Framework\TestCase
 {
     const FIELD_NAME = "sagepay_threeDSecure";
-    const INDEX = "threeDStatus";
+    const INDEX = "3DSecureStatus";
     const ENTITY_ID = 1;
     const IMAGE_URL_CHECK = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/icon-shield-check.png';
     const IMAGE_URL_CROSS = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/icon-shield-cross.png';

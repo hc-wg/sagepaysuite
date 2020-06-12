@@ -146,7 +146,6 @@ class Success extends Action
                 }
 
                 $payment->setLastTransId($transactionId);
-                $payment->setAdditionalInformation('statusDetail', $response['StatusDetail']);
                 $payment->setCcType($response['CardType']);
                 $payment->setCcLast4($response['Last4Digits']);
 
@@ -154,9 +153,7 @@ class Success extends Action
                     $payment->setCcExpMonth(substr($response["ExpiryDate"], 0, 2));
                     $payment->setCcExpYear(substr($response["ExpiryDate"], 2));
                 }
-                if (array_key_exists("3DSecureStatus", $response)) {
-                    $payment->setAdditionalInformation('threeDStatus', $response["3DSecureStatus"]);
-                }
+
                 $payment->save();
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Invalid transaction id.'));
