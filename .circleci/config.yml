@@ -13,7 +13,7 @@ executors:
       SNIFFER_VERSION: v5
       MAGENTO_PATH: /home/circleci/magento2
       MAGENTO_VERSION: 232EE
-      MAGENTO_VERSION_235: 235EE
+      MAGENTO_VERSION_233: 233EE
       MAGENTO_WEB_SERVER_CONF: https://gist.githubusercontent.com/bcerban/25f3a2d93c19dc562020e0197f78685c/raw/70f1f314ad8ba5d302b911fe622a57ccec60a868/magento2.conf
       MAGENTO_COMPOSER_AUTH: https://gist.githubusercontent.com/centerax/5e42abec89d62a1308ba/raw/4b3242361c0690e234266afb3520c2940ac1055a/auth.json
       LIBSODIUM_VERSION: 1.0.18
@@ -36,13 +36,13 @@ jobs:
             root: /home/circleci
             paths:
               - ./
-    DownloadTools235EE:
+    DownloadTools233EE:
       executor: my-executor
       steps:
         - sagepay/download-pre-compiled-magento-no-sampledata:
-            version: $MAGENTO_VERSION_235
+            version: $MAGENTO_VERSION_233
         - sagepay/download-tools:
-            version: $MAGENTO_VERSION_235
+            version: $MAGENTO_VERSION_233
         - persist_to_workspace:
             root: /home/circleci
             paths:
@@ -166,6 +166,48 @@ jobs:
           - attach_workspace:
               at: ~/magento2
           - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
+
+
+          - run: sudo -E sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
+
+          - run: wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.18.tar.gz
+          - run: tar xvzf libsodium-1.0.18.tar.gz
+          - run: cd libsodium-1.0.18/ && ./configure
+          - run: cd libsodium-1.0.18/ && make && make check
+          - run: cd libsodium-1.0.18/ && sudo make install
+
+          # Install dependencies
+          - run: sudo apt-get update
+          - run:
+             name: Install libraries
+             command: sudo -E apt-get install -y g++ libicu-dev libjpeg-dev libmcrypt-dev libpng-dev libwebp-dev libxml2-dev libxpm-dev libxslt-dev libz-dev libzip-dev zlib1g-dev
+
+          - run:
+             name: Configure PHP extensions
+             command: sudo -E docker-php-ext-configure intl && sudo -E docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include
+
+          - run: sudo apt-get -y install gcc make autoconf libc-dev pkg-config
+          - run: sudo apt-get -y install libmcrypt-dev
+          - run: sudo pecl install mcrypt-1.0.2
+
+          - run:
+             name: Install PHP extensions
+             command: sudo -E docker-php-ext-install bcmath gd intl opcache pdo_mysql soap xsl zip
+
+          - run: sudo apt-get install -y mariadb-client
+
+          # Prepare Apache env
+          - run: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
+          - run: wget https://gist.githubusercontent.com/bcerban/25f3a2d93c19dc562020e0197f78685c/raw/70f1f314ad8ba5d302b911fe622a57ccec60a868/magento2.conf
+          - run: sudo cp magento2.conf /etc/apache2/sites-available/ && sudo a2ensite magento2.conf
+          - run: sudo sed -i 's/www-data/circleci/g' /etc/apache2/envvars
+          - run: sudo service apache2 restart
+
+          # Install test runners
+          - run: cd ~/magento2 && composer install --prefer-source --no-interaction
+          - run: cd ~/magento2 && bin/magento setup:install --base-url=http://magento2.dev:8080/ --db-host=127.0.0.1 --db-name=circle_test --db-user=magento --db-password=magento --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1 --cleanup-database --use-sample-data
+
+          
           - run: sudo apt-get update
           - sagepay/install-mariadb-and-setup-webserver
           - sagepay/magento-compile-and-setup-upgrade
@@ -185,7 +227,7 @@ workflows:
   build_test_dist:
     jobs:
       - DownloadTools232EE
-      - DownloadTools235EE
+      - DownloadTools233EE
       - PHP 71 Unit Tests:
           requires:
             - PHP 71 Code Sniffer
@@ -215,7 +257,7 @@ workflows:
             - PHP 73 Code Sniffer
       - PHP 73 Code Sniffer:
           requires:
-            - DownloadTools235EE
+            - DownloadTools233EE
       - PHP 73 Compile and API test:
           requires:
             - PHP 73 Unit Tests
