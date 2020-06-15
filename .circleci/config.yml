@@ -170,7 +170,7 @@ jobs:
 
           - add_ssh_keys:
               fingerprints:
-                - "e6:70:64:2c:f2:c4:cb:32:12:44:20:77:97:bc:c7:77"
+                - "a1:7e:59:be:72:47:27:a9:c2:4c:bc:85:db:d4:2c:a5"
           - run: sudo -E sh -c 'echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/memory.ini'
 
           - run: wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.18.tar.gz
