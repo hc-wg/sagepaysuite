@@ -208,7 +208,7 @@ jobs:
 
           # Install test runners
           - run: rm -rf ~/magento2/*
-          - run: wget --quiet https://ebizmartsbackup.s3.amazonaws.com/magento-ee-2.3.5-p1.zip
+          - run: wget --quiet https://ebizmartsbackup.s3.amazonaws.com/magento-ee-2.3.5-p1.zip && mv magento-ee-2.3.5-p1.zip ~/magento2/
           - run: sudo apt-get -y install unzip
           - run: cd ~/magento2 && unzip -qq magento-ee-2.3.5-p1.zip
           - run: cd ~/magento2 && composer install --prefer-source --no-interaction
