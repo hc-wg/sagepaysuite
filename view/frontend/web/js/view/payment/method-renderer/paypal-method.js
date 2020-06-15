@@ -108,6 +108,8 @@ define(
                                                 var redirectUrl = sagePayResponse.PayPalRedirectURL;
                                                 if (redirectUrl) {
                                                     customerData.invalidate(['cart']);
+                                                    customerData.invalidate(['checkout-data']);
+
                                                     window.location.href = redirectUrl;
                                                 } else {
                                                     self.showPaymentError("Invalid response from PayPal, please try again later.");
