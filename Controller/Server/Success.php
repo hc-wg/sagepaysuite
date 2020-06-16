@@ -43,11 +43,6 @@ class Success extends \Magento\Framework\App\Action\Action
     private $encryptor;
 
     /**
-     * @var \Magento\Framework\Controller\Result\RedirectFactory
-     */
-    protected $resultRedirectFactory;
-
-    /**
      * @param \Magento\Framework\App\Action\Context $context
      * @param Logger $suiteLogger
      * @param \Psr\Log\LoggerInterface $logger
@@ -55,7 +50,6 @@ class Success extends \Magento\Framework\App\Action\Action
      * @param \Magento\Sales\Model\OrderFactory $orderFactory
      * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
      * @param \Magento\Framework\Encryption\EncryptorInterface $encryptor
-     * @param \Magento\Framework\Controller\Result\RedirectFactory $resultRedirectFactory
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -64,8 +58,7 @@ class Success extends \Magento\Framework\App\Action\Action
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Quote\Model\QuoteFactory $quoteFactory,
-        \Magento\Framework\Encryption\EncryptorInterface $encryptor,
-        \Magento\Framework\Controller\Result\RedirectFactory $resultRedirectFactory
+        \Magento\Framework\Encryption\EncryptorInterface $encryptor
     ) {
 
         parent::__construct($context);
@@ -76,7 +69,6 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->_orderFactory           = $orderFactory;
         $this->_quoteFactory           = $quoteFactory;
         $this->encryptor               = $encryptor;
-        $this->resultRedirectFactory   =  $resultRedirectFactory;
     }
 
     public function execute()
