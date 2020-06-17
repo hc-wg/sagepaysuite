@@ -76,7 +76,13 @@ jobs:
     - run:
         command: cd ~/magento2 && unzip -qq magento-ee-2.3.5-p1.zip
     - run:
-        command: rm magento-ee-2.3.5-p1.zip
+        command: cd ~/magento2 && rm magento-ee-2.3.5-p1.zip
+    - run:
+        command: docker-php-ext-install sockets
+    - run:
+        command: composer remove container-interop/container-interop
+    - run:
+        command: composer require psr/container
     - run:
         command: cd ~/magento2 && composer install --prefer-source --no-interaction
     - run:
