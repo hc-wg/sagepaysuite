@@ -195,9 +195,15 @@ jobs:
 
           - run:
              name: Install PHP extensions
-             command: sudo -E docker-php-ext-install bcmath gd intl opcache pdo_mysql soap xsl zip
+             command: sudo -E docker-php-ext-install bcmath gd intl opcache pdo_mysql soap xsl zip 
 
           - run: sudo apt-get install -y mariadb-client
+          - run: sudo apt-cache search rabbit
+          - run: sudo apt install -y rabbitmq-server
+          - run: sudo apt-get install -y librabbitmq4
+          # - run:
+          #    name: Install amqp extention
+          #    command: curl -L -o /tmp/amqp.tar.gz https://pecl.php.net/get/amqp-1.9.3.tgz && tar xfz /tmp/amqp.tar.gz && rm -r /tmp/amqp.tar.gz && sudo mkdir -p /usr/src/php/ext/amqp && sudo mv amqp-1.9.3 /usr/src/php/ext/amqp && cd /usr/src/php/ext/amqp/amqp-1.9.3 && sudo phpize && sudo ./configure --with-amqp && sudo make && sudo make install && sudo cp -a /usr/src/php/ext/amqp/amqp-1.9.3/. /usr/src/php/ext/amqp/ && sudo docker-php-ext-install amqp
 
           # Prepare Apache env
           - run: echo 127.0.0.1 magento2.dev | sudo tee -a /etc/hosts
@@ -211,6 +217,7 @@ jobs:
           - run: wget --quiet https://ebizmartsbackup.s3.amazonaws.com/magento-ee-2.3.5-p1.zip && mv magento-ee-2.3.5-p1.zip ~/magento2/
           - run: sudo apt-get -y install unzip
           - run: cd ~/magento2 && unzip -qq magento-ee-2.3.5-p1.zip
+          - run: rm magento-ee-2.3.5-p1.zip
           - run: cd ~/magento2 && composer install --prefer-source --no-interaction
           - run: cd ~/magento2 && bin/magento setup:install --base-url=http://magento2.dev:8080/ --db-host=127.0.0.1 --db-name=circle_test --db-user=magento --db-password=magento --admin-firstname=Magento --admin-lastname=User --admin-email=user@example.com --admin-user=admin --admin-password=admin123 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1 --cleanup-database --use-sample-data
 
