@@ -100,6 +100,7 @@ define(
                                         if (response.success) {
 
                                             customerData.invalidate(['cart']);
+                                            customerData.invalidate(['checkout-data']);
 
                                             //set form data and submit
                                             var form_form = document.getElementById(self.getCode() + '-form');
@@ -148,7 +149,6 @@ define(
             resetPaymentErrors: function () {
                 var span = document.getElementById(this.getCode() + '-payment-errors');
                 span.style.display="none";
-
             }
         });
     }
