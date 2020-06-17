@@ -218,7 +218,7 @@ jobs:
           - run: sudo apt-get -y install unzip
           - run: cd ~/magento2 && unzip -qq magento-ee-2.3.5-p1.zip
           - run: cd ~/magento2 && rm magento-ee-2.3.5-p1.zip
-          - run: docker-php-ext-install sockets
+          - run: sudo docker-php-ext-install sockets
           - run: composer remove container-interop/container-interop
           - run: composer require psr/container
           - run: cd ~/magento2 && composer install --prefer-source --no-interaction
