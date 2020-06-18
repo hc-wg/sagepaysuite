@@ -348,20 +348,13 @@ define(
                                  * transaction authenticated, redirect to success
                                  */
                                 customerData.invalidate(['cart']);
-
-                                if (!customer.isLoggedIn()) {
-                                    customerData.invalidate(['checkout-data']);
-                                }
+                                customerData.invalidate(['checkout-data']);
 
                                 window.location.replace(url.build('checkout/onepage/success/'));
                             } else if (response.status === "3DAuth") {
 
-
                                 customerData.invalidate(['cart']);
-
-                                if (!customer.isLoggedIn()) {
-                                    customerData.invalidate(['checkout-data']);
-                                }
+                                customerData.invalidate(['checkout-data']);
 
                                 /**
                                  * 3D secure authentication required

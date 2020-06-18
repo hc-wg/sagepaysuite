@@ -106,6 +106,7 @@ define(
                                             if (response.success) {
                                                 if (response.response[1].PayPalRedirectURL) {
                                                     customerData.invalidate(['cart']);
+                                                    customerData.invalidate(['checkout-data']);
                                                     window.location.href = response.response[1].PayPalRedirectURL;
                                                 } else {
                                                     self.showPaymentError("Invalid response from PayPal, please try again later.");
