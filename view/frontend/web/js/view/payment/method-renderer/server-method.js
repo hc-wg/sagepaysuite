@@ -140,6 +140,7 @@ define(
                                         if (response.success) {
 
                                             customerData.invalidate(['cart']);
+                                            customerData.invalidate(['checkout-data']);
 
                                             self.openSERVERModal(response.response[1].NextURL);
 
