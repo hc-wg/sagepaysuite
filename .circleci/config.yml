@@ -167,6 +167,7 @@ jobs:
               at: ~/magento2
           - run: sudo sh -c 'echo "199.188.207.57 test.sagepay.com pi-test.sagepay.com" >> /etc/hosts'
           - run: sudo apt-get update
+
           - sagepay/install-mariadb-and-setup-webserver
           - sagepay/magento-compile-and-setup-upgrade
           - sagepay/run-api-functional-tests
