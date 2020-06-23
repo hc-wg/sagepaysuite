@@ -127,6 +127,11 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
 
         $this->orderFactoryMock->expects($this->once())->method('create')->willReturn($this->orderMock);
 
+        $this->contextMock
+            ->expects($this->once())
+            ->method('getResultRedirectFactory')
+            ->willReturn($this->resultRedirectFactoryMock);
+
         $this->resultRedirectFactoryMock
             ->expects($this->once())
             ->method('create')
@@ -144,8 +149,7 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             $this->checkoutSessionMock,
             $this->orderFactoryMock,
             $this->quoteFactory,
-            $this->encryptorMock,
-            $this->resultRedirectFactoryMock
+            $this->encryptorMock
         );
 
         $this->serverSuccessController->execute();
@@ -175,6 +179,11 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $this->loggerMock->expects($this->once())->method('critical')->with($expectedException);
         $this->messageManagerMock->expects($this->once())->method('addError')->with('An error ocurred.');
 
+        $this->contextMock
+            ->expects($this->once())
+            ->method('getResultRedirectFactory')
+            ->willReturn($this->resultRedirectFactoryMock);
+
         $this->resultRedirectFactoryMock
             ->expects($this->once())
             ->method('create')
@@ -192,8 +201,7 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             $this->checkoutSessionMock,
             $this->orderFactoryMock,
             $this->quoteFactory,
-            $this->encryptorMock,
-            $this->resultRedirectFactoryMock
+            $this->encryptorMock
         );
 
         $this->serverSuccessController->execute();
