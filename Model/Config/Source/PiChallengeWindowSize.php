@@ -19,23 +19,23 @@ class PiChallengeWindowSize implements OptionSourceInterface
     {
         return [
             [
-                'value' => '01',
+                'value' => 'Small',
                 'label' => __('250px x 400px'),
             ],
             [
-                'value' => '02',
+                'value' => 'Medium',
                 'label' => __('390px x 400px'),
             ],
             [
-                'value' => '03',
+                'value' => 'Large',
                 'label' => __('500px x 600px'),
             ],
             [
-                'value' => '04',
+                'value' => 'ExtraLarge',
                 'label' => __('600px x 400px'),
             ],
             [
-                'value' => '05',
+                'value' => 'FullScreen',
                 'label' => __('Fullscreen')
             ]
         ];

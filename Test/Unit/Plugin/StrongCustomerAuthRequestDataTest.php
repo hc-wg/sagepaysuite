@@ -15,8 +15,8 @@ class StrongCustomerAuthRequestDataTest extends \PHPUnit_Framework_TestCase
     const USER_AGENT = "Mozilla\/5.0 (Macintosh; Intel Mac OS X 10.14; rv:68.0) Gecko\/20100101 Firefox\/68.0";
     const BROWSER_LANGUAGE = "en-US";
     const NOTIFICATION_URL = "https://website.example/sagepaysuite/pi/callback3Dv2";
-    const SERVICE_PURCHASE = "01";
-    const WINDOW_SIZE = "03";
+    const SERVICE_PURCHASE = "GoodsAndServicePurchase";
+    const WINDOW_SIZE = "Large";
     const REMOTE_IP = "127.0.0.1";
     const ACCEPT_HEADER_ALL = "*\/*";
 
