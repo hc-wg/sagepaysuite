@@ -73,6 +73,58 @@ define(
                 self.addShippingUpdateEvent();
                 self.loadDropInForm();
                 self.addBillingUpdateEvents();
+
+                $('button.checkout').attr('disabled', 'disabled');
+            },
+            observeCardChanges: function(itemId) {
+                var self = this;
+                var code = self.getCode();
+
+                if (self.checkFormElementExistense(code)) {
+                    var element = document.getElementById(itemId);
+
+                    if (element.value == '') {
+                        $(element).parents('.field').addClass('_error');
+                        $('button.checkout').attr('disabled', 'disabled');
+                    } else if (self.checkFilledfFormFields(code)) {
+                        $(element).parents('.field').removeClass('_error');
+                        $('button.checkout').removeAttr('disabled');
+                    }
+                }
+            },
+            checkFilledfFormFields: function(code) {
+                var cardHolder = document.getElementById(code + '_cardholder').value;
+                var ccNumber = document.getElementById(code + '_cc_number').value;
+                var expiration = document.getElementById(code + '_expiration').value;
+                var expirationYr = document.getElementById(code + '_expiration_yr').value;
+                var CID = document.getElementById(code + '_cc_cid').value;
+
+                if (cardHolder == '' 
+                    || ccNumber == '' 
+                    || expiration == 'Month' 
+                    || expirationYr == 'Year' 
+                    || CID == '') {
+                    return false;
+                }
+
+                return true;
+            },
+            checkFormElementExistense: function(code) {
+                var cardHolderElement = document.getElementById(code + '_cardholder');
+                var ccNumberElement = document.getElementById(code + '_cc_number');
+                var expirationElement = document.getElementById(code + '_expiration');
+                var expirationYrElement = document.getElementById(code + '_expiration_yr');
+                var CIDElement = document.getElementById(code + '_cc_cid');
+
+                if (cardHolderElement !== null 
+                    && ccNumberElement !== null 
+                    && expirationElement !== null 
+                    && expirationYrElement !== null 
+                    && CIDElement !== null) {
+                        return true;
+                }
+
+                return false;
             },
             addShippingUpdateEvent: function () {
                 var self = this;
@@ -356,6 +408,27 @@ define(
                                     }
                                     if (response && response.error && response.error.message) {
                                         errorMessage = response.error.message;
+                                    } else if (response && response.errors.length > 1) {
+                                        for (var i=0; i< response.errors.length; i++) {
+                                            if (response.errors[i].clientMessage) {
+                                                errorMessage += '<br/>'+response.errors[i].clientMessage;
+                                                if (response.errors[i].property) {
+                                                    switch (response.errors[i].property) {
+                                                        case 'cardDetails.cardNumber':
+                                                            $('#'+self.getCode()+'_cc_number').parents('.field').addClass('_error');
+                                                            break;
+                                                        case 'cardDetails.cardholderName':
+                                                            $('#'+self.getCode()+'_cardholder').parents('.field').addClass('_error');
+                                                            break;
+                                                        case 'cardDetails.expiryDate':
+                                                            $('#'+self.getCode()+'_expiration').parents('.field').addClass('_error');
+                                                            break;
+                                                        default:
+                                                            break;
+                                                    }
+                                                }
+                                            }
+                                        }
                                     } else if (response && response.errors && response.errors[0] && response.errors[0].clientMessage) {
                                         errorMessage = response.errors[0].clientMessage;
                                     }
@@ -469,6 +542,11 @@ define(
                             }
                         } else {
                             self.showPaymentError(response.error_message);
+
+                            if (response.error_message.search(/CV2/) > -1) {
+                                $('#'+self.getCode()+'_cc_cid').parents('.field').addClass('_error');
+                            }
+
                             if (self.dropInEnabled()) {
                                 self.destroyInstanceSagePay();
                             }
