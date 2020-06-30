@@ -86,11 +86,35 @@ define(
                     if (element.value == '') {
                         $(element).parents('.field').addClass('_error');
                         $('button.checkout').attr('disabled', 'disabled');
-                    } else if (self.checkFilledfFormFields(code)) {
-                        $(element).parents('.field').removeClass('_error');
-                        $('button.checkout').removeAttr('disabled');
+                    } else {
+                        if (self.checkFieldFilled(code, itemId)) {
+                            $(element).parents('.field').removeClass('_error');
+                        } 
+
+                        if (self.checkFilledfFormFields(code)) {
+                            $('button.checkout').removeAttr('disabled');
+                        }
                     }
                 }
+            },
+            checkFieldFilled: function(code, itemId) {
+                var elementValue = document.getElementById(itemId).value;
+
+                if (itemId == code + '_cardholder' || itemId == code + '_cc_number' || itemId == code + '_cc_cid') {
+                    if (elementValue == '') {
+                        return false;
+                    }
+                } else if (itemId == code + '_expiration') {
+                    if (elementValue == 'Month') {
+                        return false;
+                    }
+                } else if (itemId == code + '_expiration_yr') {
+                    if (elementValue == 'Year') {
+                        return false;
+                    }
+                }
+
+                return true;
             },
             checkFilledfFormFields: function(code) {
                 var cardHolder = document.getElementById(code + '_cardholder').value;
@@ -101,8 +125,8 @@ define(
 
                 if (cardHolder == '' 
                     || ccNumber == '' 
-                    || expiration == 'Month' 
-                    || expirationYr == 'Year' 
+                    || expiration == 'Month' || expiration == ''
+                    || expirationYr == 'Year' || expirationYr == ''
                     || CID == '') {
                     return false;
                 }
