@@ -483,10 +483,10 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($messageManagerMock));
 
         $invalidMessage  = 'Your payment was successful but the order was NOT created, please contact us: ';
-        $invalidMessage .= 'Invalid response from Sage Pay.';
+        $invalidMessage .= 'Invalid response from Opayo.';
         $messageManagerMock->expects($this->once())->method('addError')->with($invalidMessage);
 
-        $expectedException = new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay.'));
+        $expectedException = new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Opayo.'));
 
         $loggerMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)

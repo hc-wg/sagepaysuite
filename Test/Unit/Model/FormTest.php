@@ -21,7 +21,7 @@ class FormTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Magento\Framework\Exception\LocalizedException
-     * @expectedExceptionMessage Invalid response from Sage Pay
+     * @expectedExceptionMessage Invalid response from Opayo
      */
     public function testDecodeSagePayResponseEmpty()
     {
