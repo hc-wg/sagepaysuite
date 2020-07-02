@@ -73,6 +73,82 @@ define(
                 self.addShippingUpdateEvent();
                 self.loadDropInForm();
                 self.addBillingUpdateEvents();
+
+                $('button.checkout').attr('disabled', 'disabled');
+            },
+            observeCardChanges: function(itemId) {
+                var self = this;
+                var code = self.getCode();
+
+                if (self.checkFormElementExistense(code)) {
+                    var element = document.getElementById(itemId);
+
+                    if (element.value == '') {
+                        $(element).parents('.field').addClass('_error');
+                        $('button.checkout').attr('disabled', 'disabled');
+                    } else {
+                        if (self.checkFieldFilled(code, itemId)) {
+                            $(element).parents('.field').removeClass('_error');
+                        } 
+
+                        if (self.checkFilledfFormFields(code)) {
+                            $('button.checkout').removeAttr('disabled');
+                        }
+                    }
+                }
+            },
+            checkFieldFilled: function(code, itemId) {
+                var elementValue = document.getElementById(itemId).value;
+
+                if (itemId == code + '_cardholder' || itemId == code + '_cc_number' || itemId == code + '_cc_cid') {
+                    if (elementValue == '') {
+                        return false;
+                    }
+                } else if (itemId == code + '_expiration') {
+                    if (elementValue == 'Month') {
+                        return false;
+                    }
+                } else if (itemId == code + '_expiration_yr') {
+                    if (elementValue == 'Year') {
+                        return false;
+                    }
+                }
+
+                return true;
+            },
+            checkFilledfFormFields: function(code) {
+                var cardHolder = document.getElementById(code + '_cardholder').value;
+                var ccNumber = document.getElementById(code + '_cc_number').value;
+                var expiration = document.getElementById(code + '_expiration').value;
+                var expirationYr = document.getElementById(code + '_expiration_yr').value;
+                var CID = document.getElementById(code + '_cc_cid').value;
+
+                if (cardHolder == '' 
+                    || ccNumber == '' 
+                    || expiration == 'Month' || expiration == ''
+                    || expirationYr == 'Year' || expirationYr == ''
+                    || CID == '') {
+                    return false;
+                }
+
+                return true;
+            },
+            checkFormElementExistense: function(code) {
+                var cardHolderElement = document.getElementById(code + '_cardholder');
+                var ccNumberElement = document.getElementById(code + '_cc_number');
+                var expirationElement = document.getElementById(code + '_expiration');
+                var expirationYrElement = document.getElementById(code + '_expiration_yr');
+                var CIDElement = document.getElementById(code + '_cc_cid');
+
+                if (cardHolderElement !== null 
+                    && ccNumberElement !== null 
+                    && expirationElement !== null 
+                    && expirationYrElement !== null 
+                    && CIDElement !== null) {
+                        return true;
+                }
+
+                return false;
             },
             addShippingUpdateEvent: function () {
                 var self = this;
