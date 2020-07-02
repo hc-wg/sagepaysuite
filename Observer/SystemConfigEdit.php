@@ -61,7 +61,7 @@ class SystemConfigEdit implements ObserverInterface
         $section = $observer->getEvent()->getRequest()->getParam('section');
         if ($section == "payment") {
             if (!$this->isLicenseKeyValid()) {
-                $this->_messageManager->addWarning(__('Your Sage Pay Suite license is invalid.'));
+                $this->_messageManager->addWarning(__('Your Opayo Suite license is invalid.'));
             }
 
             $this->verifyReportingApiCredentialsByCallingVersion();

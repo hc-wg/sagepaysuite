@@ -26,7 +26,7 @@ define(
             var serverConfig = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver;
             if (serverConfig) {
                 if (!serverConfig.licensed) {
-                    $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
+                    $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Opayo Suite license is invalid.</div>');
                 }
             }
         });

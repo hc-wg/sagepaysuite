@@ -25,7 +25,7 @@ define(
         $(document).ready(function () {
             var paypalConfig = window.checkoutConfig.payment.ebizmarts_sagepaysuitepaypal;
             if (paypalConfig && !paypalConfig.licensed) {
-                $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
+                $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Opayo Suite license is invalid.</div>');
             }
         });
 
