@@ -1,5 +1,5 @@
 "Sage Pay Fraud Report","Sage Pay Fraud Report"
-"Sage Pay Credit Card Tokens Report","Sage Pay Credit Card Tokens Report"
+"Opayo Credit Card Tokens Report","Opayo Credit Card Tokens Report"
 Delete,Delete
 "Something went wrong: %1","Something went wrong: %1"
 "Invalid FORM encrypted password.","Invalid FORM encrypted password."
@@ -9,15 +9,15 @@ Delete,Delete
 "Successfully synced from Sage Pay's API","Successfully synced from Sage Pay's API"
 "Unable to save Sage Pay order.","Unable to save Sage Pay order."
 Reports,Reports
-"Sage Pay","Sage Pay"
+"Opayo","Opayo"
 Fraud,Fraud
 "Sage Pay Fraud","Sage Pay Fraud"
 "Unable to delete token: Invalid token id.","Unable to delete token: Invalid token id."
 "Token deleted successfully.","Token deleted successfully."
-"Registered tokens in Sage Pay: %1","Registered tokens in Sage Pay: %1"
-"Unable to check registered tokens in Sage Pay: %1","Unable to check registered tokens in Sage Pay: %1"
+"Registered tokens in Opayo: %1","Registered tokens in Opayo: %1"
+"Unable to check registered tokens in Opayo: %1","Unable to check registered tokens in Opayo: %1"
 "Credit Card Tokens","Credit Card Tokens"
-"Sage Pay Credit Card Tokens","Sage Pay Credit Card Tokens"
+"Opayo Credit Card Tokens","Opayo Credit Card Tokens"
 "My Saved Credit Cards","My Saved Credit Cards"
 "Invalid response from Sage Pay.","Invalid response from Sage Pay."
 "Order not available.","Order not available."
