@@ -142,7 +142,7 @@ class Reporting
         //parse xml as object
         $response = (object)((array)$response);
 
-        $exceptionPhrase = "Invalid response from Sage Pay API.";
+        $exceptionPhrase = "Invalid response from Opayo API.";
         $exceptionCode = 0;
         $validResponse = false;
 

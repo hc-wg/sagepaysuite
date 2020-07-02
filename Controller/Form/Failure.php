@@ -115,7 +115,7 @@ class Failure extends Action
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
 
             if (!array_key_exists("Status", $response) || !array_key_exists("StatusDetail", $response)) {
-                throw new LocalizedException(__('Invalid response from Sage Pay'));
+                throw new LocalizedException(__('Invalid response from Opayo'));
             }
 
             $this->recoverCart->setShouldCancelOrder(true)->execute();

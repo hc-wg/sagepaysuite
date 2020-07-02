@@ -78,7 +78,7 @@ class SystemConfigEdit implements ObserverInterface
             $message .= sprintf("<a target='_blank' href='http://wiki.ebizmarts.com/configuration-guide-1'>%s</a>", __('Configuration guide'));
             $this->_messageManager->addWarning($message);
         } catch (\Exception $e) {
-            $this->_messageManager->addWarning(__('Can not establish connection with Sage Pay API.'));
+            $this->_messageManager->addWarning(__('Can not establish connection with Opayo API.'));
         }
     }
 

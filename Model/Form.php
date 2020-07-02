@@ -142,7 +142,7 @@ class Form extends \Magento\Payment\Model\Method\AbstractMethod
     public function decodeSagePayResponse($crypt)
     {
         if (empty($crypt)) {
-            throw new LocalizedException(__('Invalid response from Sage Pay'));
+            throw new LocalizedException(__('Invalid response from Opayo'));
         }
 
         $response = [];
