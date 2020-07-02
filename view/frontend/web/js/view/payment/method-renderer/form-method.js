@@ -117,7 +117,7 @@ define(
                                     }
                                 ).fail(
                                     function (response) {
-                                        self.showPaymentError("Unable to submit form to Sage Pay.");
+                                        self.showPaymentError("Unable to submit form to Opayo.");
                                     }
                                 );
                             }

@@ -60,7 +60,7 @@ class CreditMemo implements ObserverInterface
      */
     private function reportingApiErrorMessage($e)
     {
-        $message = "This Sage Pay transaction cannot be refunded online because the Reporting API communication";
+        $message = "This Opayo transaction cannot be refunded online because the Reporting API communication";
         $message .= " could not be established. The response is: %1";
         return __($message, $e->getMessage());
     }

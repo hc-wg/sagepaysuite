@@ -140,7 +140,7 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
             }
 
             throw new ValidatorException(
-                __('Invalid Sage Pay response. %1', $statusDetail)
+                __('Invalid Opayo response. %1', $statusDetail)
             );
         }
     }

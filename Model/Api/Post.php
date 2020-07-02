@@ -117,7 +117,7 @@ class Post
      * @return mixed
      * @throws
      */
-    public function sendPost($postData, $url, $expectedStatus = [], $errorMessage = "Invalid response from Sage Pay")
+    public function sendPost($postData, $url, $expectedStatus = [], $errorMessage = "Invalid response from Opayo")
     {
         /** @var \Ebizmarts\SagePaySuite\Model\Api\HttpText $rest */
         $rest = $this->httpTextFactory->create();

@@ -217,7 +217,7 @@ define(
                     }
                 ).fail(
                     function (response) {
-                        self.showPaymentError("Unable to create Sage Pay merchant session key.");
+                        self.showPaymentError("Unable to create Opayo merchant session key.");
                     }
                 );
             },
@@ -374,7 +374,7 @@ define(
                                         self.placeTransaction();
                                     } catch (err) {
                                         console.log(err);
-                                        self.showPaymentError("Unable to initialize Sage Pay payment method, please use another payment method.");
+                                        self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
                                     }
                                 } else {
                                     //Check if it is "Authentication failed"
@@ -423,10 +423,10 @@ define(
                                     try {
                                         self.placeTransaction();
                                     } catch (err) {
-                                        self.showPaymentError("Unable to initialize Sage Pay payment method, please use another payment method.");
+                                        self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
                                     }
                                 } else {
-                                    var errorMessage = "Unable to initialize Sage Pay payment method, please use another payment method.";
+                                    var errorMessage = "Unable to initialize Opayo payment method, please use another payment method.";
                                     if (response.responseJSON) {
                                         response = response.responseJSON;
                                     }
@@ -439,7 +439,7 @@ define(
                                 }
                             });
                         } catch (err) {
-                            alert("Unable to initialize Sage Pay payment method, please use another payment method.");
+                            alert("Unable to initialize Opayo payment method, please use another payment method.");
                         }
                     }
                 }
@@ -541,7 +541,7 @@ define(
                                     fullScreenLoader.stopLoader();
                                 }
                             } else {
-                                self.showPaymentError("Invalid Sage Pay response, please use another payment method.");
+                                self.showPaymentError("Invalid Opayo response, please use another payment method.");
                             }
                         } else {
                             self.showPaymentError(response.error_message);
@@ -552,7 +552,7 @@ define(
                     }
                 ).fail(
                     function (response) {
-                        self.showPaymentError("Unable to capture Sage Pay transaction, please use another payment method.");
+                        self.showPaymentError("Unable to capture Opayo transaction, please use another payment method.");
                     }
                 );
             },
@@ -563,7 +563,7 @@ define(
             open3DModal: function () {
                 this.modal = $('<iframe id="' + this.getCode() + '-3Dsecure-iframe" name="' + this.getCode() + '-3Dsecure-iframe"></iframe>').modal({
                     modalClass: 'sagepaysuite-modal',
-                    title: "Sage Pay 3D Secure Authentication",
+                    title: "Opayo 3D Secure Authentication",
                     type: 'slide',
                     responsive: true,
                     clickableOverlay: false,

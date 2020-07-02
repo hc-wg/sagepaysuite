@@ -137,7 +137,7 @@ class EcommerceManagement extends RequestManagement
 
             $this->createInvoiceForSuccessPayment($payment, $order);
         } else {
-            throw new ValidatorException(__('Unable to save Sage Pay order'));
+            throw new ValidatorException(__('Unable to save Opayo order'));
         }
 
         $this->getResult()->setSuccess(true);
