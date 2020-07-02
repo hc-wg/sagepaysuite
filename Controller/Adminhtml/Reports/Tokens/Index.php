@@ -52,15 +52,15 @@ class Index extends \Magento\Backend\App\Action
             $tokenCount = $this->reportingApi->getTokenCount();
             $tokenCount = (string)$tokenCount->totalnumber;
 
-            $this->messageManager->addWarning(__('Registered tokens in Sage Pay: %1', $tokenCount));
+            $this->messageManager->addWarning(__('Registered tokens in Opayo: %1', $tokenCount));
         } catch (\Ebizmarts\SagePaySuite\Model\Api\ApiException $apiException) {
             $this->logger->critical($apiException);
             $this->messageManager->addError(
-                __("Unable to check registered tokens in Sage Pay: %1", $apiException->getUserMessage())
+                __("Unable to check registered tokens in Opayo: %1", $apiException->getUserMessage())
             );
         } catch (\Exception $e) {
             $this->logger->critical($e);
-            $this->messageManager->addError(__('Unable to check registered tokens in Sage Pay: %1', $e->getMessage()));
+            $this->messageManager->addError(__('Unable to check registered tokens in Opayo: %1', $e->getMessage()));
         }
 
         $this->_view->renderLayout();
@@ -81,13 +81,13 @@ class Index extends \Magento\Backend\App\Action
             __('Reports'),
             __('Reports')
         )->_addBreadcrumb(
-            __('Sage Pay'),
-            __('Sage Pay')
+            __('Opayo'),
+            __('Opayo')
         )->_addBreadcrumb(
             __('Credit Card Tokens'),
             __('Credit Card Tokens')
         );
-        $this->_view->getPage()->getConfig()->getTitle()->prepend(__('Sage Pay Credit Card Tokens'));
+        $this->_view->getPage()->getConfig()->getTitle()->prepend(__('Opayo Credit Card Tokens'));
         return $this;
     }
     // @codingStandardsIgnoreEnd
