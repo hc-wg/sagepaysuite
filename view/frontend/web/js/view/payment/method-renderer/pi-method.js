@@ -432,27 +432,6 @@ define(
                                     }
                                     if (response && response.error && response.error.message) {
                                         errorMessage = response.error.message;
-                                    } else if (response && response.errors.length > 1) {
-                                        for (var i=0; i< response.errors.length; i++) {
-                                            if (response.errors[i].clientMessage) {
-                                                errorMessage += '<br/>'+response.errors[i].clientMessage;
-                                                if (response.errors[i].property) {
-                                                    switch (response.errors[i].property) {
-                                                        case 'cardDetails.cardNumber':
-                                                            $('#'+self.getCode()+'_cc_number').parents('.field').addClass('_error');
-                                                            break;
-                                                        case 'cardDetails.cardholderName':
-                                                            $('#'+self.getCode()+'_cardholder').parents('.field').addClass('_error');
-                                                            break;
-                                                        case 'cardDetails.expiryDate':
-                                                            $('#'+self.getCode()+'_expiration').parents('.field').addClass('_error');
-                                                            break;
-                                                        default:
-                                                            break;
-                                                    }
-                                                }
-                                            }
-                                        }
                                     } else if (response && response.errors && response.errors[0] && response.errors[0].clientMessage) {
                                         errorMessage = response.errors[0].clientMessage;
                                     }
@@ -566,11 +545,6 @@ define(
                             }
                         } else {
                             self.showPaymentError(response.error_message);
-
-                            if (response.error_message.search(/CV2/) > -1) {
-                                $('#'+self.getCode()+'_cc_cid').parents('.field').addClass('_error');
-                            }
-                            
                             if (self.dropInEnabled()) {
                                 self.destroyInstanceSagePay();
                             }
