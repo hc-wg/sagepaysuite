@@ -139,7 +139,7 @@ class Info extends \Magento\Backend\Block\Template
             __(
                 "If after a few minutes the customer does not complete the order,"
                 ." you can click the Sync from API link"
-                ." to query Sage Pay for the latest information on this transaction."
+                ." to query Opayo for the latest information on this transaction."
             )
         );
     }
