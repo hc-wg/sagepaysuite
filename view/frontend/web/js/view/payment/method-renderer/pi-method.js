@@ -73,7 +73,9 @@ define(
                 }
                 self.defaultStateForm();
 
-                $('button.checkout').attr('disabled', 'disabled');
+                if (!self.dropInEnabled()) {
+                    $('button.checkout').attr('disabled', 'disabled');
+                }
             },
             observeCardChanges: function(itemId) {
                 var self = this;
