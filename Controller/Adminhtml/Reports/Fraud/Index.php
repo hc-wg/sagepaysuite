@@ -55,13 +55,13 @@ class Index extends \Magento\Backend\App\Action
             __('Reports'),
             __('Reports')
         )->_addBreadcrumb(
-            __('Sage Pay'),
-            __('Sage Pay')
+            __('Opayo'),
+            __('Opayo')
         )->_addBreadcrumb(
             __('Fraud'),
             __('Fraud')
         );
-        $this->_view->getPage()->getConfig()->getTitle()->prepend(__('Sage Pay Fraud'));
+        $this->_view->getPage()->getConfig()->getTitle()->prepend(__('Opayo Fraud'));
         return $this;
     }
     // @codingStandardsIgnoreEnd

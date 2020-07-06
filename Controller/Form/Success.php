@@ -124,7 +124,7 @@ class Success extends Action
             $response = $this->formModel->decodeSagePayResponse($crypt);
 
             if (!array_key_exists("VPSTxId", $response)) {
-                throw new LocalizedException(__('Invalid response from Sage Pay.'));
+                throw new LocalizedException(__('Invalid response from Opayo.'));
             }
 
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);

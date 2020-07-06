@@ -162,7 +162,7 @@ class FormRequestManagement implements FormManagementInterface
                 $this->result->setVendor($vendorname);
                 $this->result->setCrypt($this->generateFormCrypt());
             } else {
-                throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order'));
+                throw new \Magento\Framework\Validator\Exception(__('Unable to save Opayo order'));
             }
         } catch (\Exception $e) {
             $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);

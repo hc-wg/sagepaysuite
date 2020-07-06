@@ -123,7 +123,7 @@ class SyncFromApi extends \Magento\Backend\App\AbstractAction
                 }
             }
 
-            $this->messageManager->addSuccess(__('Successfully synced from Sage Pay\'s API'));
+            $this->messageManager->addSuccess(__('Successfully synced from Opayo\'s API'));
         } catch (ApiException $apiException) {
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__($this->cleanExceptionString($apiException)));
