@@ -61,7 +61,7 @@ class SystemConfigEdit implements ObserverInterface
         $section = $observer->getEvent()->getRequest()->getParam('section');
         if ($section == "payment") {
             if (!$this->isLicenseKeyValid()) {
-                $this->_messageManager->addWarning(__('Your Sage Pay Suite license is invalid.'));
+                $this->_messageManager->addWarning(__('Your Opayo Suite license is invalid.'));
             }
 
             $this->verifyReportingApiCredentialsByCallingVersion();
@@ -78,7 +78,7 @@ class SystemConfigEdit implements ObserverInterface
             $message .= sprintf("<a target='_blank' href='http://wiki.ebizmarts.com/configuration-guide-1'>%s</a>", __('Configuration guide'));
             $this->_messageManager->addWarning($message);
         } catch (\Exception $e) {
-            $this->_messageManager->addWarning(__('Can not establish connection with Sage Pay API.'));
+            $this->_messageManager->addWarning(__('Can not establish connection with Opayo API.'));
         }
     }
 

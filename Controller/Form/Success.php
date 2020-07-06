@@ -122,7 +122,7 @@ class Success extends \Magento\Framework\App\Action\Action
         try {
             $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
             if (!array_key_exists("VPSTxId", $response)) {
-                throw new LocalizedException(__('Invalid response from Sage Pay.'));
+                throw new LocalizedException(__('Invalid response from Opayo.'));
             }
 
             $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);

@@ -217,10 +217,10 @@ class ThreeDSecureCallbackManagement extends RequestManagement
                 $this->checkoutSession->setLastRealOrderId($this->order->getIncrementId());
                 $this->checkoutSession->setLastOrderStatus($this->order->getStatus());
             } else {
-                throw new ValidatorException(__('Unable to save Sage Pay order'));
+                throw new ValidatorException(__('Unable to save Opayo order'));
             }
         } else {
-            throw new ValidatorException(__('Invalid Sage Pay response: %1', $response->getStatusDetail()));
+            throw new ValidatorException(__('Invalid Opayo response: %1', $response->getStatusDetail()));
         }
     }
 

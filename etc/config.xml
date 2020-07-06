@@ -34,7 +34,7 @@
                 <model>Ebizmarts\SagePaySuite\Model\Form</model>
                 <payment_action>PAYMENT</payment_action>
                 <send_email>1</send_email>
-                <title>Sage Pay FORM</title>
+                <title>Opayo FORM</title>
                 <encrypted_password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <allowspecific>0</allowspecific>
             </sagepaysuiteform>
@@ -44,7 +44,7 @@
                 <model>Ebizmarts\SagePaySuite\Model\PI</model>
                 <payment_action>Payment</payment_action>
                 <challengewindowsize>Medium</challengewindowsize>
-                <title>Sage Pay Pi</title>
+                <title>Opayo Pi</title>
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>
                 <allowspecific>0</allowspecific>
                 <use_dropin>1</use_dropin>
@@ -55,7 +55,7 @@
                 <active>0</active>
                 <model>Ebizmarts\SagePaySuite\Model\Server</model>
                 <payment_action>PAYMENT</payment_action>
-                <title>Sage Pay SERVER</title>
+                <title>Opayo SERVER</title>
                 <profile>0</profile>
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>
                 <allowspecific>0</allowspecific>
@@ -73,7 +73,7 @@
                 <active>0</active>
                 <model>Ebizmarts\SagePaySuite\Model\Repeat</model>
                 <payment_action>REPEAT</payment_action>
-                <title>Sage Pay REPEAT</title>
+                <title>Opayo REPEAT</title>
                 <allowspecific>0</allowspecific>
             </sagepaysuiterepeat>
         </payment>

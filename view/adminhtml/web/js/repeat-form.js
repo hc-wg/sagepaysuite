@@ -61,7 +61,7 @@ define([
                     window.location.href = response.response.data.redirect;
                 } else {
                     console.log(response);
-                    self.showPaymentError(response.error_message ? response.error_message : "Invalid Sage Pay response.");
+                    self.showPaymentError(response.error_message ? response.error_message : "Invalid Opayo response.");
                 }
             });
         },
