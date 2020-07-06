@@ -258,7 +258,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $this->_logger->critical($apiException);
             throw new LocalizedException(
                 __(
-                    'There was an error refunding Sage Pay transaction %1: %2',
+                    'There was an error refunding Opayo transaction %1: %2',
                     $vpsTxId,
                     $apiException->getUserMessage()
                 )
@@ -266,7 +266,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             throw new LocalizedException(
-                __('There was an error refunding Sage Pay transaction %1: %2', $vpsTxId, $e->getMessage())
+                __('There was an error refunding Opayo transaction %1: %2', $vpsTxId, $e->getMessage())
             );
         }
 
@@ -300,7 +300,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
             if ($this->exceptionCodeIsInvalidTransactionState($apiException)) {
                 //unable to void transaction
                 throw new LocalizedException(
-                    __('Unable to VOID Sage Pay transaction %1: %2', $transactionId, $apiException->getUserMessage())
+                    __('Unable to VOID Opayo transaction %1: %2', $transactionId, $apiException->getUserMessage())
                 );
             } else {
                 $this->_logger->critical($apiException);
@@ -309,7 +309,7 @@ class PI extends \Magento\Payment\Model\Method\Cc
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             throw new LocalizedException(
-                __('Unable to VOID Sage Pay transaction %1: %2', $transactionId, $e->getMessage())
+                __('Unable to VOID Opayo transaction %1: %2', $transactionId, $e->getMessage())
             );
         }
 

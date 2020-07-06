@@ -7,11 +7,11 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
 use Ebizmarts\SagePaySuite\Model\Api\Reporting;
+use Ebizmarts\SagePaySuite\Model\Payment as SagePayPayment;
 use Ebizmarts\SagePaySuite\Model\PI;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
-use Ebizmarts\SagePaySuite\Model\Payment as SagePayPayment;
 
 class PITest extends \PHPUnit\Framework\TestCase
 {
@@ -310,7 +310,7 @@ class PITest extends \PHPUnit\Framework\TestCase
         }
 
         $this->assertEquals(
-            'There was an error refunding Sage Pay transaction ' . self::TEST_VPSTXID . ': Error in Refunding',
+            'There was an error refunding Opayo transaction ' . self::TEST_VPSTXID . ': Error in Refunding',
             $response
         );
     }
@@ -384,7 +384,7 @@ class PITest extends \PHPUnit\Framework\TestCase
         }
 
         $this->assertEquals(
-            'There was an error refunding Sage Pay transaction ' .
+            'There was an error refunding Opayo transaction ' .
             self::TEST_VPSTXID . ': The Transaction has already been Refunded.',
             $response
         );
@@ -392,7 +392,7 @@ class PITest extends \PHPUnit\Framework\TestCase
 
     /**
      * @expectedException \Magento\Framework\Exception\LocalizedException
-     * @expectedExceptionMessage Unable to VOID Sage Pay transaction
+     * @expectedExceptionMessage Unable to VOID Opayo transaction
      */
     public function testVoidInvalidTransactionState()
     {
@@ -450,7 +450,7 @@ class PITest extends \PHPUnit\Framework\TestCase
 
     /**
      * @expectedException \Magento\Framework\Exception\LocalizedException
-     * @expectedExceptionMessage Unable to VOID Sage Pay transaction
+     * @expectedExceptionMessage Unable to VOID Opayo transaction
      */
     public function testVoidException()
     {
@@ -644,7 +644,7 @@ class PITest extends \PHPUnit\Framework\TestCase
         }
 
         $this->assertEquals(
-            'Unable to VOID Sage Pay transaction ' . self::TEST_VPSTXID . ': Error in Voiding',
+            'Unable to VOID Opayo transaction ' . self::TEST_VPSTXID . ': Error in Voiding',
             $response
         );
     }
@@ -1047,7 +1047,7 @@ class PITest extends \PHPUnit\Framework\TestCase
      */
     private function makeReportingResult()
     {
-        $transactionDetails            = new \stdClass;
+        $transactionDetails            = new \stdClass();
         $transactionDetails->txstateid = self::SUCCESSFULLY_AUTH_TRANSACTION;
 
         return $transactionDetails;
