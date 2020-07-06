@@ -258,7 +258,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
         $serverModelMock = $this->makeServerModel();
 
         $paymentMock = $this->makeOrderPaymentMock($serverModelMock);
-        $paymentMock->expects($this->exactly(5))->method('setAdditionalInformation');
+        $paymentMock->expects($this->exactly(9))->method('setAdditionalInformation');
 
         $this->requestExpectsGetParam();
         $this->makeQuote();
@@ -531,7 +531,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
     {
         $serverModelMock = $this->makeServerModel();
         $paymentMock = $this->makeOrderPaymentMock($serverModelMock);
-        $paymentMock->expects($this->exactly(3))->method('setAdditionalInformation');
+        $paymentMock->expects($this->exactly(7))->method('setAdditionalInformation');
 
         $this->requestExpectsGetParam();
         $this->makeQuote();
@@ -597,7 +597,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
     {
         $serverModelMock = $this->makeServerModel();
         $paymentMock = $this->makeOrderPaymentMock($serverModelMock);
-        $paymentMock->expects($this->exactly(3))->method('setAdditionalInformation');
+        $paymentMock->expects($this->exactly(7))->method('setAdditionalInformation');
 
         $this->requestExpectsGetParam();
         $this->makeQuote();
@@ -663,7 +663,7 @@ class NotifyTest extends \PHPUnit\Framework\TestCase
     {
         $serverModelMock = $this->makeServerModel();
         $paymentMock = $this->makeOrderPaymentMock($serverModelMock);
-        $paymentMock->expects($this->exactly(2))->method('setAdditionalInformation');
+        $paymentMock->expects($this->exactly(6))->method('setAdditionalInformation');
 
         $this->requestExpectsGetParam();
         $this->makeQuote();
