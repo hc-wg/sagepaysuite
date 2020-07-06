@@ -1,3 +1,17 @@
+## [1.1.35] - 2020-07-08
+### Changed
+- Sage Pay text and logo changed to Opayo
+
+### Fixed
+- Adapt 3Dv2 to latest updates
+- Duplicated address problem
+- 3D, Address, Postcode and CV2 flags not showing up on the order grid
+- Recover Cart problem when multiple items with same configurable parent
+- Duplicated PI Callbacks received cancel the order
+- Server not recovering cart when cancel the transaction
+- Add form validation in PI WITHOUT Form
+- Cast PI refund amount to int
+
 ## [1.1.34] - 2020-03-18
 ### Changed
 - Store SecurityKey in Database when SyncFromApi
@@ -374,6 +388,7 @@
    - PI integration (frontend)
    - Online Refunds
    
+[1.1.35]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.35
 [1.1.34]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.34
 [1.1.33]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.33
 [1.1.32]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.32
