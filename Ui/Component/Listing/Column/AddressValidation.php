@@ -44,7 +44,7 @@ class AddressValidation extends Column
     public function prepareDataSource(array $dataSource)
     {
         $fieldName = $this->getFieldName();
-        return $this->orderGridColumns->prepareColumn($dataSource, "avsCvcCheckAddress", $fieldName);
+        return $this->orderGridColumns->prepareColumn($dataSource, "AddressResult", $fieldName);
     }
 
     /**

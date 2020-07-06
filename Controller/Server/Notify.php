@@ -147,7 +147,11 @@ class Notify extends Action
 
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
                 $payment->setAdditionalInformation('statusDetail', $statusDetail);
-                $payment->setAdditionalInformation('threeDStatus', $this->postData->{'3DSecureStatus'});
+                $payment->setAdditionalInformation('AVSCV2', $this->postData->{'AVSCV2'});
+                $payment->setAdditionalInformation('AddressResult', $this->postData->{'AddressResult'});
+                $payment->setAdditionalInformation('PostCodeResult', $this->postData->{'PostCodeResult'});
+                $payment->setAdditionalInformation('CV2Result', $this->postData->{'CV2Result'});
+                $payment->setAdditionalInformation('3DSecureStatus', $this->postData->{'3DSecureStatus'});
                 if (isset($this->postData->{'BankAuthCode'})) {
                     $payment->setAdditionalInformation('bankAuthCode', $this->postData->{'BankAuthCode'});
                 }
