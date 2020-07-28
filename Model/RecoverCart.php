@@ -123,6 +123,9 @@ class RecoverCart
                 $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             }
         }
+
+        $shippingAddress = $newQuote->getShippingAddress();
+        $shippingAddress->unsetData('cached_items_all');   
         $newQuote->collectTotals();
         $this->quoteRepository->save($newQuote);
 
