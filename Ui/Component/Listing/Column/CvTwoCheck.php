@@ -44,7 +44,7 @@ class CvTwoCheck extends Column
     public function prepareDataSource(array $dataSource)
     {
         $fieldName = $this->getFieldName();
-        return $this->orderGridColumns->prepareColumn($dataSource, "avsCvcCheckSecurityCode", $fieldName);
+        return $this->orderGridColumns->prepareColumn($dataSource, "CV2Result", $fieldName);
     }
 
     /**

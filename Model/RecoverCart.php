@@ -2,17 +2,18 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
-use Magento\Checkout\Model\Session;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Message\ManagerInterface;
+use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Model\QuoteFactory;
+use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Magento\Quote\Api\CartRepositoryInterface;
-use Magento\Framework\DataObjectFactory;
-use Magento\Framework\Message\ManagerInterface;
 
 class RecoverCart
 {
@@ -35,21 +36,24 @@ class RecoverCart
     /** @var CartRepositoryInterface */
     private $quoteRepository;
 
-    /** @var DataObjectFactory */
-    private $dataObjectFactory;
-
     /** @var ManagerInterface */
     private $messageManager;
 
     /** @var bool */
     private $_shouldCancelOrder;
 
+    /** @var ProductRepositoryInterface */
+    private $productRepository;
+
     /**
      * RecoverCart constructor.
      * @param Session $checkoutSession
      * @param Logger $suiteLogger
+     * @param OrderRepositoryInterface $orderRepository
      * @param QuoteFactory $quoteFactory
-     * @param DataObjectFactory $dataObjectFactory
+     * @param CartRepositoryInterface $quoteRepository
+     * @param ManagerInterface $messageManager
+     * @param ProductRepositoryInterface $productRepository
      */
     public function __construct(
         Session $checkoutSession,
@@ -57,18 +61,17 @@ class RecoverCart
         OrderRepositoryInterface $orderRepository,
         QuoteFactory $quoteFactory,
         CartRepositoryInterface $quoteRepository,
-        DataObjectFactory $dataObjectFactory,
-        ManagerInterface $messageManager
+        ManagerInterface $messageManager,
+        ProductRepositoryInterface $productRepository
     ) {
         $this->checkoutSession   = $checkoutSession;
         $this->suiteLogger       = $suiteLogger;
         $this->orderRepository   = $orderRepository;
         $this->quoteFactory      = $quoteFactory;
         $this->quoteRepository   = $quoteRepository;
-        $this->dataObjectFactory = $dataObjectFactory;
         $this->messageManager    = $messageManager;
+        $this->productRepository = $productRepository;
     }
-
 
     public function execute()
     {
@@ -78,7 +81,7 @@ class RecoverCart
             $quote = $this->checkoutSession->getQuote();
             if (!empty($quote)) {
                 if ($this->_shouldCancelOrder) {
-                    $order->cancel()->save();
+                    $this->tryCancelOrder($order);
                 }
                 try {
                     $this->cloneQuoteAndReplaceInSession($order);
@@ -97,11 +100,11 @@ class RecoverCart
     }
 
     /**
-     * @param Order $order
+     * @param OrderInterface $order
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    private function cloneQuoteAndReplaceInSession(Order $order)
+    private function cloneQuoteAndReplaceInSession(OrderInterface $order)
     {
         $quote = $this->quoteRepository->get($order->getQuoteId());
         $items = $quote->getAllVisibleItems();
@@ -111,24 +114,23 @@ class RecoverCart
         $newQuote->setIsActive(1);
         $newQuote->setReservedOrderId(null);
         foreach ($items as $item) {
-            $product = $item->getProduct();
+            try {
+                $product = $this->productRepository->getById($item->getProductId(), false, $quote->getStoreId(), true);
+                $request = $item->getBuyRequest();
 
-            $options = $product->getTypeInstance(true)->getOrderOptions($product);
-
-            $info = $options['info_buyRequest'];
-            $request = $this->dataObjectFactory->create();
-            $request->setData($info);
-
-            $newQuote->addProduct($product, $request);
+                $newQuote->addProduct($product, $request);
+            } catch (NoSuchEntityException $e) {
+                $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
+            }
         }
         $newQuote->collectTotals();
-        $newQuote->save();
+        $this->quoteRepository->save($newQuote);
 
         $this->checkoutSession->replaceQuote($newQuote);
     }
 
     /**
-     * @return \Magento\Sales\Api\Data\OrderInterface|null
+     * @return OrderInterface|null
      */
     private function getOrder()
     {
@@ -151,8 +153,7 @@ class RecoverCart
     private function verifyIfOrderIsValid($order)
     {
         return $order !== null &&
-            $order->getId() !== null &&
-            $order->getState() === Order::STATE_PENDING_PAYMENT;
+            $order->getId() !== null;
     }
 
     private function removeFlag()
@@ -188,5 +189,23 @@ class RecoverCart
     {
         $this->addError($message);
         $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $exception->getTraceAsString(), [__METHOD__, __LINE__]);
+    }
+
+    /**
+     * @param OrderInterface $order
+     */
+    private function tryCancelOrder(OrderInterface $order)
+    {
+        try {
+            $state = $order->getState();
+            if ($state === Order::STATE_PENDING_PAYMENT) {
+                //The order might be cancelled on Controller/Server/Notify. This checks if the order is not cancelled before trying to cancel it.
+                $order->cancel()->save();
+            } elseif ($state !== Order::STATE_CANCELED) {
+                $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Incorrect state found on order " . $order->getIncrementId() . " when trying to cancel it. State found: " . $state, [__METHOD__, __LINE__]);
+            }
+        } catch (\Exception $e) {
+            $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
+        }
     }
 }

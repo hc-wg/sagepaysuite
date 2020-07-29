@@ -175,7 +175,7 @@ class Request extends \Magento\Backend\App\AbstractAction
                     'response' => $post_response
                 ];
             } else {
-                throw new \Magento\Framework\Validator\Exception(__('Unable to save Sage Pay order.'));
+                throw new \Magento\Framework\Validator\Exception(__('Unable to save Opayo order.'));
             }
         } catch (ApiException $apiException) {
             $this->suiteLogger->logException($apiException, [__METHOD__, __LINE__]);

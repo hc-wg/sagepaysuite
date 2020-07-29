@@ -106,8 +106,8 @@ class SystemConfigEditTest extends \PHPUnit\Framework\TestCase
         $messageManagerMock = $this->makeMessageManagerMock();
         $messageManagerMock->expects($this->exactly(2))->method('addWarning')
             ->withConsecutive(
-                ['Your Sage Pay Suite license is invalid.'],
-                ['Can not establish connection with Sage Pay API.']
+                ['Your Opayo Suite license is invalid.'],
+                ['Can not establish connection with Opayo API.']
             );
 
         $reportingApiMock = $this->makeReportingApiMock();
@@ -138,7 +138,7 @@ class SystemConfigEditTest extends \PHPUnit\Framework\TestCase
         $suiteHelperMock = $this->makeSuiteHelperMock();
         $suiteHelperMock->expects($this->once())->method('verify')->willReturn(true);
 
-        $warningMessage = "Invalid Sage Pay API credentials. <a target='_blank' href='http://wiki.ebizmarts.com/configuration-guide-1'>Configuration guide</a>";
+        $warningMessage = "Invalid Opayo API credentials. <a target='_blank' href='http://wiki.ebizmarts.com/configuration-guide-1'>Configuration guide</a>";
 
         $messageManagerMock = $this->makeMessageManagerMock();
         $messageManagerMock
@@ -149,7 +149,7 @@ class SystemConfigEditTest extends \PHPUnit\Framework\TestCase
         $reportingApiMock = $this->makeReportingApiMock();
         $reportingApiMock->expects($this->once())->method('getVersion')
         ->willThrowException(new ApiException(
-            new Phrase('Invalid Sage Pay API credentials.')
+            new Phrase('Invalid Opayo API credentials.')
         ));
 
         $observerModel = $this->objectManagerHelper->getObject(
