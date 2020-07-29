@@ -108,11 +108,15 @@ class RecoverCart
     {
         $quote = $this->quoteRepository->get($order->getQuoteId());
         $items = $quote->getAllVisibleItems();
+        $customer = $quote->getCustomer();
 
         $newQuote = $this->quoteFactory->create();
         $newQuote->setStoreId($quote->getStoreId());
         $newQuote->setIsActive(1);
         $newQuote->setReservedOrderId(null);
+        $newQuote->setCustomer($customer);
+        $newQuote->setCustomerId(true);
+
         foreach ($items as $item) {
             try {
                 $product = $this->productRepository->getById($item->getProductId(), false, $quote->getStoreId(), true);
@@ -126,7 +130,7 @@ class RecoverCart
 
         $shippingAddress = $newQuote->getShippingAddress();
         $shippingAddress->unsetData('cached_items_all');   
-        $newQuote->collectTotals();
+        $newQuote->setTotalsCollectedFlag(false)->collectTotals();
         $this->quoteRepository->save($newQuote);
 
         $this->checkoutSession->replaceQuote($newQuote);
