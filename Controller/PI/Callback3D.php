@@ -5,18 +5,18 @@ namespace Ebizmarts\SagePaySuite\Controller\PI;
 use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
+use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Framework\App\CsrfAwareActionInterface;
-use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
-use Ebizmarts\SagePaySuite\Model\RecoverCart;
-use Magento\Checkout\Model\Session;
-use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 class Callback3D extends Action implements CsrfAwareActionInterface
 {
@@ -82,8 +82,16 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     {
         try {
             $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
-            if($this->isParesDuplicated($sanitizedPares)) {
-                throw new \RuntimeException(__(self::DUPLICATED_CALLBACK_ERROR_MESSAGE));
+            if ($this->isParesDuplicated($sanitizedPares)) {
+                $orderId = $this->getRequest()->getParam("orderId");
+                $orderId = $this->decodeAndDecrypt($orderId);
+                $vpstxid = $this->getRequest()->getParam("transactionId");
+                $message = self::DUPLICATED_CALLBACK_ERROR_MESSAGE . ' OrderId: ' . $orderId . ' VPSTxId: ' . $vpstxid;
+                $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $message, [__METHOD__, __LINE__]);
+                $this->javascriptRedirect('checkout/onepage/success');
+                return;
+            } else {
+                $this->checkoutSession->setData(SagePaySession::PARES_SENT, $sanitizedPares);
             }
 
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->getRequest()->getPost(), [__METHOD__, __LINE__]);
@@ -103,8 +111,6 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $data->setMode($this->config->getMode());
             $data->setPaymentAction($this->config->getSagepayPaymentAction());
 
-            $this->checkoutSession->setData(SagePaySession::PARES_SENT, $sanitizedPares);
-
             $this->requester->setRequestData($data);
 
             $response = $this->requester->placeOrder();
@@ -120,13 +126,6 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
-        } catch (\RuntimeException $runtimeException) {
-            $orderId = $this->getRequest()->getParam("orderId");
-            $orderId = $this->decodeAndDecrypt($orderId);
-            $vpstxid = $this->getRequest()->getParam("transactionId");
-            $message = self::DUPLICATED_CALLBACK_ERROR_MESSAGE . ' OrderId: ' . $orderId . ' VPSTxId: ' . $vpstxid;
-            $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $message, [__METHOD__, __LINE__]);
-            throw new \RuntimeException(__(self::DUPLICATED_CALLBACK_ERROR_MESSAGE));
         } catch (\Exception $e) {
             $this->recoverCart->setShouldCancelOrder(true)->execute();
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);

@@ -747,10 +747,6 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
         $controller->execute();
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Duplicated 3D security callback received.
-     */
     public function testDuplicatedCallbacks()
     {
         $this->responseMock = $this
