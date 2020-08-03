@@ -183,7 +183,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->willReturn([$itemMock]);
 
         $customerMock = $this
-            ->getMockBuilder(Customer::class)
+            ->getMockBuilder(\Magento\Customer\Api\Data\CustomerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -225,7 +225,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->with(null);
 
         $this->quoteMock
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('getCustomer')
             ->willReturn($customerMock);
 
@@ -294,7 +294,7 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->method('setTotalsCollectedFlag')
             ->with(false)
             ->willReturnSelf();
-    
+
         $newQuoteMock
             ->expects($this->once())
             ->method('collectTotals')
