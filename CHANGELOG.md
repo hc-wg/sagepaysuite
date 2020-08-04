@@ -1,17 +1,3 @@
-## [1.2.24] - 2020-07-08
-### Changed
-- Sage Pay text and logo changed to Opayo
-
-### Fixed
-- Adapt 3Dv2 to latest updates
-- Duplicated address problem
-- 3D, Address, Postcode and CV2 flags not showing up on the order grid
-- Recover Cart problem when multiple items with same configurable parent
-- Order cancelled when same increment id on different store views
-- Duplicated PI Callbacks received cancel the order
-- Server not recovering cart when cancel the transaction
-- Add form validation in PI WITHOUT Form
-
 ## [1.2.23] - 2020-04-13
 ### Fixed
 - Fix PI not working with virtual product and guest checkout
@@ -271,7 +257,6 @@
 ### Added
 - First release with Magento 2.2.0 compatibility.
 
-[1.2.24]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.24
 [1.2.23]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.23
 [1.2.22]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.22
 [1.2.21]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.21
