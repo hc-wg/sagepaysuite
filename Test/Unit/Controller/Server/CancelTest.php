@@ -176,9 +176,6 @@ class CancelTest extends \PHPUnit\Framework\TestCase
             ->with(true)
             ->willReturnSelf();
 
-        $this->quoteMock->expects($this->once())->method('setIsactive');
-        $this->quoteMock->expects($this->once())->method('save');
-
         $this->recoverCartMock
             ->expects($this->once())
             ->method('execute');
