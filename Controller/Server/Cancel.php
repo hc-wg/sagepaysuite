@@ -120,8 +120,6 @@ class Cancel extends Action
 
         $this->recoverCart->setShouldCancelOrder(true)->execute();
 
-        $this->inactivateQuote($this->quote);
-
         $this
             ->getResponse()
             ->setBody(
