@@ -117,13 +117,4 @@ class Cancel extends Action
             $this->messageManager->addError($message);
         }
     }
-
-    /**
-     * @param Quote $quote
-     */
-    private function inactivateQuote($quote)
-    {
-        $quote->setIsActive(0);
-        $quote->save();
-    }
 }
