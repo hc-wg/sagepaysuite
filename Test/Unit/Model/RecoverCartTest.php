@@ -214,12 +214,6 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->with($customerMock)
             ->willReturnSelf();
 
-        $newQuoteMock
-            ->expects($this->once())
-            ->method('setCustomerId')
-            ->with(true)
-            ->willReturnSelf();
-
         $this->quoteFactoryMock
             ->expects($this->once())
             ->method('create')
@@ -291,12 +285,6 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('unsetData')
             ->with('cached_items_all')
-            ->willReturnSelf();
-
-        $newQuoteMock
-            ->expects($this->once())
-            ->method('setTotalsCollectedFlag')
-            ->with(false)
             ->willReturnSelf();
     
         $newQuoteMock
