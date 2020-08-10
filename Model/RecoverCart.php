@@ -115,7 +115,6 @@ class RecoverCart
         $newQuote->setIsActive(1);
         $newQuote->setReservedOrderId(null);
         $newQuote->setCustomer($customer);
-        $newQuote->setCustomerId(true);
 
         foreach ($items as $item) {
             try {
@@ -130,7 +129,7 @@ class RecoverCart
 
         $shippingAddress = $newQuote->getShippingAddress();
         $shippingAddress->unsetData('cached_items_all');   
-        $newQuote->setTotalsCollectedFlag(false)->collectTotals();
+        $newQuote->collectTotals();
         $this->quoteRepository->save($newQuote);
 
         $this->checkoutSession->replaceQuote($newQuote);
