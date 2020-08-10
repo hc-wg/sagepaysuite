@@ -4,6 +4,7 @@ namespace Ebizmarts\SagePaySuite\Model\Token;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Sales\Model\Order\Payment;
 use Magento\Vault\Api\Data\PaymentTokenFactoryInterface;
 use Magento\Vault\Api\PaymentTokenManagementInterface;
 
@@ -26,51 +27,44 @@ class VaultDetailsHandler
      * @param Logger $suiteLogger
      * @param PaymentTokenManagementInterface $paymentTokenManagement
      * @param PaymentTokenFactoryInterface $paymentTokenFactory
-     * @param Json $jsonSeralizer
+     * @param Json $jsonSerializer
      */
     public function __construct(
         Logger $suiteLogger,
         PaymentTokenManagementInterface $paymentTokenManagement,
         PaymentTokenFactoryInterface $paymentTokenFactory,
-        Json $jsonSeralizer
+        Json $jsonSerializer
     ) {
         $this->suiteLogger            = $suiteLogger;
         $this->paymentTokenManagement = $paymentTokenManagement;
         $this->paymentTokenFactory    = $paymentTokenFactory;
-        $this->jsonSerializer         = $jsonSeralizer;
+        $this->jsonSerializer         = $jsonSerializer;
     }
 
     /**
-     * @param \Magento\Sales\Model\Order\Payment $payment
-     * @param $customerId
-     * @param $token
-     * @param $ccType
-     * @param $ccLast4
-     * @param $ccExpMonth
-     * @param $ccExpYear
-     * @param $vendorname
+     * @param Payment $payment
+     * @param int $customerId
+     * @param string $token
      */
-    public function saveToken($payment, $customerId, $token, $ccType, $ccLast4, $ccExpMonth, $ccExpYear, $vendorname)
+    public function saveToken($payment, $customerId, $token)
     {
         if (!empty($customerId)) {
-            $paymentToken = $this->createVaultPaymentToken($token, $ccType, $ccLast4, $ccExpMonth, $ccExpYear, $vendorname);
+            $paymentToken = $this->createVaultPaymentToken($payment, $customerId, $token);
             if ($paymentToken !== null) {
-                $extensionAttributes = $payment->getExtensionAttributes();
-                $extensionAttributes->setVaultPaymentToken($paymentToken);
+                $this->paymentTokenManagement->saveTokenWithPaymentLink($paymentToken, $payment);
+//                $extensionAttributes = $payment->getExtensionAttributes();
+//                $extensionAttributes->setVaultPaymentToken($paymentToken);
             }
         }
     }
 
     /**
-     * @param $token
-     * @param $ccType
-     * @param $ccLast4
-     * @param $ccExpMonth
-     * @param $ccExpYear
-     * @param $vendorname
+     * @param Payment $payment
+     * @param int $customerId
+     * @param string $token
      * @return \Magento\Vault\Api\Data\PaymentTokenInterface|null
      */
-    public function createVaultPaymentToken($token, $ccType, $ccLast4, $ccExpMonth, $ccExpYear, $vendorname)
+    public function createVaultPaymentToken($payment, $customerId, $token)
     {
         if (empty($token)) {
             return null;
@@ -78,24 +72,23 @@ class VaultDetailsHandler
 
         $paymentToken = $this->paymentTokenFactory->create(PaymentTokenFactoryInterface::TOKEN_TYPE_CREDIT_CARD);
         $paymentToken->setGatewayToken($token);
-        $paymentToken->setTokenDetails($this->createTokenDetails($ccType, $ccLast4, $ccExpMonth, $ccExpYear));
+        $paymentToken->setTokenDetails($this->createTokenDetails($payment));
+        $paymentToken->setCustomerId($customerId);
+        $paymentToken->setPaymentMethodCode('sagepaysuite');
 
         return $paymentToken;
     }
 
     /**
-     * @param $ccType
-     * @param $ccLast4
-     * @param $ccExpMonth
-     * @param $ccExpYear
+     * @param Payment $payment
      * @return string
      */
-    private function createTokenDetails($ccType, $ccLast4, $ccExpMonth, $ccExpYear)
+    private function createTokenDetails($payment)
     {
         $tokenDetails = [
-            'type' => $ccType,
-            'maskedCC' => $ccLast4,
-            'expirationDate' => $ccExpMonth . '/' . $ccExpYear
+            'type' => $payment->getCcType(),
+            'maskedCC' => $payment->getCcLast4(),
+            'expirationDate' => $payment->getCcExpMonth() . '/' . $payment->getCcExpYear()
         ];
 
         return $this->convertArrayToJSON($tokenDetails);
