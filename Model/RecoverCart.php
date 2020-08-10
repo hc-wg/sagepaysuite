@@ -108,11 +108,14 @@ class RecoverCart
     {
         $quote = $this->quoteRepository->get($order->getQuoteId());
         $items = $quote->getAllVisibleItems();
+        $customer = $quote->getCustomer();
 
         $newQuote = $this->quoteFactory->create();
         $newQuote->setStoreId($quote->getStoreId());
         $newQuote->setIsActive(1);
         $newQuote->setReservedOrderId(null);
+        $newQuote->setCustomer($customer);
+
         foreach ($items as $item) {
             try {
                 $product = $this->productRepository->getById($item->getProductId(), false, $quote->getStoreId(), true);
@@ -123,6 +126,9 @@ class RecoverCart
                 $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             }
         }
+
+        $shippingAddress = $newQuote->getShippingAddress();
+        $shippingAddress->unsetData('cached_items_all');   
         $newQuote->collectTotals();
         $this->quoteRepository->save($newQuote);
 
