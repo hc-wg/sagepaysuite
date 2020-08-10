@@ -104,7 +104,7 @@ class CancelTest extends \PHPUnit\Framework\TestCase
             ->setMethods(['getId'])
             ->disableOriginalConstructor()->getMock();
         $this->quoteMock = $this->getMockBuilder(Quote::class)
-            ->setMethods(['load', 'getId', 'getReservedOrderId', 'setStoreId', 'setIsactive', 'save'])
+            ->setMethods(['load', 'getId', 'getReservedOrderId', 'setStoreId', 'save'])
             ->disableOriginalConstructor()->getMock();
         $this->requestMock = $this->getMockBuilder(HttpRequest::class)->disableOriginalConstructor()->getMock();
         $this->responseMock = $this->getMockBuilder(HttpResponse::class)->disableOriginalConstructor()->getMock();
@@ -175,9 +175,6 @@ class CancelTest extends \PHPUnit\Framework\TestCase
             ->method('setShouldCancelOrder')
             ->with(true)
             ->willReturnSelf();
-
-        $this->quoteMock->expects($this->once())->method('setIsactive');
-        $this->quoteMock->expects($this->once())->method('save');
 
         $this->recoverCartMock
             ->expects($this->once())
