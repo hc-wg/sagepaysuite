@@ -52,8 +52,6 @@ class VaultDetailsHandler
             $paymentToken = $this->createVaultPaymentToken($payment, $customerId, $token);
             if ($paymentToken !== null) {
                 $this->paymentTokenManagement->saveTokenWithPaymentLink($paymentToken, $payment);
-//                $extensionAttributes = $payment->getExtensionAttributes();
-//                $extensionAttributes->setVaultPaymentToken($paymentToken);
             }
         }
     }
@@ -74,7 +72,7 @@ class VaultDetailsHandler
         $paymentToken->setGatewayToken($token);
         $paymentToken->setTokenDetails($this->createTokenDetails($payment));
         $paymentToken->setCustomerId($customerId);
-        $paymentToken->setPaymentMethodCode('sagepaysuite');
+        $paymentToken->setPaymentMethodCode($payment->getMethod());
 
         return $paymentToken;
     }
