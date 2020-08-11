@@ -55,6 +55,7 @@ class PiRequest
                 'card'        => [
                     'merchantSessionKey' => $this->getMerchantSessionKey(),
                     'cardIdentifier'     => $this->getCardIdentifier(),
+                    'save'               => $this->getIsTokenEnabled()
                 ]
             ],
             'vendorTxCode'      => $this->getVendorTxCode(),
@@ -236,5 +237,13 @@ class PiRequest
     private function sanitizePostcode($postCode)
     {
         return preg_replace("/[^a-zA-Z0-9-\s]/", "", $postCode);
+    }
+
+    /**
+     * @return bool
+     */
+    private function getIsTokenEnabled()
+    {
+        return (bool)$this->sagepayConfig->isTokenEnabled();
     }
 }
