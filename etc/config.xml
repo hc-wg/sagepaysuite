@@ -83,10 +83,6 @@
                 <title>Opayo REPEAT</title>
                 <allowspecific>0</allowspecific>
             </sagepaysuiterepeat>
-            <sagepaysuite_cc_vault>
-                <model>SagePaySuiteCardVault</model>
-                <title>Sage Pay stored cards</title>
-            </sagepaysuite_cc_vault>
         </payment>
     </default>
 </config>
