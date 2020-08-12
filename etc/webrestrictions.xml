@@ -4,8 +4,8 @@
     <action path="sagepaysuite_server_cancel" type="generic"/>
     <action path="sagepaysuite_server_redirectToSuccess" type="generic"/>
 
-    <action path="sagepaysuite_pi_callback3d" type="generic"/>
-    <action path="sagepaysuite_pi_callback3dv2" type="generic"/>
+    <action path="sagepaysuite_pi_callback3D" type="generic"/>
+    <action path="sagepaysuite_pi_callback3DV2" type="generic"/>
 
     <action path="sagepaysuite_paypal_callback" type="generic"/>
     <action path="sagepaysuite_paypal_processing" type="generic"/>
