@@ -150,6 +150,10 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
                     "VPSTxId"        => "{" . self::TEST_VPSTXID . "}",
                     "StatusDetail"   => "OK STATUS",
                     "3DSecureStatus" => "NOTCHECKED",
+                    "AVSCV2" => "DATA NOT CHECKED",
+                    "AddressResult" => "NOTPROVIDED",
+                    "PostCodeResult" => "NOTPROVIDED",
+                    "CV2Result" => "NOTPROVIDED"
                 ]
             ]));
 
@@ -247,8 +251,13 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ->method('getPost')
             ->will($this->returnValue((object)[
                 "Status" => "PAYPALOK",
-                "StatusDetail" => "OK STATUS",
-                "VPSTxId" => "{" . self::TEST_VPSTXID . "}"
+                "StatusDetail" => "OK STATUS SUCCESS",
+                "VPSTxId" => "{" . self::TEST_VPSTXID . "}",
+                "3DSecureStatus" => "NOTCHECKED",
+                "AVSCV2" => "DATA NOT CHECKED",
+                "AddressResult" => "NOTPROVIDED",
+                "PostCodeResult" => "NOTPROVIDED",
+                "CV2Result" => "NOTPROVIDED"
             ]));
 
         $this->_expectRedirect("checkout/onepage/success");

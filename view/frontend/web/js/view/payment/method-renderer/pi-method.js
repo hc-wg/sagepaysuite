@@ -27,7 +27,7 @@ define(
         $(document).ready(function () {
             var piConfig = window.checkoutConfig.payment.ebizmarts_sagepaysuitepi;
             if (piConfig && !piConfig.licensed) {
-                $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
+                $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Opayo Suite license is invalid.</div>');
             }
         });
 
@@ -72,6 +72,84 @@ define(
                     this.selectPaymentMethod();
                 }
                 self.defaultStateForm();
+
+                if (!self.dropInEnabled()) {
+                    $('button.checkout').attr('disabled', 'disabled');
+                }
+            },
+            observeCardChanges: function(itemId) {
+                var self = this;
+                var code = self.getCode();
+
+                if (self.checkFormElementExistense(code)) {
+                    var element = document.getElementById(itemId);
+
+                    if (element.value == '' || element.value == 'Month' || element.value == 'Year') {
+                        $(element).parents('.field').addClass('_error');
+                        $('button.checkout').attr('disabled', 'disabled');
+                    } else {
+                        if (self.checkFieldFilled(code, itemId)) {
+                            $(element).parents('.field').removeClass('_error');
+                        } 
+
+                        if (self.checkFilledfFormFields(code)) {
+                            $('button.checkout').removeAttr('disabled');
+                        }
+                    }
+                }
+            },
+            checkFieldFilled: function(code, itemId) {
+                var elementValue = document.getElementById(itemId).value;
+
+                if (itemId == code + '_cardholder' || itemId == code + '_cc_number' || itemId == code + '_cc_cid') {
+                    if (elementValue == '') {
+                        return false;
+                    }
+                } else if (itemId == code + '_expiration') {
+                    if (elementValue == 'Month') {
+                        return false;
+                    }
+                } else if (itemId == code + '_expiration_yr') {
+                    if (elementValue == 'Year') {
+                        return false;
+                    }
+                }
+
+                return true;
+            },
+            checkFilledfFormFields: function(code) {
+                var cardHolder = document.getElementById(code + '_cardholder').value;
+                var ccNumber = document.getElementById(code + '_cc_number').value;
+                var expiration = document.getElementById(code + '_expiration').value;
+                var expirationYr = document.getElementById(code + '_expiration_yr').value;
+                var CID = document.getElementById(code + '_cc_cid').value;
+
+                if (cardHolder == '' 
+                    || ccNumber == '' 
+                    || expiration == 'Month' || expiration == ''
+                    || expirationYr == 'Year' || expirationYr == ''
+                    || CID == '') {
+                    return false;
+                }
+
+                return true;
+            },
+            checkFormElementExistense: function(code) {
+                var cardHolderElement = document.getElementById(code + '_cardholder');
+                var ccNumberElement = document.getElementById(code + '_cc_number');
+                var expirationElement = document.getElementById(code + '_expiration');
+                var expirationYrElement = document.getElementById(code + '_expiration_yr');
+                var CIDElement = document.getElementById(code + '_cc_cid');
+
+                if (cardHolderElement !== null 
+                    && ccNumberElement !== null 
+                    && expirationElement !== null 
+                    && expirationYrElement !== null 
+                    && CIDElement !== null) {
+                        return true;
+                }
+
+                return false;
             },
             getRemoteJsName: function () {
                 var self = this;
@@ -108,7 +186,7 @@ define(
                     }
                 ).fail(
                     function (response) {
-                        self.showPaymentError("Unable to create Sage Pay merchant session key.");
+                        self.showPaymentError("Unable to create Opayo merchant session key.");
                     }
                 );
             },
@@ -223,7 +301,7 @@ define(
                                             self.placeTransaction();
                                         } catch (err) {
                                             console.log(err);
-                                            self.showPaymentError("Unable to initialize Sage Pay payment method, please use another payment method.");
+                                            self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
                                         }
                                     } else {
                                         //Check if it is "Authentication failed"
@@ -276,10 +354,10 @@ define(
                                     try {
                                         self.placeTransaction();
                                     } catch (err) {
-                                        self.showPaymentError("Unable to initialize Sage Pay payment method, please use another payment method.");
+                                        self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
                                     }
                                 } else {
-                                    var errorMessage = "Unable to initialize Sage Pay payment method, please use another payment method.";
+                                    var errorMessage = "Unable to initialize Opayo payment method, please use another payment method.";
                                     if (response.responseJSON) {
                                         response = response.responseJSON;
                                     }
@@ -292,7 +370,7 @@ define(
                                 }
                             });
                         } catch (err) {
-                            alert("Unable to initialize Sage Pay payment method, please use another payment method.");
+                            alert("Unable to initialize Opayo payment method, please use another payment method.");
                         }
                     }
                 }
@@ -348,20 +426,13 @@ define(
                                  * transaction authenticated, redirect to success
                                  */
                                 customerData.invalidate(['cart']);
-
-                                if (!customer.isLoggedIn()) {
-                                    customerData.invalidate(['checkout-data']);
-                                }
+                                customerData.invalidate(['checkout-data']);
 
                                 window.location.replace(url.build('checkout/onepage/success/'));
                             } else if (response.status === "3DAuth") {
 
-
                                 customerData.invalidate(['cart']);
-
-                                if (!customer.isLoggedIn()) {
-                                    customerData.invalidate(['checkout-data']);
-                                }
+                                customerData.invalidate(['checkout-data']);
 
                                 /**
                                  * 3D secure authentication required
@@ -401,7 +472,7 @@ define(
                                     fullScreenLoader.stopLoader();
                                 }
                             } else {
-                                self.showPaymentError("Invalid Sage Pay response, please use another payment method.");
+                                self.showPaymentError("Invalid Opayo response, please use another payment method.");
                             }
                         } else {
                             self.showPaymentError(response.error_message);
@@ -412,7 +483,7 @@ define(
                     }
                 ).fail(
                     function (response) {
-                        self.showPaymentError("Unable to capture Sage Pay transaction, please use another payment method.");
+                        self.showPaymentError("Unable to capture Opayo transaction, please use another payment method.");
                     }
                 );
             },
@@ -423,7 +494,7 @@ define(
             open3DModal: function () {
                 this.modal = $('<iframe id="' + this.getCode() + '-3Dsecure-iframe" name="' + this.getCode() + '-3Dsecure-iframe"></iframe>').modal({
                     modalClass: 'sagepaysuite-modal',
-                    title: "Sage Pay 3D Secure Authentication",
+                    title: "Opayo 3D Secure Authentication",
                     type: 'slide',
                     responsive: true,
                     clickableOverlay: false,

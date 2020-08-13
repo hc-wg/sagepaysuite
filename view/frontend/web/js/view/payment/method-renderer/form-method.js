@@ -25,7 +25,7 @@ define(
         $(document).ready(function () {
             var formConfig = window.checkoutConfig.payment.ebizmarts_sagepaysuiteform;
             if (formConfig && !formConfig.licensed) {
-                $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
+                $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Opayo Suite license is invalid.</div>');
             }
         });
 
@@ -100,6 +100,7 @@ define(
                                         if (response.success) {
 
                                             customerData.invalidate(['cart']);
+                                            customerData.invalidate(['checkout-data']);
 
                                             //set form data and submit
                                             var form_form = document.getElementById(self.getCode() + '-form');
@@ -116,7 +117,7 @@ define(
                                     }
                                 ).fail(
                                     function (response) {
-                                        self.showPaymentError("Unable to submit form to Sage Pay.");
+                                        self.showPaymentError("Unable to submit form to Opayo.");
                                     }
                                 );
                             }
@@ -148,7 +149,6 @@ define(
             resetPaymentErrors: function () {
                 var span = document.getElementById(this.getCode() + '-payment-errors');
                 span.style.display="none";
-
             }
         });
     }

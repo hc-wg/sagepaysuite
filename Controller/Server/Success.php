@@ -7,59 +7,66 @@
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
+use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Quote\Model\QuoteFactory;
+use Magento\Sales\Model\OrderFactory;
+use Psr\Log\LoggerInterface;
 
 class Success extends \Magento\Framework\App\Action\Action
 {
 
     /**
      * Logging instance
-     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
+     * @var Logger
      */
     private $_suiteLogger;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     private $_logger;
 
     /**
-     * @var \Magento\Checkout\Model\Session
+     * @var CheckoutSession
      */
     private $_checkoutSession;
 
     /**
-     * @var \Magento\Sales\Model\OrderFactory
+     * @var OrderFactory
      */
     private $_orderFactory;
 
     /**
-     * @var \Magento\Quote\Model\QuoteFactory
+     * @var QuoteFactory
      */
     private $_quoteFactory;
 
     /**
-     * @var \Magento\Framework\Encryption\EncryptorInterface
+     * @var EncryptorInterface
      */
     private $encryptor;
 
     /**
-     * @param \Magento\Framework\App\Action\Context $context
+     * @param Context $context
      * @param Logger $suiteLogger
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Checkout\Model\Session $checkoutSession
-     * @param \Magento\Sales\Model\OrderFactory $orderFactory
-     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
+     * @param LoggerInterface $logger
+     * @param CheckoutSession $checkoutSession
+     * @param OrderFactory $orderFactory
+     * @param QuoteFactory $quoteFactory
+     * @param EncryptorInterface $encryptor
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
+        Context $context,
         Logger $suiteLogger,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory,
-        \Magento\Framework\Encryption\EncryptorInterface $encryptor
+        LoggerInterface $logger,
+        CheckoutSession $checkoutSession,
+        OrderFactory $orderFactory,
+        QuoteFactory $quoteFactory,
+        EncryptorInterface $encryptor
     ) {
-    
         parent::__construct($context);
 
         $this->_suiteLogger     = $suiteLogger;
@@ -73,8 +80,10 @@ class Success extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
-            $storeId = $this->getRequest()->getParam("_store");
-            $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
+            $request = $this->getRequest();
+
+            $storeId = $request->getParam("_store");
+            $quoteId = $this->encryptor->decrypt($request->getParam("quoteid"));
 
             $quote = $this->_quoteFactory->create();
             $quote->setStoreId($storeId);
@@ -91,18 +100,13 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->_checkoutSession->setLastOrderStatus($order->getStatus());
 
             //remove order pre-saved flag from checkout
-            $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
-            $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
+            $this->_checkoutSession->setData(SagePaySession::PRESAVED_PENDING_ORDER_KEY, null);
+            $this->_checkoutSession->setData(SagePaySession::CONVERTING_QUOTE_TO_ORDER, 0);
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             $this->messageManager->addError(__('An error ocurred.'));
         }
 
-        //redirect to success via javascript
-        $this->getResponse()->setBody(
-            '<script>window.top.location.href = "'
-            . $this->_url->getUrl('checkout/onepage/success', ['_secure' => true])
-            . '";</script>'
-        );
+        return $this->resultRedirectFactory->create()->setPath('checkout/onepage/success', ['_secure' => true]);
     }
 }

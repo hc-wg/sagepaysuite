@@ -122,7 +122,7 @@ class Success extends \Magento\Framework\App\Action\Action
         try {
             $response = $this->_formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
             if (!array_key_exists("VPSTxId", $response)) {
-                throw new LocalizedException(__('Invalid response from Sage Pay.'));
+                throw new LocalizedException(__('Invalid response from Opayo.'));
             }
 
             $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
@@ -150,16 +150,13 @@ class Success extends \Magento\Framework\App\Action\Action
                 }
 
                 $payment->setLastTransId($transactionId);
-                $payment->setAdditionalInformation('statusDetail', $response['StatusDetail']);
                 $payment->setCcType($response['CardType']);
                 $payment->setCcLast4($response['Last4Digits']);
                 if (array_key_exists("ExpiryDate", $response)) {
                     $payment->setCcExpMonth(substr($response["ExpiryDate"], 0, 2));
                     $payment->setCcExpYear(substr($response["ExpiryDate"], 2));
                 }
-                if (array_key_exists("3DSecureStatus", $response)) {
-                    $payment->setAdditionalInformation('threeDStatus', $response["3DSecureStatus"]);
-                }
+
                 $payment->save();
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Invalid transaction id.'));
