@@ -57,6 +57,32 @@ class VaultDetailsHandler
     }
 
     /**
+     * @param int $customerId
+     * @return array
+     */
+    public function getTokensFromCustomersToShowOnGrid($customerId)
+    {
+        //getListByCustomerId says that return \Magento\Vault\Api\Data\PaymentTokenSearchResultsInterface[]
+        //but actually return \Magento\Vault\Api\Data\PaymentTokenInterface[]
+        $tokenList = $this->paymentTokenManagement->getListByCustomerId($customerId);
+        $tokenListToShow = [];
+        foreach ($tokenList as $token) {
+            $tokenDetails = $this->convertJsonToArray($token->getTokenDetails());
+            $data = [
+                'id' => $token->getEntityId(),
+                'customer_id' => $token->getCustomerId(),
+                'cc_last_4' => $tokenDetails['maskedCC'],
+                'cc_type' => $tokenDetails['type'],
+                'cc_exp_month' => substr($tokenDetails['expirationDate'], 0, 2),
+                'cc_exp_year' => substr($tokenDetails['expirationDate'], 3, 2)
+            ];
+            $tokenListToShow[] = $data;
+        }
+
+        return $tokenListToShow;
+    }
+
+    /**
      * @param Payment $payment
      * @param int $customerId
      * @param string $token
@@ -68,11 +94,16 @@ class VaultDetailsHandler
             return null;
         }
 
+        /**
+         * TO DO:
+         * Revisar si en gateway token se debe guardar el token y si el hash esta bien.
+         */
         $paymentToken = $this->paymentTokenFactory->create(PaymentTokenFactoryInterface::TOKEN_TYPE_CREDIT_CARD);
         $paymentToken->setGatewayToken($token);
         $paymentToken->setTokenDetails($this->createTokenDetails($payment));
         $paymentToken->setCustomerId($customerId);
         $paymentToken->setPaymentMethodCode($payment->getMethod());
+        $paymentToken->setPublicHash($this->generatePublicHash($token));
 
         return $paymentToken;
     }
@@ -99,5 +130,19 @@ class VaultDetailsHandler
     private function convertArrayToJSON($array)
     {
         return $this->jsonSerializer->serialize($array);
+    }
+
+    private function generatePublicHash($token)
+    {
+        return hash('md5', $token);
+    }
+
+    /**
+     * @param string $string
+     * @return array
+     */
+    private function convertJsonToArray($string)
+    {
+        return $this->jsonSerializer->unserialize($string);
     }
 }
