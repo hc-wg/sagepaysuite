@@ -9,7 +9,7 @@
     <system>
         <section id="payment">
             <group id="sagepaysuite" translate="label" type="text" sortOrder="500" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Sage Pay Suite</label>
+                <label>Opayo (formerly Sage Pay)</label>
                 <group id="version" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <frontend_model>Ebizmarts\SagePaySuite\Block\Adminhtml\System\Config\Fieldset\Version</frontend_model>
                 </group>
@@ -47,7 +47,7 @@
                     </field>
                     <field id="reporting_user" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Reporting API User</label>
-                        <comment><![CDATA[Your merchant's credentials, same as the ones to access Sage Pay's dashboard.]]></comment>
+                        <comment><![CDATA[Your merchant's credentials, same as the ones to access Opayo's dashboard.]]></comment>
                         <config_path>sagepaysuite/global/reporting_user</config_path>
                     </field>
                     <field id="reporting_password" translate="label" type="obscure" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -60,13 +60,13 @@
                     <label>Advanced Settings</label>
                     <field id="threedsecure" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>3D Secure Authentication</label>
-                        <comment><![CDATA[The 3D Secure configuration is also declared in Sage Pay's dashboard and will be overwritten by this setting if not set to 'default'.]]></comment>
+                        <comment><![CDATA[The 3D Secure configuration is also declared in Opayo's dashboard and will be overwritten by this setting if not set to 'default'.]]></comment>
                         <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\ThreeDSecure</source_model>
                         <config_path>sagepaysuite/advanced/threedsecure</config_path>
                     </field>
                     <field id="avscvc" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Avs/Cvc Authentication</label>
-                        <comment><![CDATA[The Avs/Cvc configuration is also declared in Sage Pay's dashboard and will be overwritten by this setting if not set to 'default'.]]></comment>
+                        <comment><![CDATA[The Avs/Cvc configuration is also declared in Opayo's dashboard and will be overwritten by this setting if not set to 'default'.]]></comment>
                         <source_model>Ebizmarts\SagePaySuite\Model\Config\Source\AvsCvc</source_model>
                         <config_path>sagepaysuite/advanced/avscvc</config_path>
                     </field>
@@ -105,7 +105,7 @@
                     </field>
                 </group>
                 <group id="sagepaysuiteform" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Sage Pay FORM Integration</label>
+                    <label>Opayo FORM Integration</label>
                     <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -168,7 +168,7 @@
                     <field id="model"></field>
                 </group>
                 <group id="sagepaysuitepi" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Sage Pay Pi Integration (recommended)</label>
+                    <label>Opayo Pi Integration (recommended)</label>
                     <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -240,7 +240,7 @@
                     <field id="model"></field>
                 </group>
                 <group id="sagepaysuiteserver" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Sage Pay SERVER Integration</label>
+                    <label>Opayo SERVER Integration</label>
                     <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -289,7 +289,7 @@
                     <field id="model"></field>
                 </group>
                 <group id="sagepaysuitepaypal" translate="label" type="text" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Sage Pay PayPal Integration</label>
+                    <label>Opayo PayPal Integration</label>
                     <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -342,7 +342,7 @@
                     <field id="model"></field>
                 </group>
                 <group id="sagepaysuiterepeat" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Sage Pay REPEAT Integration (Backend Only)</label>
+                    <label>Opayo REPEAT Integration (Backend Only)</label>
                     <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

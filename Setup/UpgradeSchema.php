@@ -51,7 +51,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     [
                     'type' => Table::TYPE_BOOLEAN,
                     'nullable' => false,
-                    'comment' => 'Sage Pay Fraud Check Flag'
+                    'comment' => 'Opayo Fraud Check Flag'
                     ]
                 );
         }

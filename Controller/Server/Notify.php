@@ -25,6 +25,7 @@ use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use \Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
+use Magento\Sales\Model\Order;
 use function urlencode;
 
 class Notify extends Action
@@ -147,7 +148,11 @@ class Notify extends Action
 
             if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) { //validate transaction id
                 $payment->setAdditionalInformation('statusDetail', $statusDetail);
-                $payment->setAdditionalInformation('threeDStatus', $this->postData->{'3DSecureStatus'});
+                $payment->setAdditionalInformation('AVSCV2', $this->postData->{'AVSCV2'});
+                $payment->setAdditionalInformation('AddressResult', $this->postData->{'AddressResult'});
+                $payment->setAdditionalInformation('PostCodeResult', $this->postData->{'PostCodeResult'});
+                $payment->setAdditionalInformation('CV2Result', $this->postData->{'CV2Result'});
+                $payment->setAdditionalInformation('3DSecureStatus', $this->postData->{'3DSecureStatus'});
                 if (isset($this->postData->{'BankAuthCode'})) {
                     $payment->setAdditionalInformation('bankAuthCode', $this->postData->{'BankAuthCode'});
                 }
@@ -167,7 +172,13 @@ class Notify extends Action
 
             if ($status == "ABORT") { //Transaction canceled by customer
                 //cancel pending payment order
-                $this->cancelOrder($order);
+                $state = $order->getState();
+                if ($state === Order::STATE_PENDING_PAYMENT) {
+                    //The order might be cancelled on Model/recoverCart if SagePay takes too long in sending the notify. This checks if the order is not cancelled before trying to cancel it.
+                    $this->cancelOrder($order);
+                } elseif ($state !== Order::STATE_CANCELED) {
+                    $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Incorrect state found on order " . $order->getIncrementId() . " when trying to cancel it. State found: " . $state, [__METHOD__, __LINE__]);
+                }
                 return $this->returnAbort($this->quote->getId());
             } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
                 $this->updateOrderCallback->setOrder($this->order);
@@ -315,7 +326,7 @@ class Notify extends Action
 
     private function getSuccessRedirectUrl()
     {
-        $url = $this->_url->getUrl('*/*/success', [
+        $url = $this->_url->getUrl('*/*/redirectToSuccess', [
             '_secure' => true,
             '_store'  => $this->quote->getStoreId()
         ]);

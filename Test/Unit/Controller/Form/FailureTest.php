@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\Form;
 
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
 class FailureTest extends \PHPUnit\Framework\TestCase
 {
@@ -106,9 +106,9 @@ class FailureTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $loggerMock->expects($this->once())->method('critical')->with(
-            new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Sage Pay'))
+            new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Opayo'))
         );
-        
+
         $objectManagerHelper = new ObjectManagerHelper($this);
         $formFailureController = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\Form\Failure',
@@ -122,7 +122,7 @@ class FailureTest extends \PHPUnit\Framework\TestCase
         $messageManagerMock
             ->expects($this->once())
             ->method('addError')
-            ->with(__('Invalid response from Sage Pay'));
+            ->with(__('Invalid response from Opayo'));
 
         $formFailureController->execute();
     }

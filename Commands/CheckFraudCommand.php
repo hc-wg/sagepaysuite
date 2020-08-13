@@ -36,7 +36,7 @@ class CheckFraudCommand extends Command
     protected function configure()
     {
         $this->setName('sage-pay:fraud-check');
-        $this->setDescription('Sage Pay check fraud on transactions.');
+        $this->setDescription('Opayo check fraud on transactions.');
         parent::configure();
     }
 

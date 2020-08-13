@@ -275,7 +275,7 @@ class Shared implements PaymentOperations
      */
     private function handleApiErrors($response)
     {
-        $exceptionPhrase = "Invalid response from Sage Pay API.";
+        $exceptionPhrase = "Invalid response from Opayo API.";
         $exceptionCode = 0;
         $validResponse = false;
 

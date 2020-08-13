@@ -7,8 +7,8 @@
                 <item name="config" xsi:type="array">
                     <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/thumbnail</item>
                     <item name="sortable" xsi:type="boolean">false</item>
-                    <item name="altField" xsi:type="string">Sage Pay Fraud Score</item>
-                    <item name="label" xsi:type="string" translate="true">Sage Pay Fraud</item>
+                    <item name="altField" xsi:type="string">Opayo Fraud Score</item>
+                    <item name="label" xsi:type="string" translate="true">Opayo Fraud</item>
                     <item name="sortOrder" xsi:type="number">23</item>
                 </item>
             </argument>
@@ -18,8 +18,8 @@
                 <item name="config" xsi:type="array">
                     <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/thumbnail</item>
                     <item name="sortable" xsi:type="boolean">false</item>
-                    <item name="altField" xsi:type="string">Sage Pay 3D Secure Result</item>
-                    <item name="label" xsi:type="string" translate="true">Sage Pay 3D Secure</item>
+                    <item name="altField" xsi:type="string">Opayo 3D Secure Result</item>
+                    <item name="label" xsi:type="string" translate="true">Opayo 3D Secure</item>
                     <item name="sortOrder" xsi:type="number">24</item>
                 </item>
             </argument>
@@ -29,8 +29,8 @@
                 <item name="config" xsi:type="array">
                     <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/thumbnail</item>
                     <item name="sortable" xsi:type="boolean">false</item>
-                    <item name="altField" xsi:type="string">Sage Pay Address Validation</item>
-                    <item name="label" xsi:type="string" translate="true">Sage Pay Address Validation</item>
+                    <item name="altField" xsi:type="string">Opayo Address Validation</item>
+                    <item name="label" xsi:type="string" translate="true">Opayo Address Validation</item>
                     <item name="sortOrder" xsi:type="number">25</item>
                 </item>
             </argument>
@@ -40,8 +40,8 @@
                 <item name="config" xsi:type="array">
                     <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/thumbnail</item>
                     <item name="sortable" xsi:type="boolean">false</item>
-                    <item name="altField" xsi:type="string">Sage Pay Postcode Check</item>
-                    <item name="label" xsi:type="string" translate="true">Sage Pay Postcode Check</item>
+                    <item name="altField" xsi:type="string">Opayo Postcode Check</item>
+                    <item name="label" xsi:type="string" translate="true">Opayo Postcode Check</item>
                     <item name="sortOrder" xsi:type="number">26</item>
                 </item>
             </argument>
@@ -51,8 +51,8 @@
                 <item name="config" xsi:type="array">
                     <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/thumbnail</item>
                     <item name="sortable" xsi:type="boolean">false</item>
-                    <item name="altField" xsi:type="string">Sage Pay CV2 Check</item>
-                    <item name="label" xsi:type="string" translate="true">Sage Pay CV2 Check</item>
+                    <item name="altField" xsi:type="string">Opayo CV2 Check</item>
+                    <item name="label" xsi:type="string" translate="true">Opayo CV2 Check</item>
                     <item name="sortOrder" xsi:type="number">27</item>
                 </item>
             </argument>

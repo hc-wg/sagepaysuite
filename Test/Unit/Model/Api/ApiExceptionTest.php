@@ -59,7 +59,7 @@ class ApiExceptionTest extends \PHPUnit\Framework\TestCase
                 [
                     'message' => "username=pedro",
                     'code' => \Ebizmarts\SagePaySuite\Model\Api\ApiException::VALID_VALUE_REQUIRED,
-                    'expected' => "Invalid Sage Pay API credentials."
+                    'expected' => "Invalid Opayo API credentials."
                 ]
             ],
             'test VALID_VALUE_REQUIRED_DEFAULT' => [
@@ -80,7 +80,7 @@ class ApiExceptionTest extends \PHPUnit\Framework\TestCase
                 [
                     'message' => "INVALID",
                     'code' => \Ebizmarts\SagePaySuite\Model\Api\ApiException::INVALID_USER_AUTH,
-                    'expected' => "Your Sage Pay API user/password is invalid or the user might be locked out."
+                    'expected' => "Your Opayo API user/password is invalid or the user might be locked out."
                 ]
             ],
             'test INVALID_SIGNATURE' => [

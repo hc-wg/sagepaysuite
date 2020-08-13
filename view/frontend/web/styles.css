@@ -63,6 +63,15 @@
     background-position: center;
 }
 
+.opayo-payment-method-logo {
+    background-image: url('images/opayo_logo.jpg');
+    width: 100%;
+    height: 33px;
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-position: center;
+}
+
 
 #sagepaysuitepi-3Dsecure-iframe {
     width: 100%;
