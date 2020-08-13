@@ -5,7 +5,7 @@
 ### Preconditions
 <!--- Provide a more detailed information of environment you use -->
 1. Magento version: 
-2. Sage Pay module version:
+2. Opayo module version:
 <!--- Additioanl preconditions, e.g.: PHP & MySQL version, etc.. -->
 
 ### Steps to reproduce

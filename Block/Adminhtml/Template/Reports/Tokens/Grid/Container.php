@@ -23,7 +23,7 @@ class Container extends \Magento\Backend\Block\Widget\Grid\Container
     {
         $this->_blockGroup = 'Ebizmarts_SagePaySuite';
         $this->_controller = 'adminhtml_reports_tokens';
-        $this->_headerText = __('Sage Pay Credit Card Tokens Report');
+        $this->_headerText = __('Opayo Credit Card Tokens Report');
         parent::_construct();
         $this->buttonList->remove('add');
     }

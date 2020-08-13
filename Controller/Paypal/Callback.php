@@ -103,7 +103,7 @@ class Callback extends Action implements CsrfAwareActionInterface
         RecoverCart $recoverCart,
         OrderLoader $orderLoader
     ) {
-    
+
         parent::__construct($context);
         $this->config               = $config;
         $this->checkoutSession      = $checkoutSession;
@@ -254,7 +254,11 @@ class Callback extends Action implements CsrfAwareActionInterface
 
         if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) {
             $payment->setAdditionalInformation('statusDetail', $completionResponse['StatusDetail']);
-            $payment->setAdditionalInformation('threeDStatus', $completionResponse['3DSecureStatus']);
+            $payment->setAdditionalInformation('AVSCV2', $completionResponse['AVSCV2']);
+            $payment->setAdditionalInformation('AddressResult', $completionResponse['AddressResult']);
+            $payment->setAdditionalInformation('PostCodeResult', $completionResponse['PostCodeResult']);
+            $payment->setAdditionalInformation('CV2Result', $completionResponse['CV2Result']);
+            $payment->setAdditionalInformation('3DSecureStatus', $completionResponse['3DSecureStatus']);
             $payment->setCcType("PayPal");
             $payment->setLastTransId($transactionId);
             $payment->save();

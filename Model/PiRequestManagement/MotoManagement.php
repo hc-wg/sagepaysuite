@@ -126,7 +126,7 @@ class MotoManagement extends RequestManagement
                 $this->getResult()->setSuccess(true);
                 $this->getResult()->setResponse($url);
             } else {
-                throw new Exception(__('Unable to save Sage Pay order.'));
+                throw new Exception(__('Unable to save Opayo order.'));
             }
         } catch (ApiException $apiException) {
             $this->logger->logException($apiException, [__METHOD__, __LINE__]);

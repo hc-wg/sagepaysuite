@@ -46,7 +46,7 @@ class Failure extends \Magento\Backend\App\AbstractAction
             //decode response
             $response = $this->formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
             if (!array_key_exists("Status", $response) || !array_key_exists("StatusDetail", $response)) {
-                throw new \Magento\Framework\Exception\LocalizedException('Invalid response from Sage Pay');
+                throw new \Magento\Framework\Exception\LocalizedException('Invalid response from Opayo');
             }
 
             //log response

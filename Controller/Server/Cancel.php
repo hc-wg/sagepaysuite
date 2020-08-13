@@ -45,10 +45,7 @@ class Cancel extends Action
 
     /** @var RecoverCart */
     private $recoverCart;
-
-    /** @var OrderLoader */
-    private $orderLoader;
-
+    
     /**
      * Cancel constructor.
      * @param Context $context
@@ -60,7 +57,6 @@ class Cancel extends Action
      * @param QuoteIdMaskFactory $quoteIdMaskFactory
      * @param EncryptorInterface $encryptor
      * @param RecoverCart $recoverCart
-     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
@@ -71,8 +67,7 @@ class Cancel extends Action
         Quote $quote,
         QuoteIdMaskFactory $quoteIdMaskFactory,
         EncryptorInterface $encryptor,
-        RecoverCart $recoverCart,
-        OrderLoader $orderLoader
+        RecoverCart $recoverCart
     ) {
     
         parent::__construct($context);
@@ -84,7 +79,6 @@ class Cancel extends Action
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
         $this->encryptor          = $encryptor;
         $this->recoverCart        = $recoverCart;
-        $this->orderLoader        = $orderLoader;
 
         $this->config->setMethodCode(Config::METHOD_SERVER);
     }
@@ -103,12 +97,7 @@ class Cancel extends Action
             throw new \Exception("Quote not found.");
         }
 
-        //Todo: Where is this order used???
-        $order = $this->orderLoader->loadOrderFromQuote($this->quote);
-
         $this->recoverCart->setShouldCancelOrder(true)->execute();
-
-        $this->inactivateQuote($this->quote);
 
         $this
             ->getResponse()

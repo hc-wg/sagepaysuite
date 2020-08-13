@@ -505,7 +505,7 @@ class PIRest
             return $result->getResponseData();
         } else {
             $errorCode = 0;
-            $errorMessage  = "Unable to capture Sage Pay transaction";
+            $errorMessage  = "Unable to capture Opayo transaction";
 
             $errors = $result->getResponseData();
             if (isset($errors->errors) && count($errors->errors) > 0) {
