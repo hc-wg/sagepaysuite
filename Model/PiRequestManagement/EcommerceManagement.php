@@ -12,25 +12,26 @@ use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
 use Ebizmarts\SagePaySuite\Model\Config\SagePayCardType;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\PiRequest;
+use Ebizmarts\SagePaySuite\Model\Token\VaultDetailsHandler;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Url\EncoderInterface;
 use Magento\Framework\Validator\Exception as ValidatorException;
-use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
-use Magento\Sales\Model\Order\Payment\TransactionFactory;
-use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Api\PaymentFailuresInterface;
-use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
+use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Magento\Sales\Model\Order\Payment\TransactionFactory;
 
 class EcommerceManagement extends RequestManagement
 {
     /** @var Session */
     private $checkoutSession;
 
-    private $sagePaySuiteLogger;
+    /** @var Logger */
+    private $suiteLogger;
 
     private $actionFactory;
 
@@ -49,11 +50,11 @@ class EcommerceManagement extends RequestManagement
     /** @var PaymentFailuresInterface */
     private $paymentFailures;
 
-    /** @var EncryptorInterface */
-    private $encryptor;
-
     /** @var CryptAndCodeData */
     private $cryptAndCode;
+
+    /** @var VaultDetailsHandler */
+    private $vaultDetailsHandler;
 
     public function __construct(
         Checkout $checkoutHelper,
@@ -70,7 +71,8 @@ class EcommerceManagement extends RequestManagement
         InvoiceSender $invoiceEmailSender,
         Config $config,
         PaymentFailuresInterface $paymentFailures,
-        CryptAndCodeData $cryptAndCode
+        CryptAndCodeData $cryptAndCode,
+        VaultDetailsHandler $vaultDetailsHandler
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -80,16 +82,17 @@ class EcommerceManagement extends RequestManagement
             $suiteHelper,
             $result
         );
-        $this->checkoutSession    = $checkoutSession;
-        $this->sagePaySuiteLogger = $sagePaySuiteLogger;
-        $this->actionFactory      = $actionFactory;
-        $this->transactionFactory = $transactionFactory;
-        $this->quoteValidator     = $quoteValidator;
-        $this->invoiceEmailSender = $invoiceEmailSender;
-        $this->config             = $config;
-        $this->paymentFailures    = $paymentFailures;
-        $this->paymentFailures    = $paymentFailures;
-        $this->cryptAndCode       = $cryptAndCode;
+        $this->checkoutSession     = $checkoutSession;
+        $this->suiteLogger         = $sagePaySuiteLogger;
+        $this->actionFactory       = $actionFactory;
+        $this->transactionFactory  = $transactionFactory;
+        $this->quoteValidator      = $quoteValidator;
+        $this->invoiceEmailSender  = $invoiceEmailSender;
+        $this->config              = $config;
+        $this->paymentFailures     = $paymentFailures;
+        $this->paymentFailures     = $paymentFailures;
+        $this->cryptAndCode        = $cryptAndCode;
+        $this->vaultDetailsHandler = $vaultDetailsHandler;
     }
 
     /**
@@ -103,6 +106,8 @@ class EcommerceManagement extends RequestManagement
     public function placeOrder()
     {
         try {
+            $this->suiteLogger->sageLog(Logger::LOG_REQUEST, 'flag EcommerceManagement', [__METHOD__, __LINE__]);
+
             $this->quoteValidator->validateBeforeSubmit($this->getQuote());
             $this->tryToChargeCustomerAndCreateOrder();
         } catch (LocalizedException $quoteException) {
@@ -152,6 +157,13 @@ class EcommerceManagement extends RequestManagement
         $quoteId = $this->getQuote()->getId();
         $quoteId = $this->encryptAndEncode($quoteId);
         $this->getResult()->setQuoteId($quoteId);
+
+        /**
+         * TO DO:
+         * Add check if in the response, the field reusable is true to save the token
+         * The save token might need to be implemented in ThreeDSecureCallback and move this to the else below.
+         */
+        $this->vaultDetailsHandler->saveToken($payment, $order->getCustomerId(), $this->getRequestData()->getCardIdentifier());
 
         if ($this->isThreeDResponse()) {
             $this->getResult()->setParEq($this->getPayResult()->getParEq());
@@ -212,7 +224,7 @@ class EcommerceManagement extends RequestManagement
      */
     private function tryToVoidTransactionLogErrorAndUpdateResult($exceptionObject)
     {
-        $this->sagePaySuiteLogger->logException($exceptionObject, [__METHOD__, __LINE__]);
+        $this->suiteLogger->logException($exceptionObject, [__METHOD__, __LINE__]);
         $this->getResult()->setSuccess(false);
         $this->getResult()->setErrorMessage(__("Something went wrong: %1", $exceptionObject->getMessage()));
 
@@ -220,7 +232,7 @@ class EcommerceManagement extends RequestManagement
             try {
                 $this->getPiRestApi()->void($this->getPayResult()->getTransactionId());
             } catch (ApiException $apiException) {
-                $this->sagePaySuiteLogger->logException($exceptionObject);
+                $this->suiteLogger->logException($exceptionObject);
             }
         } else {
             if ($this->getPayResult() !== null && !$this->isPaymentSuccessful()) {
@@ -267,7 +279,7 @@ class EcommerceManagement extends RequestManagement
         return $this->getPayResult()->getStatusCode() == Config::AUTH3D_REQUIRED_STATUS ||
             $this->getPayResult()->getStatusCode() == Config::AUTH3D_V2_REQUIRED_STATUS;
     }
-  
+
     private function isPaymentSuccessful()
     {
         return $this->getPayResult()->getStatusCode() == Config::SUCCESS_STATUS;
