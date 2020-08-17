@@ -11,7 +11,7 @@ use Magento\Sales\Model\Order;
 
 class Payment
 {
-    const ERROR_MESSAGE = "There was an error %1 Sage Pay transaction %2: %3";
+    const ERROR_MESSAGE = "There was an error %1 Opayo transaction %2: %3";
 
     /** @var Api\Shared|\Ebizmarts\SagePaySuite\Model\Api\Pi */
     private $api;

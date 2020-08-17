@@ -144,7 +144,7 @@ class UpgradeSchemaTest extends \PHPUnit\Framework\TestCase
                 [
                     'type' => 'boolean',
                     'nullable' => false,
-                    'comment' => 'Sage Pay Fraud Check Flag'
+                    'comment' => 'Opayo Fraud Check Flag'
                 ]
             )
             ->willReturnSelf();

@@ -182,7 +182,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
                 $this->result->setSuccess(true);
                 $this->result->setResponse($post_response);
             } else {
-                throw new InputException(__('Unable to save Sage Pay order'));
+                throw new InputException(__('Unable to save Opayo order'));
             }
         } catch (Api\ApiException $apiException) {
             $this->_suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
@@ -196,7 +196,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
 
             $this->result->setSuccess(false);
             $this->result->setErrorMessage(
-                __('Something went wrong while generating the Sage Pay request: %1', $e->getMessage())
+                __('Something went wrong while generating the Opayo request: %1', $e->getMessage())
             );
         }
 

@@ -130,7 +130,7 @@ define([
                                         self.placeTansactionRequest();
                                     } catch (err) {
                                         console.log(err);
-                                        self.showPaymentError("Unable to initialize Sage Pay payment method, please use another payment method.");
+                                        self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
                                     }
                                 } else {
                                     //Check if it is "Authentication failed"
@@ -172,7 +172,7 @@ define([
                                     self.placeTansactionRequest();
                                 } catch (err) {
                                     console.log(err);
-                                    alert("Unable to initialize Sage Pay payment method, please refresh the page and try again.");
+                                    alert("Unable to initialize Opayo payment method, please refresh the page and try again.");
                                 }
                             } else {
                                 self.showPaymentError(self.processNokResponse(status, response));
@@ -180,7 +180,7 @@ define([
                         });
                     } catch (err) {
                         //errorProcessor.process(err);
-                        alert("Unable to initialize Sage Pay payment method, please refresh the page and try again.");
+                        alert("Unable to initialize Opayo payment method, please refresh the page and try again.");
                     }
                 }
             }
@@ -299,7 +299,7 @@ define([
                     //redirect to success
                     window.location.href = response.response;
                 } else {
-                    self.showPaymentError(response.error_message ? response.error_message : "Invalid Sage Pay response, please use another payment method.");
+                    self.showPaymentError(response.error_message ? response.error_message : "Invalid Opayo response, please use another payment method.");
                 }
             });
         },

@@ -140,7 +140,7 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
             }
 
             throw new ValidatorException(
-                __('Invalid Sage Pay response. %1', $statusDetail)
+                __('Invalid Opayo response. %1', $statusDetail)
             );
         }
     }
@@ -153,14 +153,14 @@ abstract class RequestManagement implements \Ebizmarts\SagePaySuite\Api\PiOrderP
         $this->getPayment()->setAdditionalInformation('statusCode', $payResult->getStatusCode());
         $this->getPayment()->setAdditionalInformation('statusDetail', $payResult->getStatusDetail());
         if ($payResult->getThreeDSecure() !== null) {
-            $this->getPayment()->setAdditionalInformation('threeDStatus', $payResult->getThreeDSecure()->getStatus());
+            $this->getPayment()->setAdditionalInformation('3DSecureStatus', $payResult->getThreeDSecure()->getStatus());
         }
         $avsCvcCheck = $payResult->getAvsCvcCheck();
         if ($avsCvcCheck !== null) {
-            $this->getPayment()->setAdditionalInformation('avsCvcCheckStatus', $avsCvcCheck->getStatus());
-            $this->getPayment()->setAdditionalInformation('avsCvcCheckAddress', $avsCvcCheck->getAddress());
-            $this->getPayment()->setAdditionalInformation('avsCvcCheckPostalCode', $avsCvcCheck->getPostalCode());
-            $this->getPayment()->setAdditionalInformation('avsCvcCheckSecurityCode', $avsCvcCheck->getSecurityCode());
+            $this->getPayment()->setAdditionalInformation('AVSCV2', $avsCvcCheck->getStatus());
+            $this->getPayment()->setAdditionalInformation('AddressResult', $avsCvcCheck->getAddress());
+            $this->getPayment()->setAdditionalInformation('PostCodeResult', $avsCvcCheck->getPostalCode());
+            $this->getPayment()->setAdditionalInformation('CV2Result', $avsCvcCheck->getSecurityCode());
         }
         $this->getPayment()->setAdditionalInformation('moto', $this->getIsMotoTransaction());
         $this->getPayment()->setAdditionalInformation('vendorname', $this->getRequestData()->getVendorName());

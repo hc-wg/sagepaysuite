@@ -26,7 +26,7 @@ define(
             var serverConfig = window.checkoutConfig.payment.ebizmarts_sagepaysuiteserver;
             if (serverConfig) {
                 if (!serverConfig.licensed) {
-                    $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Sage Pay Suite license is invalid.</div>');
+                    $("#payment .step-title").after('<div class="message error" style="margin-top: 5px;border: 1px solid red;">WARNING: Your Opayo Suite license is invalid.</div>');
                 }
             }
         });
@@ -139,6 +139,7 @@ define(
                                         if (response.success) {
 
                                             customerData.invalidate(['cart']);
+                                            customerData.invalidate(['checkout-data']);
 
                                             var sagePayResponse = $.parseJSON(response.response[1]);
                                             self.openSERVERModal(sagePayResponse.NextURL);
@@ -150,7 +151,7 @@ define(
                                     }
                                 ).fail(
                                     function (response) {
-                                        self.showPaymentError("Unable to submit to Sage Pay. Please try another payment option.");
+                                        self.showPaymentError("Unable to submit to Opayo. Please try another payment option.");
                                     }
                                 );
                             }
@@ -191,7 +192,7 @@ define(
                 } else {
                     this.modal = $("<div class='sagepaysuiteserver-scroll-wrapper'><iframe class='sagepaysuiteserver_embed_" + winProfile + "' src='" + nextURL + "'></iframe></div>").modal({
                         modalClass: 'sagepaysuiteserver-modal',
-                        title: "Sage Pay Secure Gateway",
+                        title: "Opayo Secure Gateway",
                         type: (winProfile === 'normal') ? 'slide' : 'popup',
                         responsive: true,
                         clickableOverlay: false,

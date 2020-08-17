@@ -51,7 +51,7 @@ class ApiException extends LocalizedException
                 if (strpos($this->getMessage(), "vpstxid") !== false) {
                     $message = __('Transaction NOT found / Invalid transaction Id.');
                 } elseif (strpos($this->getMessage(), "username") !== false) {
-                    $message = __('Invalid Sage Pay API credentials.');
+                    $message = __('Invalid Opayo API credentials.');
                 } else {
                     $message = __($this->getMessage());
                 }
@@ -60,7 +60,7 @@ class ApiException extends LocalizedException
                 $message = __('Invalid merchant authentication.');
                 break;
             case self::INVALID_USER_AUTH:
-                $message = __('Your Sage Pay API user/password is invalid or the user might be locked out.');
+                $message = __('Your Opayo API user/password is invalid or the user might be locked out.');
                 break;
             default:
                 $message = __($this->getMessage());

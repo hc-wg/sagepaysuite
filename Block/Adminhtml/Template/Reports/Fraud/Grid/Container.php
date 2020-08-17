@@ -23,7 +23,7 @@ class Container extends \Magento\Backend\Block\Widget\Grid\Container
     {
         $this->_blockGroup = 'Ebizmarts_SagePaySuite';
         $this->_controller = 'adminhtml_reports_fraud';
-        $this->_headerText = __('Sage Pay Fraud Report');
+        $this->_headerText = __('Opayo Fraud Report');
         parent::_construct();
         $this->buttonList->remove('add');
     }
