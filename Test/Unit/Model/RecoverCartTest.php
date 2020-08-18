@@ -127,6 +127,15 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecute()
     {
+        $customerMock = $this
+            ->getMockBuilder(\Magento\Customer\Api\Data\CustomerInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $deliveryAddressMock = $this->getMockBuilder(\Magento\Quote\Model\Quote\Address::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $this->checkoutSessionMock
             ->expects($this->once())
             ->method('getData')
@@ -184,8 +193,26 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
 
         $newQuoteMock = $this
             ->getMockBuilder(Quote::class)
+            ->setMethods(
+                array(
+                    'setTotalsCollectedFlag', 'setStoreId', 'setIsActive', 'setReservedOrderId',
+                    'setCustomer', 'setCustomerId', 'getShippingAddress', 'addProduct',
+                    'collectTotals'
+                )
+            )
             ->disableOriginalConstructor()
             ->getMock();
+
+        $this->quoteMock
+            ->expects($this->once())
+            ->method('getCustomer')
+            ->willReturn($customerMock);
+
+        $newQuoteMock
+            ->expects($this->once())
+            ->method('setCustomer')
+            ->with($customerMock)
+            ->willReturnSelf();
 
         $this->quoteFactoryMock
             ->expects($this->once())
@@ -244,6 +271,22 @@ class RecoverCartTest extends \PHPUnit_Framework_TestCase
             ->method('addProduct')
             ->with($productMock, $requestMock)
             ->willReturnSelf();
+
+        $deliveryAddressMock = $this->getMockBuilder(\Magento\Quote\Model\Quote\Address::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $newQuoteMock
+            ->expects($this->once())
+            ->method('getShippingAddress')
+            ->willReturn($deliveryAddressMock);
+
+        $deliveryAddressMock
+            ->expects($this->once())
+            ->method('unsetData')
+            ->with('cached_items_all')
+            ->willReturnSelf();
+
         $newQuoteMock
             ->expects($this->once())
             ->method('collectTotals')
