@@ -2,15 +2,27 @@
 
 namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 
+use Ebizmarts\SagePaySuite\Api\Data\PiResultInterface;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface;
+use Ebizmarts\SagePaySuite\Helper\Checkout;
+use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
+use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Config\SagePayCardType;
 use Ebizmarts\SagePaySuite\Model\Payment;
+use Ebizmarts\SagePaySuite\Model\PiRequest;
+use Magento\Checkout\Model\Session;
+use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
+use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Api\PaymentFailuresInterface;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
+use Ebizmarts\SagePaySuite\Model\Token\VaultDetailsHandler;
+use Magento\Sales\Model\Order\Payment\TransactionFactory;
 
 class ThreeDSecureCallbackManagement extends RequestManagement
 {
@@ -18,19 +30,19 @@ class ThreeDSecureCallbackManagement extends RequestManagement
 
     const RETRY_INTERVAL = 6000000;
 
-    /** @var \Magento\Checkout\Model\Session */
+    /** @var Session */
     private $checkoutSession;
 
-    /** @var \Magento\Framework\App\RequestInterface */
+    /** @var RequestInterface */
     private $httpRequest;
 
     /** @var \Magento\Sales\Model\Order */
     private $order;
 
-    /** @var \Magento\Sales\Model\Order\Payment\TransactionFactory */
+    /** @var TransactionFactory */
     private $transactionFactory;
 
-    /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory */
+    /** @var PiTransactionResultFactory */
     private $payResultFactory;
 
     private $actionFactory;
@@ -49,23 +61,47 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     /** @var CryptAndCodeData */
     private $cryptAndCode;
 
+    /** @var VaultDetailsHandler */
+    private $vaultDetailsHandler;
+
+    /**
+     * ThreeDSecureCallbackManagement constructor.
+     * @param Checkout $checkoutHelper
+     * @param PIRest $piRestApi
+     * @param SagePayCardType $ccConvert
+     * @param PiRequest $piRequest
+     * @param Data $suiteHelper
+     * @param PiResultInterface $result
+     * @param Session $checkoutSession
+     * @param RequestInterface $httpRequest
+     * @param TransactionFactory $transactionFactory
+     * @param PiTransactionResultFactory $payResultFactory
+     * @param ClosedForActionFactory $actionFactory
+     * @param OrderRepositoryInterface $orderRepository
+     * @param InvoiceSender $invoiceEmailSender
+     * @param Config $config
+     * @param PaymentFailuresInterface $paymentFailures
+     * @param CryptAndCodeData $cryptAndCode
+     * @param VaultDetailsHandler $vaultDetailsHandler
+     */
     public function __construct(
-        \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper,
-        \Ebizmarts\SagePaySuite\Model\Api\PIRest $piRestApi,
-        \Ebizmarts\SagePaySuite\Model\Config\SagePayCardType $ccConvert,
-        \Ebizmarts\SagePaySuite\Model\PiRequest $piRequest,
-        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
-        \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface $result,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Framework\App\RequestInterface $httpRequest,
-        \Magento\Sales\Model\Order\Payment\TransactionFactory $transactionFactory,
-        \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory $payResultFactory,
+        Checkout $checkoutHelper,
+        PIRest $piRestApi,
+        SagePayCardType $ccConvert,
+        PiRequest $piRequest,
+        Data $suiteHelper,
+        PiResultInterface $result,
+        Session $checkoutSession,
+        RequestInterface $httpRequest,
+        TransactionFactory $transactionFactory,
+        PiTransactionResultFactory $payResultFactory,
         ClosedForActionFactory $actionFactory,
-        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
+        OrderRepositoryInterface $orderRepository,
         InvoiceSender $invoiceEmailSender,
         Config $config,
         PaymentFailuresInterface $paymentFailures,
-        CryptAndCodeData $cryptAndCode
+        CryptAndCodeData $cryptAndCode,
+        VaultDetailsHandler $vaultDetailsHandler
     ) {
         parent::__construct(
             $checkoutHelper,
@@ -76,16 +112,17 @@ class ThreeDSecureCallbackManagement extends RequestManagement
             $result
         );
 
-        $this->httpRequest        = $httpRequest;
-        $this->checkoutSession    = $checkoutSession;
-        $this->transactionFactory = $transactionFactory;
-        $this->payResultFactory   = $payResultFactory;
-        $this->actionFactory      = $actionFactory;
-        $this->orderRepository    = $orderRepository;
-        $this->invoiceEmailSender = $invoiceEmailSender;
-        $this->config             = $config;
-        $this->paymentFailures    = $paymentFailures;
-        $this->cryptAndCode       = $cryptAndCode;
+        $this->httpRequest         = $httpRequest;
+        $this->checkoutSession     = $checkoutSession;
+        $this->transactionFactory  = $transactionFactory;
+        $this->payResultFactory    = $payResultFactory;
+        $this->actionFactory       = $actionFactory;
+        $this->orderRepository     = $orderRepository;
+        $this->invoiceEmailSender  = $invoiceEmailSender;
+        $this->config              = $config;
+        $this->paymentFailures     = $paymentFailures;
+        $this->cryptAndCode        = $cryptAndCode;
+        $this->vaultDetailsHandler = $vaultDetailsHandler;
     }
 
     public function getPayment()
@@ -129,7 +166,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     }
 
     /**
-     * @return \Ebizmarts\SagePaySuite\Api\Data\PiResultInterface
+     * @return PiResultInterface
      * @throws ValidatorException
      * @throws ApiException
      */
@@ -141,6 +178,15 @@ class ThreeDSecureCallbackManagement extends RequestManagement
             $transactionDetailsResult = $this->retrieveTransactionDetails();
 
             $this->confirmPayment($transactionDetailsResult);
+            /**
+             * TO DO:
+             * Add check if in the response, the field reusable is true to save the token
+             */
+            $this->vaultDetailsHandler->saveToken(
+                $this->getPayment(),
+                $this->order->getCustomerId(),
+                $transactionDetailsResult->getPaymentMethod()->getCard()->getCardIdentifier()
+            );
 
             //remove order pre-saved flag from checkout
             $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
