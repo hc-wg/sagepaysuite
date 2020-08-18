@@ -271,6 +271,7 @@
 ### Added
 - First release with Magento 2.2.0 compatibility.
 
+[1.2.24]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.24
 [1.2.23]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.23
 [1.2.22]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.22
 [1.2.21]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.21
