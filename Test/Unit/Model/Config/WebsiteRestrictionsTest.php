@@ -3,12 +3,10 @@ declare(strict_types=1);
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Config;
 
-use Magento\Framework\Component\ComponentRegistrar;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
-use Magento\Framework\Module\ModuleList;
-
 class WebsiteRestrictionsTest extends \PHPUnit\Framework\TestCase
 {
+    const TOTAL_ROUTES = 10;
+
     public function testTheModuleIsKnownAndEnabledInTheRealEnvironment()
     {
         $filePath = realpath(__DIR__) . '/../../../../etc/';
@@ -19,7 +17,7 @@ class WebsiteRestrictionsTest extends \PHPUnit\Framework\TestCase
 
         $this->assertArrayNotHasKey('register', $converted);
         $this->assertArrayHasKey('generic', $converted);
-        $this->assertCount(10, $converted['generic']);
+        $this->assertCount(self::TOTAL_ROUTES, $converted['generic']);
         $this->assertContains('sagepaysuite_server_success', $converted['generic']); //do this for all keys that should be present.
     }
 
