@@ -18,7 +18,16 @@ class WebsiteRestrictionsTest extends \PHPUnit\Framework\TestCase
         $this->assertArrayNotHasKey('register', $converted);
         $this->assertArrayHasKey('generic', $converted);
         $this->assertCount(self::TOTAL_ROUTES, $converted['generic']);
-        $this->assertContains('sagepaysuite_server_success', $converted['generic']); //do this for all keys that should be present.
+        $this->assertContains('sagepaysuite_server_success', $converted['generic']);
+        $this->assertContains('sagepaysuite_server_notify', $converted['generic']);
+        $this->assertContains('sagepaysuite_server_cancel', $converted['generic']);
+        $this->assertContains('sagepaysuite_server_redirectToSuccess', $converted['generic']);
+        $this->assertContains('sagepaysuite_pi_callback3D', $converted['generic']);
+        $this->assertContains('sagepaysuite_pi_callback3DV2', $converted['generic']);
+        $this->assertContains('sagepaysuite_paypal_callback', $converted['generic']);
+        $this->assertContains('sagepaysuite_paypal_processing', $converted['generic']);
+        $this->assertContains('sagepaysuite_form_failure', $converted['generic']);
+        $this->assertContains('sagepaysuite_form_success', $converted['generic']);
     }
 
     private function convert($source)
