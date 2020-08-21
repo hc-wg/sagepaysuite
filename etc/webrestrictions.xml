@@ -1,5 +1,5 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_WebsiteRestriction:etc/webrestrictions.xsd">
-    <action path="sagepaysuite_server_successs" type="generic"/>
+    <action path="sagepaysuite_server_success" type="generic"/>
     <action path="sagepaysuite_server_notify" type="generic"/>
     <action path="sagepaysuite_server_cancel" type="generic"/>
     <action path="sagepaysuite_server_redirectToSuccess" type="generic"/>
