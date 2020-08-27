@@ -67,6 +67,9 @@ define(
             isActive: function () {
                 return true;
             },
+            isTokenServiceEnabled: function () {
+                return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenEnabled == true;
+            },
             sagepaySetForm: function () {
                 var self = this;
 

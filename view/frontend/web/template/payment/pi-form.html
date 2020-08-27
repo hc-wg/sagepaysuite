@@ -34,6 +34,16 @@
             <!-- ko template: 'Ebizmarts_SagePaySuite/payment/cc-form' --><!-- /ko -->
         <!-- /ko -->
 
+        <!-- ko if: (isTokenServiceEnabled()) -->
+        <div id="sagepay-pi-remembertoken-container">
+            <li>
+                <!-- ko text: $t('Do you wish to have your credit card details remembered for faster checkout next time?') -->
+                <!-- /ko -->
+                <input checked="checked" type="checkbox" name="payment[remembertoken]" value="1" id="remembertoken"/>
+            </li>
+        </div>
+        <!--/ko-->
+
         <!-- ko if: (dropInEnabled())-->
             <div id="sp-container"></div>
             <div id="submit-container">
