@@ -6,10 +6,16 @@
 
 namespace Ebizmarts\SagePaySuite\Model\ConfigProvider;
 
-use Magento\Payment\Model\CcGenericConfigProvider;
+use Ebizmarts\SagePaySuite\Helper\Data;
+use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\PI as PiModel;
+use Magento\Customer\Model\Session;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Payment\Helper\Data as PaymentHelper;
 use Magento\Payment\Model\CcConfig;
-use \Ebizmarts\SagePaySuite\Model\Config as Config;
+use Magento\Payment\Model\CcGenericConfigProvider;
+use Magento\Store\Model\StoreManagerInterface;
 
 class PI extends CcGenericConfigProvider
 {
@@ -20,51 +26,55 @@ class PI extends CcGenericConfigProvider
     private $methodCode = Config::METHOD_PI;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\PI
+     * @var PiModel
      */
     private $method;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Helper\Data
+     * @var Data
      */
     private $_suiteHelper;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
+     * @var Config
      */
     private $_config;
 
-    /** @var \Magento\Store\Model\StoreManagerInterface */
+    /** @var StoreManagerInterface */
     private $storeManager;
+
+    /** @var Session */
+    private $_customerSession;
 
     /**
      * PI constructor.
      * @param CcConfig $ccConfig
      * @param PaymentHelper $paymentHelper
-     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+     * @param Data $suiteHelper
      * @param Config $config
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param StoreManagerInterface $storeManager
+     * @param Session $_customerSession
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function __construct(
         CcConfig $ccConfig,
         PaymentHelper $paymentHelper,
-        \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Magento\Store\Model\StoreManagerInterface $storeManager
+        Data $suiteHelper,
+        Config $config,
+        StoreManagerInterface $storeManager,
+        Session $_customerSession
     ) {
-    
         parent::__construct($ccConfig, $paymentHelper);
-
-        $this->storeManager = $storeManager;
+        $this->_config          = $config;
+        $this->storeManager     = $storeManager;
+        $this->_suiteHelper     = $suiteHelper;
+        $this->_customerSession = $_customerSession;
 
         $store = $this->storeManager->getStore();
-
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
-        $this->_suiteHelper = $suiteHelper;
-
         $config->setMethodCode($this->methodCode);
         $config->setConfigurationScopeId($store->getId());
-        $this->_config = $config;
     }
 
     /**
@@ -76,14 +86,30 @@ class PI extends CcGenericConfigProvider
             return [];
         }
 
+        //get tokens if enabled and cutomer is logged in
+        $tokenEnabled = (bool)$this->_config->isTokenEnabled();
+        $tokens = null;
+        if ($tokenEnabled) {
+            if (!empty($this->_customerSession->getCustomerId())) {
+//                $tokens = $this->_tokenModel->getCustomerTokens(
+//                    $this->_customerSession->getCustomerId(),
+//                    $this->_config->getVendorname()
+//                );
+                $tokenEnabled = true;
+            } else {
+                $tokenEnabled = false;
+            }
+        }
+
         return [
             'payment' => [
                 'ebizmarts_sagepaysuitepi' => [
-                    'licensed' => $this->_suiteHelper->verify(),
-                    'mode'     => $this->_config->getMode(),
-                    'sca'      => $this->_config->shouldUse3dV2(),
-                    'dropin'   => $this->_config->setMethodCode($this->methodCode)->dropInEnabled(),
-                    'newWindow'=> $this->_config->get3dNewWindow()
+                    'licensed'     => $this->_suiteHelper->verify(),
+                    'mode'         => $this->_config->getMode(),
+                    'sca'          => $this->_config->shouldUse3dV2(),
+                    'dropin'       => $this->_config->setMethodCode($this->methodCode)->dropInEnabled(),
+                    'newWindow'    => $this->_config->get3dNewWindow(),
+                    'tokenEnabled' => $tokenEnabled
                 ]
             ]
         ];
