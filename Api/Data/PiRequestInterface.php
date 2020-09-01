@@ -9,6 +9,7 @@ interface PiRequestInterface
     const CARD_EXP_MONTH = 'card_exp_month';
     const CARD_EXP_YEAR  = 'card_exp_year';
     const CARD_TYPE      = 'card_type';
+    const SAVE_TOKEN     = 'save_token';
 
     /**
      * @return string
@@ -75,4 +76,15 @@ interface PiRequestInterface
      * @return void
      */
     public function setCcType($cardType);
+
+    /**
+     * @return bool
+     */
+    public function getSaveToken();
+
+    /**
+     * @param bool $saveToken
+     * @return void
+     */
+    public function setSaveToken($saveToken);
 }
