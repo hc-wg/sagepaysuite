@@ -468,7 +468,8 @@ define(
                     "cc_type": self.creditCardType,
                     "cc_exp_month": self.creditCardExpMonth,
                     "cc_exp_year": self.creditCardExpYear,
-                    "cc_last_four": self.creditCardLast4
+                    "cc_last_four": self.creditCardLast4,
+                    "save_token": self.saveToken()
                 };
 
                 $.extend(sagePayRequestData, self.scaParams());
@@ -671,6 +672,15 @@ define(
                 if (null !== span) {
                     span.style.display = "none";
                 }
+            },
+            getRememberToken: function () {
+                return (document.getElementById('piremembertoken') &&
+                    document.getElementById('piremembertoken').checked == true);
+            },
+            saveToken: function () {
+                var self = this;
+
+                return (self.isTokenServiceEnabled() && self.getRememberToken());
             }
         });
     }
