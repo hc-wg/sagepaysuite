@@ -6,15 +6,17 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Helper\Request;
+
 class PiRequest
 {
     /** @var \Magento\Quote\Model\Quote */
     private $cart;
 
-    /** @var  \Ebizmarts\SagePaySuite\Helper\Request */
+    /** @var  Request */
     private $requestHelper;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\Config */
+    /** @var Config */
     private $sagepayConfig;
 
     /** @var string The merchant session key used to generate the cardIdentifier. */
@@ -33,10 +35,9 @@ class PiRequest
     private $requestInfo;
 
     public function __construct(
-        \Ebizmarts\SagePaySuite\Helper\Request $requestHelper,
-        \Ebizmarts\SagePaySuite\Model\Config $sagepayConfig
+        Request $requestHelper,
+        Config $sagepayConfig
     ) {
-    
         $this->requestHelper = $requestHelper;
         $this->sagepayConfig = $sagepayConfig;
     }
@@ -55,7 +56,7 @@ class PiRequest
                 'card'        => [
                     'merchantSessionKey' => $this->getMerchantSessionKey(),
                     'cardIdentifier'     => $this->getCardIdentifier(),
-                    'save'               => $this->getIsTokenEnabled()
+                    'save'               => $this->getSaveToken()
                 ]
             ],
             'vendorTxCode'      => $this->getVendorTxCode(),
@@ -116,8 +117,6 @@ class PiRequest
                 }
             }
         }
-
-
 
         //populate payment amount information
         $data = array_merge($data, $this->requestHelper->populatePaymentAmountAndCurrency($this->getCart(), true));
@@ -242,8 +241,8 @@ class PiRequest
     /**
      * @return bool
      */
-    private function getIsTokenEnabled()
+    public function getSaveToken()
     {
-        return (bool)$this->sagepayConfig->isTokenEnabled();
+        return $this->getRequest()->getSaveToken();
     }
 }
