@@ -53,6 +53,7 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
         $data->setCcExpYear($requestData->getCcExpYear());
         $data->setCcLastFour($requestData->getCcLastFour());
         $data->setCcType($requestData->getCcType());
+        $data->setSaveToken($requestData->getSaveToken());
 
         $data->setJavascriptEnabled($requestData->getJavascriptEnabled());
         $data->setLanguage($requestData->getLanguage());
