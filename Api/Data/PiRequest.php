@@ -274,4 +274,21 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
     {
         $this->setData(self::TIMEZONE, $timezone);
     }
+
+    /**
+     * @return bool
+     */
+    public function getSaveToken(): bool
+    {
+        return $this->_get(self::SAVE_TOKEN);
+    }
+
+    /**
+     * @param bool $saveToken
+     * @return void
+     */
+    public function setSaveToken($saveToken): void
+    {
+        $this->setData(self::SAVE_TOKEN, $saveToken);
+    }
 }
