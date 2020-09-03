@@ -9,7 +9,7 @@
     <system>
         <section id="payment">
             <group id="sagepaysuite" translate="label" type="text" sortOrder="500" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Opaya (formerly Sage Pay)</label>
+                <label>Opayo (formerly Sage Pay)</label>
                 <group id="version" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <frontend_model>Ebizmarts\SagePaySuite\Block\Adminhtml\System\Config\Fieldset\Version</frontend_model>
                 </group>
