@@ -24,7 +24,7 @@ class TransactionAmountPost
      */
     public function getCommand($condition) : TransactionAmountPostCommandInterface
     {
-        if (property_exists($this->commands, $condition) === false) {
+        if (isset($this->commands[$condition]) === false) {
             return $this->commands['DEFAULT'];
         }
 
