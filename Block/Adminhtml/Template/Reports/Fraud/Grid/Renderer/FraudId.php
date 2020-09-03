@@ -39,6 +39,6 @@ class FraudId extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
     public function render(\Magento\Framework\DataObject $row)
     {
         $additionalInfo = $this->information->getUnserializedData($row->getData("additional_information"));
-        return array_key_exists("fraudid", $additionalInfo) ? $additionalInfo["fraudid"] : "";
+        return isset($additionalInfo["fraudid"]) ? $additionalInfo["fraudid"] : "";
     }
 }
