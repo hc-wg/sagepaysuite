@@ -9,6 +9,7 @@ namespace Ebizmarts\SagePaySuite\Model\ConfigProvider;
 use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\PI as PiModel;
+use Ebizmarts\SagePaySuite\Model\Token\VaultDetailsHandler;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -46,6 +47,9 @@ class PI extends CcGenericConfigProvider
     /** @var Session */
     private $_customerSession;
 
+    /** @var VaultDetailsHandler */
+    private $_vaultDetailsHandler;
+
     /**
      * PI constructor.
      * @param CcConfig $ccConfig
@@ -63,13 +67,15 @@ class PI extends CcGenericConfigProvider
         Data $suiteHelper,
         Config $config,
         StoreManagerInterface $storeManager,
-        Session $_customerSession
+        Session $_customerSession,
+        VaultDetailsHandler $_vaultDetailsHandler
     ) {
         parent::__construct($ccConfig, $paymentHelper);
-        $this->_config          = $config;
-        $this->storeManager     = $storeManager;
-        $this->_suiteHelper     = $suiteHelper;
-        $this->_customerSession = $_customerSession;
+        $this->_config              = $config;
+        $this->storeManager         = $storeManager;
+        $this->_suiteHelper         = $suiteHelper;
+        $this->_customerSession     = $_customerSession;
+        $this->_vaultDetailsHandler = $_vaultDetailsHandler;
 
         $store = $this->storeManager->getStore();
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
@@ -88,13 +94,12 @@ class PI extends CcGenericConfigProvider
 
         //get tokens if enabled and cutomer is logged in
         $tokenEnabled = (bool)$this->_config->isTokenEnabled();
-        $tokens = null;
+        $tokenCount = null;
         if ($tokenEnabled) {
             if (!empty($this->_customerSession->getCustomerId())) {
-//                $tokens = $this->_tokenModel->getCustomerTokens(
-//                    $this->_customerSession->getCustomerId(),
-//                    $this->_config->getVendorname()
-//                );
+                $tokenCount = $this->_vaultDetailsHandler->getTokensFromCustomersToShowOnGrid(
+                    $this->_customerSession->getCustomerId()
+                );
                 $tokenEnabled = true;
             } else {
                 $tokenEnabled = false;
@@ -109,7 +114,8 @@ class PI extends CcGenericConfigProvider
                     'sca'          => $this->_config->shouldUse3dV2(),
                     'dropin'       => $this->_config->setMethodCode($this->methodCode)->dropInEnabled(),
                     'newWindow'    => $this->_config->get3dNewWindow(),
-                    'tokenEnabled' => $tokenEnabled
+                    'tokenEnabled' => $tokenEnabled,
+                    'tokenCount'   => $tokenCount
                 ]
             ]
         ];
