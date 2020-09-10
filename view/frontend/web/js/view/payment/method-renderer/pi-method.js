@@ -44,7 +44,10 @@ define(
                 creditCardLast4: '',
                 merchantSessionKey: '',
                 cardIdentifier: '',
-                dropInInstance: null
+                dropInInstance: null,
+                save_token: false,
+                use_token: true,
+                used_token_slots: 0
             },
             setPlaceOrderHandler: function (handler) {
                 this.placeOrderHandler = handler;
@@ -313,7 +316,9 @@ define(
                 }
 
                 if (self.dropInEnabled() && quote.billingAddress() != null) {
-                    self.preparePayment();
+                    if (!this.use_token) {
+                        self.preparePayment();
+                    }
                 }
             },
             tokenisationAuthenticationFailed: function (tokenisationResult) {
@@ -681,7 +686,51 @@ define(
                 var self = this;
 
                 return (self.isTokenServiceEnabled() && self.getRememberToken());
-            }
+            },
+            getCustomerTokenCount: function () {
+                var sagePayTokens = window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount;
+                if (sagePayTokens.length > 0) {
+                    this.useSavedTokens();
+                }
+                return sagePayTokens;
+            },
+            useSavedTokens: function () {
+                this.use_token = true;
+                this.destroyInstanceSagePay();
+                document.getElementById('piremembertoken').checked = 0;
+                $('#sagepay-pi-remembertoken-container').hide();
+
+                $('#' + this.getCode() + '-tokens .token-list').show();
+                $('#' + this.getCode() + '-tokens .add-new-card-link').show();
+                $('#' + this.getCode() + '-tokens .use-saved-card-link').hide();
+                $('#' + this.getCode() + '-tokens .using-new-card-message').hide();
+            },
+            customerHasTokens: function () {
+                this.save_token = false;
+                this.use_token = false;
+
+                if (this.isTokenServiceEnabled()) {
+                    this.save_token = true;
+                    var customerTokens = this.getCustomerTokenCount();
+
+                    if (customerTokens && customerTokens.length > 0) {
+                        this.used_token_slots = customerTokens.length;
+                        //this.checkMaxTokensPerCustomer();
+                        this.use_token = true;
+                    }
+                }
+
+                return this.use_token;
+            },
+            addNewCard: function () {
+                this.use_token = false;
+                this.loadDropInForm();
+                document.getElementById('piremembertoken').checked = 1;
+                $('#' + this.getCode() + '-tokens .token-list').hide();
+                $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
+                $('#' + this.getCode() + '-tokens .using-new-card-message').show();
+                $('#' + this.getCode() + '-tokens .use-saved-card-link').show();
+            },
         });
     }
 );

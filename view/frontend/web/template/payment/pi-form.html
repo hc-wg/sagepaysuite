@@ -34,6 +34,30 @@
             <!-- ko template: 'Ebizmarts_SagePaySuite/payment/cc-form' --><!-- /ko -->
         <!-- /ko -->
 
+        <!-- ko if: (customerHasTokens())-->
+        <div id="sagepaysuitepi-tokens" class="sagepaysuite-tokens">
+            <div class="token-list">
+                <div class="message warning message-max-tokens" style="display: none;"><!-- ko text: $t('You are currently using all your credit card token slots.') --><!-- /ko --></div>
+                <!-- ko foreach: {data: getCustomerTokenCount()} -->
+                <div data-bind="attr: { 'id': $parent.getCode() + '-tokenrow-' + id }" class="token-row">
+                    <input type="radio"
+                           data-bind="attr: { 'id': $parent.getCode() + '-token-' + id, 'name': $parent.getCode() + '-token' }">
+                    <label data-bind="attr: { 'for': $parent.getCode() + '-token-' + id }">
+                        <p data-bind="html: '**********' + cc_last_4"></p>
+                        <img data-bind="attr: {
+                        'src': $parent.getIcons(cc_type) }">
+                        <a class="delete-token-link" href="#"
+                           data-bind="click: function () { $parent.deleteToken(id); return false; }"><!-- ko text: $t('delete') --><!-- /ko --></a>
+                    </label>
+                </div>
+                <!--/ko-->
+            </div>
+            <a class="add-new-card-link" href="#" data-bind="click: addNewCard"><!-- ko text: $t('Add new card') --><!-- /ko --></a>
+            <p class="using-new-card-message"><!-- ko text: $t('You will be using a new credit card.') --><!-- /ko --></p>
+            <a class="use-saved-card-link" href="#" data-bind="click: useSavedTokens"><!-- ko text: $t('Use a saved card') --><!-- /ko --></a>
+        </div>
+        <!--/ko-->
+
         <!-- ko if: (isTokenServiceEnabled()) -->
         <div id="sagepay-pi-remembertoken-container">
             <li>
