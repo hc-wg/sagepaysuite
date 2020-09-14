@@ -26,7 +26,7 @@ class SagePayCardType
     {
         $magentoCardType = $cardType;
 
-        if (property_exists($this->ccTypesMap, $cardType)) {
+        if (isset($this->ccTypesMap[$cardType])) {
             $magentoCardType = $this->ccTypesMap[$cardType];
         }
 
