@@ -45,7 +45,7 @@ class Failure extends \Magento\Backend\App\AbstractAction
         try {
             //decode response
             $response = $this->formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
-            if (!array_key_exists("Status", $response) || !array_key_exists("StatusDetail", $response)) {
+            if (!isset($response["Status"]) || !isset($response["StatusDetail"])) {
                 throw new \Magento\Framework\Exception\LocalizedException('Invalid response from Opayo');
             }
 
