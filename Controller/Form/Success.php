@@ -123,7 +123,7 @@ class Success extends Action
             $crypt = $request->getParam("crypt");
             $response = $this->formModel->decodeSagePayResponse($crypt);
 
-            if (!array_key_exists("VPSTxId", $response)) {
+            if (!isset($response["VPSTxId"])) {
                 throw new LocalizedException(__('Invalid response from Opayo.'));
             }
 
@@ -149,7 +149,7 @@ class Success extends Action
                 $payment->setCcType($response['CardType']);
                 $payment->setCcLast4($response['Last4Digits']);
 
-                if (array_key_exists("ExpiryDate", $response)) {
+                if (isset($response["ExpiryDate"])) {
                     $payment->setCcExpMonth(substr($response["ExpiryDate"], 0, 2));
                     $payment->setCcExpYear(substr($response["ExpiryDate"], 2));
                 }
