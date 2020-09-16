@@ -147,13 +147,13 @@ class Reporting
         $validResponse = false;
 
         if (!empty($response)) {
-            if (is_object($response) && !array_key_exists("errorcode", $response) || $response->errorcode == '0000') {
+            if (is_object($response) && !property_exists($response, "errorcode") || $response->errorcode == '0000') {
                 //this is a successfull response
                 return $response;
             } else { //there was an error
-                if (is_object($response) && array_key_exists("errorcode", $response)) {
+                if (is_object($response) && property_exists($response, "errorcode")) {
                     $exceptionCode = $response->errorcode;
-                    if (array_key_exists("error", $response)) {
+                    if (property_exists($response, "error")) {
                         $exceptionPhrase = $response->error;
                         $validResponse = true;
                     }

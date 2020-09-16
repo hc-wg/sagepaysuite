@@ -67,8 +67,8 @@ class Post
 
         if (!empty($response) &&
             $response["status"] == 200 &&
-            array_key_exists("data", $response) &&
-            array_key_exists("Status", $response["data"])
+            isset($response["data"]) &&
+            isset($response["data"]["Status"])
         ) {
             $expectedStatusCnt = count($expectedStatus);
             //check against all possible success response statuses
@@ -87,8 +87,8 @@ class Post
             $exceptionCode = 0;
 
             if (!empty($response) &&
-                array_key_exists("data", $response) &&
-                array_key_exists("StatusDetail", $response["data"])
+                isset($response["data"]) &&
+                isset($response["data"]["StatusDetail"])
             ) {
                 $detail = explode(":", $response["data"]["StatusDetail"]);
 

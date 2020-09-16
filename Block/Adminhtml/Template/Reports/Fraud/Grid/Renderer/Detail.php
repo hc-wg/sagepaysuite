@@ -28,6 +28,6 @@ class Detail extends Text
             $additionalInfo = unserialize($additionalInfo); //@codingStandardsIgnoreLine
         }
 
-        return array_key_exists("fraudcodedetail", $additionalInfo) ? $additionalInfo["fraudcodedetail"] : "";
+        return isset($additionalInfo["fraudcodedetail"]) ? $additionalInfo["fraudcodedetail"] : "";
     }
 }

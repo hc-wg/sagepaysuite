@@ -543,7 +543,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         if ($data['format'] == \Ebizmarts\SagePaySuite\Model\Config::BASKETFORMAT_XML) {
             $xmlDesc = "<description>{$data['name']}</description>";
-            if (array_key_exists('expected_name', $data)) {
+            if (isset($data['expected_name'])) {
                 $xmlDesc = "<description>{$data['expected_name']}</description>";
             }
 

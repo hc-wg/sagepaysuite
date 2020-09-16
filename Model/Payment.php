@@ -67,10 +67,10 @@ class Payment
                     $result = $this->sharedApi->authorizeTransaction($transactionId, $amount, $order);
                 }
 
-                if (is_array($result) && array_key_exists('data', $result)) {
+                if (is_array($result) && isset($result['data'])) {
                     $this->addAdditionalInformationToTransaction($payment, $result);
 
-                    if (array_key_exists('VPSTxId', $result['data'])) {
+                    if (isset($result['data']['VPSTxId'])) {
                         $payment->setTransactionId($this->suiteHelper->removeCurlyBraces($result['data']['VPSTxId']));
                     }
                     $payment->setParentTransactionId($payment->getParentTransactionId());
@@ -173,7 +173,7 @@ class Payment
      */
     private function addAdditionalInformationToTransaction(InfoInterface $payment, $result)
     {
-        if (is_array($result) && array_key_exists('data', $result)) {
+        if (is_array($result) && isset($result['data'])) {
             foreach ($result['data'] as $name => $value) {
                 $payment->setTransactionAdditionalInfo($name, $value);
             }
