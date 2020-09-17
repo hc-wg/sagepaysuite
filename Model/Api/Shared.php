@@ -279,13 +279,13 @@ class Shared implements PaymentOperations
         $exceptionCode = 0;
         $validResponse = false;
 
-        if (!empty($response) && array_key_exists("data", $response)) {
-            if (array_key_exists("Status", $response["data"]) && $response["data"]["Status"] == 'OK') {
+        if (!empty($response) && isset($response["data"])) {
+            if (isset($response["data"]["Status"]) && $response["data"]["Status"] == 'OK') {
                 //this is a successfull response
                 return $response;
             } else {
                 //there was an error
-                if (array_key_exists("StatusDetail", $response["data"])) {
+                if (isset($response["data"]["StatusDetail"])) {
                     $detail = explode(":", $response["data"]["StatusDetail"]);
                     $exceptionCode = trim($detail[0]);
                     $exceptionPhrase = trim($detail[1]);
