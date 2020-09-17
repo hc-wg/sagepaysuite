@@ -154,31 +154,31 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $fraudResponseMock->setErrorCode('0000');
 
         if ($data['payment_mode'] == \Ebizmarts\SagePaySuite\Model\Config::MODE_LIVE) {
-            if (array_key_exists('fraudid', $data['expects'])) {
+            if (isset($data['expects']['fraudid'])) {
                 $fraudResponseMock->setThirdmanId($data['expects']['fraudid']);
             }
-            if (array_key_exists('fraudid', $data['expects'])) {
+            if (isset($data['expects']['fraudid'])) {
                 $fraudResponseMock->setFraudId($data['expects']['fraudid']);
             }
-            if (array_key_exists('fraudprovidername', $data['expects'])) {
+            if (isset($data['expects']['fraudprovidername'])) {
                 $fraudResponseMock->setFraudProviderName($data['expects']['fraudprovidername']);
             }
-            if (array_key_exists('fraudscreenrecommendation', $data['expects'])) {
+            if (isset($data['expects']['fraudscreenrecommendation'])) {
                 $fraudResponseMock->setThirdmanAction($data['expects']['fraudscreenrecommendation']);
             }
-            if (array_key_exists('fraudscreenrecommendation', $data)) {
+            if (isset($data['fraudscreenrecommendation'])) {
                 $fraudResponseMock->setFraudScreenRecommendation($data['fraudscreenrecommendation']);
             }
-            if (array_key_exists('fraudcode', $data['expects'])) {
+            if (isset($data['expects']['fraudcode'])) {
                 $fraudResponseMock->setThirdmanScore($data['expects']['fraudcode']);
             }
-            if (array_key_exists('fraudcode', $data['expects'])) {
+            if (isset($data['expects']['fraudcode'])) {
                 $fraudResponseMock->setFraudCode($data['expects']['fraudcode']);
             }
-            if (array_key_exists('fraudcodedetail', $data['expects'])) {
+            if (isset($data['expects']['fraudcodedetail'])) {
                 $fraudResponseMock->setFraudCodeDetail($data['expects']['fraudcodedetail']);
             }
-            if (array_key_exists('fraudrules', $data['expects']) && !empty($data['expects']['fraudrules'])) {
+            if (isset($data['expects']['fraudrules']) && !empty($data['expects']['fraudrules'])) {
                 $fraudScreenRuleMock->method('getScore')->willReturn(34);
                 $fraudScreenRuleMock->method('getDescription')->willReturn('no phone ok');
                 $fraudScreenRuleMock->method('__toArray')->willReturn([

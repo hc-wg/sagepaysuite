@@ -127,7 +127,7 @@ class Request extends AbstractHelper
      */
     public function unsetBasketXMLIfAmountsDontMatch(array $data)
     {
-        if (array_key_exists('BasketXML', $data) && array_key_exists('Amount', $data)) {
+        if (isset($data['BasketXML']) && isset($data['Amount'])) {
             $basketTotal = $this->getBasketXmlTotalAmount($data['BasketXML']);
 
             if (!$this->floatsEqual($data['Amount'], $basketTotal)) {
