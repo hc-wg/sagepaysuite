@@ -316,8 +316,12 @@ class PIRest
      */
     private function validateThreeDSubmit(\stdClass $resultData)
     {
-        if (!property_exists($resultData, 'status')) {
-            throw new ApiException(__('Invalid 3D secure response.'));
+        if (!isset($resultData->status)) {
+            if (empty($resultData)) {
+                $resultData->status = "Operation not allowed";
+            } else {
+                throw new ApiException(__('Invalid 3D secure response.'));
+            }
         }
     }
 
@@ -327,6 +331,10 @@ class PIRest
      */
     private function threeDSecureSubmitSetResultStatus(\stdClass $resultData)
     {
+        $rest = $this->httpRestFactory->create();
+        $rest->getLogger()->sageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST, 'threeDSecureSubmitSetResultStatus', [__METHOD__, __LINE__]);
+        $rest->getLogger()->sageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST, json_encode($resultData), [__METHOD__, __LINE__]);
+
         /** @var PiTransactionResultThreeD $response */
         $response = $this->threedStatusResultFactory->create();
         $response->setStatus($resultData->status);
@@ -432,6 +440,15 @@ class PIRest
                 $errors = $errors->errors[0];
             }
 
+            if ($this->_isOperationNotAllowed($errors)) {
+                $rest = $this->httpRestFactory->create();
+                $rest->getLogger()->sageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST, 'Operation not allowed detected', [__METHOD__, __LINE__]);
+                $rest->getLogger()->sageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST, json_encode($errors), [__METHOD__, __LINE__]);
+
+                $errors->status = 'Operation not allowed';
+                return $errors;
+            }
+
             if (isset($errors->code)) {
                 $errorCode = $errors->code;
             }
@@ -450,6 +467,19 @@ class PIRest
 
             throw $exception;
         }
+    }
+
+    /**
+     * @param \stdClass $errors
+     * @return bool
+     */
+    private function _isOperationNotAllowed($errors)
+    {
+        $rest = $this->httpRestFactory->create();
+        $rest->getLogger()->sageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST, "Check if operation not allowed detected", [__METHOD__, __LINE__]);
+        $rest->getLogger()->sageLog(\Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST, json_encode($errors), [__METHOD__, __LINE__]);
+
+        return (isset($errors->code) && $errors->code == 1017);
     }
 
     /**
