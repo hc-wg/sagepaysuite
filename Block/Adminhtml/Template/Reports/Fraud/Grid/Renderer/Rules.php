@@ -50,7 +50,7 @@ class Rules extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
      */
     private function processAdditionalInformation(array $info)
     {
-        if (\array_key_exists('fraudrules', $info)) {
+        if (isset($info['fraudrules'])) {
             $rules = $info['fraudrules'];
 
             return $this->processRules($rules);
