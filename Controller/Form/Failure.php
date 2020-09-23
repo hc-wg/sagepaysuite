@@ -115,7 +115,7 @@ class Failure extends Action
             //log response
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
 
-            if (!array_key_exists("Status", $response) || !array_key_exists("StatusDetail", $response)) {
+            if (!isset($response["Status"]) || !isset($response["StatusDetail"])) {
                 throw new LocalizedException(__('Invalid response from Opayo'));
             }
 
