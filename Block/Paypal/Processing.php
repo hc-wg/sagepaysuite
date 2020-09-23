@@ -34,17 +34,16 @@ class Processing extends \Magento\Framework\View\Element\Template
 
         //form POST
         $postData = $this->getData("paypal_post");
+
         if (!empty($postData) && is_object($postData) && $postData->Status) {
             $html .= '<p><img class="loader"
                 src="' . $this->getViewFileUrl('Ebizmarts_SagePaySuite::images/ajax-loader.gif') . '"
                 >Processing payment, please wait...</p></div>';
             $html .= '<form id="paypal_post_form" method="POST"
             action="' . $callbackUrl . '">';
-            $postData  = get_object_vars($postData);
-            $keys      = array_keys($postData);
-            $keysCount = count($keys);
-            for ($i = 0; $i < $keysCount; $i++) {
-                $html .= '<input type="hidden" name="' . $keys[$i] . '" value="' . $postData[$keys[$i]] . '">';
+
+            foreach ($postData as $key => $value) {
+                $html .= '<input type="hidden" name="' . $key . '" value="' . $value . '">';
             }
 
             $html .= '<input type="hidden" name="quoteid" value="' . $this->getRequest()->getParam('quoteid') . '">';
