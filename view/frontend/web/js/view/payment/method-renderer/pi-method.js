@@ -372,23 +372,8 @@ define(
                         }
 
                         if (self.use_token) {
-                            var sagePayToken = "";
                             var selectedToken = self.getSelectedToken();
-                            var url = urlBuilder.createUrl('/sagepay/token/:tokenId/:customerId', {
-                                tokenId: selectedToken.id,
-                                customerId: selectedToken.customer_id
-                            });
-                            $.ajax({
-                                url: '/' + url,
-                                data: {},
-                                type: 'GET',
-                                dataType: 'json',
-                                async: false,
-                                showLoader: false
-                            }).done(
-                                function (data) {
-                                    sagePayToken = data.response;
-                            });
+                            var sagePayToken = self.getSagePayToken(selectedToken);
 
                             self.dropInInstance = sagepayCheckout({
                                 merchantSessionKey: merchant_session_key,
@@ -814,8 +799,6 @@ define(
                 // Revisar si esta bien que se cheque aca o ver de que no se
                 // ejecute el checked del boton
                 if (this.isRadioChecked()) {
-                    //var token = self.getSagePayToken();
-                    //return token;
                     self.use_token = true;
                     self.loadDropInTokenForm();
                 }
@@ -840,33 +823,26 @@ define(
                 }
                 return false;
             },
-            // getSagePayToken: function () {
-            //     var self = this;
-            //
-            //     var selectedToken = self.getSelectedToken();
-            //
-            //     var token =
-            //         storage.get(
-            //             urlBuilder.createUrl('/sagepay/token/:tokenId/:customerId', {
-            //                 tokenId: selectedToken.id,
-            //                 customerId: selectedToken.customer_id
-            //             })
-            //         ).response;
-            //     return token;
-            //     // ).then(
-            //     //     function (response) {
-            //     //         //if (response.success) {
-            //     //             return response.response;
-            //     //         //}
-            //     //     }
-            //     //);
-            //     // .fail(
-            //     //     function (response) {
-            //     //         return "";
-            //     //         //self.showPaymentError("Unable to get Opayo token.");
-            //     //     }
-            //     // );
-            // },
+            getSagePayToken: function (token) {
+                var sagePayToken = "";
+                var url = urlBuilder.createUrl('/sagepay/token/:tokenId/:customerId', {
+                    tokenId: token.id,
+                    customerId: token.customer_id
+                });
+
+                $.ajax({
+                    url: '/' + url,
+                    data: {},
+                    type: 'GET',
+                    dataType: 'json',
+                    async: false,
+                    showLoader: false
+                }).done(function (data) {
+                    sagePayToken = data.response;
+                });
+
+                return sagePayToken;
+            },
             loadDropInTokenForm: function () {
                 var self = this;
 
