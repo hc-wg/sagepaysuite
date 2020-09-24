@@ -67,4 +67,11 @@
             <resource ref="anonymous" />
         </resources>
     </route>
+
+    <route url="/V1/sagepay/token/:tokenId/:customerId" method="GET">
+        <service class="Ebizmarts\SagePaySuite\Model\Token\TokenGetter" method="getSagePayToken"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
 </routes>

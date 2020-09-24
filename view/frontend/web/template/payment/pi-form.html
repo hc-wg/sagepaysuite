@@ -41,7 +41,10 @@
                 <!-- ko foreach: {data: getCustomerTokenCount()} -->
                 <div data-bind="attr: { 'id': $parent.getCode() + '-tokenrow-' + id }" class="token-row">
                     <input type="radio"
-                           data-bind="attr: { 'id': $parent.getCode() + '-token-' + id, 'name': $parent.getCode() + '-token' }">
+                           data-bind="
+                            checked: $parent.selectToken(),
+                            attr: { 'id': $parent.getCode() + '-token-' + id, 'name': $parent.getCode() + '-token' }
+                    ">
                     <label data-bind="attr: { 'for': $parent.getCode() + '-token-' + id }">
                         <p data-bind="html: '**********' + cc_last_4"></p>
                         <img data-bind="attr: {

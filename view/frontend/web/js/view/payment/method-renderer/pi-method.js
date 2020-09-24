@@ -371,32 +371,80 @@ define(
                             self.dropInInstance = null;
                         }
 
-                        self.dropInInstance = sagepayCheckout({
-                            merchantSessionKey: merchant_session_key,
-                            onTokenise: function (tokenisationResult) {
-                                if (tokenisationResult.success) {
-                                    self.cardIdentifier = tokenisationResult.cardIdentifier;
-                                    self.creditCardType = "";
-                                    self.creditCardExpYear = 0;
-                                    self.creditCardExpMonth = 0;
-                                    self.creditCardLast4 = 0;
-                                    try {
-                                        self.placeTransaction();
-                                    } catch (err) {
-                                        console.log(err);
-                                        self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
-                                    }
-                                } else {
-                                    //Check if it is "Authentication failed"
-                                    if (self.tokenisationAuthenticationFailed(tokenisationResult)) {
-                                        self.destroyInstanceSagePay();
-                                        self.resetPaymentErrors();
+                        if (self.use_token) {
+                            var sagePayToken = "";
+                            var selectedToken = self.getSelectedToken();
+                            var url = urlBuilder.createUrl('/sagepay/token/:tokenId/:customerId', {
+                                tokenId: selectedToken.id,
+                                customerId: selectedToken.customer_id
+                            });
+                            $.ajax({
+                                url: '/' + url,
+                                data: {},
+                                type: 'GET',
+                                dataType: 'json',
+                                async: false,
+                                showLoader: false
+                            }).done(
+                                function (data) {
+                                    sagePayToken = data.response;
+                            });
+
+                            self.dropInInstance = sagepayCheckout({
+                                merchantSessionKey: merchant_session_key,
+                                reusableCardIdentifier: sagePayToken,
+                                onTokenise: function (tokenisationResult) {
+                                    if (tokenisationResult.success) {
+                                        self.cardIdentifier = sagePayToken;
+                                        self.creditCardType = 0;
+                                        self.creditCardExpYear = 0;
+                                        self.creditCardExpMonth = 0;
+                                        self.creditCardLast4 = 0;
+                                        try {
+                                            self.placeTransaction();
+                                        } catch (err) {
+                                            console.log(err);
+                                            self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
+                                        }
                                     } else {
-                                        self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
+                                        //Check if it is "Authentication failed"
+                                        if (self.tokenisationAuthenticationFailed(tokenisationResult)) {
+                                            self.destroyInstanceSagePay();
+                                            self.resetPaymentErrors();
+                                        } else {
+                                            self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
+                        } else {
+                            self.dropInInstance = sagepayCheckout({
+                                merchantSessionKey: merchant_session_key,
+                                onTokenise: function (tokenisationResult) {
+                                    if (tokenisationResult.success) {
+                                        self.cardIdentifier = tokenisationResult.cardIdentifier;
+                                        self.creditCardType = "";
+                                        self.creditCardExpYear = 0;
+                                        self.creditCardExpMonth = 0;
+                                        self.creditCardLast4 = 0;
+                                        try {
+                                            self.placeTransaction();
+                                        } catch (err) {
+                                            console.log(err);
+                                            self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
+                                        }
+                                    } else {
+                                        //Check if it is "Authentication failed"
+                                        if (self.tokenisationAuthenticationFailed(tokenisationResult)) {
+                                            self.destroyInstanceSagePay();
+                                            self.resetPaymentErrors();
+                                        } else {
+                                            self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
+                                        }
+                                    }
+                                }
+                            });
+                        }
                         self.dropInInstance.form();
                         fullScreenLoader.stopLoader();
 
@@ -731,6 +779,103 @@ define(
                 $('#' + this.getCode() + '-tokens .using-new-card-message').show();
                 $('#' + this.getCode() + '-tokens .use-saved-card-link').show();
             },
+            getIcons: function (type) {
+                switch (type) {
+                    case 'VI':
+                    case 'DELTA':
+                    case 'UKE':
+                        return window.checkoutConfig.payment.ccform.icons["VI"].url;
+                        break;
+                    case 'MC':
+                    case 'MCDEBIT':
+                        return window.checkoutConfig.payment.ccform.icons["MC"].url;
+                        break;
+                    case 'MAESTRO':
+                        return window.checkoutConfig.payment.ccform.icons["MD"].url;
+                        break;
+                    case 'AMEX':
+                        return window.checkoutConfig.payment.ccform.icons["AE"].url;
+                        break;
+                    case 'DC':
+                        return window.checkoutConfig.payment.ccform.icons["DC"].url;
+                        break;
+                    case 'JCB':
+                        return window.checkoutConfig.payment.ccform.icons["JCB"].url;
+                        break;
+                    default:
+                        return "";
+                        break;
+                }
+            },
+            selectToken: function () {
+                var self = this;
+
+                // TO DO:
+                // Revisar si esta bien que se cheque aca o ver de que no se
+                // ejecute el checked del boton
+                if (this.isRadioChecked()) {
+                    //var token = self.getSagePayToken();
+                    //return token;
+                    self.use_token = true;
+                    self.loadDropInTokenForm();
+                }
+            },
+            isRadioChecked: function () {
+                var self = this;
+                var customerTokens = this.getCustomerTokenCount();
+                for (var i = 0; i < customerTokens.length; i++) {
+                    if ($('#' + self.getCode() + '-token-' + customerTokens[i].id).prop("checked") == true) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            getSelectedToken: function () {
+                var self = this;
+                var customerTokens = this.getCustomerTokenCount();
+                for (var i = 0; i < customerTokens.length; i++) {
+                    if ($('#' + self.getCode() + '-token-' + customerTokens[i].id).prop("checked") == true) {
+                        return customerTokens[i];
+                    }
+                }
+                return false;
+            },
+            // getSagePayToken: function () {
+            //     var self = this;
+            //
+            //     var selectedToken = self.getSelectedToken();
+            //
+            //     var token =
+            //         storage.get(
+            //             urlBuilder.createUrl('/sagepay/token/:tokenId/:customerId', {
+            //                 tokenId: selectedToken.id,
+            //                 customerId: selectedToken.customer_id
+            //             })
+            //         ).response;
+            //     return token;
+            //     // ).then(
+            //     //     function (response) {
+            //     //         //if (response.success) {
+            //     //             return response.response;
+            //     //         //}
+            //     //     }
+            //     //);
+            //     // .fail(
+            //     //     function (response) {
+            //     //         return "";
+            //     //         //self.showPaymentError("Unable to get Opayo token.");
+            //     //     }
+            //     // );
+            // },
+            loadDropInTokenForm: function () {
+                var self = this;
+
+                self.selectPaymentMethod();
+
+                if (self.dropInEnabled() && quote.billingAddress() != null && self.use_token) {
+                    self.preparePayment();
+                }
+            }
         });
     }
 );
