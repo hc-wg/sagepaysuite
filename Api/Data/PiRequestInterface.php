@@ -10,6 +10,7 @@ interface PiRequestInterface
     const CARD_EXP_YEAR  = 'card_exp_year';
     const CARD_TYPE      = 'card_type';
     const SAVE_TOKEN     = 'save_token';
+    const REUSABLE_TOKEN = 'reusable_token';
 
     /**
      * @return string
@@ -87,4 +88,15 @@ interface PiRequestInterface
      * @return void
      */
     public function setSaveToken($saveToken);
+
+    /**
+     * @return bool
+     */
+    public function getReusableToken();
+
+    /**
+     * @param bool $reusable
+     * @return void
+     */
+    public function setReusableToken($reusable);
 }
