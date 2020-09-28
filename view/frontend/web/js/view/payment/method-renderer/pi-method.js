@@ -507,7 +507,8 @@ define(
                     "cc_exp_month": self.creditCardExpMonth,
                     "cc_exp_year": self.creditCardExpYear,
                     "cc_last_four": self.creditCardLast4,
-                    "save_token": self.saveToken()
+                    "save_token": self.saveToken(),
+                    "reusable_token": self.reusableToken()
                 };
 
                 $.extend(sagePayRequestData, self.scaParams());
@@ -719,6 +720,11 @@ define(
                 var self = this;
 
                 return (self.isTokenServiceEnabled() && self.getRememberToken());
+            },
+            reusableToken: function () {
+                var self = this;
+
+                return (self.isTokenServiceEnabled() && this.use_token);
             },
             getCustomerTokenCount: function () {
                 var sagePayTokens = window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount;
