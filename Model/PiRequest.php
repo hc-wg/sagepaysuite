@@ -56,7 +56,8 @@ class PiRequest
                 'card'        => [
                     'merchantSessionKey' => $this->getMerchantSessionKey(),
                     'cardIdentifier'     => $this->getCardIdentifier(),
-                    'save'               => $this->getSaveToken()
+                    'save'               => $this->getSaveToken(),
+                    'reusable'           => $this->getReusableToken()
                 ]
             ],
             'vendorTxCode'      => $this->getVendorTxCode(),
@@ -244,5 +245,13 @@ class PiRequest
     public function getSaveToken()
     {
         return $this->getRequest()->getSaveToken();
+    }
+
+    /**
+     * @return bool
+     */
+    public function getReusableToken()
+    {
+        return $this->getRequest()->getReusableToken();
     }
 }
