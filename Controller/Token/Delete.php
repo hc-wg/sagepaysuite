@@ -6,16 +6,20 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Token;
 
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Token;
+use Ebizmarts\SagePaySuite\Model\Token\VaultDetailsHandler;
 use Magento\Customer\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\ResultFactory;
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Psr\Log\LoggerInterface;
 
 class Delete extends Action
 {
+    private $tokenId;
+
+    private $isCustomerArea;
 
     /**
      * Logging instance
@@ -33,8 +37,8 @@ class Delete extends Action
      */
     private $tokenModel;
 
-    private $tokenId;
-    private $isCustomerArea;
+    /** @var VaultDetailsHandler */
+    private $vaultDetailsHandler;
 
     /**
      * @var Session
@@ -54,15 +58,16 @@ class Delete extends Action
         Logger $suiteLogger,
         LoggerInterface $logger,
         Token $tokenModel,
-        Session $customerSession
+        Session $customerSession,
+        VaultDetailsHandler $vaultDetailsHandler
     ) {
-    
         parent::__construct($context);
-        $this->suiteLogger     = $suiteLogger;
-        $this->logger          = $logger;
-        $this->tokenModel      = $tokenModel;
-        $this->customerSession = $customerSession;
-        $this->isCustomerArea  = true;
+        $this->suiteLogger         = $suiteLogger;
+        $this->logger              = $logger;
+        $this->tokenModel          = $tokenModel;
+        $this->customerSession     = $customerSession;
+        $this->isCustomerArea      = true;
+        $this->vaultDetailsHandler = $vaultDetailsHandler;
     }
 
     /**
@@ -81,23 +86,17 @@ class Delete extends Action
                 throw new \Magento\Framework\Validator\Exception(__('Unable to delete token: Invalid token id.'));
             }
 
-            $token = $this->tokenModel->loadToken($this->tokenId);
-
-            //validate ownership
-            if ($token->isOwnedByCustomer($this->customerSession->getCustomerId())) {
-                //delete
-                $token->deleteToken();
+            if ($this->vaultDetailsHandler->removeTokenFromVault($this->tokenId, $this->customerSession->getCustomerId())) {
+                //prepare response
+                $responseContent = [
+                    'success' => true,
+                    'response' => true
+                ];
             } else {
                 throw new \Magento\Framework\Validator\Exception(
                     __('Unable to delete token: Token is not owned by you')
                 );
             }
-
-            //prepare response
-            $responseContent = [
-                'success' => true,
-                'response' => true
-            ];
         } catch (\Exception $e) {
             $this->logger->critical($e);
 
