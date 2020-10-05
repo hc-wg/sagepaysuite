@@ -370,7 +370,8 @@ define(
                             self.dropInInstance.destroy();
                             self.dropInInstance = null;
                         }
-
+                        // TO DO:
+                        // Check if sending reusable empty affects the normal iframe
                         if (self.use_token) {
                             var selectedToken = self.getSelectedToken();
                             var sagePayToken = self.getSagePayToken(selectedToken);
@@ -856,6 +857,49 @@ define(
 
                 if (self.dropInEnabled() && quote.billingAddress() != null && self.use_token) {
                     self.preparePayment();
+                }
+            },
+            deleteToken: function (id) {
+                var self = this;
+                if (confirm("Are you sure you wish to delete this saved credit card token?")) {
+                    var serviceUrl = url.build('sagepaysuite/token/delete');
+
+                    //send token delete post
+                    return storage.get(serviceUrl + "/token_id/" + id + "/checkout/1").done(
+                        function (response) {
+
+                            if (response.success && response.success == true) {
+                                //check warning message
+                                self.used_token_slots = self.used_token_slots - 1;
+                                //TO DO: agregar checkeo de cantidad de tokens por customer
+                                //self.checkMaxTokensPerCustomer();
+
+                                //hide token row
+                                $('#' + self.getCode() + '-token-' + id).prop("checked", false);
+                                $('#' + self.getCode() + '-tokenrow-' + id).hide();
+
+                                //delete from token list
+                                var tokens = this.getCustomerTokens();
+                                for (var i = 0; i < tokens.length; i++) {
+                                    if (id == tokens[i].id) {
+                                        tokens.splice(i, 1);
+                                    }
+                                }
+                                if (tokens.length == 0) {
+                                    $('#' + self.getCode() + '-tokens').hide();
+                                    self.use_token = false;
+                                }
+
+                                //TO DO: destroy dropIn instance if payment already selected.
+                            } else {
+                                self.showPaymentError(response.error_message);
+                            }
+                        }
+                    ).fail(
+                        function (response) {
+                            self.showPaymentError("Unable to delete credit card token.");
+                        }
+                    );
                 }
             }
         });

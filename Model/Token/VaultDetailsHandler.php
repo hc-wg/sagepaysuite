@@ -7,6 +7,7 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Vault\Api\Data\PaymentTokenFactoryInterface;
 use Magento\Vault\Api\PaymentTokenManagementInterface;
+use Magento\Vault\Api\PaymentTokenRepositoryInterface;
 
 class VaultDetailsHandler
 {
@@ -19,6 +20,9 @@ class VaultDetailsHandler
     /** @var PaymentTokenFactoryInterface */
     private $paymentTokenFactory;
 
+    /** @var PaymentTokenRepositoryInterface */
+    private $paymentTokenRepository;
+
     /** @var Json */
     private $jsonSerializer;
 
@@ -28,29 +32,34 @@ class VaultDetailsHandler
      * @param PaymentTokenManagementInterface $paymentTokenManagement
      * @param PaymentTokenFactoryInterface $paymentTokenFactory
      * @param Json $jsonSerializer
+     * @param PaymentTokenRepositoryInterface $paymentTokenRepository
      */
     public function __construct(
         Logger $suiteLogger,
         PaymentTokenManagementInterface $paymentTokenManagement,
         PaymentTokenFactoryInterface $paymentTokenFactory,
-        Json $jsonSerializer
+        Json $jsonSerializer,
+        PaymentTokenRepositoryInterface $paymentTokenRepository
     ) {
         $this->suiteLogger            = $suiteLogger;
         $this->paymentTokenManagement = $paymentTokenManagement;
         $this->paymentTokenFactory    = $paymentTokenFactory;
         $this->jsonSerializer         = $jsonSerializer;
+        $this->paymentTokenRepository = $paymentTokenRepository;
     }
 
     /**
      * @param Payment $payment
      * @param int $customerId
      * @param string $token
+     *
      */
     public function saveToken($payment, $customerId, $token)
     {
         if (!empty($customerId)) {
             $paymentToken = $this->createVaultPaymentToken($payment, $customerId, $token);
             if ($paymentToken !== null) {
+                //TO DO: investigate to replace tokenManagement with tokenRepository to save tokens
                 $this->paymentTokenManagement->saveTokenWithPaymentLink($paymentToken, $payment);
             }
         }
@@ -67,19 +76,64 @@ class VaultDetailsHandler
         $tokenList = $this->paymentTokenManagement->getListByCustomerId($customerId);
         $tokenListToShow = [];
         foreach ($tokenList as $token) {
-            $tokenDetails = $this->convertJsonToArray($token->getTokenDetails());
-            $data = [
-                'id' => $token->getEntityId(),
-                'customer_id' => $token->getCustomerId(),
-                'cc_last_4' => $tokenDetails['maskedCC'],
-                'cc_type' => $tokenDetails['type'],
-                'cc_exp_month' => substr($tokenDetails['expirationDate'], 0, 2),
-                'cc_exp_year' => substr($tokenDetails['expirationDate'], 3, 2)
-            ];
-            $tokenListToShow[] = $data;
+            if ($token->getIsActive() && $token->getIsVisible()) {
+                $tokenDetails = $this->convertJsonToArray($token->getTokenDetails());
+                $data = [
+                    'id' => $token->getEntityId(),
+                    'customer_id' => $token->getCustomerId(),
+                    'cc_last_4' => $tokenDetails['maskedCC'],
+                    'cc_type' => $tokenDetails['type'],
+                    'cc_exp_month' => substr($tokenDetails['expirationDate'], 0, 2),
+                    'cc_exp_year' => substr($tokenDetails['expirationDate'], 3, 2)
+                ];
+                $tokenListToShow[] = $data;
+            }
         }
 
         return $tokenListToShow;
+    }
+
+    /**
+     * @param int $tokenId
+     * @param int $customerId
+     * @return string
+     */
+    public function getSagePayToken($tokenId, $customerId)
+    {
+        //TO DO:
+        //Podria ser necesario encriptar el getaway token cuando se guarda y desencriptarlo al hacer el get
+        $sagePayToken = "";
+        $tokenList = $this->paymentTokenManagement->getListByCustomerId($customerId);
+        foreach ($tokenList as $token) {
+            if ($token->getEntityId() === $tokenId) {
+                $sagePayToken = $token->getGatewayToken();
+            }
+        }
+
+        return $sagePayToken;
+    }
+
+    /**
+     * @param $tokenId
+     * @return \Magento\Vault\Api\Data\PaymentTokenInterface
+     */
+    public function getTokenById($tokenId)
+    {
+        return $this->paymentTokenRepository->getById($tokenId);
+    }
+
+    /**
+     * @param int $tokenId
+     * @param int $customerId
+     * @return bool
+     */
+    public function removeTokenFromVault($tokenId, $customerId)
+    {
+        $token = $this->getTokenById($tokenId);
+        if ($token->getCustomerId() !== $customerId) {
+            return false;
+        }
+        return $this->paymentTokenRepository->delete($token);
     }
 
     /**
@@ -104,6 +158,8 @@ class VaultDetailsHandler
         $paymentToken->setCustomerId($customerId);
         $paymentToken->setPaymentMethodCode($payment->getMethod());
         $paymentToken->setPublicHash($this->generatePublicHash($token));
+        $paymentToken->setIsVisible(true);
+        $paymentToken->setIsActive(true);
 
         return $paymentToken;
     }
