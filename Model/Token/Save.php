@@ -113,6 +113,10 @@ class Save
         return $this->jsonSerializer->serialize($array);
     }
 
+    /**
+     * @param string $token
+     * @return string
+     */
     private function generatePublicHash($token)
     {
         return hash('md5', $token);
