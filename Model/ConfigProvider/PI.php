@@ -97,7 +97,7 @@ class PI extends CcGenericConfigProvider
         $tokenCount = null;
         if ($tokenEnabled) {
             if (!empty($this->_customerSession->getCustomerId())) {
-                $tokenCount = $this->_vaultDetailsHandler->getTokensFromCustomersToShowOnGrid(
+                $tokenCount = $this->_vaultDetailsHandler->getTokensFromCustomerToShowOnGrid(
                     $this->_customerSession->getCustomerId()
                 );
                 $tokenEnabled = true;

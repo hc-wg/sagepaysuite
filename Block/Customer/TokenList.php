@@ -55,7 +55,7 @@ class TokenList extends Template
         $this->_tokenModel          = $tokenModel;
         $this->_vaultDetailsHandler = $vaultDetailsHandler;
 
-        $this->setItems($this->_vaultDetailsHandler->getTokensFromCustomersToShowOnGrid(
+        $this->setItems($this->_vaultDetailsHandler->getTokensFromCustomerToShowOnGrid(
             $this->currentCustomer->getCustomerId()
         ));
 //        $this->setItems($this->_tokenModel->getCustomerTokens(
