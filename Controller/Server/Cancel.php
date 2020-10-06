@@ -99,13 +99,11 @@ class Cancel extends Action
 
         $this->recoverCart->setShouldCancelOrder(true)->execute();
 
-        $this->inactivateQuote($this->quote);
-
         $this
             ->getResponse()
             ->setBody(
                 '<script>window.top.location.href = "'
-                . $this->_url->getUrl('checkout/cart', [
+                . $this->_url->getUrl('checkout/', [
                     '_secure' => true,
                 ])
                 . '";</script>'
@@ -118,14 +116,5 @@ class Cancel extends Action
         if (!empty($message)) {
             $this->messageManager->addError($message);
         }
-    }
-
-    /**
-     * @param Quote $quote
-     */
-    private function inactivateQuote($quote)
-    {
-        $quote->setIsActive(0);
-        $quote->save();
     }
 }

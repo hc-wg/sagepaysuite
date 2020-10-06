@@ -41,6 +41,6 @@ class Detail extends Text
     public function render(DataObject $row)
     {
         $additionalInfo = $this->information->getUnserializedData($row->getData("additional_information"));
-        return array_key_exists("fraudcodedetail", $additionalInfo) ? $additionalInfo["fraudcodedetail"] : "";
+        return isset($additionalInfo["fraudcodedetail"]) ? $additionalInfo["fraudcodedetail"] : "";
     }
 }
