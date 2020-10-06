@@ -86,7 +86,7 @@ class Delete extends Action
                 throw new \Magento\Framework\Validator\Exception(__('Unable to delete token: Invalid token id.'));
             }
 
-            if ($this->vaultDetailsHandler->removeTokenFromVault($this->tokenId, $this->customerSession->getCustomerId())) {
+            if ($this->vaultDetailsHandler->deleteToken($this->tokenId, $this->customerSession->getCustomerId())) {
                 //prepare response
                 $responseContent = [
                     'success' => true,
