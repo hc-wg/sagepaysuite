@@ -69,7 +69,7 @@
     </route>
 
     <route url="/V1/sagepay/token/:tokenId/:customerId" method="GET">
-        <service class="Ebizmarts\SagePaySuite\Model\Token\Get" method="getSagePayToken"/>
+        <service class="Ebizmarts\SagePaySuite\Model\Token\Get" method="getSagePayTokenAsResultInterface"/>
         <resources>
             <resource ref="anonymous" />
         </resources>

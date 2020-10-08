@@ -101,21 +101,27 @@ class Get
 
     /**
      * @param string $tokenId
-     * @param string $customerId
+     * @return string
+     */
+    public function getSagePayToken($tokenId)
+    {
+        $token = $this->paymentTokenRepository->getById($tokenId);
+        return $token->getGatewayToken();
+    }
+
+    /**
+     * @param string $tokenId
      * @return ResultInterface
      */
-    public function getSagePayToken($tokenId, $customerId)
+    public function getSagePayTokenAsResultInterface($tokenId)
     {
-        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, 'flag token', [__METHOD__, __LINE__]);
-        $this->result->setSuccess(false);
-        $tokenList = $this->paymentTokenManagement->getListByCustomerId($customerId);
-        foreach ($tokenList as $token) {
-            if ($token->getEntityId() === $tokenId) {
-                $this->result->setSuccess(true);
-                $this->result->setResponse($token->getGatewayToken());
-            }
+        $token = $this->getSagePayToken($tokenId);
+        if (empty($token)) {
+            $this->result->setSuccess(false);
+        } else {
+            $this->result->setSuccess(true);
+            $this->result->setResponse($token);
         }
-        $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->result, [__METHOD__, __LINE__]);
 
         return $this->result;
     }
