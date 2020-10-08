@@ -3,6 +3,7 @@
 namespace Ebizmarts\SagePaySuite\Model\Token;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Plugin\DeleteTokenFromSagePay;
 use Magento\Sales\Model\Order\Payment;
 
 class VaultDetailsHandler
@@ -19,23 +20,29 @@ class VaultDetailsHandler
     /** @var Delete */
     private $tokenDelete;
 
+    /** @var DeleteTokenFromSagePay */
+    private $deleteTokenFromSagePay;
+
     /**
      * VaultDetailsHandler constructor.
      * @param Logger $suiteLogger
      * @param Save $tokenSave
      * @param Get $tokenGet
      * @param Delete $tokenDelete
+     * @param DeleteTokenFromSagePay $deleteTokenFromSagePay
      */
     public function __construct(
         Logger $suiteLogger,
         Save $tokenSave,
         Get $tokenGet,
-        Delete $tokenDelete
+        Delete $tokenDelete,
+        DeleteTokenFromSagePay $deleteTokenFromSagePay
     ) {
         $this->suiteLogger = $suiteLogger;
         $this->tokenSave   = $tokenSave;
         $this->tokenGet    = $tokenGet;
         $this->tokenDelete = $tokenDelete;
+        $this->deleteTokenFromSagePay = $deleteTokenFromSagePay;
     }
 
     /**
@@ -65,6 +72,8 @@ class VaultDetailsHandler
      */
     public function deleteToken($tokenId, $customerId)
     {
+        $token = $this->tokenGet->getSagePayToken($tokenId);
+        $this->deleteTokenFromSagePay->deleteFromSagePay($token);
         return $this->tokenDelete->removeTokenFromVault($tokenId, $customerId);
     }
 }
