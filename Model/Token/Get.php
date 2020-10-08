@@ -3,19 +3,16 @@
 namespace Ebizmarts\SagePaySuite\Model\Token;
 
 use Ebizmarts\SagePaySuite\Api\Data\ResultInterface;
+use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Vault\Api\Data\PaymentTokenFactoryInterface;
-use Magento\Vault\Api\PaymentTokenManagementInterface;
 use Magento\Vault\Api\PaymentTokenRepositoryInterface;
 
 class Get
 {
     /** @var Logger */
     private $suiteLogger;
-
-    /** @var PaymentTokenManagementInterface */
-    private $paymentTokenManagement;
 
     /** @var PaymentTokenFactoryInterface */
     private $paymentTokenFactory;
@@ -29,29 +26,32 @@ class Get
     /** @var PaymentTokenRepositoryInterface */
     private $paymentTokenRepository;
 
+    /** @var RepositoryQuery */
+    private $repositoryQuery;
+
     /**
      * VaultDetailsHandler constructor.
      * @param Logger $suiteLogger
-     * @param PaymentTokenManagementInterface $paymentTokenManagement
      * @param PaymentTokenFactoryInterface $paymentTokenFactory
      * @param Json $jsonSerializer
      * @param ResultInterface $result
      * @param PaymentTokenRepositoryInterface $paymentTokenRepository
+     * @param RepositoryQuery $repositoryQuery
      */
     public function __construct(
         Logger $suiteLogger,
-        PaymentTokenManagementInterface $paymentTokenManagement,
         PaymentTokenFactoryInterface $paymentTokenFactory,
         Json $jsonSerializer,
         ResultInterface $result,
-        PaymentTokenRepositoryInterface $paymentTokenRepository
+        PaymentTokenRepositoryInterface $paymentTokenRepository,
+        RepositoryQuery $repositoryQuery
     ) {
         $this->suiteLogger            = $suiteLogger;
-        $this->paymentTokenManagement = $paymentTokenManagement;
         $this->paymentTokenFactory    = $paymentTokenFactory;
         $this->jsonSerializer         = $jsonSerializer;
         $this->result                 = $result;
         $this->paymentTokenRepository = $paymentTokenRepository;
+        $this->repositoryQuery        = $repositoryQuery;
     }
 
     /**
@@ -63,11 +63,17 @@ class Get
         return $this->paymentTokenRepository->getById($tokenId);
     }
 
-//    TO DO: Implementar con paymentTokenRepository->getList
-//    public function getTokensFromCustomer($customerId)
-//    {
-//
-//    }
+    /**
+     * @param int $customerId
+     * @return \Magento\Vault\Api\Data\PaymentTokenSearchResultsInterface[]
+     */
+    public function getTokensFromCustomer($customerId)
+    {
+        $searchCriteria = $this->createSearchCriteria($customerId);
+        //Magento\Vault\Api\PaymentTokenRepositoryInterface::getList return Magento\Vault\Api\Data\PaymentTokenSearchResultsInterface[]
+        //instead of Magento\Vault\Api\Data\PaymentTokenSearchResultsInterface as says on the function doc
+        return $this->paymentTokenRepository->getList($searchCriteria);
+    }
 
     /**
      * @param int $customerId
@@ -75,13 +81,9 @@ class Get
      */
     public function getTokensFromCustomerToShowOnGrid($customerId)
     {
-        //getListByCustomerId says that return \Magento\Vault\Api\Data\PaymentTokenSearchResultsInterface[]
-        //but actually return \Magento\Vault\Api\Data\PaymentTokenInterface[]
-
-        // TO DO: Use paymentTokenRepository->getList instead of paymentTokenManagement.
-        $tokenList = $this->paymentTokenManagement->getListByCustomerId($customerId);
+        $tokenList = $this->getTokensFromCustomer($customerId);
         $tokenListToShow = [];
-        foreach ($tokenList as $token) {
+        foreach ($tokenList->getItems() as $token) {
             if ($token->getIsActive() && $token->getIsVisible()) {
                 $tokenDetails = $this->convertJsonToArray($token->getTokenDetails());
                 $data = [
@@ -133,5 +135,21 @@ class Get
     private function convertJsonToArray($string)
     {
         return $this->jsonSerializer->unserialize($string);
+    }
+
+    /**
+     * @param int $customerId
+     * @return \Magento\Framework\Api\SearchCriteria
+     */
+    private function createSearchCriteria($customerId)
+    {
+        $customerIdFilter = [
+            'field' => 'customer_id',
+            'conditionType' => 'eq',
+            'value' => $customerId
+        ];
+
+        $searchCriteria = $this->repositoryQuery->buildSearchCriteriaWithAND([$customerIdFilter]);
+        return $searchCriteria;
     }
 }
