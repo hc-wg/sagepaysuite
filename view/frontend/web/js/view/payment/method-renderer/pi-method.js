@@ -97,7 +97,7 @@ define(
                     } else {
                         if (self.checkFieldFilled(code, itemId)) {
                             $(element).parents('.field').removeClass('_error');
-                        } 
+                        }
 
                         if (self.checkFilledfFormFields(code)) {
                             $('button.checkout').removeAttr('disabled');
@@ -131,8 +131,8 @@ define(
                 var expirationYr = document.getElementById(code + '_expiration_yr').value;
                 var CID = document.getElementById(code + '_cc_cid').value;
 
-                if (cardHolder == '' 
-                    || ccNumber == '' 
+                if (cardHolder == ''
+                    || ccNumber == ''
                     || expiration == 'Month' || expiration == ''
                     || expirationYr == 'Year' || expirationYr == ''
                     || CID == '') {
@@ -148,12 +148,12 @@ define(
                 var expirationYrElement = document.getElementById(code + '_expiration_yr');
                 var CIDElement = document.getElementById(code + '_cc_cid');
 
-                if (cardHolderElement !== null 
-                    && ccNumberElement !== null 
-                    && expirationElement !== null 
-                    && expirationYrElement !== null 
+                if (cardHolderElement !== null
+                    && ccNumberElement !== null
+                    && expirationElement !== null
+                    && expirationYrElement !== null
                     && CIDElement !== null) {
-                        return true;
+                    return true;
                 }
 
                 return false;
@@ -357,6 +357,36 @@ define(
                 }
                 return allowedParam;
             },
+            afterTokenise: function (tokenisationResult) {
+                var self = this;
+                var cardIdentifier = "";
+                if (tokenisationResult.success) {
+                    if (self.use_token) {
+                        cardIdentifier = self.getSagePayToken(self.getSelectedToken());
+                    } else {
+                        cardIdentifier = tokenisationResult.cardIdentifier;
+                    }
+                    self.cardIdentifier = cardIdentifier;
+                    self.creditCardType = "";
+                    self.creditCardExpYear = 0;
+                    self.creditCardExpMonth = 0;
+                    self.creditCardLast4 = 0;
+                    try {
+                        self.placeTransaction();
+                    } catch (err) {
+                        console.log(err);
+                        self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
+                    }
+                } else {
+                    //Check if it is "Authentication failed"
+                    if (self.tokenisationAuthenticationFailed(tokenisationResult)) {
+                        self.destroyInstanceSagePay();
+                        self.resetPaymentErrors();
+                    } else {
+                        self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
+                    }
+                }
+            },
             sagepayTokeniseCard: function (merchant_session_key) {
 
                 var self = this;
@@ -370,8 +400,7 @@ define(
                             self.dropInInstance.destroy();
                             self.dropInInstance = null;
                         }
-                        // TO DO:
-                        // Check if sending reusable empty affects the normal iframe
+
                         if (self.use_token) {
                             var selectedToken = self.getSelectedToken();
                             var sagePayToken = self.getSagePayToken(selectedToken);
@@ -379,58 +408,15 @@ define(
                             self.dropInInstance = sagepayCheckout({
                                 merchantSessionKey: merchant_session_key,
                                 reusableCardIdentifier: sagePayToken,
-                                onTokenise: function (tokenisationResult) {
-                                    if (tokenisationResult.success) {
-                                        self.cardIdentifier = sagePayToken;
-                                        self.creditCardType = 0;
-                                        self.creditCardExpYear = 0;
-                                        self.creditCardExpMonth = 0;
-                                        self.creditCardLast4 = 0;
-                                        try {
-                                            self.placeTransaction();
-                                        } catch (err) {
-                                            console.log(err);
-                                            self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
-                                        }
-                                    } else {
-                                        //Check if it is "Authentication failed"
-                                        if (self.tokenisationAuthenticationFailed(tokenisationResult)) {
-                                            self.destroyInstanceSagePay();
-                                            self.resetPaymentErrors();
-                                        } else {
-                                            self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
-                                        }
-                                    }
-                                }
+                                onTokenise: function (tokenisationResult) { self.afterTokenise(tokenisationResult) }
                             });
                         } else {
                             self.dropInInstance = sagepayCheckout({
                                 merchantSessionKey: merchant_session_key,
-                                onTokenise: function (tokenisationResult) {
-                                    if (tokenisationResult.success) {
-                                        self.cardIdentifier = tokenisationResult.cardIdentifier;
-                                        self.creditCardType = "";
-                                        self.creditCardExpYear = 0;
-                                        self.creditCardExpMonth = 0;
-                                        self.creditCardLast4 = 0;
-                                        try {
-                                            self.placeTransaction();
-                                        } catch (err) {
-                                            console.log(err);
-                                            self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
-                                        }
-                                    } else {
-                                        //Check if it is "Authentication failed"
-                                        if (self.tokenisationAuthenticationFailed(tokenisationResult)) {
-                                            self.destroyInstanceSagePay();
-                                            self.resetPaymentErrors();
-                                        } else {
-                                            self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
-                                        }
-                                    }
-                                }
+                                onTokenise: function (tokenisationResult) { self.afterTokenise(tokenisationResult) }
                             });
                         }
+
                         self.dropInInstance.form();
                         fullScreenLoader.stopLoader();
 
