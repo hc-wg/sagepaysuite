@@ -178,10 +178,7 @@ class ThreeDSecureCallbackManagement extends RequestManagement
             $transactionDetailsResult = $this->retrieveTransactionDetails();
 
             $this->confirmPayment($transactionDetailsResult);
-            /**
-             * TO DO:
-             * Add check if in the response, the field reusable is true to save the token
-             */
+
             $this->vaultDetailsHandler->saveToken(
                 $this->getPayment(),
                 $this->order->getCustomerId(),

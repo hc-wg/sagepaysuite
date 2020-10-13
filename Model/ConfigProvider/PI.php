@@ -115,7 +115,8 @@ class PI extends CcGenericConfigProvider
                     'dropin'       => $this->_config->setMethodCode($this->methodCode)->dropInEnabled(),
                     'newWindow'    => $this->_config->get3dNewWindow(),
                     'tokenEnabled' => $tokenEnabled,
-                    'tokenCount'   => $tokenCount
+                    'tokenCount'   => $tokenCount,
+                    'max_tokens'   => $this->_config->getMaxTokenPerCustomer()
                 ]
             ]
         ];

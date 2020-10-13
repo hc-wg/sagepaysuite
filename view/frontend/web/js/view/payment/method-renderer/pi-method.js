@@ -716,7 +716,7 @@ define(
             getCustomerTokenCount: function () {
                 var sagePayTokens = window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount;
                 if (sagePayTokens.length > 0) {
-                    this.useSavedTokens();
+                   this.useSavedTokens();
                 }
                 return sagePayTokens;
             },
@@ -741,7 +741,7 @@ define(
 
                     if (customerTokens && customerTokens.length > 0) {
                         this.used_token_slots = customerTokens.length;
-                        //this.checkMaxTokensPerCustomer();
+                        this.checkMaxTokensPerCustomer();
                         this.use_token = true;
                     }
                 }
@@ -788,9 +788,6 @@ define(
             selectToken: function () {
                 var self = this;
 
-                // TO DO:
-                // Revisar si esta bien que se cheque aca o ver de que no se
-                // ejecute el checked del boton
                 if (this.isRadioChecked()) {
                     self.use_token = true;
                     self.loadDropInTokenForm();
@@ -857,15 +854,15 @@ define(
                             if (response.success && response.success == true) {
                                 //check warning message
                                 self.used_token_slots = self.used_token_slots - 1;
-                                //TO DO: agregar checkeo de cantidad de tokens por customer
-                                //self.checkMaxTokensPerCustomer();
+                                self.checkMaxTokensPerCustomer();
+                                self.checkIfCustomerRemovedAllTokens();
 
                                 //hide token row
                                 $('#' + self.getCode() + '-token-' + id).prop("checked", false);
                                 $('#' + self.getCode() + '-tokenrow-' + id).hide();
 
                                 //delete from token list
-                                var tokens = this.getCustomerTokens();
+                                var tokens = window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount;
                                 for (var i = 0; i < tokens.length; i++) {
                                     if (id == tokens[i].id) {
                                         tokens.splice(i, 1);
@@ -875,8 +872,6 @@ define(
                                     $('#' + self.getCode() + '-tokens').hide();
                                     self.use_token = false;
                                 }
-
-                                //TO DO: destroy dropIn instance if payment already selected.
                             } else {
                                 self.showPaymentError(response.error_message);
                             }
@@ -886,6 +881,23 @@ define(
                             self.showPaymentError("Unable to delete credit card token.");
                         }
                     );
+                }
+            },
+            checkMaxTokensPerCustomer: function () {
+                if (this.used_token_slots > 0 && this.used_token_slots >= window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.max_tokens) {
+                    $('#' + this.getCode() + '-tokens .token-list .message-max-tokens').show();
+                    $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
+                } else {
+                    $('#' + this.getCode() + '-tokens .token-list .message-max-tokens').hide();
+                    $('#' + this.getCode() + '-tokens .add-new-card-link').show();
+                }
+            },
+            checkIfCustomerRemovedAllTokens: function () {
+                if (window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount === 0) {
+                    $('#' + this.getCode() + '-tokens .token-list').hide();
+                    $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
+                    $('#' + this.getCode() + '-tokens .use-saved-card-link').hide();
+                    $('#' + this.getCode() + '-tokens .using-new-card-message').show();
                 }
             }
         });

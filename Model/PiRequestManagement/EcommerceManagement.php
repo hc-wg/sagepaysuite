@@ -163,11 +163,6 @@ class EcommerceManagement extends RequestManagement
             $this->getResult()->setCreq($this->getPayResult()->getCReq());
             $this->getResult()->setAcsUrl($this->getPayResult()->getAcsUrl());
         } else {
-            /**
-             * TO DO:
-             * Add check if in the response, the field reusable is true to save the token
-             * The save token might need to be implemented in ThreeDSecureCallback and move this to the else below.
-             */
             $this->vaultDetailsHandler->saveToken($payment, $order->getCustomerId(), $this->getRequestData()->getCardIdentifier());
 
             $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
