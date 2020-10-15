@@ -77,7 +77,7 @@ class PiRequestTest extends \PHPUnit\Framework\TestCase
         /** @var \Ebizmarts\SagePaySuite\Model\PiRequest $piRequestMock */
         $piRequestMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PiRequest::class)
             ->setConstructorArgs([$requestHelperMock, $configMock])
-            ->setMethods(['getCart', 'getIsMoto'])
+            ->setMethods(['getCart', 'getIsMoto', 'getSaveToken', 'getReusableToken'])
             ->getMock();
 
         $piRequestMock->setMerchantSessionKey("1EB6A6C0-47CF-4B88-90E2-FC0F31895AD8");
@@ -86,6 +86,8 @@ class PiRequestTest extends \PHPUnit\Framework\TestCase
 
         $piRequestMock->expects($this->exactly(4))->method('getCart')->willReturn($cartMock);
         $piRequestMock->expects($this->exactly(3))->method('getIsMoto')->willReturn(false);
+        $piRequestMock->expects($this->once())->method('getSaveToken')->willReturn(true);
+        $piRequestMock->expects($this->once())->method('getReusableToken')->willReturn(true);
 
         $returnData = [
             'transactionType' => 'Payment',
@@ -93,6 +95,8 @@ class PiRequestTest extends \PHPUnit\Framework\TestCase
                 'card'        => [
                     'merchantSessionKey' => "1EB6A6C0-47CF-4B88-90E2-FC0F31895AD8",
                     'cardIdentifier'     => "FE646772-6C9F-478B-BF11-9087105FD372",
+                    'save' => true,
+                    'reusable' => true
                 ]
             ],
             'vendorTxCode'      => "000000194-2017-01-19-1351141484833874",
@@ -191,7 +195,7 @@ class PiRequestTest extends \PHPUnit\Framework\TestCase
         /** @var \Ebizmarts\SagePaySuite\Model\PiRequest $piRequestMock */
         $piRequestMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\PiRequest::class)
             ->setConstructorArgs([$requestHelperMock, $configMock])
-            ->setMethods(['getCart', 'getIsMoto'])
+            ->setMethods(['getCart', 'getIsMoto', 'getSaveToken', 'getReusableToken'])
             ->getMock();
 
         $piRequestMock->setMerchantSessionKey("1EB6A6C0-47CF-4B88-90E2-FC0F31895AD8");
@@ -200,6 +204,8 @@ class PiRequestTest extends \PHPUnit\Framework\TestCase
 
         $piRequestMock->expects($this->exactly(4))->method('getCart')->willReturn($cartMock);
         $piRequestMock->expects($this->exactly(3))->method('getIsMoto')->willReturn(false);
+        $piRequestMock->expects($this->once())->method('getSaveToken')->willReturn(true);
+        $piRequestMock->expects($this->once())->method('getReusableToken')->willReturn(true);
 
         $returnData = [
             'transactionType' => 'Payment',
@@ -207,6 +213,8 @@ class PiRequestTest extends \PHPUnit\Framework\TestCase
                 'card'        => [
                     'merchantSessionKey' => "1EB6A6C0-47CF-4B88-90E2-FC0F31895AD8",
                     'cardIdentifier'     => "FE646772-6C9F-478B-BF11-9087105FD372",
+                    'save' => true,
+                    'reusable' => true
                 ]
             ],
             'vendorTxCode'      => "000000194-2017-01-19-1351141484833874",
