@@ -20,6 +20,7 @@ use Magento\Quote\Model\QuoteRepository;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Sales\Model\OrderRepository;
+use Ebizmarts\SagePaySuite\Model\Config;
 
 class Success extends Action
 {
@@ -166,7 +167,7 @@ class Success extends Action
             $redirect = 'sagepaysuite/form/failure';
             $status   = $response['Status'];
 
-            if ($status == Config::OK_STATUS || $status == Config::AUTHENTICATED_STATUS || $status == Confg::REGISTERED_STATUS) {
+            if ($status == Config::OK_STATUS || $status == Config::AUTHENTICATED_STATUS || $status == Config::REGISTERED_STATUS) {
                 $this->updateOrderCallback->setOrder($this->order);
 
                 try {
