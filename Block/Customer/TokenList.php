@@ -55,13 +55,9 @@ class TokenList extends Template
         $this->_tokenModel          = $tokenModel;
         $this->_vaultDetailsHandler = $vaultDetailsHandler;
 
-        $this->setItems($this->_vaultDetailsHandler->getTokensFromCustomerToShowOnGrid(
-            $this->currentCustomer->getCustomerId()
-        ));
-//        $this->setItems($this->_tokenModel->getCustomerTokens(
-//            $this->currentCustomer->getCustomerId(),
-//            $this->_config->getVendorname()
-//        ));
+        $this->setItems(
+            $this->getCustomerTokensToShow()
+        );
     }
 
     /**
@@ -78,5 +74,30 @@ class TokenList extends Template
     public function getMaxTokenPerCustomer()
     {
         return $this->_config->getMaxTokenPerCustomer();
+    }
+
+    /**
+     * @return array
+     */
+    private function getCustomerTokensToShow()
+    {
+        $tokens = [];
+
+        $vaultTokens = $this->_vaultDetailsHandler->getTokensFromCustomerToShowOnGrid(
+            $this->currentCustomer->getCustomerId()
+        );
+        foreach ($vaultTokens as $token) {
+            $tokens[] = $token;
+        }
+
+        $serverTokens = $this->_tokenModel->getCustomerTokens(
+            $this->currentCustomer->getCustomerId(),
+            $this->_config->getVendorname()
+        );
+        foreach ($serverTokens as $token) {
+            $tokens[] = $token;
+        }
+
+        return $tokens;
     }
 }
