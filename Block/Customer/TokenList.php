@@ -87,6 +87,7 @@ class TokenList extends Template
             $this->currentCustomer->getCustomerId()
         );
         foreach ($vaultTokens as $token) {
+            $token['isv'] = true;
             $tokens[] = $token;
         }
 
@@ -95,6 +96,7 @@ class TokenList extends Template
             $this->_config->getVendorname()
         );
         foreach ($serverTokens as $token) {
+            $token['isv'] = false;
             $tokens[] = $token;
         }
 
