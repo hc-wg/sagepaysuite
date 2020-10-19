@@ -56,7 +56,7 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('getTokensFromCustomerToShowOnGrid')
             ->with($this->customerId)
-            ->willReturn([$vaultDetailsHandlerMock]);
+            ->willReturn([$vaultToken]);
 
         $this->tokenListBlock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Block\Customer\TokenList::class)
@@ -81,6 +81,15 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
 
     public function testGetBackUrlReferrer()
     {
+        $vaultToken = [
+            'id' => 23,
+            'customer_id' => $this->customerId,
+            'cc_last_4' => '5559',
+            'cc_type' => 'VI',
+            'cc_exp_month' => '12',
+            'cc_exp_year' => '23'
+        ];
+
         $urlBuilderMock = $this->makeUrlBuilderMockWithGetUrl();
         $urlBuilderMock->expects($this->never())
             ->method('getUrl');
@@ -98,7 +107,7 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('getTokensFromCustomerToShowOnGrid')
             ->with($this->customerId)
-            ->willReturn([$vaultDetailsHandlerMock]);
+            ->willReturn([$vaultToken]);
 
         $this->tokenListBlock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Block\Customer\TokenList::class)
             ->setMethods(['setItems', 'getRefererUrl'])
