@@ -6,16 +6,12 @@ use Ebizmarts\SagePaySuite\Api\Data\ResultInterface;
 use Ebizmarts\SagePaySuite\Helper\RepositoryQuery;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Vault\Api\Data\PaymentTokenFactoryInterface;
 use Magento\Vault\Api\PaymentTokenRepositoryInterface;
 
 class Get
 {
     /** @var Logger */
     private $suiteLogger;
-
-    /** @var PaymentTokenFactoryInterface */
-    private $paymentTokenFactory;
 
     /** @var Json */
     private $jsonSerializer;
@@ -32,7 +28,6 @@ class Get
     /**
      * VaultDetailsHandler constructor.
      * @param Logger $suiteLogger
-     * @param PaymentTokenFactoryInterface $paymentTokenFactory
      * @param Json $jsonSerializer
      * @param ResultInterface $result
      * @param PaymentTokenRepositoryInterface $paymentTokenRepository
@@ -40,14 +35,12 @@ class Get
      */
     public function __construct(
         Logger $suiteLogger,
-        PaymentTokenFactoryInterface $paymentTokenFactory,
         Json $jsonSerializer,
         ResultInterface $result,
         PaymentTokenRepositoryInterface $paymentTokenRepository,
         RepositoryQuery $repositoryQuery
     ) {
         $this->suiteLogger            = $suiteLogger;
-        $this->paymentTokenFactory    = $paymentTokenFactory;
         $this->jsonSerializer         = $jsonSerializer;
         $this->result                 = $result;
         $this->paymentTokenRepository = $paymentTokenRepository;
