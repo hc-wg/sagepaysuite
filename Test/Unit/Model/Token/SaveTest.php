@@ -9,6 +9,7 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Vault\Api\Data\PaymentTokenFactoryInterface;
 use Magento\Vault\Api\Data\PaymentTokenInterface;
+use Magento\Vault\Api\PaymentTokenManagementInterface;
 use Magento\Vault\Api\PaymentTokenRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -76,14 +77,14 @@ class SaveTest extends TestCase
             ->method('setIsActive')
             ->with(true);
 
-        $paymentTokenRepositoryMock = $this
-            ->getMockBuilder(PaymentTokenRepositoryInterface::class)
+        $paymentTokenManagementMock = $this
+            ->getMockBuilder(PaymentTokenManagementInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $paymentTokenRepositoryMock
+        $paymentTokenManagementMock
             ->expects($this->once())
-            ->method('save')
-            ->with($paymentTokenMock);
+            ->method('saveTokenWithPaymentLink')
+            ->with($paymentTokenMock, $this->paymentMock);
 
         $suiteLoggerMock = $this
             ->getMockBuilder(Logger::class)
@@ -99,7 +100,7 @@ class SaveTest extends TestCase
                 'suiteLogger'            => $suiteLoggerMock,
                 'paymentTokenFactory'    => $paymentTokenFactoryMock,
                 'jsonSerializer'         => $this->jsonSerializerMock,
-                'paymentTokenRepository' => $paymentTokenRepositoryMock
+                'paymentTokenManagement' => $paymentTokenManagementMock
             ]
         );
 
