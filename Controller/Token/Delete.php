@@ -8,7 +8,6 @@ namespace Ebizmarts\SagePaySuite\Controller\Token;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Token;
-use Ebizmarts\SagePaySuite\Model\Token\VaultDetailsHandler;
 use Magento\Customer\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
@@ -17,9 +16,6 @@ use Psr\Log\LoggerInterface;
 
 class Delete extends Action
 {
-    private $tokenId;
-
-    private $isCustomerArea;
 
     /**
      * Logging instance
@@ -37,13 +33,19 @@ class Delete extends Action
      */
     private $tokenModel;
 
-    /** @var VaultDetailsHandler */
-    private $vaultDetailsHandler;
+    private $tokenId;
+    private $paymentMethod;
+    private $isCustomerArea;
 
     /**
      * @var Session
      */
     private $customerSession;
+
+    /**
+     * @var Token\VaultDetailsHandler
+     */
+    private $vaultDetailsHandler;
 
     /**
      * Delete constructor.
@@ -59,7 +61,7 @@ class Delete extends Action
         LoggerInterface $logger,
         Token $tokenModel,
         Session $customerSession,
-        VaultDetailsHandler $vaultDetailsHandler
+        Token\VaultDetailsHandler $vaultDetailsHandler
     ) {
         parent::__construct($context);
         $this->suiteLogger         = $suiteLogger;
@@ -77,25 +79,57 @@ class Delete extends Action
     {
         try {
             //get token id
-            if (!empty($this->getRequest()->getParam("token_id"))) {
+            if (
+                !empty($this->getRequest()->getParam("token_id"))
+            ) {
                 $this->tokenId = $this->getRequest()->getParam("token_id");
                 if (!empty($this->getRequest()->getParam("checkout"))) {
                     $this->isCustomerArea = false;
+                    $this->paymentMethod = $this->getRequest()->getParam('pmethod');
+                } else {
+                    $isv = $this->getRequest()->getParam('isv');
+                    if (isset($isv) && $isv) {
+                        $this->paymentMethod = 'sagepaysuitepi';
+                    } else {
+                        $this->paymentMethod = 'sagepaysuiteserver';
+                    }
                 }
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to delete token: Invalid token id.'));
             }
 
-            if ($this->vaultDetailsHandler->deleteToken($this->tokenId, $this->customerSession->getCustomerId())) {
+            // This if is temporary, once server start using vault the if for server should be removed
+            // and delete the token the same way as pi.
+            if ($this->paymentMethod === 'sagepaysuiteserver') {
+                $token = $this->tokenModel->loadToken($this->tokenId);
+
+                //validate ownership
+                if ($token->isOwnedByCustomer($this->customerSession->getCustomerId())) {
+                    //delete
+                    $token->deleteToken();
+                } else {
+                    throw new \Magento\Framework\Validator\Exception(
+                        __('Unable to delete token: Token is not owned by you')
+                    );
+                }
+
                 //prepare response
                 $responseContent = [
                     'success' => true,
                     'response' => true
                 ];
-            } else {
-                throw new \Magento\Framework\Validator\Exception(
-                    __('Unable to delete token: Token is not owned by you')
-                );
+            } elseif ($this->paymentMethod === 'sagepaysuitepi') {
+                if ($this->vaultDetailsHandler->deleteToken($this->tokenId, $this->customerSession->getCustomerId())) {
+                    //prepare response
+                    $responseContent = [
+                        'success' => true,
+                        'response' => true
+                    ];
+                } else {
+                    throw new \Magento\Framework\Validator\Exception(
+                        __('Unable to delete token: Token is not owned by you')
+                    );
+                }
             }
         } catch (\Exception $e) {
             $this->logger->critical($e);

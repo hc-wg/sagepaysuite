@@ -848,7 +848,7 @@ define(
                     var serviceUrl = url.build('sagepaysuite/token/delete');
 
                     //send token delete post
-                    return storage.get(serviceUrl + "/token_id/" + id + "/checkout/1").done(
+                    return storage.get(serviceUrl + "/token_id/" + id + "/checkout/1" + "/pmethod/" + this.getCode()).done(
                         function (response) {
 
                             if (response.success && response.success == true) {
