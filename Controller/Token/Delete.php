@@ -79,9 +79,7 @@ class Delete extends Action
     {
         try {
             //get token id
-            if (
-                !empty($this->getRequest()->getParam("token_id"))
-            ) {
+            if (!empty($this->getRequest()->getParam("token_id"))) {
                 $this->tokenId = $this->getRequest()->getParam("token_id");
                 if (!empty($this->getRequest()->getParam("checkout"))) {
                     $this->isCustomerArea = false;
@@ -142,7 +140,7 @@ class Delete extends Action
 
         if ($this->isCustomerArea == true) {
             if ($responseContent["success"] == true) {
-                $this->messageManager->addSuccess(__('Token deleted successfully.'));
+                $this->addSuccessMessage();
                 $this->_redirect('sagepaysuite/customer/tokens');
                 return true;
             } else {
@@ -151,9 +149,22 @@ class Delete extends Action
                 return false;
             }
         } else {
-            $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+            $resultJson = $this->getResultFactory();
             $resultJson->setData($responseContent);
             return $resultJson;
         }
+    }
+
+    /**
+     * @return \Magento\Framework\Controller\ResultInterface
+     */
+    public function getResultFactory()
+    {
+        return $this->resultFactory->create(ResultFactory::TYPE_JSON);
+    }
+
+    public function addSuccessMessage()
+    {
+        $this->messageManager->addSuccess(__('Token deleted successfully.'));
     }
 }
