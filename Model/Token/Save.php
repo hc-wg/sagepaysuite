@@ -7,11 +7,15 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Vault\Api\Data\PaymentTokenFactoryInterface;
 use Magento\Vault\Api\PaymentTokenRepositoryInterface;
+use Magento\Vault\Api\PaymentTokenManagementInterface;
 
 class Save
 {
     /** @var Logger */
     private $suiteLogger;
+
+    /** @var PaymentTokenManagementInterface */
+    private $paymentTokenManagement;
 
     /** @var PaymentTokenFactoryInterface */
     private $paymentTokenFactory;
@@ -23,19 +27,22 @@ class Save
     private $jsonSerializer;
 
     /**
-     * VaultDetailsHandler constructor.
+     * Save constructor.
      * @param Logger $suiteLogger
+     * @param PaymentTokenManagementInterface $paymentTokenManagement
      * @param PaymentTokenFactoryInterface $paymentTokenFactory
      * @param Json $jsonSerializer
      * @param PaymentTokenRepositoryInterface $paymentTokenRepository
      */
     public function __construct(
         Logger $suiteLogger,
+        PaymentTokenManagementInterface $paymentTokenManagement,
         PaymentTokenFactoryInterface $paymentTokenFactory,
         Json $jsonSerializer,
         PaymentTokenRepositoryInterface $paymentTokenRepository
     ) {
         $this->suiteLogger            = $suiteLogger;
+        $this->paymentTokenManagement = $paymentTokenManagement;
         $this->paymentTokenFactory    = $paymentTokenFactory;
         $this->jsonSerializer         = $jsonSerializer;
         $this->paymentTokenRepository = $paymentTokenRepository;
@@ -52,7 +59,9 @@ class Save
         if (!empty($customerId)) {
             $paymentToken = $this->createVaultPaymentToken($payment, $customerId, $token);
             if ($paymentToken !== null) {
-                $this->paymentTokenRepository->save($paymentToken);
+                //TO DO: investigate to replace tokenManagement with tokenRepository to save tokens
+                //saveTokenWithPaymentLink checks if the token is duplicated, tokenRepository does not do that.
+                $this->paymentTokenManagement->saveTokenWithPaymentLink($paymentToken, $payment);
             }
         }
     }
