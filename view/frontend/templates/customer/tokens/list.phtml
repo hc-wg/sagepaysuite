@@ -42,7 +42,7 @@
                         <?php /* @escapeNotVerified */ echo $_item["cc_exp_month"] . "/" . $_item["cc_exp_year"] ?>
                     </td>
                     <td data-th="Actions" class="col actions">
-                        <a href="<?php echo $this->getUrl('sagepaysuite/token/delete', ["token_id"=>$_item["id"], "customer_area" => true]); ?>" class="action delete">
+                        <a href="<?php echo $this->getUrl('sagepaysuite/token/delete', ["token_id"=>$_item["id"], "customer_area" => true, "isv" => $_item["isv"]]); ?>" class="action delete">
                             <span>Delete</span>
                         </a>
                     </td>
