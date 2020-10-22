@@ -59,8 +59,6 @@ class Save
         if (!empty($customerId)) {
             $paymentToken = $this->createVaultPaymentToken($payment, $customerId, $token);
             if ($paymentToken !== null) {
-                //TO DO: investigate to replace tokenManagement with tokenRepository to save tokens
-                //saveTokenWithPaymentLink checks if the token is duplicated, tokenRepository does not do that.
                 $this->paymentTokenManagement->saveTokenWithPaymentLink($paymentToken, $payment);
             }
         }
