@@ -63,8 +63,7 @@ class Get
     public function getTokensFromCustomer($customerId)
     {
         $searchCriteria = $this->createSearchCriteria($customerId);
-        //Magento\Vault\Api\PaymentTokenRepositoryInterface::getList return Magento\Vault\Api\Data\PaymentTokenSearchResultsInterface[]
-        //instead of Magento\Vault\Api\Data\PaymentTokenSearchResultsInterface as says on the function doc
+        //getList returns an array instead of a single object as Magento's doc says
         return $this->paymentTokenRepository->getList($searchCriteria);
     }
 
