@@ -137,7 +137,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
      */
     private function isParesDuplicated($payment, $pares)
     {
-        $savedPares = $payment->getAddtitionalInformation(SagePaySession::PARES_SENT);
+        $savedPares = $payment->getAdditionalInformation(SagePaySession::PARES_SENT);
         return ($savedPares !== null) && ($pares === $savedPares);
     }
 
