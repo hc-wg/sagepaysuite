@@ -17,8 +17,8 @@ use Magento\Sales\Model\Order;
 
 class RecoverCart
 {
-    const ORDER_ERROR_MESSAGE   = "Order not availabe";
-    const QUOTE_ERROR_MESSAGE   = "Quote not availabe";
+    const ORDER_ERROR_MESSAGE   = "Order not available";
+    const QUOTE_ERROR_MESSAGE   = "Quote not available";
     const GENERAL_ERROR_MESSAGE = "Not possible to recover quote";
 
     /** @var Session */
