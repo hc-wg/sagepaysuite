@@ -138,31 +138,35 @@ class Success extends Action
             $transactionId = $this->suiteHelper->removeCurlyBraces($transactionId); //strip brackets
             $payment = $this->order->getPayment();
             $vendorTxCode = $payment->getAdditionalInformation("vendorTxCode");
+            
+            $isDuplicated = $payment->getAddtitionalInformation("Status") == Config::OK_STATUS;
 
-            if (!empty($transactionId) && ($vendorTxCode == $response['VendorTxCode'])) {
-                foreach ($response as $name => $value) {
-                    $payment->setTransactionAdditionalInfo($name, $value);
-                    $payment->setAdditionalInformation($name, $value);
+            if (!$isDuplicated) {
+                if (!empty($transactionId) && ($vendorTxCode == $response['VendorTxCode'])) {
+                    foreach ($response as $name => $value) {
+                        $payment->setTransactionAdditionalInfo($name, $value);
+                        $payment->setAdditionalInformation($name, $value);
+                    }
+
+                    $payment->setLastTransId($transactionId);
+                    $payment->setCcType($response['CardType']);
+                    $payment->setCcLast4($response['Last4Digits']);
+
+                    if (isset($response["ExpiryDate"])) {
+                        $payment->setCcExpMonth(substr($response["ExpiryDate"], 0, 2));
+                        $payment->setCcExpYear(substr($response["ExpiryDate"], 2));
+                    }
+
+                    $payment->save();
+                } else {
+                    throw new \Magento\Framework\Validator\Exception(__('Invalid transaction id.'));
                 }
-
-                $payment->setLastTransId($transactionId);
-                $payment->setCcType($response['CardType']);
-                $payment->setCcLast4($response['Last4Digits']);
-
-                if (isset($response["ExpiryDate"])) {
-                    $payment->setCcExpMonth(substr($response["ExpiryDate"], 0, 2));
-                    $payment->setCcExpYear(substr($response["ExpiryDate"], 2));
-                }
-
-                $payment->save();
-            } else {
-                throw new \Magento\Framework\Validator\Exception(__('Invalid transaction id.'));
             }
 
             $redirect = 'sagepaysuite/form/failure';
             $status   = $response['Status'];
 
-            if ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
+            if ($status == Config::OK_STATUS || $status == Config::AUTHENTICATED_STATUS || $status == Config::REGISTERED_STATUS) {
                 $this->updateOrderCallback->setOrder($this->order);
 
                 try {
@@ -171,13 +175,15 @@ class Success extends Action
                     $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Sage Pay retry. $transactionId", [__METHOD__, __LINE__]);
                 }
                 $redirect = 'checkout/onepage/success';
-            } elseif ($status == "PENDING") {
+            } elseif ($status == Config::PENDING_STATUS) {
                 //Transaction in PENDING state (this is just for Euro Payments)
                 $payment->setAdditionalInformation('euroPayment', true);
 
                 //send order email
                 $this->orderSender->send($this->order);
 
+                $redirect = 'checkout/onepage/success';
+            } elseif ($isDuplicated) {
                 $redirect = 'checkout/onepage/success';
             }
 
