@@ -20,6 +20,7 @@ use Magento\Quote\Model\QuoteRepository;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Sales\Model\OrderRepository;
+use Ebizmarts\SagePaySuite\Model\Config;
 
 class Success extends Action
 {
