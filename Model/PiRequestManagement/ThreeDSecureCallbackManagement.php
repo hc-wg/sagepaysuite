@@ -179,12 +179,13 @@ class ThreeDSecureCallbackManagement extends RequestManagement
 
             $this->confirmPayment($transactionDetailsResult);
 
-            $this->vaultDetailsHandler->saveToken(
-                $this->getPayment(),
-                $this->order->getCustomerId(),
-                $transactionDetailsResult->getPaymentMethod()->getCard()->getCardIdentifier()
-            );
-
+            if ($this->vaultDetailsHandler->checkIfSaveToken($this->getRequestData())) {
+                $this->vaultDetailsHandler->saveToken(
+                    $this->getPayment(),
+                    $this->order->getCustomerId(),
+                    $transactionDetailsResult->getPaymentMethod()->getCard()->getCardIdentifier()
+                );
+            }
             //remove order pre-saved flag from checkout
             $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
         } else {
