@@ -76,4 +76,16 @@ class VaultDetailsHandler
         $this->deleteTokenFromSagePay->deleteFromSagePay($token);
         return $this->tokenDelete->removeTokenFromVault($tokenId, $customerId);
     }
+
+    /**
+     * @param \Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerInterface $request
+     * @return bool
+     */
+    public function checkIfSaveToken($request)
+    {
+        if ($request->getSaveToken()) {
+            return true;
+        }
+        return false;
+    }
 }
