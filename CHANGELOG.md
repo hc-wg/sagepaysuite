@@ -1,3 +1,13 @@
+## [1.3.16] - 2020-10-27
+### Changed
+- Server cancel payment redirection to checkout shipping method
+- Added new Order Details fields names in block
+
+### Fixed
+- Fix duplicate 3D callback and duplicate response for threeDSubmit
+- CSP Whitelisting file
+- Add routes to webRestrctions.xml to avoid payment failures when Magento's EE restrictions is enabled
+
 ## [1.3.15] - 2020-07-08
 ### Changed
 - Sage Pay text and logo changed to Opayo
