@@ -185,6 +185,7 @@
 - Magento not running schema updates. Switching to Schema patches
 - New CSRF checks rejecting callbacks
 
+[1.3.16]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.16
 [1.3.15]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.15
 [1.3.14]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.14
 [1.3.13]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.13
