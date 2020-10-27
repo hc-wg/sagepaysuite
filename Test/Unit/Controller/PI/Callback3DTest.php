@@ -141,15 +141,9 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
 
         $checkoutSessionMock = $this
             ->getMockBuilder(\Magento\Checkout\Model\Session::class)
-            ->setMethods(['setData'])
+            ->setMethods()
             ->disableOriginalConstructor()
             ->getMock();
-
-        $checkoutSessionMock
-            ->expects($this->once())
-            ->method('setData')
-            ->with(\Ebizmarts\SagePaySuite\Model\Session::PARES_SENT, $pares)
-            ->willReturnSelf();
 
         $cryptAndCodeMock = $this
             ->getMockBuilder(CryptAndCodeData::class)
@@ -558,14 +552,9 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
 
         $checkoutSessionMock = $this
             ->getMockBuilder(\Magento\Checkout\Model\Session::class)
-            ->setMethods(['setData'])
+            ->setMethods()
             ->disableOriginalConstructor()
             ->getMock();
-        $checkoutSessionMock
-            ->expects($this->once())
-            ->method('setData')
-            ->with(\Ebizmarts\SagePaySuite\Model\Session::PARES_SENT, $pares)
-            ->willReturnSelf();
 
         $cryptAndCodeMock = $this
             ->getMockBuilder(CryptAndCodeData::class)
@@ -675,14 +664,9 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
 
         $checkoutSessionMock = $this
             ->getMockBuilder(\Magento\Checkout\Model\Session::class)
-            ->setMethods(['setData'])
+            ->setMethods()
             ->disableOriginalConstructor()
             ->getMock();
-        $checkoutSessionMock
-            ->expects($this->once())
-            ->method('setData')
-            ->with(\Ebizmarts\SagePaySuite\Model\Session::PARES_SENT, $pares)
-            ->willReturnSelf();
 
         $orderRepositoryMock = $this
             ->getMockBuilder(OrderRepositoryInterface::class)
