@@ -1,3 +1,17 @@
+## [1.4.1] - 2020-10-06
+### Changed
+- Server cancel payment redirection to checkout shipping method form
+
+### Fixed
+- Added new Order Details fields names in block
+- CSP Whitelisting file
+- Restriction file added
+- PayPal response decrypt issue with PHP7.4
+- PayPal POST data fix
+- Array key exists fix for PHP7.4
+- Fixed unnecesary function calls in restoreCart and Tests
+- Quote totals lost on cancel 1200
+
 ## [1.4.0] - 2020-08-03
 ### Changed
 - Sage Pay text and logo changed to Opayo
@@ -12,4 +26,5 @@
 - Server not recovering cart when cancel the transaction
 - Add form validation in PI WITHOUT Form
 
+[1.4.1]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.1
 [1.4.0]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.0
