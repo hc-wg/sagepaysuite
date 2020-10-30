@@ -61,7 +61,7 @@ class StrongCustomerAuthRequestData
             'browserScreenWidth'       => $data->getScreenWidth(),
             'browserTZ'                => $data->getTimezone(),
             'browserAcceptHeader'      => $this->request->getHeader('Accept'),
-            'browserIP'                => '127.0.0.1',//$this->request->getClientIp()
+            'browserIP'                => $this->request->getClientIp(),
             'browserLanguage'          => $data->getLanguage(),
             'browserUserAgent'         => $data->getUserAgent(),
             'notificationURL'          => $this->getNotificationUrl($quoteId),
