@@ -96,12 +96,9 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
     public function execute()
     {
         try {
-            $params = $this->getRequest()->getParams();
             $quoteIdEncrypted = $this->getRequest()->getParam("quoteId");
-
             $quoteIdFromParams = $this->cryptAndCode->decodeAndDecrypt($quoteIdEncrypted);
             $quote = $this->quoteRepository->get((int)$quoteIdFromParams);
-
             $order = $this->orderLoader->loadOrderFromQuote($quote);
             $orderId = (int)$order->getId();
 
