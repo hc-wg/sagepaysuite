@@ -219,7 +219,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['create'])
             ->getMock();
         $mskRequestMockFactory
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('create')
             ->willReturn($mskRequestMock);
         $this->httpRestMock
@@ -545,13 +545,16 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->apiExceptionFactoryMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('create')
-            ->with([
+            ->withConsecutive(
+                [],
+                [
                 'phrase' => __("Contains invalid value: paymentMethod.card.merchantSessionKey"),
                 'code' => 1009
-            ])
-            ->willReturn($apiExceptionObj);
+                ]
+            )
+            ->willReturnOnConsecutiveCalls([], $apiExceptionObj);
 
         $this->pirestApiModel  = $this->objectManager->getObject(
             'Ebizmarts\SagePaySuite\Model\Api\PIRest',
@@ -618,13 +621,16 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->apiExceptionFactoryMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('create')
-            ->with([
-                'phrase' => __("No card provided."),
-                'code' => 1009
-            ])
-            ->willReturn($apiExceptionObj);
+            ->withConsecutive(
+                [],
+                [
+                    'phrase' => __("Contains invalid value: paymentMethod.card.merchantSessionKey"),
+                    'code' => 1009
+                ]
+            )
+            ->willReturnOnConsecutiveCalls([], $apiExceptionObj);
 
         $this->pirestApiModel  = $this->objectManager->getObject(
             'Ebizmarts\SagePaySuite\Model\Api\PIRest',
@@ -653,7 +659,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->setMethods(["create"])
             ->disableOriginalConstructor()
             ->getMock();
-        $pi3dRequestFactoryMock->expects($this->once())->method('create')->willReturn($pi3dRequestMock);
+        $pi3dRequestFactoryMock->expects($this->exactly(2))->method('create')->willReturn($pi3dRequestMock);
 
         $piTransactionResult3DMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD::class)
@@ -803,7 +809,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->setMethods(["create"])
             ->disableOriginalConstructor()
             ->getMock();
-        $pi3dRequestFactoryMock->expects($this->once())->method('create')->willReturn($pi3dRequestMock);
+        $pi3dRequestFactoryMock->expects($this->exactly(2))->method('create')->willReturn($pi3dRequestMock);
 
         $piTransactionResult3DFactoryMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory::class)
