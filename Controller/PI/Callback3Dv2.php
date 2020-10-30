@@ -98,6 +98,7 @@ class Callback3Dv2 extends Action
             $quote = $this->quoteRepository->get((int)$quoteIdFromParams);
 
             $order = $this->orderLoader->loadOrderFromQuote($quote);
+            $orderId = $order->getId();
 
             $payment = $order->getPayment();
 
