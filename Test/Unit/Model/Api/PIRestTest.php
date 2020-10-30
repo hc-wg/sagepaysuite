@@ -85,10 +85,6 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->setMethods(['create'])
             ->getMock();
-        $this->httpRestFactoryMock
-            ->expects($this->exactly(2))
-            ->method('create')
-            ->willReturn($this->httpRestMock);
 
         $this->httpResponseMock = $this->
             getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\HttpResponse::class)
@@ -122,6 +118,10 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('setUrl')
             ->with("https://pi-test.sagepay.com/api/v1/merchant-session-keys");
+        $this->httpRestFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($this->httpRestMock);
 
         $this->httpResponseMock
             ->expects($this->once())
@@ -226,6 +226,10 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('setUrl')
             ->with("https://pi-test.sagepay.com/api/v1/merchant-session-keys");
+        $this->httpRestFactoryMock
+            ->expects($this->exactly(2))
+            ->method('create')
+            ->willReturn($this->httpRestMock);
 
         $this->httpResponseMock
             ->expects($this->exactly(2))
@@ -251,11 +255,11 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $loggerMock
-            ->expects($this->once())
+            ->expects($this->exactly(3))
             ->method('sageLog');
 
         $this->httpRestMock
-            ->expects($this->once())
+            ->expects($this->exactly(3))
             ->method('getLogger')
             ->willReturn($loggerMock);
 
@@ -388,6 +392,10 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('setUrl')
             ->with("https://pi-test.sagepay.com/api/v1/transactions");
+        $this->httpRestFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($this->httpRestMock);
 
         $this->httpResponseMock
             ->expects($this->once())
@@ -524,16 +532,21 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                 )
             );
 
+        $this->httpRestFactoryMock
+            ->expects($this->exactly(2))
+            ->method('create')
+            ->willReturn($this->httpRestMock);
+
         $loggerMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
             ->disableOriginalConstructor()
             ->getMock();
         $loggerMock
-            ->expects($this->once())
+            ->expects($this->exactly(3))
             ->method('sageLog');
 
         $this->httpRestMock
-            ->expects($this->once())
+            ->expects($this->exactly(3))
             ->method('getLogger')
             ->willReturn($loggerMock);
 
@@ -596,17 +609,21 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
                     '
                 )
             );
+        $this->httpRestFactoryMock
+            ->expects($this->exactly(2))
+            ->method('create')
+            ->willReturn($this->httpRestMock);
 
         $loggerMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
             ->disableOriginalConstructor()
             ->getMock();
         $loggerMock
-            ->expects($this->once())
+            ->expects($this->exactly(3))
             ->method('sageLog');
 
         $this->httpRestMock
-            ->expects($this->once())
+            ->expects($this->exactly(3))
             ->method('getLogger')
             ->willReturn($loggerMock);
 
@@ -668,6 +685,11 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         ->getMock();
         $piTransactionResult3DFactoryMock->expects($this->once())->method('create')->willReturn($piTransactionResult3DMock);
 
+        $this->httpRestFactoryMock
+            ->expects($this->exactly(2))
+            ->method('create')
+            ->willReturn($this->httpRestMock);
+
         $this->httpRestMock
             ->expects($this->once())
             ->method('executePost')
@@ -688,11 +710,11 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $loggerMock
-            ->expects($this->once())
+            ->expects($this->exactly(3))
             ->method('sageLog');
 
         $this->httpRestMock
-            ->expects($this->once())
+            ->expects($this->exactly(3))
             ->method('getLogger')
             ->willReturn($loggerMock);
 
@@ -739,6 +761,11 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
         ->disableOriginalConstructor()
         ->getMock();
         $piTransactionResult3DFactoryMock->expects($this->never())->method('create');
+
+        $this->httpRestFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($this->httpRestMock);
 
         $this->httpRestMock
             ->expects($this->once())
@@ -812,6 +839,11 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $piTransactionResult3DFactoryMock->expects($this->never())->method('create');
 
+        $this->httpRestFactoryMock
+            ->expects($this->exactly(2))
+            ->method('create')
+            ->willReturn($this->httpRestMock);
+
         $this->httpRestMock
             ->expects($this->once())
             ->method('executePost')
@@ -832,11 +864,11 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $loggerMock
-            ->expects($this->once())
+            ->expects($this->exactly(3))
             ->method('sageLog');
 
         $this->httpRestMock
-            ->expects($this->once())
+            ->expects($this->exactly(3))
             ->method('getLogger')
             ->willReturn($loggerMock);
 
@@ -872,6 +904,11 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
      */
     public function testTransactionDetailsERROR()
     {
+        $this->httpRestFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($this->httpRestMock);
+
         $this->httpRestMock
             ->expects($this->once())
             ->method('executeGet')
@@ -934,6 +971,11 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['create'])
             ->getMock();
         $instructionResponseFactory->expects($this->once())->method('create')->willReturn($instructionResponse);
+
+        $this->httpRestFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($this->httpRestMock);
 
         $this->httpRestMock
             ->expects($this->once())
@@ -998,6 +1040,12 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('create')
             ->willReturn($refundRequestMock);
+
+        $this->httpRestFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($this->httpRestMock);
+
         $this->httpRestMock
             ->expects($this->once())
             ->method('setUrl');
