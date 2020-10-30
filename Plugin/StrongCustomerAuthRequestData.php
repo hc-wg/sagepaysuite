@@ -84,7 +84,7 @@ class StrongCustomerAuthRequestData
      * @param $data
      * @return string
      */
-    protected function encryptAndEncode($data)
+    private function encryptAndEncode($data)
     {
         return $this->cryptAndCode->encryptAndEncode($data);
     }
