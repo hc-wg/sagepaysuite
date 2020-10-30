@@ -69,11 +69,6 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(Session::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $checkoutSessionMock
-            ->expects($this->once())
-            ->method('getData')
-            ->with(SagePaySession::PRESAVED_PENDING_ORDER_KEY)
-            ->willReturn(self::ORDER_ID);
 
         $orderRepositoryMock = $this
             ->getMockBuilder(OrderRepositoryInterface::class)
@@ -207,11 +202,6 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(Session::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $checkoutSessionMock
-            ->expects($this->once())
-            ->method('getData')
-            ->with(SagePaySession::PRESAVED_PENDING_ORDER_KEY)
-            ->willReturn(self::ORDER_ID);
 
         $orderRepositoryMock = $this
             ->getMockBuilder(OrderRepositoryInterface::class)
