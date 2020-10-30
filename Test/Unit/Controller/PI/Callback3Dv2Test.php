@@ -8,7 +8,6 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\PI;
 
 use Ebizmarts\SagePaySuite\Controller\PI\Callback3Dv2;
 use Magento\Checkout\Model\Session;
-use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
@@ -89,12 +88,6 @@ class Callback3Dv2Test extends \PHPUnit_Framework_TestCase
             ->getMockBuilder(Order::class)
             ->disableOriginalConstructor()
             ->getMock();
-
-        $orderRepositoryMock
-            ->expects($this->once())
-            ->method('get')
-            ->with(self::ORDER_ID)
-            ->willReturn($orderMock);
 
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
@@ -222,12 +215,6 @@ class Callback3Dv2Test extends \PHPUnit_Framework_TestCase
             ->getMockBuilder(Order::class)
             ->disableOriginalConstructor()
             ->getMock();
-
-        $orderRepositoryMock
-            ->expects($this->once())
-            ->method('get')
-            ->with(self::ORDER_ID)
-            ->willReturn($orderMock);
 
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
