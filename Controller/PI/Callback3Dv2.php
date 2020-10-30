@@ -6,15 +6,15 @@ use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
-use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Quote\Model\QuoteRepository;
 use Psr\Log\LoggerInterface;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
 class Callback3Dv2 extends Action
 {
@@ -36,11 +36,17 @@ class Callback3Dv2 extends Action
     /** @var OrderRepositoryInterface */
     private $orderRepository;
 
+    /** @var QuoteRepository */
+    private $quoteRepository;
+
     /** @var CryptAndCodeData */
     private $cryptAndCode;
 
     /** @var RecoverCart */
     private $recoverCart;
+
+    /** @var OrderLoader */
+    private $orderLoader;
 
     /**
      * Callback3Dv2 constructor.
@@ -51,8 +57,10 @@ class Callback3Dv2 extends Action
      * @param PiRequestManagerFactory $piReqManagerFactory
      * @param Session $checkoutSession
      * @param OrderRepositoryInterface $orderRepository
+     * @param QuoteRepository $quoteRepository
      * @param CryptAndCodeData $cryptAndCode
      * @param RecoverCart $recoverCart
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
@@ -62,26 +70,34 @@ class Callback3Dv2 extends Action
         PiRequestManagerFactory $piReqManagerFactory,
         Session $checkoutSession,
         OrderRepositoryInterface $orderRepository,
+        QuoteRepository $quoteRepository,
         CryptAndCodeData $cryptAndCode,
-        RecoverCart $recoverCart
+        RecoverCart $recoverCart,
+        OrderLoader $orderLoader
     ) {
         parent::__construct($context);
         $this->config = $config;
         $this->config->setMethodCode(Config::METHOD_PI);
-        $this->logger                      = $logger;
-        $this->checkoutSession             = $checkoutSession;
-        $this->orderRepository             = $orderRepository;
-        $this->requester                   = $requester;
+        $this->logger = $logger;
+        $this->checkoutSession    = $checkoutSession;
+        $this->orderRepository = $orderRepository;
+        $this->quoteRepository = $quoteRepository;
+
+        $this->requester = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
         $this->cryptAndCode                = $cryptAndCode;
         $this->recoverCart                 = $recoverCart;
+        $this->orderLoader                 = $orderLoader;
     }
 
     public function execute()
     {
         try {
-            $orderId = (int)$this->checkoutSession->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
-            $order = $this->orderRepository->get($orderId);
+            $quoteIdEncrypted = $this->getRequest()->getParam("quoteId");
+            $quoteIdFromParams = $this->cryptAndCode->decodeAndDecrypt($quoteIdEncrypted);
+            $quote = $this->quoteRepository->get((int)$quoteIdFromParams);
+
+            $order = $this->orderLoader->loadOrderFromQuote($quote);
 
             $payment = $order->getPayment();
 
@@ -134,7 +150,7 @@ class Callback3Dv2 extends Action
      * @param int $orderId
      * @param \Magento\Sales\Api\Data\OrderInterface $order
      */
-    private function setRequestParamsForConfirmPayment($orderId, \Magento\Sales\Api\Data\OrderInterface $order)
+    private function setRequestParamsForConfirmPayment(int $orderId, \Magento\Sales\Api\Data\OrderInterface $order)
     {
         $orderId = $this->encryptAndEncode((string)$orderId);
         $quoteId = $this->encryptAndEncode((string)$order->getQuoteId());
