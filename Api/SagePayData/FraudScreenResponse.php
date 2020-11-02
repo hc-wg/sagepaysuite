@@ -79,7 +79,7 @@ class FraudScreenResponse extends AbstractExtensibleObject implements FraudScree
 
         $data = $this->__toArray();
 
-        if (array_key_exists(self::THIRDMAN_RULES, $data) === true) {
+        if (isset($data[self::THIRDMAN_RULES]) === true) {
             $return = $data[self::THIRDMAN_RULES];
         }
 

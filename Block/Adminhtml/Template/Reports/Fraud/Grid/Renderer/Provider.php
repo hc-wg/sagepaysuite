@@ -25,7 +25,7 @@ class Provider extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Text
             $additionalInfo = unserialize($additionalInfo); //@codingStandardsIgnoreLine
         }
 
-        $provider = array_key_exists("fraudprovidername", $additionalInfo) ? $additionalInfo["fraudprovidername"] : "";
+        $provider = isset($additionalInfo["fraudprovidername"]) ? $additionalInfo["fraudprovidername"] : "";
 
         if ($provider == "ReD") {
             $html = '<img style="height: 20px;" src="';

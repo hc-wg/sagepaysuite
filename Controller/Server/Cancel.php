@@ -124,7 +124,7 @@ class Cancel extends Action
             ->getResponse()
             ->setBody(
                 '<script>window.top.location.href = "'
-                . $this->_url->getUrl('checkout/cart', [
+                . $this->_url->getUrl('checkout/', [
                     '_secure' => true,
                 ])
                 . '";</script>'
