@@ -152,7 +152,7 @@ class Callback3Dv2 extends Action
      * @param int $orderId
      * @param \Magento\Sales\Api\Data\OrderInterface $order
      */
-    private function setRequestParamsForConfirmPayment(int $orderId, \Magento\Sales\Api\Data\OrderInterface $order)
+    private function setRequestParamsForConfirmPayment($orderId, $order)
     {
         $orderId = $this->encryptAndEncode((string)$orderId);
         $quoteId = $this->encryptAndEncode((string)$order->getQuoteId());
