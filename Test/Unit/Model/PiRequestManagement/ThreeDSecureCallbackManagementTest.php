@@ -86,7 +86,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
         $piTransactionResult = $this->getMockBuilder(self::PI_TRANSACTION_RESULT)
             ->disableOriginalConstructor()
             ->getMock();
-        $piTransactionResult->expects($this->once())->method('getStatus')->willReturn('Authenticated');
+        $piTransactionResult->expects($this->exactly(2))->method('getStatus')->willReturn('Authenticated');
         $piTransactionResult->expects($this->exactly(2))->method('getStatusCode')->willReturn('0000');
 
         $piTransactionResultFactoryMock = $this->getMockBuilder(self::PI_TRANSACTION_RESULT_FACTORY)
@@ -360,7 +360,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(self::PI_TRANSACTION_RESULT)
             ->disableOriginalConstructor()
             ->getMock();
-        $piTransactionResult->expects($this->once())->method('getStatus')->willReturn('Authenticated');
+        $piTransactionResult->expects($this->exactly(2))->method('getStatus')->willReturn('Authenticated');
 
         $piTransactionResultFactoryMock = $this->getMockBuilder(self::PI_TRANSACTION_RESULT_FACTORY)
             ->setMethods(["create"])->disableOriginalConstructor()->getMock();

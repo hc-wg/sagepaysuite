@@ -14,6 +14,8 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
+use Magento\Quote\Model\QuoteRepository;
 
 
 class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
@@ -51,6 +53,9 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
     /** @var CryptAndCodeData */
     private $cryptAndCodeMock;
 
+    /** @var OrderLoader|\PHPUnit_Framework_MockObject_MockObject */
+    private $orderLoaderMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -64,14 +69,19 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(Session::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $checkoutSessionMock
-            ->expects($this->once())
-            ->method('getData')
-            ->with(SagePaySession::PRESAVED_PENDING_ORDER_KEY)
-            ->willReturn(self::ORDER_ID);
 
         $orderRepositoryMock = $this
             ->getMockBuilder(OrderRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $quoteRepositoryMock = $this
+            ->getMockBuilder(quoteRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderLoaderMock = $this
+            ->getMockBuilder(OrderLoader::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -79,12 +89,6 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(Order::class)
             ->disableOriginalConstructor()
             ->getMock();
-
-        $orderRepositoryMock
-            ->expects($this->once())
-            ->method('get')
-            ->with(self::ORDER_ID)
-            ->willReturn($orderMock);
 
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
@@ -110,6 +114,10 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('getQuoteId')
             ->willReturn(self::QUOTE_ID);
+
+        $quoteMock = $this->getMockBuilder('\Magento\Quote\Model\Quote')
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->makeRequestMock();
 
@@ -149,6 +157,13 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->method('getErrorMessage')
             ->willReturnArgument(null);
 
+        $this->requestMock->expects($this->once())->method('getParam')->with('quoteId')->willReturn(self::ENCODED_QUOTE_ID);
+
+        $this->cryptAndCodeMock->expects($this->once())->method('decodeAndDecrypt')->with(self::ENCODED_QUOTE_ID)->willReturn(self::QUOTE_ID);
+        $quoteRepositoryMock->expects($this->once())->method('get')->with(self::QUOTE_ID)->willReturn($quoteMock);
+        $orderLoaderMock->expects($this->once())->method('loadOrderFromQuote')->with($quoteMock)->willReturn($orderMock);
+        $orderMock->expects($this->once())->method('getId')->willReturn(self::ORDER_ID);
+
         $threeDCallbackManagementMock = $this->makeThreeDCallbackManagementMock($resultMock);
 
         $this->callback3Dv2Controller = $this->objectManagerHelper->getObject(
@@ -159,8 +174,10 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
                 'piRequestManagerDataFactory' => $piRequestManagerDataFactoryMock,
                 'requester'                   => $threeDCallbackManagementMock,
                 'orderRepository'             => $orderRepositoryMock,
+                'quoteRepository'             => $quoteRepositoryMock,
                 'cryptAndCode'                => $this->cryptAndCodeMock,
-                'checkoutSession'             => $checkoutSessionMock
+                'checkoutSession'             => $checkoutSessionMock, 
+                'orderLoader'                 => $orderLoaderMock
             ]
         );
 
@@ -179,11 +196,6 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(Session::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $checkoutSessionMock
-            ->expects($this->once())
-            ->method('getData')
-            ->with(SagePaySession::PRESAVED_PENDING_ORDER_KEY)
-            ->willReturn(self::ORDER_ID);
 
         $orderRepositoryMock = $this
             ->getMockBuilder(OrderRepositoryInterface::class)
@@ -195,11 +207,15 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $orderRepositoryMock
-            ->expects($this->once())
-            ->method('get')
-            ->with(self::ORDER_ID)
-            ->willReturn($orderMock);
+        $quoteRepositoryMock = $this
+            ->getMockBuilder(quoteRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderLoaderMock = $this
+            ->getMockBuilder(OrderLoader::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
@@ -210,6 +226,10 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('getPayment')
             ->willReturn($paymentMock);
+
+        $quoteMock = $this->getMockBuilder('\Magento\Quote\Model\Quote')
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->urlBuilderMock = $this
             ->getMockBuilder('Magento\Framework\UrlInterface')
@@ -223,7 +243,7 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
 
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
-            ->setMethods(['getPost', 'setParams'])
+            ->setMethods(['getPost', 'setParams', 'getParam'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->requestMock
@@ -261,6 +281,18 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
         $resultMock
             ->expects($this->exactly(2))->method('getErrorMessage')->willReturn('Invalid 3D secure authentication.');
 
+        $this->cryptAndCodeMock = $this
+            ->getMockBuilder(CryptAndCodeData::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->requestMock->expects($this->once())->method('getParam')->with('quoteId')->willReturn(self::ENCODED_QUOTE_ID);
+        $this->cryptAndCodeMock->expects($this->once())->method('decodeAndDecrypt')->with(self::ENCODED_QUOTE_ID)->willReturn(self::QUOTE_ID);
+        $quoteRepositoryMock->expects($this->once())->method('get')->with(self::QUOTE_ID)->willReturn($quoteMock);
+        $orderLoaderMock->expects($this->once())->method('loadOrderFromQuote')->with($quoteMock)->willReturn($orderMock);
+        $orderMock->expects($this->once())->method('getId')->willReturn(self::ORDER_ID);
+    
+
         $threeDCallbackManagementMock = $this->makeThreeDCallbackManagementMock($resultMock);
 
         $this->callback3Dv2Controller = $this->objectManagerHelper->getObject(
@@ -271,13 +303,16 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
                 'piRequestManagerDataFactory' => $piRequestManagerDataFactoryMock,
                 'requester'                   => $threeDCallbackManagementMock,
                 'orderRepository'             => $orderRepositoryMock,
-                'checkoutSession'             => $checkoutSessionMock
+                'quoteRepository'             => $quoteRepositoryMock,
+                'cryptAndCode'                => $this->cryptAndCodeMock,
+                'checkoutSession'             => $checkoutSessionMock,
+                'orderLoader'                 => $orderLoaderMock
             ]
         );
 
         $this->expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/cart', ['_secure' => true])
+            . $this->urlBuilderMock->getUrl('checkout/cart', ['_secure' => true, 'quoteId' => self::ENCRYPTED_QUOTE_ID])
             . '";</script>'
         );
 
@@ -347,7 +382,7 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
     {
         $this->requestMock = $this
             ->getMockBuilder('Magento\Framework\HTTP\PhpEnvironment\Request')
-            ->setMethods(['getPost', 'setParams'])
+            ->setMethods(['getPost', 'setParams', 'getParam'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->requestMock
