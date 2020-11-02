@@ -24,11 +24,11 @@ class Callback3Dv2Test extends \PHPUnit_Framework_TestCase
     /** Sage Pay Transaction ID*/
     const TEST_VPSTXID = 'F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F';
 
-    const ORDER_ID = '50';
+    const ORDER_ID = 50;
     const ENCRYPTED_ORDER_ID = '0:3:slozTfXK0r1J23OPKHZkGsqJqT4wudHXPZJXxE9S';
     const ENCODED_ORDER_ID = 'MDozOiswMXF3V0l1WFRLTDRra0wxUCtYSGgyQVdORUdWaXNPN3N5RUNEbzE,';
 
-    const QUOTE_ID = '51';
+    const QUOTE_ID = 51;
     const ENCRYPTED_QUOTE_ID = '0:3:hm2arLCQeFcC1C0kU6CEoy06RnjtBZ1jzMomH3+A';
     const ENCODED_QUOTE_ID = 'MDozOlBxWWxwSHdsUklEa3dLY0Q2TlVJTE9YOEZjYjNCbWY2VUVaT1QrN2U,';
 
