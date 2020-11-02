@@ -1,3 +1,13 @@
+## [1.3.16] - 2020-10-27
+### Changed
+- Server cancel payment redirection to checkout shipping method
+- Added new Order Details fields names in block
+
+### Fixed
+- Fix duplicate 3D callback and duplicate response for threeDSubmit
+- CSP Whitelisting file
+- Add routes to webRestrctions.xml to avoid payment failures when Magento's EE restrictions is enabled
+
 ## [1.3.15] - 2020-07-08
 ### Changed
 - Sage Pay text and logo changed to Opayo
@@ -175,6 +185,7 @@
 - Magento not running schema updates. Switching to Schema patches
 - New CSRF checks rejecting callbacks
 
+[1.3.16]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.16
 [1.3.15]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.15
 [1.3.14]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.14
 [1.3.13]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.13
