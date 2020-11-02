@@ -101,7 +101,7 @@ class Success extends \Magento\Backend\App\AbstractAction
         try {
             //decode response
             $response = $this->formModel->decodeSagePayResponse($this->getRequest()->getParam("crypt"));
-            if (!array_key_exists("VPSTxId", $response)) {
+            if (!isset($response["VPSTxId"])) {
                 throw new \Magento\Framework\Exception\LocalizedException(__('Invalid response from Opayo'));
             }
 
@@ -119,11 +119,11 @@ class Success extends \Magento\Backend\App\AbstractAction
             $payment->setTransactionId($transactionId);
             $payment->setCcType($response["CardType"]);
             $payment->setCcLast4($response["Last4Digits"]);
-            if (array_key_exists("ExpiryDate", $response)) {
+            if (isset($response["ExpiryDate"])) {
                 $payment->setCcExpMonth(substr($response["ExpiryDate"], 0, 2));
                 $payment->setCcExpYear(substr($response["ExpiryDate"], 2));
             }
-            if (array_key_exists("3DSecureStatus", $response)) {
+            if (isset($response["3DSecureStatus"])) {
                 $payment->setAdditionalInformation('threeDStatus', $response["3DSecureStatus"]);
             }
             $payment->setAdditionalInformation('statusDetail', $response["StatusDetail"]);
