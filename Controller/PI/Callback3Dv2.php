@@ -12,9 +12,11 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Quote\Model\QuoteRepository;
 use Psr\Log\LoggerInterface;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
 class Callback3Dv2 extends Action
 {
@@ -36,11 +38,17 @@ class Callback3Dv2 extends Action
     /** @var OrderRepositoryInterface */
     private $orderRepository;
 
+    /** @var QuoteRepository */
+    private $quoteRepository;
+
     /** @var CryptAndCodeData */
     private $cryptAndCode;
 
     /** @var RecoverCart */
     private $recoverCart;
+
+    /** @var OrderLoader */
+    private $orderLoader;
 
     /**
      * Callback3D constructor.
@@ -51,8 +59,10 @@ class Callback3Dv2 extends Action
      * @param PiRequestManagerFactory $piReqManagerFactory
      * @param Session $checkoutSession
      * @param OrderRepositoryInterface $orderRepository
+     * @param QuoteRepository $quoteRepository
      * @param CryptAndCodeData $cryptAndCode
      * @param RecoverCart $recoverCart
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
@@ -62,8 +72,10 @@ class Callback3Dv2 extends Action
         PiRequestManagerFactory $piReqManagerFactory,
         Session $checkoutSession,
         OrderRepositoryInterface $orderRepository,
+        QuoteRepository $quoteRepository,
         CryptAndCodeData $cryptAndCode,
-        RecoverCart $recoverCart
+        RecoverCart $recoverCart,
+        OrderLoader $orderLoader
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -71,17 +83,24 @@ class Callback3Dv2 extends Action
         $this->logger = $logger;
         $this->checkoutSession    = $checkoutSession;
         $this->orderRepository = $orderRepository;
+        $this->quoteRepository = $quoteRepository;
 
         $this->requester = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
         $this->cryptAndCode                = $cryptAndCode;
         $this->recoverCart                 = $recoverCart;
+        $this->orderLoader                 = $orderLoader;
     }
 
     public function execute()
     {
         try {
-            $orderId = (int)$this->checkoutSession->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
+            $quoteIdEncrypted = $this->getRequest()->getParam("quoteId");
+            $quoteIdFromParams = $this->cryptAndCode->decodeAndDecrypt($quoteIdEncrypted);
+            $quote = $this->quoteRepository->get((int)$quoteIdFromParams);
+
+            $order = $this->orderLoader->loadOrderFromQuote($quote);
+            $orderId = (int)$order->getId();
             $order = $this->orderRepository->get($orderId);
 
             $payment = $order->getPayment();
