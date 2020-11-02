@@ -43,7 +43,7 @@ class Recommendation extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\
 
         $html = "";
 
-        if (array_key_exists("fraudscreenrecommendation", $additionalInfo)) {
+        if (isset($additionalInfo["fraudscreenrecommendation"])) {
             $html = $additionalInfo["fraudscreenrecommendation"];
         }
 

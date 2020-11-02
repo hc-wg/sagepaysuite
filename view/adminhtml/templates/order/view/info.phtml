@@ -67,6 +67,37 @@ $payment = $block->getPayment();
                     </td>
                 </tr>
             <?php endif; ?>
+            <?php if ($payment->getAdditionalInformation("3DSecureStatus")): ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('3D Status')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("3DSecureStatus")); ?></td>
+                </tr>
+            <?php endif; ?>
+            <?php if ($payment->getAdditionalInformation("AVSCV2")): ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('Address Verification Result')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("AVSCV2")); ?></td>
+                </tr>
+            <?php endif; ?>
+            <?php if ($payment->getAdditionalInformation("AddressResult")): ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('Postcode Verification Result')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("AddressResult")); ?></td>
+                </tr>
+            <?php endif; ?>
+            <?php if ($payment->getAdditionalInformation("PostCodeResult")): ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('CV2 Verification Result')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("PostCodeResult")); ?></td>
+                </tr>
+            <?php endif; ?>
+            <?php if ($payment->getAdditionalInformation("CV2Result")): ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('AVS and CV2 Verification Result')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("CV2Result")); ?></td>
+                </tr>
+            <?php endif; ?>
+            <!-- Compatibility with orders placed with < v.1.3.15 -->
             <?php if ($payment->getAdditionalInformation("threeDStatus")): ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('3D Status')); ?>:</th>
