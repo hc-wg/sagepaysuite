@@ -128,6 +128,7 @@ class Callback3Dv2 extends Action
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
+            var_dump($e->getMessage());
             $this->recoverCart->setShouldCancelOrder(true)->execute();
             $this->logger->critical($e);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
