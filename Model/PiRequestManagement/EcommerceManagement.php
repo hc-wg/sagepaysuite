@@ -163,7 +163,7 @@ class EcommerceManagement extends RequestManagement
             $this->getResult()->setCreq($this->getPayResult()->getCReq());
             $this->getResult()->setAcsUrl($this->getPayResult()->getAcsUrl());
         } else {
-            if ($this->vaultDetailsHandler->checkIfSaveToken($this->getRequestData())) {
+            if ($this->getRequestData()->getSaveToken()) {
                 $this->vaultDetailsHandler->saveToken($payment, $order->getCustomerId(), $this->getRequestData()->getCardIdentifier());
             }
             $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);

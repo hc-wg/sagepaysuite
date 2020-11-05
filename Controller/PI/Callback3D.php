@@ -5,18 +5,18 @@ namespace Ebizmarts\SagePaySuite\Controller\PI;
 use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
+use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Framework\App\CsrfAwareActionInterface;
-use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
-use Ebizmarts\SagePaySuite\Model\RecoverCart;
-use Magento\Checkout\Model\Session;
-use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 class Callback3D extends Action implements CsrfAwareActionInterface
 {
@@ -86,7 +86,8 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $orderId = $this->decodeAndDecrypt($encryptedOrderId);
             $order = $this->orderRepository->get($orderId);
             $payment = $order->getPayment();
-            if($this->isParesDuplicated($payment, $sanitizedPares)) {
+            $saveToken = $this->getSaveToken();
+            if ($this->isParesDuplicated($payment, $sanitizedPares)) {
                 $this->javascriptRedirect('checkout/onepage/success');
                 return;
             } else {
@@ -106,6 +107,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $data->setVendorName($this->config->getVendorname());
             $data->setMode($this->config->getMode());
             $data->setPaymentAction($this->config->getSagepayPaymentAction());
+            $data->setSaveToken($saveToken);
 
             $this->checkoutSession->setData(SagePaySession::PARES_SENT, $sanitizedPares);
 
@@ -204,5 +206,17 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     public function decodeAndDecrypt($data)
     {
         return $this->cryptAndCode->decodeAndDecrypt($data);
+    }
+
+    /**
+     * @return bool
+     */
+    public function getSaveToken()
+    {
+        if ($this->getRequest()->getParam("st") === 'true') {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

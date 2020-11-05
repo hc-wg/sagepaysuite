@@ -181,7 +181,8 @@ class ThreeDSecureCallbackManagement extends RequestManagement
 
             $this->confirmPayment($transactionDetailsResult);
 
-            if ($this->vaultDetailsHandler->checkIfSaveToken($this->getRequestData())) {
+            if ($this->getRequestData()->getSaveToken()) {
+                die($this->getRequestData()->getSaveToken());
                 $this->vaultDetailsHandler->saveToken(
                     $this->getPayment(),
                     $this->order->getCustomerId(),

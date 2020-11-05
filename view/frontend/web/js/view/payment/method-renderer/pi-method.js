@@ -552,7 +552,8 @@ define(
                                     //add transactionId param to callback
                                     callbackUrl += "?transactionId=" + response.transaction_id +
                                         "&orderId=" + response.order_id +
-                                        "&quoteId=" + response.quote_id;
+                                        "&quoteId=" + response.quote_id +
+                                        "&st=" + self.saveToken();
 
                                     //Build 3D form.
                                     var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
