@@ -13,6 +13,7 @@ use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\CsrfAwareActionInterface;
@@ -105,6 +106,9 @@ class Callback3D extends Action implements CsrfAwareActionInterface
                 $this->logInCustomer($customerId);
             }
             $payment = $order->getPayment();
+
+            $saveToken = $this->getSaveToken();
+
             if ($this->isParesDuplicated($payment, $sanitizedPares)) {
                 $this->javascriptRedirect('checkout/onepage/success');
                 return;
@@ -125,6 +129,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $data->setVendorName($this->config->getVendorname());
             $data->setMode($this->config->getMode());
             $data->setPaymentAction($this->config->getSagepayPaymentAction());
+            $data->setSaveToken($saveToken);
 
             $this->requester->setRequestData($data);
 
@@ -226,6 +231,17 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $this->customerSession->setCustomerDataAsLoggedIn($customer);
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
+        }
+    }
+    /**
+     * @return bool
+     */
+    public function getSaveToken()
+    {
+        if ($this->getRequest()->getParam("st") === 'true') {
+            return true;
+        } else {
+            return false;
         }
     }
 }
