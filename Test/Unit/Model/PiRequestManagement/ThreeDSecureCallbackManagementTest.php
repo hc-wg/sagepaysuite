@@ -270,6 +270,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
             ->method('getCardIdentifier')
             ->willReturn($cardIdentifier);
 
+
         $vaultDetailsHandlerMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Token\VaultDetailsHandler::class)
             ->disableOriginalConstructor()
@@ -304,10 +305,18 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
             ->with($invoiceMock)
             ->willReturn(true);
 
-        $requestDataMock = $this->getMockBuilder(PiRequestManager::class)
+        $requestDataMock = $this
+            ->getMockBuilder(PiRequestManager::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $requestDataMock->expects($this->exactly(2))->method('getPaymentAction')->willReturn($paymentAction);
+        $requestDataMock
+            ->expects($this->once())
+            ->method('getSaveToken')
+            ->willReturn(true);
+        $requestDataMock
+            ->expects($this->exactly(2))
+            ->method('getPaymentAction')
+            ->willReturn($paymentAction);
         $model->setRequestData($requestDataMock);
 
         $model->placeOrder();
