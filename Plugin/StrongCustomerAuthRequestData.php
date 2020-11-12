@@ -5,6 +5,7 @@ namespace Ebizmarts\SagePaySuite\Plugin;
 
 use Ebizmarts\SagePaySuite\Api\Data\ScaTransType as TransactionType;
 use Ebizmarts\SagePaySuite\Model;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 
 class StrongCustomerAuthRequestData
 {
@@ -14,6 +15,9 @@ class StrongCustomerAuthRequestData
     /** @var \Zend\Http\PhpEnvironment\Request */
     private $request;
 
+    /** @var CryptAndCodeData */
+    private $cryptAndCode;
+
     /**
      * @var \Magento\Framework\UrlInterface
      */
@@ -22,11 +26,13 @@ class StrongCustomerAuthRequestData
     public function __construct(
         Model\Config $sagepayConfig,
         \Magento\Framework\HTTP\PhpEnvironment\Request $request,
-        \Magento\Framework\UrlInterface $coreUrl
+        \Magento\Framework\UrlInterface $coreUrl,
+        Model\CryptAndCodeData $cryptAndCode
     ) {
         $this->sagepayConfig = $sagepayConfig;
         $this->request       = $request;
         $this->coreUrl       = $coreUrl;
+        $this->cryptAndCode  = $cryptAndCode;
     }
 
     /**
@@ -44,6 +50,7 @@ class StrongCustomerAuthRequestData
 
         /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequest $data */
         $data = $subject->getRequest();
+        $quoteId = $subject->getCart()->getId();
 
         /** @var $subject \Ebizmarts\SagePaySuite\Model\PiRequest */
         $result['strongCustomerAuthentication'] = [
@@ -57,7 +64,7 @@ class StrongCustomerAuthRequestData
             'browserIP'                => $this->request->getClientIp(),
             'browserLanguage'          => $data->getLanguage(),
             'browserUserAgent'         => $data->getUserAgent(),
-            'notificationURL'          => $this->getNotificationUrl(),
+            'notificationURL'          => $this->getNotificationUrl($quoteId),
             'transType'                => TransactionType::GOOD_SERVICE_PURCHASE,
             'challengeWindowSize'      => $this->sagepayConfig->getValue("challengewindowsize"),
         ];
@@ -65,10 +72,20 @@ class StrongCustomerAuthRequestData
         return $result;
     }
 
-    private function getNotificationUrl()
+    private function getNotificationUrl($quoteId)
     {
-        $url = $this->coreUrl->getUrl('sagepaysuite/pi/callback3Dv2', ['_secure' => true]);
+        $encryptedQuoteId = $this->encryptAndEncode($quoteId);
+        $url = $this->coreUrl->getUrl('sagepaysuite/pi/callback3Dv2', ['_secure' => true, 'quoteId' => $encryptedQuoteId]);
 
         return $url;
+    }
+
+    /**
+     * @param $data
+     * @return string
+     */
+    private function encryptAndEncode($data)
+    {
+        return $this->cryptAndCode->encryptAndEncode($data);
     }
 }
