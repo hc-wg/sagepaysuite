@@ -137,7 +137,9 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     {
         $payResult = $this->pay();
 
-        if ($payResult->getStatus() !== null) {
+        if ($payResult->getStatus() == 'Operation not allowed') {
+            $this->getResult()->setErrorMessage(null);
+        } elseif ($payResult->getStatus() !== null) {
             $transactionDetailsResult = $this->retrieveTransactionDetails();
 
             $this->confirmPayment($transactionDetailsResult);

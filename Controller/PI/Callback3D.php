@@ -82,22 +82,18 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     {
         try {
             $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
-            if ($this->isParesDuplicated($sanitizedPares)) {
-                $orderId = $this->getRequest()->getParam("orderId");
-                $orderId = $this->decodeAndDecrypt($orderId);
-                $vpstxid = $this->getRequest()->getParam("transactionId");
-                $message = self::DUPLICATED_CALLBACK_ERROR_MESSAGE . ' OrderId: ' . $orderId . ' VPSTxId: ' . $vpstxid;
-                $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $message, [__METHOD__, __LINE__]);
+            $encryptedOrderId = $this->getRequest()->getParam("orderId");
+            $orderId = $this->decodeAndDecrypt($encryptedOrderId);
+            $order = $this->orderRepository->get($orderId);
+            $payment = $order->getPayment();
+            if($this->isParesDuplicated($payment, $sanitizedPares)) {
                 $this->javascriptRedirect('checkout/onepage/success');
                 return;
             } else {
-                $this->checkoutSession->setData(SagePaySession::PARES_SENT, $sanitizedPares);
+                $payment->setAdditionalInformation(SagePaySession::PARES_SENT, $sanitizedPares);
+                $payment->save();
             }
 
-            $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->getRequest()->getPost(), [__METHOD__, __LINE__]);
-            $orderId = $this->getRequest()->getParam("orderId");
-            $orderId = $this->decodeAndDecrypt($orderId);
-            $order = $this->orderRepository->get($orderId);
             if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
                 $this->javascriptRedirect('checkout/onepage/success');
                 return;
@@ -132,6 +128,17 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
         }
+    }
+
+    /**
+     * @param $payment
+     * @param $pares
+     * @return bool
+     */
+    private function isParesDuplicated($payment, $pares)
+    {
+        $savedPares = $payment->getAdditionalInformation(SagePaySession::PARES_SENT);
+        return ($savedPares !== null) && ($pares === $savedPares);
     }
 
     private function javascriptRedirect($url)
@@ -188,15 +195,5 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     public function decodeAndDecrypt($data)
     {
         return $this->cryptAndCode->decodeAndDecrypt($data);
-    }
-
-    /**
-     * @param $pares
-     * @return bool
-     */
-    private function isParesDuplicated($pares)
-    {
-        $sessionPares = $this->checkoutSession->getData(SagePaySession::PARES_SENT);
-        return ($sessionPares !== null) && ($pares === $sessionPares);
     }
 }

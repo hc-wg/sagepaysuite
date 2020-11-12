@@ -13,10 +13,12 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Quote\Model\QuoteRepository;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
 class Callback3Dv2 extends Action implements CsrfAwareActionInterface
 {
@@ -38,11 +40,17 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
     /** @var OrderRepositoryInterface */
     private $orderRepository;
 
+    /** @var QuoteRepository */
+    private $quoteRepository;
+
     /** @var CryptAndCodeData */
     private $cryptAndCode;
 
     /** @var RecoverCart */
     private $recoverCart;
+
+    /** @var OrderLoader */
+    private $orderLoader;
 
     /**
      * Callback3Dv2 constructor.
@@ -53,8 +61,10 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
      * @param PiRequestManagerFactory $piReqManagerFactory
      * @param Session $checkoutSession
      * @param OrderRepositoryInterface $orderRepository
+     * @param QuoteRepository $quoteRepository
      * @param CryptAndCodeData $cryptAndCode
      * @param RecoverCart $recoverCart
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
@@ -64,8 +74,10 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
         PiRequestManagerFactory $piReqManagerFactory,
         Session $checkoutSession,
         OrderRepositoryInterface $orderRepository,
+        QuoteRepository $quoteRepository,
         CryptAndCodeData $cryptAndCode,
-        RecoverCart $recoverCart
+        RecoverCart $recoverCart,
+        OrderLoader $orderLoader
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -73,17 +85,22 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
         $this->logger                      = $logger;
         $this->checkoutSession             = $checkoutSession;
         $this->orderRepository             = $orderRepository;
+        $this->quoteRepository             = $quoteRepository;
         $this->requester                   = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
         $this->cryptAndCode                = $cryptAndCode;
         $this->recoverCart                 = $recoverCart;
+        $this->orderLoader                 = $orderLoader;
     }
 
     public function execute()
     {
         try {
-            $orderId = (int)$this->checkoutSession->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
-            $order = $this->orderRepository->get($orderId);
+            $quoteIdEncrypted = $this->getRequest()->getParam("quoteId");
+            $quoteIdFromParams = $this->cryptAndCode->decodeAndDecrypt($quoteIdEncrypted);
+            $quote = $this->quoteRepository->get((int)$quoteIdFromParams);
+            $order = $this->orderLoader->loadOrderFromQuote($quote);
+            $orderId = (int)$order->getId();
 
             $payment = $order->getPayment();
 
