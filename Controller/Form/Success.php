@@ -144,7 +144,7 @@ class Success extends \Magento\Framework\App\Action\Action
 
             $vendorTxCode = $payment->getAdditionalInformation("vendorTxCode");
 
-            $isDuplicated = $payment->getAddtitionalInformation("Status") == Config::OK_STATUS;
+            $isDuplicated = $payment->getAdditionalInformation("Status") == Config::OK_STATUS;
 
             if (!$isDuplicated) {
                 if (!empty($transactionId) && ($vendorTxCode == $response['VendorTxCode'])) {
