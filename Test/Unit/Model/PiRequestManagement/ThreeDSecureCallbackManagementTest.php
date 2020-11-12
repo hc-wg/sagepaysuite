@@ -66,7 +66,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit_Framework_TestCase
         $piTransactionResult = $this->getMockBuilder(self::PI_TRANSACTION_RESULT)
             ->disableOriginalConstructor()
             ->getMock();
-        $piTransactionResult->expects($this->once())->method('getStatus')->willReturn('Authenticated');
+        $piTransactionResult->expects($this->exactly(2))->method('getStatus')->willReturn('Authenticated');
         $piTransactionResult->expects($this->exactly(2))->method('getStatusCode')->willReturn('0000');
 
         $piTransactionResultFactoryMock = $this
