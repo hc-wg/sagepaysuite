@@ -483,7 +483,7 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             ->withConsecutive(['vendorTxCode'], ['Status'])
             ->willReturnOnConsecutiveCalls(
                 "100000001-2016-12-12-12346789", 
-                \Ebizmarts\SagePaySuite\Model\Config::OK_STATUS
+                null
             );
 
         $this->formSuccessController->execute();
