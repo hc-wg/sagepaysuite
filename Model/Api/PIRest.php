@@ -14,19 +14,15 @@ use Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequestFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureRequestFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiThreeDSecureV2RequestFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAmountFactory;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheck;
+use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheckFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultCardFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultPaymentMethodFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDFactory;
-use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheck;
-use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultAvsCvcCheckFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeDInterface;
-use Ebizmarts\SagePaySuite\Model\Api\ApiException;
-use Ebizmarts\SagePaySuite\Model\Api\ApiExceptionFactory;
-use Ebizmarts\SagePaySuite\Model\Api\HttpRestFactory;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Store\Model\ScopeInterface;
-use stdClass;
 use function property_exists;
 
 /**
@@ -207,7 +203,7 @@ class PIRest
 
         if ($this->config->getMode() == Config::MODE_LIVE) {
             return Config::URL_PI_API_LIVE . $endpoint;
-        } else if($this->config->getMode() == Config::MODE_DEVELOPMENT) {
+        } elseif ($this->config->getMode() == Config::MODE_DEVELOPMENT) {
             return Config::URL_PI_API_DEV . $endpoint;
         } else {
             return Config::URL_PI_API_TEST . $endpoint;
@@ -348,9 +344,10 @@ class PIRest
      * @param $amount
      * @param $currency
      * @param $description
+     * @param $storeId
      * @return \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface
      */
-    public function refund($vendorTxCode, $refTransactionId, $amount, $description)
+    public function refund($vendorTxCode, $refTransactionId, $amount, $description, $storeId)
     {
         /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiRefundRequest $refundRequest */
         $refundRequest = $this->refundRequest->create();
@@ -359,7 +356,7 @@ class PIRest
         $refundRequest->setReferenceTransactionId($refTransactionId);
         $refundRequest->setAmount($amount);
         $refundRequest->setDescription($description);
-
+        $this->config->setConfigurationScopeId($storeId);
         $jsonRequest = json_encode($refundRequest->__toArray());
         $result      = $this->_executePostRequest($this->_getServiceUrl(self::ACTION_TRANSACTIONS), $jsonRequest);
 
