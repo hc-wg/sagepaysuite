@@ -236,8 +236,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
             $vpsTxId      = $this->suiteHelper->clearTransactionId($payment->getParentTransactionId());
             $vendorTxCode = $this->suiteHelper->generateVendorTxCode($order->getIncrementId(), Config::ACTION_REFUND);
             $description  = 'Magento backend refund.';
-
             $refundAmount = (int)($baseAmount * 100);
+            $storeId      = $order->getStoreId();
 
             if ($this->config->getCurrencyConfig() === CONFIG::CURRENCY_SWITCHER) {
                 $refundAmount = $this->calculateRefundAmount($baseAmount, $order, $refundAmount);
@@ -248,7 +248,8 @@ class PI extends \Magento\Payment\Model\Method\Cc
                 $vendorTxCode,
                 $vpsTxId,
                 $refundAmount,
-                $description
+                $description,
+                $storeId
             );
 
             $payment->setTransactionId($refundResult->getTransactionId());
