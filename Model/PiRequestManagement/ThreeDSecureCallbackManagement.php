@@ -8,9 +8,6 @@ use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
-use Magento\Framework\Validator\Exception as ValidatorException;
-use Magento\Sales\Api\PaymentFailuresInterface;
-use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 
 class ThreeDSecureCallbackManagement extends RequestManagement
 {
