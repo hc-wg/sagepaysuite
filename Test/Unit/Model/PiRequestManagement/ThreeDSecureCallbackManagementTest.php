@@ -480,7 +480,7 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
     /**
     * @dataProvider payDataProvider
     */
-    public function testPay($data)
+    public function testPayOk($data)
     {
         $cres = $data['expectedCres'];
         $pares = 'vfewvfeaefvasdfargaasdfweq';
