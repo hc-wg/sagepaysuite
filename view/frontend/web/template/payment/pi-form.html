@@ -87,14 +87,12 @@
             </div>
         <!-- /ko -->
 
-        <!-- ko ifnot: (scaEnabled())-->
         <!-- #### sagepay 3D secure form #### -->
         <form data-bind="attr: {id: getCode() + '-3Dsecure-form'}" method="POST">
             <input type="hidden" name="PaReq">
             <input type="hidden" name="TermUrl">
             <input type="hidden" name="Md">
          </form>
-        <!-- /ko -->
 
         <!-- ko if: (scaEnabled())-->
         <!-- #### sagepay 3D secure form V2#### -->
