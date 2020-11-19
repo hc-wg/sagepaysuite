@@ -5,12 +5,11 @@ namespace Ebizmarts\SagePaySuite\Model\PiRequestManagement;
 use Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultInterface;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
-use Ebizmarts\SagePaySuite\Model\Payment;
-use Magento\Framework\Validator\Exception as ValidatorException;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
-use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
-use Magento\Sales\Api\PaymentFailuresInterface;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
+use Magento\Framework\Validator\Exception as ValidatorException;
+use Magento\Sales\Api\PaymentFailuresInterface;
+use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 
 class ThreeDSecureCallbackManagement extends RequestManagement
 {
@@ -100,11 +99,12 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     {
         $payResult = $this->payResultFactory->create();
         $this->setPayResult($payResult);
+        $cres = $this->getRequestData()->getCres();
 
-        if ($this->config->shouldUse3dV2()) {
+        if (isset($cres)) {
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $submit3Dv2Result */
             $submit3DResult = $this->getPiRestApi()->submit3Dv2(
-                $this->getRequestData()->getCres(),
+                $cres,
                 $this->getRequestData()->getTransactionId()
             );
         } else {
