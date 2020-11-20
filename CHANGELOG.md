@@ -2,6 +2,7 @@
 ### Fixed
 - 3Dv1 not working with Protocol 4.00 for PI
 - PI refund problem with Multi-Store sites
+- Duplicated Callbacks received for FORM
 
 ## [1.4.2] - 2020-10-27
 ### Fixed
