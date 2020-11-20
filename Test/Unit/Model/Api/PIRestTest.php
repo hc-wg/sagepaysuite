@@ -90,7 +90,6 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\HttpResponse::class)
             ->disableOriginalConstructor()
             ->getMock();
-
     }
     // @codingStandardsIgnoreEnd
 
@@ -1041,6 +1040,12 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->willReturn($refundRequestMock);
 
+        $this->configMock
+            ->expects($this->once())
+            ->method('setConfigurationScopeId')
+            ->with(1)
+            ->willReturnSelf();
+
         $this->httpRestFactoryMock
             ->expects($this->once())
             ->method('create')
@@ -1172,7 +1177,7 @@ class PIRestTest extends \PHPUnit_Framework_TestCase
             "2B97808F-9A36-6E71-F87F-6714667E8AF4",
             10800,
             "GBP",
-            "Magento backend refund."
+            1
         );
     }
 
