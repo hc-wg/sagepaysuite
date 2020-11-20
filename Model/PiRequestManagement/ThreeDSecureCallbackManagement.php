@@ -89,11 +89,12 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     {
         $payResult = $this->payResultFactory->create();
         $this->setPayResult($payResult);
+        $cres = $this->getRequestData()->getCres();
 
-        if ($this->config->shouldUse3dV2()) {
+        if (isset($cres)) {
             /** @var \Ebizmarts\SagePaySuite\Api\SagePayData\PiTransactionResultThreeD $submit3Dv2Result */
             $submit3DResult = $this->getPiRestApi()->submit3Dv2(
-                $this->getRequestData()->getCres(),
+                $cres,
                 $this->getRequestData()->getTransactionId()
             );
         } else {
