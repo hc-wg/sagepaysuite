@@ -1,3 +1,8 @@
+## [1.4.3] - 2020-11-24
+### Fixed
+- 3Dv1 not working with Protocol 4.00 for PI
+- PI refund problem with Multi-Store sites
+
 ## [1.4.2] - 2020-10-27
 ### Fixed
 - Fix duplicate 3D callback and duplicate response for threeDSubmit
@@ -31,6 +36,7 @@
 - Server not recovering cart when cancel the transaction
 - Add form validation in PI WITHOUT Form
 
+[1.4.3]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.3
 [1.4.2]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.2
 [1.4.1]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.1
 [1.4.0]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.0
