@@ -111,7 +111,6 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\HttpResponse::class)
             ->disableOriginalConstructor()
             ->getMock();
-
     }
     // @codingStandardsIgnoreEnd
 
@@ -911,7 +910,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->method('getStatus')
             ->willReturn(200);
 
-        $transactionResponse = new \stdClass;
+        $transactionResponse = new \stdClass();
         $transactionResponse->statusCode = '2007';
         $transactionResponse->statusDetail = 'Please redirect your customer to the ACSURL to complete the 3DS Transaction';
         $transactionResponse->transactionId = '12345';
@@ -923,7 +922,6 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('getResponseData')
             ->willReturn($transactionResponse);
-
 
         $resultFactory = $this->getMockBuilder(self::TRANSACTION_RESULT_FACTORY)
             ->disableOriginalConstructor()
@@ -1340,6 +1338,12 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->willReturn($refundRequestMock);
         $this->verifyRestApiSetUrlCalledOnce();
 
+        $this->configMock
+            ->expects($this->once())
+            ->method('setConfigurationScopeId')
+            ->with(1)
+            ->willReturnSelf();
+
         $this->httpRestFactoryMock
             ->expects($this->once())
             ->method('create')
@@ -1434,7 +1438,7 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             self::TEST_VPS_TX_ID,
             10800,
             "GBP",
-            "Magento backend refund."
+            1
         );
     }
 
