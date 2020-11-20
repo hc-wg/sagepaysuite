@@ -1,3 +1,9 @@
+## [1.2.26] - 2020-11-24
+### Fixed
+- 3Dv1 not working with Protocol 4.00 for PI
+- PI refund problem with Multi-Store sites
+- Duplicated Callbacks received for FORM
+
 ## [1.2.25] - 2020-10-27	
 ### Changed
 - Server cancel payment redirection to checkout shipping method
@@ -281,6 +287,7 @@
 ### Added
 - First release with Magento 2.2.0 compatibility.
 
+[1.2.26]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.26
 [1.2.25]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.25
 [1.2.24]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.24
 [1.2.23]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.23
