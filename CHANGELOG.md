@@ -1,3 +1,13 @@
+## [1.1.36] - 2020-10-30
+### Changed
+- Server cancel payment redirection to checkout shipping method
+- Added new Order Details field names in block
+
+### Fixed
+- Fix PI duplicate 3D callback and duplicate response for threeDSubmit
+- CSP Whitelisting file
+- Restriction file added webRestrictions.xml
+
 ## [1.1.35] - 2020-07-08
 ### Changed
 - Sage Pay text and logo changed to Opayo
@@ -387,7 +397,8 @@
    - FORM integration (frontend)
    - PI integration (frontend)
    - Online Refunds
-   
+
+[1.1.36]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.36
 [1.1.35]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.35
 [1.1.34]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.34
 [1.1.33]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.33

@@ -4,6 +4,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Plugin;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\PiRequest;
 use Ebizmarts\SagePaySuite\Plugin\StrongCustomerAuthRequestData;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Magento\Framework\HTTP\PhpEnvironment\Request;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Framework\UrlInterface;
@@ -19,6 +20,8 @@ class StrongCustomerAuthRequestDataTest extends \PHPUnit_Framework_TestCase
     const WINDOW_SIZE = "Large";
     const REMOTE_IP = "127.0.0.1";
     const ACCEPT_HEADER_ALL = "*\/*";
+    const QUOTE_ID = 1;
+    const ENCODED_QUOTE_ID = 'MDozOiswMXF3V0l1WFRLTDRra0wxUCtYSGgyQVdORUdWaXNPN3N5RUNEbzE,';
 
     private $objectManagerHelper;
 
@@ -33,13 +36,15 @@ class StrongCustomerAuthRequestDataTest extends \PHPUnit_Framework_TestCase
         $configMock->expects($this->once())->method('shouldUse3dV2')->willReturn(false);
         $requestMock = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
         $urlMock = $this->getMockBuilder(UrlInterface::class)->disableOriginalConstructor()->getMock();
+        $cryptAndCodeMock = $this->getMockBuilder(CryptAndCodeData::class)->disableOriginalConstructor()->getMock();
 
         $sut = $this->objectManagerHelper->getObject(
             StrongCustomerAuthRequestData::class,
             [
                 'sagepayConfig' => $configMock,
                 'request'       => $requestMock,
-                'coreUrl'       => $urlMock
+                'coreUrl'       => $urlMock,
+                'cryptAndCode'  => $cryptAndCodeMock
             ]
         );
 
@@ -61,15 +66,20 @@ class StrongCustomerAuthRequestDataTest extends \PHPUnit_Framework_TestCase
         $requestMock->expects($this->once())->method('getClientIp')->willReturn(self::REMOTE_IP);
 
         $urlMock = $this->getMockBuilder(UrlInterface::class)->disableOriginalConstructor()->getMock();
-        $urlMock->expects($this->once())->method('getUrl')->with("sagepaysuite/pi/callback3Dv2", ["_secure" => true])
-        ->willReturn(self::NOTIFICATION_URL);
+        $urlMock->expects($this->once())->method('getUrl')->with("sagepaysuite/pi/callback3Dv2", ["_secure" => true, 'quoteId' => self::ENCODED_QUOTE_ID])        ->willReturn(self::NOTIFICATION_URL);
+
+        $cryptAndCodeMock = $this->getMockBuilder(CryptAndCodeData::class)->disableOriginalConstructor()->getMock();
+        $cryptAndCodeMock->expects($this->once())->method('encryptAndEncode')->with(self::QUOTE_ID)->willReturn(self::ENCODED_QUOTE_ID);
+
+        $cartMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)->disableOriginalConstructor()->getMock();
 
         $sut = $this->objectManagerHelper->getObject(
             StrongCustomerAuthRequestData::class,
             [
                 'sagepayConfig' => $configMock,
                 'request'       => $requestMock,
-                'coreUrl'       => $urlMock
+                'coreUrl'       => $urlMock,
+                'cryptAndCode'  => $cryptAndCodeMock
             ]
         );
 
@@ -84,6 +94,9 @@ class StrongCustomerAuthRequestDataTest extends \PHPUnit_Framework_TestCase
 
         $subjectMock = $this->getMockBuilder(PiRequest::class)->disableOriginalConstructor()->getMock();
         $subjectMock->expects($this->once())->method('getRequest')->willReturn($piRequestMock);
+
+        $subjectMock->expects($this->once())->method('getCart')->willReturn($cartMock);
+        $cartMock->expects($this->once())->method('getId')->willReturn(self::QUOTE_ID);
 
         $result = $sut->afterGetRequestData($subjectMock, []);
 
