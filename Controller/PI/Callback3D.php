@@ -100,7 +100,10 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $encryptedOrderId = $this->getRequest()->getParam("orderId");
             $orderId = $this->decodeAndDecrypt($encryptedOrderId);
             $order = $this->orderRepository->get($orderId);
-            $this->logInCustomer($order->getCustomerId());
+            $customerId = $order->getCustomerId();
+            if ($customerId != null) {
+                $this->logInCustomer($customerId);
+            }
             $payment = $order->getPayment();
             if ($this->isParesDuplicated($payment, $sanitizedPares)) {
                 $this->javascriptRedirect('checkout/onepage/success');
@@ -227,13 +230,11 @@ class Callback3D extends Action implements CsrfAwareActionInterface
      */
     public function logInCustomer($customerId)
     {
-        if ($customerId != null) {
-            try {
-                $customer = $this->customerRepository->getById($customerId);
-                $this->customerSession->setCustomerDataAsLoggedIn($customer);
-            } catch (\Magento\Framework\Exception\LocalizedException $e) {
-                $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
-            }
+        try {
+            $customer = $this->customerRepository->getById($customerId);
+            $this->customerSession->setCustomerDataAsLoggedIn($customer);
+        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
         }
     }
 }
