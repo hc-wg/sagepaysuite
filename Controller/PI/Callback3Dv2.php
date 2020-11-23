@@ -5,16 +5,20 @@ namespace Ebizmarts\SagePaySuite\Controller\PI;
 use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Checkout\Model\Session;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Framework\App\RequestInterface;
 use Magento\Quote\Model\QuoteRepository;
 use Psr\Log\LoggerInterface;
-use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
-use Ebizmarts\SagePaySuite\Model\RecoverCart;
-use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
 class Callback3Dv2 extends Action
 {
@@ -48,6 +52,15 @@ class Callback3Dv2 extends Action
     /** @var OrderLoader */
     private $orderLoader;
 
+    /** @var CustomerSession */
+    private $customerSession;
+
+    /** @var CustomerRepositoryInterface */
+    private $customerRepository;
+
+    /** @var Logger */
+    private $suiteLogger;
+
     /**
      * Callback3Dv2 constructor.
      * @param Context $context
@@ -61,6 +74,9 @@ class Callback3Dv2 extends Action
      * @param CryptAndCodeData $cryptAndCode
      * @param RecoverCart $recoverCart
      * @param OrderLoader $orderLoader
+     * @param CustomerSession $customerSession
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param Logger $suiteLogger
      */
     public function __construct(
         Context $context,
@@ -73,7 +89,10 @@ class Callback3Dv2 extends Action
         QuoteRepository $quoteRepository,
         CryptAndCodeData $cryptAndCode,
         RecoverCart $recoverCart,
-        OrderLoader $orderLoader
+        OrderLoader $orderLoader,
+        CustomerSession $customerSession,
+        CustomerRepositoryInterface $customerRepository,
+        Logger $suiteLogger
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -88,6 +107,9 @@ class Callback3Dv2 extends Action
         $this->cryptAndCode                = $cryptAndCode;
         $this->recoverCart                 = $recoverCart;
         $this->orderLoader                 = $orderLoader;
+        $this->customerSession             = $customerSession;
+        $this->customerRepository          = $customerRepository;
+        $this->suiteLogger                 = $suiteLogger;
     }
 
     public function execute()
@@ -99,6 +121,7 @@ class Callback3Dv2 extends Action
 
             $order = $this->orderLoader->loadOrderFromQuote($quote);
             $orderId = $order->getId();
+            $this->logInCustomer($order->getCustomerId());
 
             $payment = $order->getPayment();
 
@@ -169,5 +192,20 @@ class Callback3Dv2 extends Action
     public function encryptAndEncode($data)
     {
         return $this->cryptAndCode->encryptAndEncode($data);
+    }
+
+    /**
+     * @param $customerId
+     */
+    public function logInCustomer($customerId)
+    {
+        if ($customerId != null) {
+            try {
+                $customer = $this->customerRepository->getById($customerId);
+                $this->customerSession->setCustomerDataAsLoggedIn($customer);
+            } catch (\Magento\Framework\Exception\LocalizedException $e) {
+                $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
+            }
+        }
     }
 }
