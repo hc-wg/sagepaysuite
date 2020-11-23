@@ -10,7 +10,9 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
-use Magento\Checkout\Model\Session;
+use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\CsrfAwareActionInterface;
@@ -41,8 +43,14 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     /** @var RecoverCart */
     private $recoverCart;
 
-    /** @var Session */
+    /** @var CheckoutSession */
     private $checkoutSession;
+
+    /** @var CustomerSession */
+    private $customerSession;
+
+    /** @var CustomerRepositoryInterface */
+    private $customerRepository;
 
     /**
      * Callback3D constructor.
@@ -53,7 +61,10 @@ class Callback3D extends Action implements CsrfAwareActionInterface
      * @param OrderRepositoryInterface $orderRepository
      * @param CryptAndCodeData $cryptAndCode
      * @param RecoverCart $recoverCart
-     * @param Session $checkoutSession
+     * @param CheckoutSession $checkoutSession
+     * @param Logger $suiteLogger
+     * @param CustomerSession $customerSession
+     * @param CustomerRepositoryInterface $customerRepository
      */
     public function __construct(
         Context $context,
@@ -63,8 +74,10 @@ class Callback3D extends Action implements CsrfAwareActionInterface
         OrderRepositoryInterface $orderRepository,
         CryptAndCodeData $cryptAndCode,
         RecoverCart $recoverCart,
-        Session $checkoutSession,
-        Logger $suiteLogger
+        CheckoutSession $checkoutSession,
+        Logger $suiteLogger,
+        CustomerSession $customerSession,
+        CustomerRepositoryInterface $customerRepository
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -76,6 +89,8 @@ class Callback3D extends Action implements CsrfAwareActionInterface
         $this->recoverCart                 = $recoverCart;
         $this->checkoutSession             = $checkoutSession;
         $this->suiteLogger                 = $suiteLogger;
+        $this->customerSession             = $customerSession;
+        $this->customerRepository          = $customerRepository;
     }
 
     public function execute()
@@ -85,8 +100,9 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $encryptedOrderId = $this->getRequest()->getParam("orderId");
             $orderId = $this->decodeAndDecrypt($encryptedOrderId);
             $order = $this->orderRepository->get($orderId);
+            $this->logInCustomer($order->getCustomerId());
             $payment = $order->getPayment();
-            if($this->isParesDuplicated($payment, $sanitizedPares)) {
+            if ($this->isParesDuplicated($payment, $sanitizedPares)) {
                 $this->javascriptRedirect('checkout/onepage/success');
                 return;
             } else {
@@ -195,5 +211,20 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     public function decodeAndDecrypt($data)
     {
         return $this->cryptAndCode->decodeAndDecrypt($data);
+    }
+
+    /**
+     * @param $customerId
+     */
+    public function logInCustomer($customerId)
+    {
+        if ($customerId != null) {
+            try {
+                $customer = $this->customerRepository->getById($customerId);
+                $this->customerSession->setCustomerDataAsLoggedIn($customer);
+            } catch (\Magento\Framework\Exception\LocalizedException $e) {
+                $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
+            }
+        }
     }
 }
