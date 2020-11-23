@@ -120,7 +120,10 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
             $quoteIdFromParams = $this->cryptAndCode->decodeAndDecrypt($quoteIdEncrypted);
             $quote = $this->quoteRepository->get((int)$quoteIdFromParams);
             $order = $this->orderLoader->loadOrderFromQuote($quote);
-            $this->logInCustomer($order->getCustomerId());
+            $customerId = $order->getCustomerId();
+            if ($customerId != null) {
+                $this->logInCustomer($customerId);
+            }
             $orderId = (int)$order->getId();
 
             $payment = $order->getPayment();
@@ -225,13 +228,11 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
      */
     public function logInCustomer($customerId)
     {
-        if ($customerId != null) {
-            try {
-                $customer = $this->customerRepository->getById($customerId);
-                $this->customerSession->setCustomerDataAsLoggedIn($customer);
-            } catch (\Magento\Framework\Exception\LocalizedException $e) {
-                $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
-            }
+        try {
+            $customer = $this->customerRepository->getById($customerId);
+            $this->customerSession->setCustomerDataAsLoggedIn($customer);
+        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
         }
     }
 }
