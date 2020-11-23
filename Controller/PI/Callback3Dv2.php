@@ -121,7 +121,10 @@ class Callback3Dv2 extends Action
 
             $order = $this->orderLoader->loadOrderFromQuote($quote);
             $orderId = $order->getId();
-            $this->logInCustomer($order->getCustomerId());
+            $customerId = $order->getCustomerId();
+            if ($customerId != null) {
+                $this->logInCustomer($customerId);
+            }
 
             $payment = $order->getPayment();
 
@@ -199,13 +202,11 @@ class Callback3Dv2 extends Action
      */
     public function logInCustomer($customerId)
     {
-        if ($customerId != null) {
-            try {
-                $customer = $this->customerRepository->getById($customerId);
-                $this->customerSession->setCustomerDataAsLoggedIn($customer);
-            } catch (\Magento\Framework\Exception\LocalizedException $e) {
-                $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
-            }
+        try {
+            $customer = $this->customerRepository->getById($customerId);
+            $this->customerSession->setCustomerDataAsLoggedIn($customer);
+        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
         }
     }
 }
