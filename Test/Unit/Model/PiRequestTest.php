@@ -85,7 +85,7 @@ class PiRequestTest extends \PHPUnit_Framework_TestCase
         $piRequestMock->setVendorTxCode("000000194-2017-01-19-1351141484833874");
 
         $piRequestMock->expects($this->exactly(4))->method('getCart')->willReturn($cartMock);
-        $piRequestMock->expects($this->exactly(3))->method('getIsMoto')->willReturn(false);
+        $piRequestMock->expects($this->exactly(2))->method('getIsMoto')->willReturn(false);
 
         $returnData = [
             'transactionType' => 'Payment',
