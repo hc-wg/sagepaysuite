@@ -71,7 +71,7 @@ class PiRequest
             $data['entryMethod'] = 'TelephoneOrder';
         } else {
             $data['entryMethod'] = 'Ecommerce';
-            $data['apply3DSecure']= $this->sagepayConfig->get3Dsecure($this->getIsMoto());
+            $data['apply3DSecure'] = $this->sagepayConfig->get3Dsecure();
         }
 
         $data['billingAddress'] = [
