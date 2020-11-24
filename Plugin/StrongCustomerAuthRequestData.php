@@ -68,6 +68,12 @@ class StrongCustomerAuthRequestData
             'transType'                => TransactionType::GOOD_SERVICE_PURCHASE,
             'challengeWindowSize'      => $this->sagepayConfig->getValue("challengewindowsize"),
         ];
+        if ($data->getSaveToken() || $data->getReusableToken()) {
+            $result['credentialType'] = [
+                'cofUsage'      => $this->getCofUsage($data),
+                'initiatedType' => 'CIT'
+            ];
+        }
 
         return $result;
     }
@@ -87,5 +93,17 @@ class StrongCustomerAuthRequestData
     private function encryptAndEncode($data)
     {
         return $this->cryptAndCode->encryptAndEncode($data);
+    }
+
+    /**
+     * @param $data \Ebizmarts\SagePaySuite\Api\Data\PiRequest
+     * @return string
+     */
+    private function getCofUsage($data) {
+        if ($data->getReusableToken()) {
+            return 'Subsequent';
+        } else {
+            return 'First';
+        }
     }
 }
