@@ -140,6 +140,15 @@ class Config
     const T3STATUS_OK       = 'OK';
     const T3STATUS_HOLD     = 'HOLD';
     const T3STATUS_REJECT   = 'REJECT';
+    
+    /**
+     * SagePay Response Statuses
+     */
+    const OK_STATUS             = 'OK';
+    const PENDING_STATUS        = 'PENDING';
+    const REGISTERED_STATUS     = 'REGISTERED';
+    const DUPLICATED_STATUS     = 'DUPLICATED';
+    const AUTHENTICATED_STATUS  = 'AUTHENTICATED';
 
     /**
      * SagePay ReD Score Statuses
