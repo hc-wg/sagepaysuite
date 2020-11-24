@@ -125,6 +125,7 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
                 $this->logInCustomer($customerId);
             }
             $orderId = (int)$order->getId();
+            $saveToken = $this->getSaveToken();
 
             $payment = $order->getPayment();
 
@@ -135,6 +136,7 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
             $data->setVendorName($this->config->getVendorname());
             $data->setMode($this->config->getMode());
             $data->setPaymentAction($this->config->getSagepayPaymentAction());
+            $data->setSaveToken($saveToken);
 
             $this->requester->setRequestData($data);
 
@@ -233,6 +235,18 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
             $this->customerSession->setCustomerDataAsLoggedIn($customer);
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public function getSaveToken()
+    {
+        if ($this->getRequest()->getParam("st") === 'true') {
+            return true;
+        } else {
+            return false;
         }
     }
 }
