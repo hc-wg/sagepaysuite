@@ -199,8 +199,12 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $this->orderMock->expects($this->once())->method('getId')->willReturn(1);
         $this->orderMock->expects($this->any())->method('getPayment')->willReturn($paymentMock);
 
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')
-            ->willReturnOnConsecutiveCalls("100000001-2016-12-12-12346789", false);
+        $paymentMock->expects($this->exactly(2))->method('getAdditionalInformation')
+            ->withConsecutive(['vendorTxCode'], ['Status'])
+            ->willReturnOnConsecutiveCalls(
+                "100000001-2016-12-12-12346789", 
+                \Ebizmarts\SagePaySuite\Model\Config::OK_STATUS
+            );
 
         $this->formSuccessController->execute();
     }
@@ -261,8 +265,12 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $this->orderMock->expects($this->once(1))->method('getId')->willReturn(1);
         $this->orderMock->expects($this->any())->method('getPayment')->willReturn($paymentMock);
 
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')
-            ->willReturnOnConsecutiveCalls("100000001-2016-12-12-12346789", false);
+        $paymentMock->expects($this->exactly(2))->method('getAdditionalInformation')
+            ->withConsecutive(['vendorTxCode'], ['Status'])
+            ->willReturnOnConsecutiveCalls(
+                "100000001-2016-12-12-12346789", 
+                \Ebizmarts\SagePaySuite\Model\Config::OK_STATUS
+            );
 
         $this->formSuccessController->execute();
     }
@@ -323,8 +331,12 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $this->orderMock->expects($this->once())->method('getId')->willReturn(1);
         $this->orderMock->expects($this->any())->method('getPayment')->willReturn($paymentMock);
 
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')
-            ->willReturnOnConsecutiveCalls("100000001-2016-12-12-12346789", false);
+        $paymentMock->expects($this->exactly(2))->method('getAdditionalInformation')
+            ->withConsecutive(['vendorTxCode'], ['Status'])
+            ->willReturnOnConsecutiveCalls(
+                "100000001-2016-12-12-12346789", 
+                \Ebizmarts\SagePaySuite\Model\Config::PENDING_STATUS
+            );
 
         $this->formSuccessController->execute();
     }
@@ -467,8 +479,12 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
 
         $this->orderMock->expects($this->any())->method('getPayment')->willReturn($paymentMock);
 
-        $paymentMock->expects($this->once())->method('getAdditionalInformation')
-            ->willReturn("100000001-2016-12-12-12346789");
+        $paymentMock->expects($this->exactly(2))->method('getAdditionalInformation')
+            ->withConsecutive(['vendorTxCode'], ['Status'])
+            ->willReturnOnConsecutiveCalls(
+                "100000001-2016-12-12-12346789", 
+                null
+            );
 
         $this->formSuccessController->execute();
     }
