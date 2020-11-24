@@ -61,7 +61,6 @@ class PiRequest
             'description'       => $this->requestHelper->getOrderDescription($this->getIsMoto()),
             'customerFirstName' => substr(trim($billingAddress->getFirstname()), 0, 20),
             'customerLastName'  => substr(trim($billingAddress->getLastname()), 0, 20),
-            'apply3DSecure'     => $this->sagepayConfig->get3Dsecure($this->getIsMoto()),
             'applyAvsCvcCheck'  => $this->sagepayConfig->getAvsCvc(),
             'referrerId'        => $this->requestHelper->getReferrerId(),
             'customerEmail'     => $billingAddress->getEmail(),
@@ -72,6 +71,7 @@ class PiRequest
             $data['entryMethod'] = 'TelephoneOrder';
         } else {
             $data['entryMethod'] = 'Ecommerce';
+            $data['apply3DSecure'] = $this->sagepayConfig->get3Dsecure();
         }
 
         $data['billingAddress'] = [
