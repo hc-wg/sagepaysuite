@@ -437,7 +437,7 @@ define(
                                 /**
                                  * 3D secure authentication required
                                  */
-                                if (self.scaEnabled()) {
+                                if (typeof response.par_eq == 'undefined' || response.par_eq == null) {
                                     var form3Dv2 = document.getElementById(self.getCode() + '-3DsecureV2-form');
                                     form3Dv2.setAttribute('action', response.acs_url);
                                     form3Dv2.elements[0].setAttribute('value', response.creq);

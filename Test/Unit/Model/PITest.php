@@ -9,12 +9,13 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 
 class PITest extends \PHPUnit_Framework_TestCase
 {
-    private $objectManagerHelper;
-    private $suiteHelperMock;
     /**
      * Sage Pay Transaction ID
      */
     const TEST_VPSTXID = 'F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F';
+
+    const STORE_ID = 1;
+
     /**
      * @var \Ebizmarts\SagePaySuite\Model\PI
      */
@@ -27,6 +28,10 @@ class PITest extends \PHPUnit_Framework_TestCase
      * @var \Ebizmarts\SagePaySuite\Model\Config|\PHPUnit_Framework_MockObject_MockObject
      */
     private $configMock;
+
+    private $objectManagerHelper;
+    private $suiteHelperMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -86,6 +91,9 @@ class PITest extends \PHPUnit_Framework_TestCase
         $orderMock->expects($this->once())
             ->method('getIncrementId')
             ->willReturn("1000001");
+        $orderMock->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(self::STORE_ID);
 
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
@@ -121,7 +129,8 @@ class PITest extends \PHPUnit_Framework_TestCase
                 'R1000001',
                 self::TEST_VPSTXID,
                 10000,
-                'Magento backend refund.'
+                'Magento backend refund.',
+                self::STORE_ID
             )
             ->willReturn($returnMock);
         $transactionAmountFactoryMock = $this->getMockBuilder(
@@ -162,6 +171,10 @@ class PITest extends \PHPUnit_Framework_TestCase
         $orderMock->expects($this->once())
             ->method('getBaseCurrencyCode')
             ->willReturn('GBP');
+        $orderMock->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(self::STORE_ID);
+
         $paymentMock = $this->makePaymentMockForInitialize($orderMock);
         $paymentMock->expects($this->once())
             ->method('setIsTransactionClosed')
@@ -190,7 +203,8 @@ class PITest extends \PHPUnit_Framework_TestCase
                 'R1000001',
                 self::TEST_VPSTXID,
                 10000,
-                'Magento backend refund.'
+                'Magento backend refund.',
+                self::STORE_ID
             )
             ->willReturn($returnMock);
         $transactionAmountMock = $this->getMockBuilder(
@@ -236,6 +250,10 @@ class PITest extends \PHPUnit_Framework_TestCase
         $orderMock->expects($this->once())
             ->method('getIncrementId')
             ->willReturn("1000001");
+        $orderMock->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(self::STORE_ID);
+
         $paymentMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
@@ -243,6 +261,7 @@ class PITest extends \PHPUnit_Framework_TestCase
         $paymentMock->expects($this->once())
             ->method('getOrder')
             ->will($this->returnValue($orderMock));
+
         $this->suiteHelperMock
             ->expects($this->once())
             ->method('generateVendorTxCode')
@@ -259,7 +278,8 @@ class PITest extends \PHPUnit_Framework_TestCase
                 'R1000001',
                 self::TEST_VPSTXID,
                 10000,
-                'Magento backend refund.'
+                'Magento backend refund.',
+                self::STORE_ID
             )
             ->willThrowException(new \Exception("Error in Refunding"));
         $transactionAmountFactoryMock = $this->getMockBuilder(
@@ -303,6 +323,10 @@ class PITest extends \PHPUnit_Framework_TestCase
         $orderMock->expects($this->once())
             ->method('getIncrementId')
             ->willReturn("1000001");
+        $orderMock->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(self::STORE_ID);
+
         $this->suiteHelperMock
             ->expects($this->once())
             ->method('generateVendorTxCode')
@@ -326,7 +350,8 @@ class PITest extends \PHPUnit_Framework_TestCase
                 'R1000001',
                 self::TEST_VPSTXID,
                 10000,
-                'Magento backend refund.'
+                'Magento backend refund.',
+                self::STORE_ID
             )
             ->willThrowException(
                 new \Ebizmarts\SagePaySuite\Model\Api\ApiException(
