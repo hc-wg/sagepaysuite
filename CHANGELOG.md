@@ -1,3 +1,9 @@
+## [1.3.17] - 2020-11-24
+### Fixed
+- 3Dv1 not working with Protocol 4.00 for PI
+- PI refund problem with Multi-Store sites
+- Duplicated Callbacks received for FORM
+
 ## [1.3.16] - 2020-10-27
 ### Changed
 - Server cancel payment redirection to checkout shipping method
@@ -185,6 +191,7 @@
 - Magento not running schema updates. Switching to Schema patches
 - New CSRF checks rejecting callbacks
 
+[1.3.17]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.17
 [1.3.16]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.16
 [1.3.15]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.15
 [1.3.14]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.14
