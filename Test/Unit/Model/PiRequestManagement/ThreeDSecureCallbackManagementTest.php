@@ -701,6 +701,10 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\CryptAndCodeData::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $vaultDetailsHandlerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Token\VaultDetailsHandler::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $threeDSecureCallbackManagementMock = $this
             ->getMockBuilder(ThreeDSecureCallbackManagement::class)
@@ -711,22 +715,23 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
                 'getPayResult'
             ])
             ->setConstructorArgs([
-                'checkoutHelper'     => $checkoutMock,
-                'piRestApi'          => $piRestMock,
-                'ccConvert'          => $sagePayCardTypeMock,
-                'piRequest'          => $piRequestMock,
-                'suiteHelper'        => $dataMock,
-                'result'             => $piResultMock,
-                'checkoutSession'    => $sessionMock,
-                'httpRequest'        => $requestMock,
-                'transactionFactory' => $transactionFactoryMock,
-                'payResultFactory'   => $this->payResultFactoryMock,
-                'actionFactory'      => $closedForActionFactoryMock,
-                'orderRepository'    => $orderRepositoryMock,
-                'invoiceEmailSender' => $invoiceSenderMock,
-                'config'             => $configMock,
-                'paymentFailures'    => $paymentFailuresInterfaceMock,
-                'cryptAndCode'       => $cryptAndCodeDataMock
+                'checkoutHelper'      => $checkoutMock,
+                'piRestApi'           => $piRestMock,
+                'ccConvert'           => $sagePayCardTypeMock,
+                'piRequest'           => $piRequestMock,
+                'suiteHelper'         => $dataMock,
+                'result'              => $piResultMock,
+                'checkoutSession'     => $sessionMock,
+                'httpRequest'         => $requestMock,
+                'transactionFactory'  => $transactionFactoryMock,
+                'payResultFactory'    => $this->payResultFactoryMock,
+                'actionFactory'       => $closedForActionFactoryMock,
+                'orderRepository'     => $orderRepositoryMock,
+                'invoiceEmailSender'  => $invoiceSenderMock,
+                'config'              => $configMock,
+                'paymentFailures'     => $paymentFailuresInterfaceMock,
+                'cryptAndCode'        => $cryptAndCodeDataMock,
+                'vaultDetailsHandler' => $vaultDetailsHandlerMock
             ])
             ->getMock();
 
