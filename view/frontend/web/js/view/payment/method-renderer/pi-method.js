@@ -362,7 +362,7 @@ define(
                 var cardIdentifier = "";
                 if (tokenisationResult.success) {
                     if (self.use_token) {
-                        cardIdentifier = self.getSagePayToken(self.getSelectedToken());
+                        cardIdentifier = self.getSagePayToken(self.getSelectedToken());xff
                     } else {
                         cardIdentifier = tokenisationResult.cardIdentifier;
                     }
@@ -553,7 +553,7 @@ define(
                                     callbackUrl += "?transactionId=" + response.transaction_id +
                                         "&orderId=" + response.order_id +
                                         "&quoteId=" + response.quote_id +
-                                        "&st=" + self.saveToken();
+                                        "&saveToken=" + self.saveToken();
 
                                     //Build 3D form.
                                     var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
@@ -639,7 +639,8 @@ define(
                     'color_depth': screen.colorDepth,
                     'screen_width': screen.width,
                     'screen_height': screen.height,
-                    'timezone': (new Date()).getTimezoneOffset()
+                    'timezone': (new Date()).getTimezoneOffset(),
+                    'save_token': this.saveToken()
                 }
             },
             /**

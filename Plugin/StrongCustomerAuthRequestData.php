@@ -64,7 +64,7 @@ class StrongCustomerAuthRequestData
             'browserIP'                => $this->request->getClientIp(),
             'browserLanguage'          => $data->getLanguage(),
             'browserUserAgent'         => $data->getUserAgent(),
-            'notificationURL'          => $this->getNotificationUrl($quoteId),
+            'notificationURL'          => $this->getNotificationUrl($quoteId, $data->getSaveToken()),
             'transType'                => TransactionType::GOOD_SERVICE_PURCHASE,
             'challengeWindowSize'      => $this->sagepayConfig->getValue("challengewindowsize"),
         ];
@@ -78,10 +78,13 @@ class StrongCustomerAuthRequestData
         return $result;
     }
 
-    private function getNotificationUrl($quoteId)
+    private function getNotificationUrl($quoteId, $saveToken)
     {
         $encryptedQuoteId = $this->encryptAndEncode($quoteId);
-        $url = $this->coreUrl->getUrl('sagepaysuite/pi/callback3Dv2', ['_secure' => true, 'quoteId' => $encryptedQuoteId]);
+        $url = $this->coreUrl->getUrl(
+            'sagepaysuite/pi/callback3Dv2',
+            ['_secure' => true, 'quoteId' => $encryptedQuoteId, 'saveToken' => $saveToken]
+        );
 
         return $url;
     }
