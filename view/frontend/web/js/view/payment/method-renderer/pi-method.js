@@ -362,7 +362,7 @@ define(
                 var cardIdentifier = "";
                 if (tokenisationResult.success) {
                     if (self.use_token) {
-                        cardIdentifier = self.getSagePayToken(self.getSelectedToken());xff
+                        cardIdentifier = self.getSagePayToken(self.getSelectedToken());
                     } else {
                         cardIdentifier = tokenisationResult.cardIdentifier;
                     }
