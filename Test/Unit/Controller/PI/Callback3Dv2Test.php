@@ -7,18 +7,17 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\PI;
 
 use Ebizmarts\SagePaySuite\Controller\PI\Callback3Dv2;
-use Magento\Checkout\Model\Session;
-use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
-use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Sales\Model\Order;
-use Magento\Sales\Model\Order\Payment;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
-use Magento\Quote\Model\QuoteRepository;
+use Magento\Checkout\Model\Session;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
+use Magento\Quote\Model\QuoteRepository;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Payment;
 
 class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
 {
@@ -160,7 +159,11 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->method('getErrorMessage')
             ->willReturnArgument(null);
 
-        $this->requestMock->expects($this->once())->method('getParam')->with('quoteId')->willReturn(self::ENCODED_QUOTE_ID);
+        $this->requestMock
+            ->expects($this->exactly(2))
+            ->method('getParam')
+            ->withConsecutive(['quoteId'], ['saveToken'])
+            ->willReturnOnConsecutiveCalls(self::ENCODED_QUOTE_ID, true);
 
         $this->cryptAndCodeMock->expects($this->once())->method('decodeAndDecrypt')->with(self::ENCODED_QUOTE_ID)->willReturn(self::QUOTE_ID);
         $quoteRepositoryMock->expects($this->once())->method('get')->with(self::QUOTE_ID)->willReturn($quoteMock);
@@ -206,7 +209,7 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
                 'orderRepository'             => $orderRepositoryMock,
                 'quoteRepository'             => $quoteRepositoryMock,
                 'cryptAndCode'                => $this->cryptAndCodeMock,
-                'checkoutSession'             => $checkoutSessionMock, 
+                'checkoutSession'             => $checkoutSessionMock,
                 'orderLoader'                 => $orderLoaderMock,
                 'customerSession'             => $customerSessionMock,
                 'customerRepository'          => $customerRepositoryMock
@@ -318,8 +321,11 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->requestMock->expects($this->once())->method('getParam')->with('quoteId')->willReturn(self::ENCODED_QUOTE_ID);
-        $this->cryptAndCodeMock->expects($this->once())->method('decodeAndDecrypt')->with(self::ENCODED_QUOTE_ID)->willReturn(self::QUOTE_ID);
+        $this->requestMock
+            ->expects($this->exactly(2))
+            ->method('getParam')
+            ->withConsecutive(['quoteId'], ['saveToken'])
+            ->willReturnOnConsecutiveCalls(self::ENCODED_QUOTE_ID, true);        $this->cryptAndCodeMock->expects($this->once())->method('decodeAndDecrypt')->with(self::ENCODED_QUOTE_ID)->willReturn(self::QUOTE_ID);
         $quoteRepositoryMock->expects($this->once())->method('get')->with(self::QUOTE_ID)->willReturn($quoteMock);
         $orderLoaderMock->expects($this->once())->method('loadOrderFromQuote')->with($quoteMock)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getId')->willReturn(self::ORDER_ID);

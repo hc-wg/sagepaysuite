@@ -475,7 +475,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
         $this->requestMock
             ->expects($this->exactly(2))
             ->method('getParam')
-            ->withConsecutive(['orderId'], ['st'])
+            ->withConsecutive(['orderId'], ['saveToken'])
             ->willReturnOnConsecutiveCalls(self::ENCODED_ORDER_ID, 'true');
 
         $this->requestMock
@@ -949,7 +949,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
         $this->requestMock
             ->expects($this->exactly(2))
             ->method('getParam')
-            ->withConsecutive(['orderId'], ['st'])
+            ->withConsecutive(['orderId'], ['saveToken'])
             ->willReturnOnConsecutiveCalls(self::ENCODED_ORDER_ID, 'true');
 
         $cryptAndCodeMock = $this
@@ -1121,7 +1121,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
         $this->requestMock
             ->expects($this->exactly(3))
             ->method('getParam')
-            ->withConsecutive(['orderId'], ['st'], ['transactionId'])
+            ->withConsecutive(['orderId'], ['saveToken'], ['transactionId'])
             ->willReturnOnConsecutiveCalls(
                 self::ENCODED_ORDER_ID,
                 $this->returnValue(self::TEST_VPSTXID),
