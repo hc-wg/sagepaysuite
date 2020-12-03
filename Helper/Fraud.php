@@ -11,10 +11,10 @@ use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Mail\Template\TransportBuilder;
+use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Store\Model\Store;
-use Magento\Sales\Model\Order;
 
 class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 {
@@ -62,7 +62,6 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\DB\TransactionFactory $transactionFactory,
         \Magento\Sales\Model\Service\InvoiceServiceFactory $invoiceService
     ) {
-    
         parent::__construct($context);
         $this->_config               = $config;
         $this->_mailTransportBuilder = $mailTransportBuilder;
@@ -100,7 +99,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
              */
 
             //get transaction data from sagepay
-            $response = $this->_reportingApi->getFraudScreenDetail($sagepayVpsTxId);
+            $response = $this->_reportingApi->getFraudScreenDetail($sagepayVpsTxId, $payment->getOrder()->getStoreId());
 
             if ($response->getErrorCode() == "0000") {
                 if ($this->fraudCheckAvailable($response)) {
@@ -185,7 +184,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         if ($fraudprovidername == 'ReD') {
             $recommendation = $fraudData->getFraudScreenRecommendation();
-        } else if ($fraudprovidername == 'T3M') {
+        } elseif ($fraudprovidername == 'T3M') {
             $recommendation = $fraudData->getThirdmanAction();
         }
 
@@ -204,7 +203,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         if ($fraudprovidername == 'ReD') {
             $passed = $fraudData->getFraudScreenRecommendation() == Config::REDSTATUS_ACCEPT;
-        } else if ($fraudprovidername == 'T3M') {
+        } elseif ($fraudprovidername == 'T3M') {
             $passed = $fraudData->getThirdmanAction() == Config::T3STATUS_OK;
         }
 
@@ -256,7 +255,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
             $fraudid                   = $fraudData->getFraudId();
             $fraudcode                 = $fraudData->getFraudCode();
             $fraudcodedetail           = $fraudData->getFraudCodeDetail();
-        } else if ($fraudprovidername == 'T3M') {
+        } elseif ($fraudprovidername == 'T3M') {
             $fraudscreenrecommendation = $fraudData->getThirdmanAction();
             $fraudid                   = $fraudData->getThirdmanId();
             $fraudcode                 = $fraudData->getThirdmanScore();
@@ -284,7 +283,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         if ($fraudprovidername == 'ReD') {
             $isFraud = $fraudData->getFraudScreenRecommendation() == Config::REDSTATUS_DENY;
-        } else if ($fraudprovidername == 'T3M') {
+        } elseif ($fraudprovidername == 'T3M') {
             $isFraud = $fraudData->getThirdmanAction() == Config::T3STATUS_REJECT;
         }
 
@@ -303,7 +302,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         if ($fraudprovidername == 'ReD') {
             $providerChecked = $fraudData->getFraudScreenRecommendation() != Config::REDSTATUS_NOTCHECKED;
-        } else if ($fraudprovidername == 'T3M') {
+        } elseif ($fraudprovidername == 'T3M') {
             $providerChecked = $fraudData->getThirdmanAction() != Config::T3STATUS_NORESULT;
         }
 
@@ -401,7 +400,6 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
         $fraudprovidername,
         $rules
     ) {
-    
         if ((string)$this->_config->getNotifyFraudResult() != 'disabled') {
             if (((string)$this->_config->getNotifyFraudResult() == "medium_risk" &&
                     ($fraudscreenrecommendation == Config::REDSTATUS_DENY ||
