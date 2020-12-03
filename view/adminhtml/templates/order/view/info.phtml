@@ -84,17 +84,16 @@ $payment = $block->getPayment();
                     <th><?php echo $block->escapeHtml(__('Postcode Verification Result')); ?>:</th>
                     <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("PostCodeResult")); ?></td>
                 </tr>
+            <?php if ($payment->getAdditionalInformation("AVSCV2")) { ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('AVS/CV2 Applied')); ?>:</th>
+                    <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("AVSCV2")); ?></td>
+                </tr>
             <?php } ?>
             <?php if ($payment->getAdditionalInformation("CV2Result")) { ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('CV2 Verification Result')); ?>:</th>
                     <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("CV2Result")); ?></td>
-                </tr>
-            <?php } ?>
-            <?php if ($payment->getAdditionalInformation("AVSCV2")) { ?>
-                <tr>
-                    <th><?php echo $block->escapeHtml(__('AVS and CV2 Verification Result')); ?>:</th>
-                    <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("AVSCV2")); ?></td>
                 </tr>
             <?php } ?>
             <!-- Compatibility with orders placed with < v.1.1.35 -->
