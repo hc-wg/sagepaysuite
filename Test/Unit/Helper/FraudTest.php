@@ -77,6 +77,18 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $paymentMock->expects($this->once())->method('setAdditionalInformation')
             ->with("fraudscreenrecommendation", 'NORESULT')
             ->willReturnSelf();
+        $orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(0);
 
         $return = $this->fraudHelperModel->processFraudInformation($transactionMock, $paymentMock);
 
@@ -105,6 +117,18 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
+        $orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(0);
 
         $return = $this->fraudHelperModel->processFraudInformation($transactionMock, $paymentMock);
 
@@ -273,6 +297,11 @@ class FraudTest extends \PHPUnit_Framework_TestCase
 
             $orderMock
                 ->expects($this->once())
+                ->method('getStoreId')
+                ->willReturn(0);
+
+            $orderMock
+                ->expects($this->once())
                 ->method('getState')
                 ->willReturn($data['getState']);
 
@@ -332,7 +361,6 @@ class FraudTest extends \PHPUnit_Framework_TestCase
         $fraudResponseMock->setFraudCodeDetail('Fraud card');
         $fraudResponseMock->setFraudProviderName('ReD');
 
-
         $this->reportingApiMock->expects($this->once())
             ->method('getFraudScreenDetail')
             ->willReturn($fraudResponseMock);
@@ -368,7 +396,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $paymentMock
-            ->expects($this->exactly(2))
+            ->expects($this->exactly(3))
             ->method('getOrder')
             ->willReturn($orderMock);
 
@@ -376,6 +404,11 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getState')
             ->willReturn(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
+
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(0);
 
         $this->configMock->expects($this->any())
             ->method('getAutoInvoiceFraudPassed')
@@ -468,7 +501,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $paymentMock
-            ->expects($this->exactly(2))
+            ->expects($this->exactly(3))
             ->method('getOrder')
             ->willReturn($orderMock);
 
@@ -476,6 +509,11 @@ class FraudTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getState')
             ->willReturn(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
+
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(0);
 
         $this->configMock->expects($this->any())
             ->method('getAutoInvoiceFraudPassed')
@@ -500,7 +538,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'expectedregister' => 0,
                     'expectedcapture' => 0,
                     'expectedsave' => 0,
-                    'expectedorder' => 1,
+                    'expectedorder' => 2,
                     'expectedinvoice' => 0,
                     'expectedrelatedobject' => 0,
                     'expectedqty' => 0,
@@ -541,7 +579,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'expectedregister' => 0,
                     'expectedcapture' => 0,
                     'expectedsave' => 0,
-                    'expectedorder' => 2,
+                    'expectedorder' => 3,
                     'expectedinvoice' => 0,
                     'expectedrelatedobject' => 0,
                     'expectedqty' => 0,
@@ -569,7 +607,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'expectedregister' => 1,
                     'expectedcapture' => 1,
                     'expectedsave' => 1,
-                    'expectedorder' => 2,
+                    'expectedorder' => 3,
                     'expectedinvoice' => 1,
                     'expectedrelatedobject' => 1,
                     'expectedqty' => 1,
@@ -607,7 +645,7 @@ class FraudTest extends \PHPUnit_Framework_TestCase
                     'expectedregister' => 0,
                     'expectedcapture' => 0,
                     'expectedsave' => 0,
-                    'expectedorder' => 1,
+                    'expectedorder' => 2,
                     'expectedinvoice' => 0,
                     'expectedrelatedobject' => 0,
                     'expectedqty' => 0,
