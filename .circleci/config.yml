@@ -24,6 +24,17 @@ executors:
     working_directory: ~/
 
 jobs:
+    DownloadTools232EE:
+      executor: my-executor
+      steps:
+        - sagepay/download-pre-compiled-magento-no-sampledata:
+            version: $MAGENTO_VERSION
+        - sagepay/download-tools:
+            version: $MAGENTO_VERSION
+        - persist_to_workspace:
+            root: /home/circleci
+            paths:
+              - ./
     DownloadTools235EE:
       executor: my-executor
       steps:
@@ -173,13 +184,14 @@ workflows:
   version: 2.1
   build_test_dist:
     jobs:
+      - DownloadTools232EE
       - DownloadTools235EE
       - PHP 71 Unit Tests:
           requires:
             - PHP 71 Code Sniffer
       - PHP 71 Code Sniffer:
           requires:
-            - DownloadTools235EE
+            - DownloadTools232EE
       - PHP 71 Compile and API test:
           requires:
             - PHP 71 Unit Tests
