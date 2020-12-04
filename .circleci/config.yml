@@ -192,7 +192,7 @@ workflows:
             - PHP 71 Code Sniffer
       - PHP 71 Code Sniffer:
           requires:
-            - DownloadTools232EE
+            - DownloadTools235EE
       - PHP 71 Compile and API test:
           requires:
             - PHP 71 Unit Tests
@@ -204,7 +204,7 @@ workflows:
             - PHP 72 Code Sniffer
       - PHP 72 Code Sniffer:
           requires:
-            - DownloadTools232EE
+            - DownloadTools235EE
       - PHP 72 Compile and API test:
           requires:
             - PHP 72 Unit Tests
