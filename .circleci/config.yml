@@ -93,7 +93,7 @@ jobs:
             coverage: --coverage-text
     PHP 72 Code Sniffer:
       docker:
-        - image: circleci/php:7.2-apache
+        - image: circleci/php:7.2.33-apache-stretch
       executor: my-executor
       steps:
         - attach_workspace:
@@ -101,7 +101,7 @@ jobs:
         - sagepay/run-php-cs
     PHP 72 Unit Tests:
       docker:
-        - image: circleci/php:7.2-apache
+        - image: circleci/php:7.2.33-apache-stretch
       executor: my-executor
       steps:
         - attach_workspace:
@@ -128,7 +128,7 @@ jobs:
           - sagepay/run-api-functional-tests
     PHP 72 unit tests with coverage:
       docker:
-        - image: circleci/php:7.2-apache
+        - image: circleci/php:7.2.33-apache-stretch
       executor: my-executor
       steps:
         - attach_workspace:
@@ -204,7 +204,7 @@ workflows:
             - PHP 72 Code Sniffer
       - PHP 72 Code Sniffer:
           requires:
-            - DownloadTools232EE
+            - DownloadTools235EE
       - PHP 72 Compile and API test:
           requires:
             - PHP 72 Unit Tests
