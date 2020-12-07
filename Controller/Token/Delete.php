@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Token;
 
+use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Token;
 use Magento\Customer\Model\Session;
@@ -87,9 +88,9 @@ class Delete extends Action
                 } else {
                     $isv = $this->getRequest()->getParam('isVault');
                     if (isset($isv) && $isv) {
-                        $this->paymentMethod = 'sagepaysuitepi';
+                        $this->paymentMethod = Config::METHOD_PI;
                     } else {
-                        $this->paymentMethod = 'sagepaysuiteserver';
+                        $this->paymentMethod = Config::METHOD_SERVER;
                     }
                 }
             } else {
@@ -98,7 +99,7 @@ class Delete extends Action
 
             // This if is temporary, once server start using vault the if for server should be removed
             // and delete the token the same way as pi.
-            if ($this->paymentMethod === 'sagepaysuiteserver') {
+            if ($this->paymentMethod === Config::METHOD_SERVER) {
                 $token = $this->tokenModel->loadToken($this->tokenId);
 
                 //validate ownership
@@ -116,7 +117,7 @@ class Delete extends Action
                     'success' => true,
                     'response' => true
                 ];
-            } elseif ($this->paymentMethod === 'sagepaysuitepi') {
+            } elseif ($this->paymentMethod === Config::METHOD_PI) {
                 if ($this->vaultDetailsHandler->deleteToken($this->tokenId, $this->customerSession->getCustomerId())) {
                     //prepare response
                     $responseContent = [
