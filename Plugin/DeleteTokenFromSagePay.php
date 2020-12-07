@@ -69,11 +69,7 @@ class DeleteTokenFromSagePay
      */
     private function _getRemoveServiceURL()
     {
-        if ($this->config->getMode() == Config::MODE_LIVE) {
-            return Config::URL_TOKEN_POST_REMOVE_LIVE;
-        } else {
-            return Config::URL_TOKEN_POST_REMOVE_TEST;
-        }
+        return $this->config->getMode() == Config::MODE_LIVE ? Config::URL_TOKEN_POST_REMOVE_LIVE : Config::URL_TOKEN_POST_REMOVE_TEST;
     }
 
 }
