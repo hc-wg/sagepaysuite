@@ -222,6 +222,14 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     }
 
     /**
+     * @return bool
+     */
+    public function getSaveToken()
+    {
+        return $this->getRequest()->getParam("saveToken") === 'true';
+    }
+
+    /**
      * @param $customerId
      */
     public function logInCustomer($customerId)
@@ -231,17 +239,6 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $this->customerSession->setCustomerDataAsLoggedIn($customer);
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
-        }
-    }
-    /**
-     * @return bool
-     */
-    public function getSaveToken()
-    {
-        if ($this->getRequest()->getParam("saveToken") === 'true') {
-            return true;
-        } else {
-            return false;
         }
     }
 }
