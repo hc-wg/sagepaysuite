@@ -85,7 +85,7 @@ class Delete extends Action
                     $this->isCustomerArea = false;
                     $this->paymentMethod = $this->getRequest()->getParam('pmethod');
                 } else {
-                    $isv = $this->getRequest()->getParam('isv');
+                    $isv = $this->getRequest()->getParam('isVault');
                     if (isset($isv) && $isv) {
                         $this->paymentMethod = 'sagepaysuitepi';
                     } else {
