@@ -287,7 +287,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
      * @param bool $saveToken
      * @return void
      */
-    public function setSaveToken($saveToken): void
+    public function setSaveToken(bool $saveToken): void
     {
         $this->setData(self::SAVE_TOKEN, $saveToken);
     }
@@ -304,7 +304,7 @@ class PiRequest extends \Magento\Framework\Api\AbstractExtensibleObject implemen
      * @param bool $reusable
      * @return void
      */
-    public function setReusableToken($reusable): void
+    public function setReusableToken(bool $reusable): void
     {
         $this->setData(self::REUSABLE_TOKEN, $reusable);
     }
