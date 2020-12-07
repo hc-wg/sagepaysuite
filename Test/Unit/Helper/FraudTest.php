@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
+use Ebizmarts\SagePaySuite\Helper\Fraud;
+
 class FraudTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -59,7 +61,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $fraudResponse->setFraudId("someid");
         $fraudResponse->setFraudCode("somecode");
         $fraudResponse->setFraudCodeDetail("somedetail");
-        $fraudResponse->setFraudProviderName("T3M");
+        $fraudResponse->setFraudProviderName(Fraud::T3M);
         $fraudResponse->setThirdmanAction("NORESULT");
         $fraudResponse->setThirdmanRules([]);
 
@@ -359,7 +361,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $fraudResponseMock->setFraudId('12345');
         $fraudResponseMock->setFraudCode('765');
         $fraudResponseMock->setFraudCodeDetail('Fraud card');
-        $fraudResponseMock->setFraudProviderName('ReD');
+        $fraudResponseMock->setFraudProviderName(Fraud::RED);
 
         $this->reportingApiMock->expects($this->once())
             ->method('getFraudScreenDetail')
@@ -460,7 +462,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $fraudResponseMock->setFraudId('12345');
         $fraudResponseMock->setFraudCode('765');
         $fraudResponseMock->setFraudCodeDetail('Fraud card');
-        $fraudResponseMock->setFraudProviderName('ReD');
+        $fraudResponseMock->setFraudProviderName(Fraud::RED);
 
         $this->reportingApiMock->expects($this->once())
             ->method('getFraudScreenDetail')
@@ -552,7 +554,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                     'expectedaddobject' => 0,
                     'expects' => [
                         'VPSTxId'     => null,
-                        'fraudprovidername' => 'T3M',
+                        'fraudprovidername' => Fraud::T3M,
                         'fraudscreenrecommendation' => 'HOLD',
                         'fraudid' => '4985075328',
                         'fraudcode' => '37',
@@ -598,7 +600,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                         'fraudid' => '4985075328',
                         'fraudcode' => null,
                         'fraudcodedetail' => 'REJECT',
-                        'fraudprovidername' => 'T3M',
+                        'fraudprovidername' => Fraud::T3M,
                         'Action' => 'Marked as FRAUD.'
                     ]
                 ]
@@ -625,7 +627,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                         'fraudid' => '12345',
                         'fraudcode' => '765',
                         'fraudcodedetail' => 'Fraud card',
-                        'fraudprovidername' => 'ReD',
+                        'fraudprovidername' => Fraud::RED,
                         'Action' => 'Captured online, invoice # generated.'
                     ]
                 ]
@@ -663,7 +665,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                         'fraudid' => '12345',
                         'fraudcode' => '765',
                         'fraudcodedetail' => 'Fraud card',
-                        'fraudprovidername' => 'ReD',
+                        'fraudprovidername' => Fraud::RED,
                     ]
                 ]
             ]

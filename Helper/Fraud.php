@@ -18,6 +18,9 @@ use Magento\Store\Model\Store;
 
 class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 {
+    const T3M = 'T3M';
+    const RED = 'ReD';
+
     /**
      * @var Config
      */
@@ -182,9 +185,9 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         $fraudprovidername = $fraudData->getFraudProviderName();
 
-        if ($fraudprovidername == 'ReD') {
+        if ($fraudprovidername == self::RED) {
             $recommendation = $fraudData->getFraudScreenRecommendation();
-        } elseif ($fraudprovidername == 'T3M') {
+        } elseif ($fraudprovidername == self::T3M) {
             $recommendation = $fraudData->getThirdmanAction();
         }
 
@@ -201,9 +204,9 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         $fraudprovidername = $fraudData->getFraudProviderName();
 
-        if ($fraudprovidername == 'ReD') {
+        if ($fraudprovidername == self::RED) {
             $passed = $fraudData->getFraudScreenRecommendation() == Config::REDSTATUS_ACCEPT;
-        } elseif ($fraudprovidername == 'T3M') {
+        } elseif ($fraudprovidername == self::T3M) {
             $passed = $fraudData->getThirdmanAction() == Config::T3STATUS_OK;
         }
 
@@ -220,12 +223,12 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         $fraudprovidername = $fraudData->getFraudProviderName();
 
-        if ($fraudprovidername == 'ReD') {
+        if ($fraudprovidername == self::RED) {
             $fraudscreenrecommendation = $fraudData->getFraudScreenRecommendation();
             $fraudid                   = $fraudData->getFraudId();
             $fraudcode                 = $fraudData->getFraudCode();
             $fraudcodedetail           = $fraudData->getFraudCodeDetail();
-        } elseif ($fraudprovidername == 'T3M') {
+        } elseif ($fraudprovidername == self::T3M) {
             $fraudscreenrecommendation = $fraudData->getThirdmanAction();
             $fraudid                   = $fraudData->getThirdmanId();
             $fraudcode                 = $fraudData->getThirdmanScore();
@@ -250,12 +253,12 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $fraudprovidername = $fraudData->getFraudProviderName();
 
-        if ($fraudprovidername == 'ReD') {
+        if ($fraudprovidername == self::RED) {
             $fraudscreenrecommendation = $fraudData->getFraudScreenRecommendation();
             $fraudid                   = $fraudData->getFraudId();
             $fraudcode                 = $fraudData->getFraudCode();
             $fraudcodedetail           = $fraudData->getFraudCodeDetail();
-        } elseif ($fraudprovidername == 'T3M') {
+        } elseif ($fraudprovidername == self::T3M) {
             $fraudscreenrecommendation = $fraudData->getThirdmanAction();
             $fraudid                   = $fraudData->getThirdmanId();
             $fraudcode                 = $fraudData->getThirdmanScore();
@@ -281,9 +284,9 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         $fraudprovidername = $fraudData->getFraudProviderName();
 
-        if ($fraudprovidername == 'ReD') {
+        if ($fraudprovidername == self::RED) {
             $isFraud = $fraudData->getFraudScreenRecommendation() == Config::REDSTATUS_DENY;
-        } elseif ($fraudprovidername == 'T3M') {
+        } elseif ($fraudprovidername == self::T3M) {
             $isFraud = $fraudData->getThirdmanAction() == Config::T3STATUS_REJECT;
         }
 
@@ -300,9 +303,9 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         $fraudprovidername = $fraudData->getFraudProviderName();
 
-        if ($fraudprovidername == 'ReD') {
+        if ($fraudprovidername == self::RED) {
             $providerChecked = $fraudData->getFraudScreenRecommendation() != Config::REDSTATUS_NOTCHECKED;
-        } elseif ($fraudprovidername == 'T3M') {
+        } elseif ($fraudprovidername == self::T3M) {
             $providerChecked = $fraudData->getThirdmanAction() != Config::T3STATUS_NORESULT;
         }
 
