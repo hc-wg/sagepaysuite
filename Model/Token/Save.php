@@ -107,7 +107,7 @@ class Save
      * @param array $array
      * @return string
      */
-    private function convertArrayToJSON($array)
+    private function convertArrayToJson($array)
     {
         return $this->jsonSerializer->serialize($array);
     }
