@@ -102,11 +102,8 @@ class StrongCustomerAuthRequestData
      * @param $data \Ebizmarts\SagePaySuite\Api\Data\PiRequest
      * @return string
      */
-    private function getCofUsage($data) {
-        if ($data->getReusableToken()) {
-            return 'Subsequent';
-        } else {
-            return 'First';
-        }
+    private function getCofUsage($data)
+    {
+        return $data->getReusableToken() ? 'Subsequent' : 'First';
     }
 }
