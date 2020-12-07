@@ -166,7 +166,7 @@ class DeleteTest extends \PHPUnit\Framework\TestCase
         $this->requestMock
             ->expects($this->exactly(4))
             ->method('getParam')
-            ->withConsecutive(['token_id'], ['token_id'], ['checkout'], ['isv'])
+            ->withConsecutive(['token_id'], ['token_id'], ['checkout'], ['isVault'])
             ->willReturnOnConsecutiveCalls($this->tokenId, $this->tokenId, '', 'true');
 
         $this->executeDeleteTokenForPI();
