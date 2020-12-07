@@ -87,7 +87,7 @@ interface PiRequestInterface
      * @param bool $saveToken
      * @return void
      */
-    public function setSaveToken($saveToken);
+    public function setSaveToken(bool $saveToken);
 
     /**
      * @return bool
@@ -98,5 +98,5 @@ interface PiRequestInterface
      * @param bool $reusable
      * @return void
      */
-    public function setReusableToken($reusable);
+    public function setReusableToken(bool $reusable);
 }
