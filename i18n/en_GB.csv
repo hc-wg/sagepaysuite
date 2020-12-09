@@ -210,3 +210,4 @@ Action,Action
 "Are you sure you wish to delete this saved credit card token?", "Are you sure you wish to delete this saved credit card token?"
 "Unable to initialize Opayo payment method, please use another payment method.", "Unable to initialize Opayo payment method, please use another payment method."
 "Unable to delete credit card token.", "Unable to delete credit card token."
+"Unable to create token: token is empty", "Unable to create token: token is empty"

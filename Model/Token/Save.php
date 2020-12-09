@@ -57,9 +57,13 @@ class Save
     public function saveToken($payment, $customerId, $token)
     {
         if (!empty($customerId)) {
-            $paymentToken = $this->createVaultPaymentToken($payment, $customerId, $token);
-            if ($paymentToken !== null) {
-                $this->paymentTokenManagement->saveTokenWithPaymentLink($paymentToken, $payment);
+            try {
+                $paymentToken = $this->createVaultPaymentToken($payment, $customerId, $token);
+                if ($paymentToken !== null) {
+                    $this->paymentTokenManagement->saveTokenWithPaymentLink($paymentToken, $payment);
+                }
+            } catch (\Magento\Framework\Validator\Exception $e) {
+                $this->suiteLogger->logException($e);
             }
         }
     }
@@ -69,11 +73,12 @@ class Save
      * @param int $customerId
      * @param string $token
      * @return \Magento\Vault\Api\Data\PaymentTokenInterface|null
+     * @throws \Magento\Framework\Validator\Exception
      */
     public function createVaultPaymentToken($payment, $customerId, $token)
     {
         if (empty($token)) {
-            return null;
+            throw new \Magento\Framework\Validator\Exception(__('Unable to create token: token is empty'));
         }
 
         $paymentToken = $this->paymentTokenFactory->create(PaymentTokenFactoryInterface::TOKEN_TYPE_CREDIT_CARD);
