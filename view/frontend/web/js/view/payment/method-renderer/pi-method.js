@@ -20,9 +20,10 @@ define(
         'Magento_Checkout/js/model/url-builder',
         'Magento_Checkout/js/model/quote',
         'Magento_Customer/js/customer-data',
-        'Magento_Checkout/js/action/set-payment-information'
+        'Magento_Checkout/js/action/set-payment-information',
+        'mage/translate'
     ],
-    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal, agreementValidation, additionalValidators, urlBuilder, quote, customerData, setPaymentInformation) {
+    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal, agreementValidation, additionalValidators, urlBuilder, quote, customerData, setPaymentInformation, $t) {
         'use strict';
 
         $(document).ready(function () {
@@ -375,7 +376,7 @@ define(
                         self.placeTransaction();
                     } catch (err) {
                         console.log(err);
-                        self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
+                        self.showPaymentError($.mage.__("Unable to initialize Opayo payment method, please use another payment method."));
                     }
                 } else {
                     //Check if it is "Authentication failed"
@@ -453,10 +454,10 @@ define(
                                     try {
                                         self.placeTransaction();
                                     } catch (err) {
-                                        self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
+                                        self.showPaymentError($.mage.__("Unable to initialize Opayo payment method, please use another payment method."));
                                     }
                                 } else {
-                                    var errorMessage = "Unable to initialize Opayo payment method, please use another payment method.";
+                                    var errorMessage = $.mage.__("Unable to initialize Opayo payment method, please use another payment method.");
                                     if (response.responseJSON) {
                                         response = response.responseJSON;
                                     }
@@ -469,7 +470,7 @@ define(
                                 }
                             });
                         } catch (err) {
-                            alert("Unable to initialize Opayo payment method, please use another payment method.");
+                            alert($.mage.__("Unable to initialize Opayo payment method, please use another payment method."));
                         }
                     }
                 }
@@ -846,7 +847,7 @@ define(
             },
             deleteToken: function (id) {
                 var self = this;
-                if (confirm("Are you sure you wish to delete this saved credit card token?")) {
+                if (confirm($.mage.__("Are you sure you wish to delete this saved credit card token?"))) {
                     var serviceUrl = url.build('sagepaysuite/token/delete');
 
                     //send token delete post
@@ -880,7 +881,7 @@ define(
                         }
                     ).fail(
                         function (response) {
-                            self.showPaymentError("Unable to delete credit card token.");
+                            self.showPaymentError($.mage.__("Unable to delete credit card token."));
                         }
                     );
                 }
