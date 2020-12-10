@@ -211,3 +211,4 @@ Action,Action
 "Unable to initialize Opayo payment method, please use another payment method.", "Unable to initialize Opayo payment method, please use another payment method."
 "Unable to delete credit card token.", "Unable to delete credit card token."
 "Unable to create token: token is empty", "Unable to create token: token is empty"
+"Unable to delete token from Opayo: missing data to proceed", "Unable to delete token from Opayo: missing data to proceed"
