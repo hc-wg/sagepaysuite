@@ -36,32 +36,29 @@ class DeleteTokenFromSagePay
     /**
      * delete token using Sage Pay API
      * @param string $token
+     * @throws \Magento\Framework\Validator\Exception
      */
     public function deleteFromSagePay($token)
     {
-        try {
-            if (empty($this->config->getVendorname()) || empty($token)) {
-                //missing data to proceed
-                return;
-            }
-
-            //generate delete POST request
-            $data = [];
-            $data["VPSProtocol"] = $this->config->getVPSProtocol();
-            $data["TxType"] = "REMOVETOKEN";
-            $data["Vendor"] = $this->config->getVendorname();
-            $data["Token"] = $token;
-
-            //send POST to Sage Pay
-            $this->postApi->sendPost(
-                $data,
-                $this->_getRemoveServiceURL(),
-                ["OK"]
+        if (empty($this->config->getVendorname()) || empty($token)) {
+            throw new \Magento\Framework\Validator\Exception(
+                __('Unable to delete token from Opayo: missing data to proceed')
             );
-        } catch (\Exception $e) {
-            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getMessage(), [__METHOD__, __LINE__]);
-            //we do not show any error message to frontend
         }
+
+        //generate delete POST request
+        $data = [];
+        $data["VPSProtocol"] = $this->config->getVPSProtocol();
+        $data["TxType"] = "REMOVETOKEN";
+        $data["Vendor"] = $this->config->getVendorname();
+        $data["Token"] = $token;
+
+        //send POST to Sage Pay
+        $this->postApi->sendPost(
+            $data,
+            $this->_getRemoveServiceURL(),
+            ["OK"]
+        );
     }
 
     /**
