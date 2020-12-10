@@ -126,7 +126,7 @@ class Delete extends Action
                     ];
                 } else {
                     throw new \Magento\Framework\Validator\Exception(
-                        __('Unable to delete token: Token is not owned by you')
+                        __('Unable to delete token')
                     );
                 }
             }
