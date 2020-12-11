@@ -25,7 +25,8 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
             'cc_last_4' => '5559',
             'cc_type' => 'VI',
             'cc_exp_month' => '12',
-            'cc_exp_year' => '23'
+            'cc_exp_year' => '23',
+            'isVault' => true
         ];
         $serverToken = [
             'id' => 543,
@@ -33,7 +34,8 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
             'cc_last_4' => '0006',
             'cc_type' => 'VI',
             'cc_exp_month' => '04',
-            'cc_exp_year' => '22'
+            'cc_exp_year' => '22',
+            'isVault' => false
         ];
 
         $urlBuilderMock = $this->makeUrlBuilderMockWithGetUrl();
@@ -45,7 +47,7 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
         $tokenModelMock = $this->makeTokenModelMock();
         $tokenModelMock
             ->expects($this->once())
-            ->method('getCustomerTokens')
+            ->method('getCustomerTokensToShowOnAccount')
             ->willReturn([$serverToken]);
 
         $vaultDetailsHandlerMock = $this
@@ -54,7 +56,7 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $vaultDetailsHandlerMock
             ->expects($this->once())
-            ->method('getTokensFromCustomerToShowOnGrid')
+            ->method('getTokensFromCustomerToShowOnAccount')
             ->with($this->customerId)
             ->willReturn([$vaultToken]);
 
@@ -87,7 +89,8 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
             'cc_last_4' => '5559',
             'cc_type' => 'VI',
             'cc_exp_month' => '12',
-            'cc_exp_year' => '23'
+            'cc_exp_year' => '23',
+            'isVault' => true
         ];
 
         $urlBuilderMock = $this->makeUrlBuilderMockWithGetUrl();
@@ -96,7 +99,7 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
 
         $tokenModelMock = $this->makeTokenModelMock();
         $tokenModelMock->expects($this->any())
-            ->method('getCustomerTokens')
+            ->method('getCustomerTokensToShowOnAccount')
             ->will($this->returnValue([]));
 
         $vaultDetailsHandlerMock = $this
@@ -105,7 +108,7 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $vaultDetailsHandlerMock
             ->expects($this->once())
-            ->method('getTokensFromCustomerToShowOnGrid')
+            ->method('getTokensFromCustomerToShowOnAccount')
             ->with($this->customerId)
             ->willReturn([$vaultToken]);
 
