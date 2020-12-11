@@ -81,25 +81,15 @@ class TokenList extends Template
      */
     private function getCustomerTokensToShow()
     {
-        $tokens = [];
-
-        $vaultTokens = $this->_vaultDetailsHandler->getTokensFromCustomerToShowOnGrid(
+        $vaultTokens = $this->_vaultDetailsHandler->getTokensFromCustomerToShowOnAccount(
             $this->currentCustomer->getCustomerId()
         );
-        foreach ($vaultTokens as $token) {
-            $token['isVault'] = true;
-            $tokens[] = $token;
-        }
 
-        $serverTokens = $this->_tokenModel->getCustomerTokens(
+        $serverTokens = $this->_tokenModel->getCustomerTokensToShowOnAccount(
             $this->currentCustomer->getCustomerId(),
             $this->_config->getVendorname()
         );
-        foreach ($serverTokens as $token) {
-            $token['isVault'] = false;
-            $tokens[] = $token;
-        }
 
-        return $tokens;
+        return array_merge($vaultTokens, $serverTokens);
     }
 }

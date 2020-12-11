@@ -41,7 +41,6 @@ class Token extends \Magento\Framework\Model\AbstractModel
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
     ) {
-    
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
         $this->_suiteLogger = $suiteLogger;
         $this->_logger = $context->getLogger();
@@ -75,7 +74,6 @@ class Token extends \Magento\Framework\Model\AbstractModel
      */
     public function saveToken($customerId, $token, $ccType, $ccLast4, $ccExpMonth, $ccExpYear, $vendorname)
     {
-
         if (empty($customerId)) {
             return $this;
         }
@@ -107,6 +105,22 @@ class Token extends \Magento\Framework\Model\AbstractModel
             return $this->_data;
         }
         return [];
+    }
+
+    /**
+     * @param $customerId
+     * @param $vendorname
+     * @return array
+     */
+    public function getCustomerTokensToShowOnAccount($customerId, $vendorname)
+    {
+        $tokens = [];
+        $serverTokens = $this->getCustomerTokens($customerId, $vendorname);
+        foreach ($serverTokens as $token) {
+            $token['isVault'] = false;
+            $tokens[] = $token;
+        }
+        return $tokens;
     }
 
     /**

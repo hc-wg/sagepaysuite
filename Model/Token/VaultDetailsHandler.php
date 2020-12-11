@@ -4,8 +4,8 @@ namespace Ebizmarts\SagePaySuite\Model\Token;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Plugin\DeleteTokenFromSagePay;
-use Magento\Sales\Model\Order\Payment;
 use Magento\Framework\Message\ManagerInterface;
+use Magento\Sales\Model\Order\Payment;
 
 class VaultDetailsHandler
 {
@@ -88,5 +88,23 @@ class VaultDetailsHandler
             $this->messageManager->addErrorMessage(__('Unable to delete token from Opayo: missing data to proceed'));
             return false;
         }
+    }
+
+    /**
+     * Once we move server to use Vault, this function will not be needed.
+     *
+     * @param int $customerId
+     * @return array
+     */
+    public function getTokensFromCustomerToShowOnAccount($customerId)
+    {
+        $vaultTokens = $this->tokenGet->getTokensFromCustomerToShowOnGrid($customerId);
+        $tokens = [];
+        foreach ($vaultTokens as $token) {
+            $token['isVault'] = true;
+            $tokens[] = $token;
+        }
+
+        return $tokens;
     }
 }
