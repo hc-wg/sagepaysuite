@@ -13,6 +13,8 @@ use Magento\Customer\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Exception\AuthenticationException;
+use Magento\Framework\Exception\CouldNotDeleteException;
 use Psr\Log\LoggerInterface;
 
 class Delete extends Action
@@ -107,7 +109,7 @@ class Delete extends Action
                     //delete
                     $token->deleteToken();
                 } else {
-                    throw new \Magento\Framework\Validator\Exception(
+                    throw new AuthenticationException(
                         __('Unable to delete token: Token is not owned by you')
                     );
                 }
@@ -125,7 +127,7 @@ class Delete extends Action
                         'response' => true
                     ];
                 } else {
-                    throw new \Magento\Framework\Validator\Exception(
+                    throw new CouldNotDeleteException(
                         __('Unable to delete token')
                     );
                 }

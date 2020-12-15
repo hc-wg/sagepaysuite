@@ -3,11 +3,13 @@
 namespace Ebizmarts\SagePaySuite\Model\Token;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Vault\Api\Data\PaymentTokenFactoryInterface;
-use Magento\Vault\Api\PaymentTokenRepositoryInterface;
 use Magento\Vault\Api\PaymentTokenManagementInterface;
+use Magento\Vault\Api\PaymentTokenRepositoryInterface;
 
 class Save
 {
@@ -56,15 +58,21 @@ class Save
      */
     public function saveToken($payment, $customerId, $token)
     {
-        if (!empty($customerId)) {
-            try {
+        try {
+            if (!empty($customerId)) {
                 $paymentToken = $this->createVaultPaymentToken($payment, $customerId, $token);
                 if ($paymentToken !== null) {
                     $this->paymentTokenManagement->saveTokenWithPaymentLink($paymentToken, $payment);
+                } else {
+                    throw new CouldNotSaveException(__('Unable to save token: payment token is null'));
                 }
-            } catch (\Magento\Framework\Validator\Exception $e) {
-                $this->suiteLogger->logException($e);
+            } else {
+                throw new NoSuchEntityException(__('Unable to create token: customer id is empty'));
             }
+        } catch (NoSuchEntityException $e) {
+            $this->suiteLogger->logException($e);
+        } catch (CouldNotSaveException $e) {
+            $this->suiteLogger->logException($e);
         }
     }
 
@@ -73,12 +81,12 @@ class Save
      * @param int $customerId
      * @param string $token
      * @return \Magento\Vault\Api\Data\PaymentTokenInterface|null
-     * @throws \Magento\Framework\Validator\Exception
+     * @throws NoSuchEntityException
      */
     public function createVaultPaymentToken($payment, $customerId, $token)
     {
         if (empty($token)) {
-            throw new \Magento\Framework\Validator\Exception(__('Unable to create token: token is empty'));
+            throw new NoSuchEntityException(__('Unable to create token: token is empty'));
         }
 
         $paymentToken = $this->paymentTokenFactory->create(PaymentTokenFactoryInterface::TOKEN_TYPE_CREDIT_CARD);
