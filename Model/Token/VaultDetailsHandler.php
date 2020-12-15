@@ -4,6 +4,7 @@ namespace Ebizmarts\SagePaySuite\Model\Token;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Plugin\DeleteTokenFromSagePay;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Sales\Model\Order\Payment;
 
@@ -76,18 +77,13 @@ class VaultDetailsHandler
      * @param int $tokenId
      * @param int $customerId
      * @return bool
+     * @throws NoSuchEntityException
      */
     public function deleteToken($tokenId, $customerId)
     {
-        try {
-            $token = $this->tokenGet->getSagePayToken($tokenId);
-            $this->deleteTokenFromSagePay->deleteFromSagePay($token);
-            return $this->tokenDelete->removeTokenFromVault($tokenId, $customerId);
-        } catch (\Exception $e) {
-            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getMessage(), [__METHOD__, __LINE__]);
-            $this->messageManager->addErrorMessage(__('Unable to delete token from Opayo: missing data to proceed'));
-            return false;
-        }
+        $token = $this->tokenGet->getSagePayToken($tokenId);
+        $this->deleteTokenFromSagePay->deleteFromSagePay($token);
+        return $this->tokenDelete->removeTokenFromVault($tokenId, $customerId);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Ebizmarts\SagePaySuite\Plugin;
 use Ebizmarts\SagePaySuite\Model\Api\Post;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 class DeleteTokenFromSagePay
 {
@@ -36,12 +37,12 @@ class DeleteTokenFromSagePay
     /**
      * delete token using Sage Pay API
      * @param string $token
-     * @throws \Magento\Framework\Validator\Exception
+     * @throws NoSuchEntityException
      */
     public function deleteFromSagePay($token)
     {
         if (empty($this->config->getVendorname()) || empty($token)) {
-            throw new \Magento\Framework\Validator\Exception(
+            throw new NoSuchEntityException(
                 __('Unable to delete token from Opayo: missing data to proceed')
             );
         }
