@@ -78,6 +78,11 @@ class StrongCustomerAuthRequestData
         return $result;
     }
 
+    /**
+     * @param int $quoteId
+     * @param bool $saveToken
+     * @return string
+     */
     private function getNotificationUrl($quoteId, $saveToken)
     {
         $encryptedQuoteId = $this->encryptAndEncode($quoteId);

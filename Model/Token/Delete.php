@@ -16,6 +16,12 @@ class Delete
     /** @var PaymentTokenRepositoryInterface */
     private $paymentTokenRepository;
 
+    /**
+     * Delete constructor.
+     * @param Logger $suiteLogger
+     * @param Get $tokenGet
+     * @param PaymentTokenRepositoryInterface $paymentTokenRepository
+     */
     public function __construct(
         Logger $suiteLogger,
         Get $tokenGet,

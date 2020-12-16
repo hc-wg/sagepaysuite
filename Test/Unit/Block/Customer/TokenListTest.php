@@ -15,6 +15,7 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
      */
     private $tokenListBlock;
 
+    /** @var int */
     private $customerId = 23;
 
     public function testGetBackUrl()

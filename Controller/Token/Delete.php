@@ -36,8 +36,13 @@ class Delete extends Action
      */
     private $tokenModel;
 
+    /** @var int */
     private $tokenId;
+
+    /** @var string */
     private $paymentMethod;
+
+    /** @var bool */
     private $isCustomerArea;
 
     /**
