@@ -44,8 +44,10 @@ class ThreeDSecureCallbackManagement extends RequestManagement
     /** @var PiTransactionResultFactory */
     private $payResultFactory;
 
+    /** @var ClosedForActionFactory  */
     private $actionFactory;
 
+    /** @var OrderRepositoryInterface  */
     private $orderRepository;
 
     /** @var InvoiceSender */

@@ -33,6 +33,7 @@ class EcommerceManagement extends RequestManagement
     /** @var Logger */
     private $suiteLogger;
 
+    /** @var ClosedForActionFactory  */
     private $actionFactory;
 
     /** @var TransactionFactory */
