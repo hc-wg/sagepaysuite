@@ -88,8 +88,8 @@ class Delete extends Action
                     $this->isCustomerArea = false;
                     $this->paymentMethod = $this->getRequest()->getParam('pmethod');
                 } else {
-                    $isv = $this->getRequest()->getParam('isVault');
-                    if (isset($isv) && $isv) {
+                    $isVault = $this->getRequest()->getParam('isVault');
+                    if (isset($isVault) && $isVault) {
                         $this->paymentMethod = Config::METHOD_PI;
                     } else {
                         $this->paymentMethod = Config::METHOD_SERVER;
