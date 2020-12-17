@@ -231,7 +231,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     /**
      * @return bool
      */
-    public function getSaveToken()
+    private function getSaveToken()
     {
         return $this->getRequest()->getParam("saveToken") === 'true';
     }
