@@ -107,8 +107,6 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             }
             $payment = $order->getPayment();
 
-            $saveToken = $this->getSaveToken();
-
             if ($this->isParesDuplicated($payment, $sanitizedPares)) {
                 $this->javascriptRedirect('checkout/onepage/success');
                 return;
@@ -129,7 +127,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $data->setVendorName($this->config->getVendorname());
             $data->setMode($this->config->getMode());
             $data->setPaymentAction($this->config->getSagepayPaymentAction());
-            $data->setSaveToken($saveToken);
+            $data->setSaveToken((bool)$this->getRequest()->getParam("saveToken"));
 
             $this->requester->setRequestData($data);
 
@@ -219,14 +217,6 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     public function decodeAndDecrypt($data)
     {
         return $this->cryptAndCode->decodeAndDecrypt($data);
-    }
-
-    /**
-     * @return bool
-     */
-    private function getSaveToken()
-    {
-        return $this->getRequest()->getParam("saveToken") === 'true';
     }
 
     /**

@@ -550,11 +550,12 @@ define(
                                     }
                                     form3Dv2.submit();
                                 } else {
+                                    var saveToken = self.saveToken() === true ? 1 : 0;
                                     //add transactionId param to callback
                                     callbackUrl += "?transactionId=" + response.transaction_id +
                                         "&orderId=" + response.order_id +
                                         "&quoteId=" + response.quote_id +
-                                        "&saveToken=" + self.saveToken();
+                                        "&saveToken=" + saveToken;
 
                                     //Build 3D form.
                                     var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
