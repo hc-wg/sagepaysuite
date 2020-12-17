@@ -120,30 +120,19 @@ class Delete extends Action
                 }
 
                 //prepare response
-                $responseContent = [
-                    'success' => true,
-                    'response' => true
-                ];
+                $responseContent = $this->getSuccessResponseContent();
             } elseif ($this->paymentMethod === Config::METHOD_PI) {
                 if ($this->vaultDetailsHandler->deleteToken($this->tokenId, $this->customerSession->getCustomerId())) {
                     //prepare response
-                    $responseContent = [
-                        'success' => true,
-                        'response' => true
-                    ];
+                    $responseContent = $this->getSuccessResponseContent();
                 } else {
-                    throw new CouldNotDeleteException(
-                        __('Unable to delete token')
-                    );
+                    $responseContent = $this->getFailResponseContent('Unable to delete token');
                 }
             }
         } catch (\Exception $e) {
             $this->logger->critical($e);
 
-            $responseContent = [
-                'success' => false,
-                'error_message' => __("Something went wrong: %1", $e->getMessage()),
-            ];
+            $responseContent = $this->getFailResponseContent($e->getMessage());
         }
 
         if ($this->isCustomerArea == true) {
@@ -174,5 +163,25 @@ class Delete extends Action
     public function addSuccessMessage()
     {
         $this->messageManager->addSuccess(__('Token deleted successfully.'));
+    }
+
+    /**
+     * @return array
+     */
+    private function getSuccessResponseContent()
+    {
+        return ['success' => true, 'response' => true];
+    }
+
+    /**
+     * @param $errorMessage
+     * @return array
+     */
+    private function getFailResponseContent($errorMessage)
+    {
+        return [
+            'success' => false,
+            'error_message' => __("Something went wrong: %1", $errorMessage),
+        ];
     }
 }

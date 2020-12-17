@@ -3,6 +3,7 @@
 namespace Ebizmarts\SagePaySuite\Model\Token;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Vault\Api\Data\PaymentTokenInterface;
 use Magento\Vault\Api\PaymentTokenRepositoryInterface;
 
 class Delete
@@ -33,16 +34,11 @@ class Delete
     }
 
     /**
-     * @param int $tokenId
-     * @param int $customerId
+     * @param PaymentTokenInterface $token
      * @return bool
      */
-    public function removeTokenFromVault($tokenId, $customerId)
+    public function removeTokenFromVault($token)
     {
-        $token = $this->tokenGet->getTokenById($tokenId);
-        if ($token->getCustomerId() !== $customerId) {
-            return false;
-        }
         return $this->paymentTokenRepository->delete($token);
     }
 

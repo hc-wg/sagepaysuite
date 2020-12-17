@@ -214,3 +214,4 @@ Action,Action
 "Unable to delete token from Opayo: missing data to proceed", "Unable to delete token from Opayo: missing data to proceed"
 "Unable to save token: payment token is null", "Unable to save token: payment token is null"
 "Unable to create token: customer id is empty", "Unable to create token: customer id is empty"
+"Unable to delete token from Opayo: customer does not own the token", "Unable to delete token from Opayo: customer does not own the token"

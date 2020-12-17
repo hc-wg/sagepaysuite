@@ -11,40 +11,19 @@ use PHPUnit\Framework\TestCase;
 
 class DeleteTest extends TestCase
 {
-    /**
-     * @dataProvider removeTokenDataProvider
-     */
-    public function testRemoveTokenFromVault($data)
+    public function testRemoveTokenFromVault()
     {
-        $tokenId = 32;
-        $customerId = $data['paramCustomerId'];
-
         $paymentTokenInterfaceMock = $this
             ->getMockBuilder(PaymentTokenInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-
-        $tokenGetMock = $this
-            ->getMockBuilder(Get::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $tokenGetMock
-            ->expects($this->once())
-            ->method('getTokenById')
-            ->with($tokenId)
-            ->willReturn($paymentTokenInterfaceMock);
-
-        $paymentTokenInterfaceMock
-            ->expects($this->once())
-            ->method('getCustomerId')
-            ->willReturn($data['tokenCustomerId']);
 
         $paymentTokenRepositoryMock = $this
             ->getMockBuilder(PaymentTokenRepositoryInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $paymentTokenRepositoryMock
-            ->expects($this->exactly($data['executePaymentTokenRepository']))
+            ->expects($this->once())
             ->method('delete')
             ->with($paymentTokenInterfaceMock)
             ->willReturn(true);
@@ -55,33 +34,10 @@ class DeleteTest extends TestCase
         $tokenDelete = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Token\Delete',
             [
-                'tokenGet'               => $tokenGetMock,
                 'paymentTokenRepository' => $paymentTokenRepositoryMock
             ]
         );
 
-        $this->assertEquals($data['expectedResult'], $tokenDelete->removeTokenFromVault($tokenId, $customerId));
-    }
-
-    public function removeTokenDataProvider()
-    {
-        return [
-            'test OK' => [
-                [
-                    'paramCustomerId' => 2,
-                    'tokenCustomerId' => 2,
-                    'executePaymentTokenRepository' => 1,
-                    'expectedResult' => true
-                ]
-            ],
-            'test ERROR' => [
-                [
-                    'paramCustomerId' => 2,
-                    'tokenCustomerId' => 3,
-                    'executePaymentTokenRepository' => 0,
-                    'expectedResult' => false
-                ]
-            ]
-        ];
+        $this->assertEquals(true, $tokenDelete->removeTokenFromVault($paymentTokenInterfaceMock));
     }
 }
