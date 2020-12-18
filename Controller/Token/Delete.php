@@ -112,7 +112,7 @@ class Delete extends Action
                 //validate ownership
                 if ($token->isOwnedByCustomer($this->customerSession->getCustomerId())) {
                     //delete
-                    $token->deleteToken();
+                    //$token->deleteToken();
                 } else {
                     throw new AuthenticationException(
                         __('Unable to delete token: Token is not owned by you')
@@ -135,21 +135,17 @@ class Delete extends Action
             $responseContent = $this->getFailResponseContent($e->getMessage());
         }
 
+        $resultJson = $this->getResultFactory();
+        $resultJson->setData($responseContent);
         if ($this->isCustomerArea == true) {
             if ($responseContent["success"] == true) {
                 $this->addSuccessMessage();
-                $this->_redirect('sagepaysuite/customer/tokens');
-                return true;
             } else {
                 $this->messageManager->addError(__($responseContent["error_message"]));
-                $this->_redirect('sagepaysuite/customer/tokens');
-                return false;
             }
-        } else {
-            $resultJson = $this->getResultFactory();
-            $resultJson->setData($responseContent);
-            return $resultJson;
+            $this->_redirect('sagepaysuite/customer/tokens');
         }
+        return $resultJson;
     }
 
     /**
