@@ -6,7 +6,13 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Model\Api\Post;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Plugin\DeleteTokenFromSagePay;
+use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Registry;
 
 /**
  * Sage Pay Token class
@@ -15,7 +21,7 @@ class Token extends \Magento\Framework\Model\AbstractModel
 {
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Api\Post
+     * @var Post
      */
     private $_postApi;
 
@@ -25,27 +31,38 @@ class Token extends \Magento\Framework\Model\AbstractModel
     private $_config;
 
     /**
-     * @param \Magento\Framework\Model\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
-     * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
+     * @var DeleteTokenFromSagePay
+     */
+    private $deleteTokenFromSagePay;
+
+    /**
+     * @param Context $context
+     * @param Registry $registry
+     * @param Logger $suiteLogger
+     * @param Api\Post $postApi
+     * @param Config $config
+     * @param DeleteTokenFromSagePay $deleteTokenFromSagePay
+     * @param AbstractResource|null $resource
+     * @param AbstractDb|null $resourceCollection
      * @param array $data
      */
     public function __construct(
-        \Magento\Framework\Model\Context $context,
-        \Magento\Framework\Registry $registry,
+        Context $context,
+        Registry $registry,
         Logger $suiteLogger,
-        \Ebizmarts\SagePaySuite\Model\Api\Post $postApi,
+        Post $postApi,
         Config $config,
-        \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
-        \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
+        DeleteTokenFromSagePay $deleteTokenFromSagePay,
+        AbstractResource $resource = null,
+        AbstractDb $resourceCollection = null,
         array $data = []
     ) {
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
-        $this->_suiteLogger = $suiteLogger;
-        $this->_logger = $context->getLogger();
-        $this->_postApi = $postApi;
-        $this->_config = $config;
+        $this->_suiteLogger           = $suiteLogger;
+        $this->_logger                = $context->getLogger();
+        $this->_postApi               = $postApi;
+        $this->_config                = $config;
+        $this->deleteTokenFromSagePay = $deleteTokenFromSagePay;
     }
 
     /**
@@ -125,54 +142,15 @@ class Token extends \Magento\Framework\Model\AbstractModel
 
     /**
      * Delete token from db and Sage Pay
+     * @throws
      */
     public function deleteToken()
     {
-
         //delete from sagepay
-        $this->_deleteFromSagePay();
+        $this->deleteTokenFromSagePay->deleteFromSagePay($this->getToken());
 
         if ($this->getId()) {
             $this->delete();
-        }
-    }
-
-    /**
-     * delete token using Sage Pay API
-     */
-    private function _deleteFromSagePay()
-    {
-        try {
-            if (empty($this->getVendorname()) || empty($this->getToken())) {
-                //missing data to proceed
-                return;
-            }
-
-            //generate delete POST request
-            $data = [];
-            $data["VPSProtocol"] = $this->_config->getVPSProtocol();
-            $data["TxType"] = "REMOVETOKEN";
-            $data["Vendor"] = $this->getVendorname();
-            $data["Token"] = $this->getToken();
-
-            //send POST to Sage Pay
-            $this->_postApi->sendPost(
-                $data,
-                $this->_getRemoveServiceURL(),
-                ["OK"]
-            );
-        } catch (\Exception $e) {
-            $this->_logger->critical($e);
-            //we do not show any error message to frontend
-        }
-    }
-
-    private function _getRemoveServiceURL()
-    {
-        if ($this->_config->getMode() == Config::MODE_LIVE) {
-            return Config::URL_TOKEN_POST_REMOVE_LIVE;
-        } else {
-            return Config::URL_TOKEN_POST_REMOVE_TEST;
         }
     }
 
