@@ -113,14 +113,11 @@ class Delete extends Action
                 if ($token->isOwnedByCustomer($this->customerSession->getCustomerId())) {
                     //delete
                     $token->deleteToken();
+                    //prepare response
+                    $responseContent = $this->getSuccessResponseContent();
                 } else {
-                    throw new AuthenticationException(
-                        __('Unable to delete token: Token is not owned by you')
-                    );
+                    $responseContent = $this->getFailResponseContent('Unable to delete token');
                 }
-
-                //prepare response
-                $responseContent = $this->getSuccessResponseContent();
             } elseif ($this->paymentMethod === Config::METHOD_PI) {
                 if ($this->vaultDetailsHandler->deleteToken($this->tokenId, $this->customerSession->getCustomerId())) {
                     //prepare response

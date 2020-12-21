@@ -37,6 +37,11 @@ class Token extends \Magento\Framework\Model\AbstractModel
     private $deleteTokenFromSagePay;
 
     /**
+     * @var Logger
+     */
+    private $_suiteLogger;
+
+    /**
      * @param Context $context
      * @param Registry $registry
      * @param Logger $suiteLogger
@@ -192,10 +197,17 @@ class Token extends \Magento\Framework\Model\AbstractModel
      */
     public function isOwnedByCustomer($customerId)
     {
-        if (empty($customerId) || empty($this->getId())) {
+        try {
+            if (empty($customerId) || empty($this->getId())) {
+                throw new NoSuchEntityException(
+                    __('Unable to delete token from Opayo: missing data to proceed')
+                );
+            }
+            return $this->getResource()->isTokenOwnedByCustomer($customerId, $this->getId());
+        } catch (NoSuchEntityException $e) {
+            $this->_suiteLogger->logException($e);
             return false;
         }
-        return $this->getResource()->isTokenOwnedByCustomer($customerId, $this->getId());
     }
 
     /**
