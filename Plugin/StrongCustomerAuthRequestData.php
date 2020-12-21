@@ -64,18 +64,32 @@ class StrongCustomerAuthRequestData
             'browserIP'                => $this->request->getClientIp(),
             'browserLanguage'          => $data->getLanguage(),
             'browserUserAgent'         => $data->getUserAgent(),
-            'notificationURL'          => $this->getNotificationUrl($quoteId),
+            'notificationURL'          => $this->getNotificationUrl($quoteId, $data->getSaveToken()),
             'transType'                => TransactionType::GOOD_SERVICE_PURCHASE,
             'challengeWindowSize'      => $this->sagepayConfig->getValue("challengewindowsize"),
         ];
+        if ($data->getSaveToken() || $data->getReusableToken()) {
+            $result['credentialType'] = [
+                'cofUsage'      => $this->getCofUsage($data),
+                'initiatedType' => 'CIT'
+            ];
+        }
 
         return $result;
     }
 
-    private function getNotificationUrl($quoteId)
+    /**
+     * @param int $quoteId
+     * @param bool $saveToken
+     * @return string
+     */
+    private function getNotificationUrl($quoteId, $saveToken)
     {
         $encryptedQuoteId = $this->encryptAndEncode($quoteId);
-        $url = $this->coreUrl->getUrl('sagepaysuite/pi/callback3Dv2', ['_secure' => true, 'quoteId' => $encryptedQuoteId]);
+        $url = $this->coreUrl->getUrl(
+            'sagepaysuite/pi/callback3Dv2',
+            ['_secure' => true, 'quoteId' => $encryptedQuoteId, 'saveToken' => $saveToken]
+        );
 
         return $url;
     }
@@ -87,5 +101,14 @@ class StrongCustomerAuthRequestData
     private function encryptAndEncode($data)
     {
         return $this->cryptAndCode->encryptAndEncode($data);
+    }
+
+    /**
+     * @param $data \Ebizmarts\SagePaySuite\Api\Data\PiRequest
+     * @return string
+     */
+    private function getCofUsage($data)
+    {
+        return $data->getReusableToken() ? 'Subsequent' : 'First';
     }
 }

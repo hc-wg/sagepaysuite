@@ -135,6 +135,7 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
             $data->setVendorName($this->config->getVendorname());
             $data->setMode($this->config->getMode());
             $data->setPaymentAction($this->config->getSagepayPaymentAction());
+            $data->setSaveToken((bool)$this->getRequest()->getParam("saveToken"));
 
             $this->requester->setRequestData($data);
 
