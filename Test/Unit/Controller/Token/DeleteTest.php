@@ -171,12 +171,12 @@ class DeleteTest extends \PHPUnit\Framework\TestCase
 
         $this->executeDeleteTokenForPI();
 
-        $this->expectResultJsonCustomerArea();
+        $this->expectResultJsonCustomerArea([
+            "success" => true,
+            'response' => true
+        ]);
 
-        $this->assertEquals(
-            $this->deleteTokenController->execute(),
-            true
-        );
+        $this->deleteTokenController->execute();
     }
 
     /**
@@ -198,7 +198,7 @@ class DeleteTest extends \PHPUnit\Framework\TestCase
             ->with($result);
     }
 
-    private function expectResultJsonCustomerArea()
+    private function expectResultJsonCustomerArea($result)
     {
         $this->deleteTokenController
             ->expects($this->once())
@@ -207,6 +207,7 @@ class DeleteTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('_redirect')
             ->with('sagepaysuite/customer/tokens');
+        $this->expectResultJson($result);
     }
 
     private function executeDeleteTokenForServer()

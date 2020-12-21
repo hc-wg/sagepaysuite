@@ -10,6 +10,7 @@ use Ebizmarts\SagePaySuite\Model\Api\Post;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Plugin\DeleteTokenFromSagePay;
 use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Registry;
@@ -142,7 +143,8 @@ class Token extends \Magento\Framework\Model\AbstractModel
 
     /**
      * Delete token from db and Sage Pay
-     * @throws
+     * @throws NoSuchEntityException
+     * @throws \Exception
      */
     public function deleteToken()
     {
