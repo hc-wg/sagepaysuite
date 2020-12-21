@@ -7,6 +7,13 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model;
 
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Plugin\DeleteTokenFromSagePay;
+use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Registry;
 
 class TokenTest extends \PHPUnit\Framework\TestCase
 {
@@ -31,6 +38,16 @@ class TokenTest extends \PHPUnit\Framework\TestCase
      */
     private $configMock;
 
+    /**
+     * @var DeleteTokenFromSagePay|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private $deleteTokenFromSagePayMock;
+
+    /**
+     * @var Logger|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private $suiteLoggerMock;
+
     // @codingStandardsIgnoreStart
     protected function setUp()
     {
@@ -53,12 +70,24 @@ class TokenTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $this->deleteTokenFromSagePayMock = $this
+            ->getMockBuilder(DeleteTokenFromSagePay::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->suiteLoggerMock = $this
+            ->getMockBuilder(Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $this->tokenModel = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\Token',
             [
+                'suiteLogger' => $this->suiteLoggerMock,
                 'resource' => $this->resourceMock,
-                "config"   => $this->configMock,
-                "postApi"  => $this->postApiMock
+                'config'   => $this->configMock,
+                'postApi'  => $this->postApiMock,
+                'deleteTokenFromSagePay' => $this->deleteTokenFromSagePayMock
             ]
         );
     }
@@ -124,61 +153,36 @@ class TokenTest extends \PHPUnit\Framework\TestCase
         );
     }
 
+    /**
+     * @expectedException \Magento\Framework\Exception\NoSuchEntityException
+     * @expectedExceptionMessage Unable to delete token from Opayo: missing data to proceed
+     */
     public function testDeleteTokenException()
     {
-        $exception = new \Exception('No token available.');
+        $exception = new NoSuchEntityException(__('Unable to delete token from Opayo: missing data to proceed'));
 
-        $this->postApiMock->expects($this->once())
-            ->method('sendPost')
-            ->with(
-                [
-                    "VPSProtocol" => null,
-                    "TxType" => "REMOVETOKEN",
-                    "Vendor" => 'testebizmarts',
-                    "Token" => 'fsd587fds78dfsfdsa687dsa'
-                ],
-                \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_LIVE,
-                ["OK"]
-            )
-        ->willThrowException($exception);
+        $token = $this->tokenModel->saveToken(
+            1,
+            'fsd587fds78dfsfdsa687dsa',
+            'VISA',
+            '0006',
+            '02',
+            '22',
+            'testebizmarts'
+        );
 
-        $configMock = $this
-            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Config')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $configMock->expects($this->once())->method('getMode')->willReturn('live');
+        $this->deleteTokenFromSagePayMock
+            ->expects($this->once())
+            ->method('deleteFromSagePay')
+            ->with('fsd587fds78dfsfdsa687dsa')
+            ->willThrowException($exception);
 
-        $loggerMock  = $this->getMockBuilder(\Psr\Log\LoggerInterface::class)
-            ->setMethods(['critical', 'emergency', 'alert', 'error', 'warning', 'notice', 'info', 'debug', 'log'])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $loggerMock->expects($this->once())->method('critical')->with($exception);
-        $contextMock = $this->getMockBuilder(\Magento\Framework\Model\Context::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $contextMock->expects($this->exactly(2))->method('getLogger')->willReturn($loggerMock);
-
-        $this->objectManagerHelper->getObject(
-            'Ebizmarts\SagePaySuite\Model\Token',
-            [
-                'resource' => $this->resourceMock,
-                "config"   => $configMock,
-                'postApi'  => $this->postApiMock,
-                'context'  => $contextMock
-            ]
-        )
-            ->saveToken(
-                1,
-                'fsd587fds78dfsfdsa687dsa',
-                'VISA',
-                '0006',
-                '02',
-                '22',
-                'testebizmarts'
-            )
-            ->deleteToken();
+        $this->tokenModel->deleteToken();
     }
 
+    /**
+     *
+     */
     public function testDeleteToken()
     {
         $token = $this->tokenModel->saveToken(
@@ -191,29 +195,25 @@ class TokenTest extends \PHPUnit\Framework\TestCase
             'testebizmarts'
         );
 
-        $this->postApiMock->expects($this->once())
-            ->method('sendPost')
-            ->with(
-                [
-                "VPSProtocol" => null,
-                "TxType" => "REMOVETOKEN",
-                "Vendor" => 'testebizmarts',
-                "Token" => 'fsd587fds78dfsfdsa687dsa'
-                ],
-                \Ebizmarts\SagePaySuite\Model\Config::URL_TOKEN_POST_REMOVE_TEST,
-                ["OK"]
-            );
+        $this->deleteTokenFromSagePayMock
+            ->expects($this->once())
+            ->method('deleteFromSagePay')
+            ->with('fsd587fds78dfsfdsa687dsa');
 
         $token->deleteToken();
     }
 
     public function testDeleteTokenDelete()
     {
-        /** @var \Ebizmarts\SagePaySuite\Model\Token $tokenModelMock */
-        $tokenModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Token::class)
-            ->setMethods(['getId', 'delete'])
-            ->disableOriginalConstructor()
-            ->getMock();
+        $token = 'fsd587fds78dfsfdsa687dsa';
+
+        $tokenModelMock = $this->buildTokenModelMock();
+        $tokenModelMock->expects($this->once())->method('getToken')->willReturn($token);
+
+        $this->deleteTokenFromSagePayMock
+            ->expects($this->once())
+            ->method('deleteFromSagePay')
+            ->with($token);
 
         $tokenModelMock->expects($this->once())->method('getId')->willReturn(456);
         $tokenModelMock->expects($this->once())->method('delete');
@@ -314,5 +314,47 @@ class TokenTest extends \PHPUnit\Framework\TestCase
             true,
             $this->tokenModel->isCustomerUsingMaxTokenSlots(null, 'testebizmarts')
         );
+    }
+
+    /**
+     * @return \Ebizmarts\SagePaySuite\Model\Token
+     */
+    private function buildTokenModelMock()
+    {
+        $contextMock = $this
+            ->getMockBuilder(Context::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $registryMock = $this
+            ->getMockBuilder(Registry::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $resourceMock = $this
+            ->getMockBuilder(AbstractResource::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $resourceCollectionMock = $this
+            ->getMockBuilder(AbstractDb::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var \Ebizmarts\SagePaySuite\Model\Token $tokenModelMock */
+        $tokenModelMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Token::class)
+            ->setMethods(['getId', 'delete', 'getToken', '_construct'])
+            ->setConstructorArgs(
+                [
+                    $contextMock,
+                    $registryMock,
+                    $this->suiteLoggerMock,
+                    $this->postApiMock,
+                    $this->configMock,
+                    $this->deleteTokenFromSagePayMock,
+                    $resourceMock,
+                    $resourceCollectionMock
+                ]
+            )
+            ->getMock();
+
+        return $tokenModelMock;
     }
 }

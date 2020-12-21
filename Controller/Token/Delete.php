@@ -112,7 +112,7 @@ class Delete extends Action
                 //validate ownership
                 if ($token->isOwnedByCustomer($this->customerSession->getCustomerId())) {
                     //delete
-                    //$token->deleteToken();
+                    $token->deleteToken();
                 } else {
                     throw new AuthenticationException(
                         __('Unable to delete token: Token is not owned by you')
