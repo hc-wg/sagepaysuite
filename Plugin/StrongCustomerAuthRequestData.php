@@ -68,12 +68,11 @@ class StrongCustomerAuthRequestData
             'transType'                => TransactionType::GOOD_SERVICE_PURCHASE,
             'challengeWindowSize'      => $this->sagepayConfig->getValue("challengewindowsize"),
         ];
-        if ($data->getSaveToken() || $data->getReusableToken()) {
-            $result['credentialType'] = [
-                'cofUsage'      => $this->getCofUsage($data),
-                'initiatedType' => 'CIT'
-            ];
-        }
+        $result['credentialType'] = [
+            'cofUsage'      => $this->getCofUsage($data),
+            'initiatedType' => 'CIT',
+            'mitType'       => 'Unscheduled'
+        ];
 
         return $result;
     }
