@@ -114,18 +114,17 @@ class Callback3Dv2 extends Action
 
     public function execute()
     {
+        $orderId = null;
         try {
             $quoteIdEncrypted = $this->getRequest()->getParam("quoteId");
             $quoteIdFromParams = $this->cryptAndCode->decodeAndDecrypt($quoteIdEncrypted);
             $quote = $this->quoteRepository->get((int)$quoteIdFromParams);
-
             $order = $this->orderLoader->loadOrderFromQuote($quote);
-            $orderId = $order->getId();
+            $orderId = (int)$order->getId();
             $customerId = $order->getCustomerId();
             if ($customerId != null) {
                 $this->logInCustomer($customerId);
             }
-
             $payment = $order->getPayment();
 
             /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
@@ -149,12 +148,12 @@ class Callback3Dv2 extends Action
                 $this->javascriptRedirect('checkout/cart');
             }
         } catch (ApiException $apiException) {
-            $this->recoverCart->setShouldCancelOrder(true)->execute();
+            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
             $this->logger->critical($apiException);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
-            $this->recoverCart->setShouldCancelOrder(true)->execute();
+            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
             $this->logger->critical($e);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
