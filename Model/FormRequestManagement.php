@@ -7,7 +7,6 @@ use Ebizmarts\SagePaySuite\Api\FormManagementInterface;
 use Ebizmarts\SagePaySuite\Helper\Checkout;
 use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Helper\Request;
-use Ebizmarts\SagePaySuite\Model\FormCrypt;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\Encryption\EncryptorInterface;
@@ -35,6 +34,11 @@ class FormRequestManagement implements FormManagementInterface
      * @var \Magento\Quote\Model\Quote
      */
     private $quote;
+
+    /**
+     * @var \Magento\Sales\Model\Order
+     */
+    private $order;
 
     /**
      * Logging instance
@@ -100,7 +104,6 @@ class FormRequestManagement implements FormManagementInterface
         FormCrypt $formCrypt,
         EncryptorInterface $encryptor
     ) {
-
         $this->result             = $result;
         $this->quoteRepository    = $quoteRepository;
         $this->config             = $config;
@@ -141,14 +144,14 @@ class FormRequestManagement implements FormManagementInterface
 
             //save order with pending payment
             /** @var \Magento\Sales\Api\Data\OrderInterface $order */
-            $order = $this->checkoutHelper->placeOrder();
-            if ($order->getEntityId()) {
+            $this->order = $this->checkoutHelper->placeOrder();
+            if ($this->order->getEntityId()) {
                 //set pre-saved order flag in checkout session
-                $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, $order->getId());
+                $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, $this->order->getId());
                 $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 1);
 
                 //set payment data
-                $payment = $order->getPayment();
+                $payment = $this->order->getPayment();
                 $payment->setAdditionalInformation('vendorTxCode', $this->transactionVendorTxCode);
                 $payment->setAdditionalInformation('vendorname', $vendorname);
                 $payment->setAdditionalInformation('mode', $this->config->getMode());
@@ -190,7 +193,6 @@ class FormRequestManagement implements FormManagementInterface
 
     private function generateFormCrypt()
     {
-
         $encryptedPassword = $this->config->getFormEncryptedPassword();
 
         if (empty($encryptedPassword)) {
@@ -209,6 +211,7 @@ class FormRequestManagement implements FormManagementInterface
         }
 
         $encryptedQuoteId = $this->encryptor->encrypt($this->quote->getId());
+        $encryptedOrderId = $this->encryptor->encrypt($this->order->getId());
 
         $data['SuccessURL'] = $this->url->getUrl('sagepaysuite/form/success', [
             '_secure' => true,
@@ -220,7 +223,9 @@ class FormRequestManagement implements FormManagementInterface
             '_secure' => true,
             '_store'  => $this->quote->getStoreId()
         ]);
-        $data['FailureURL'] .= '?quoteid=' . urlencode($encryptedQuoteId);
+        $data['FailureURL'] .=
+            '?quoteid=' . urlencode($encryptedQuoteId) .
+            '&orderId=' . urlencode($encryptedOrderId);
 
         //email details
         $data['VendorEMail']  = $this->config->getFormVendorEmail();
