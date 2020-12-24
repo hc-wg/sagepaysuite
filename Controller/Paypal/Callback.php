@@ -142,7 +142,7 @@ class Callback extends Action
             $this->loadQuoteFromDataSource();
             $order = $this->orderLoader->loadOrderFromQuote($this->quote);
             $orderId = $order->getId();
-            
+
             //get POST data
             $this->postData = $this->getRequest()->getPost();
 
