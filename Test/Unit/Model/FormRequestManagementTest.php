@@ -121,10 +121,13 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
         $quoteMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
         $quoteMock->expects($this->any())->method('getId')->willReturn(456);
 
+        $orderId = 44;
+        $encryptedOrderId = '0:3:Lq/5e1tdLdR19OaUuu1JTxD+7secLH91mWTNsT9c';
+
         $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $orderMock->expects($this->once())->method('getEntityId')->willReturn(45);
+        $orderMock->expects($this->exactly(2))->method('getEntityId')->willReturn($orderId);
         $orderMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
 
         $checkoutHelperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Checkout::class)
@@ -135,8 +138,14 @@ class FormRequestManagementTest extends \PHPUnit_Framework_TestCase
         $encryptorMock = $this->getMockBuilder(\Magento\Framework\Encryption\EncryptorInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $encryptorMock->expects($this->once())->method('encrypt')->with(456)
-            ->willReturn('0:2:Dwn8kCUk6nZU5B7b0Xn26uYQDeLUKBrD:S72utt9n585GrslZpDp+DRpW+8dpqiu/EiCHXwfEhS0=');
+        $encryptorMock
+            ->expects($this->exactly(2))
+            ->method('encrypt')
+            ->withConsecutive([456], [$orderId])
+            ->willReturn(
+                '0:2:Dwn8kCUk6nZU5B7b0Xn26uYQDeLUKBrD:S72utt9n585GrslZpDp+DRpW+8dpqiu/EiCHXwfEhS0=',
+                $encryptedOrderId
+            );
 
         $cryptObject = new \Ebizmarts\SagePaySuite\Model\FormCrypt();
 

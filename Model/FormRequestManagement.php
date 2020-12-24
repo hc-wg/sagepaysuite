@@ -211,7 +211,7 @@ class FormRequestManagement implements FormManagementInterface
         }
 
         $encryptedQuoteId = $this->encryptor->encrypt($this->quote->getId());
-        $encryptedOrderId = $this->encryptor->encrypt($this->order->getId());
+        $encryptedOrderId = $this->encryptor->encrypt($this->order->getEntityId());
 
         $data['SuccessURL'] = $this->url->getUrl('sagepaysuite/form/success', [
             '_secure' => true,
