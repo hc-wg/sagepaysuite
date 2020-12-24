@@ -129,6 +129,7 @@ class Callback extends Action implements CsrfAwareActionInterface
         try {
             $this->loadQuoteFromDataSource();
             $order = $this->orderLoader->loadOrderFromQuote($this->quote);
+            $orderId = $order->getId();
 
             //get POST data
             $this->postData = $this->getRequest()->getPost();
@@ -163,7 +164,7 @@ class Callback extends Action implements CsrfAwareActionInterface
 
             return;
         } catch (\Exception $e) {
-            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($order->getId())->execute();
+            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
             $this->suiteLogger->logException($e);
             $this->redirectToCartAndShowError('We can\'t place the order: ' . $e->getMessage());
         }
