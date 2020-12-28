@@ -13,6 +13,7 @@ use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\CsrfAwareActionInterface;
@@ -105,6 +106,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
                 $this->logInCustomer($customerId);
             }
             $payment = $order->getPayment();
+
             if ($this->isParesDuplicated($payment, $sanitizedPares)) {
                 $this->javascriptRedirect('checkout/onepage/success');
                 return;
@@ -125,6 +127,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $data->setVendorName($this->config->getVendorname());
             $data->setMode($this->config->getMode());
             $data->setPaymentAction($this->config->getSagepayPaymentAction());
+            $data->setSaveToken((bool)$this->getRequest()->getParam("saveToken"));
 
             $this->requester->setRequestData($data);
 

@@ -6,12 +6,15 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Token;
 
+use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Token;
 use Magento\Customer\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\ResultFactory;
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Magento\Framework\Exception\AuthenticationException;
+use Magento\Framework\Exception\CouldNotDeleteException;
 use Psr\Log\LoggerInterface;
 
 class Delete extends Action
@@ -33,13 +36,24 @@ class Delete extends Action
      */
     private $tokenModel;
 
+    /** @var int */
     private $tokenId;
+
+    /** @var string */
+    private $paymentMethod;
+
+    /** @var bool */
     private $isCustomerArea;
 
     /**
      * @var Session
      */
     private $customerSession;
+
+    /**
+     * @var Token\VaultDetailsHandler
+     */
+    private $vaultDetailsHandler;
 
     /**
      * Delete constructor.
@@ -54,15 +68,16 @@ class Delete extends Action
         Logger $suiteLogger,
         LoggerInterface $logger,
         Token $tokenModel,
-        Session $customerSession
+        Session $customerSession,
+        Token\VaultDetailsHandler $vaultDetailsHandler
     ) {
-    
         parent::__construct($context);
-        $this->suiteLogger     = $suiteLogger;
-        $this->logger          = $logger;
-        $this->tokenModel      = $tokenModel;
-        $this->customerSession = $customerSession;
-        $this->isCustomerArea  = true;
+        $this->suiteLogger         = $suiteLogger;
+        $this->logger              = $logger;
+        $this->tokenModel          = $tokenModel;
+        $this->customerSession     = $customerSession;
+        $this->isCustomerArea      = true;
+        $this->vaultDetailsHandler = $vaultDetailsHandler;
     }
 
     /**
@@ -76,51 +91,90 @@ class Delete extends Action
                 $this->tokenId = $this->getRequest()->getParam("token_id");
                 if (!empty($this->getRequest()->getParam("checkout"))) {
                     $this->isCustomerArea = false;
+                    $this->paymentMethod = $this->getRequest()->getParam('pmethod');
+                } else {
+                    $isVault = $this->getRequest()->getParam('isVault');
+                    if (isset($isVault) && $isVault) {
+                        $this->paymentMethod = Config::METHOD_PI;
+                    } else {
+                        $this->paymentMethod = Config::METHOD_SERVER;
+                    }
                 }
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Unable to delete token: Invalid token id.'));
             }
 
-            $token = $this->tokenModel->loadToken($this->tokenId);
+            // This if is temporary, once server start using vault the if for server should be removed
+            // and delete the token the same way as pi.
+            if ($this->paymentMethod === Config::METHOD_SERVER) {
+                $token = $this->tokenModel->loadToken($this->tokenId);
 
-            //validate ownership
-            if ($token->isOwnedByCustomer($this->customerSession->getCustomerId())) {
-                //delete
-                $token->deleteToken();
-            } else {
-                throw new \Magento\Framework\Validator\Exception(
-                    __('Unable to delete token: Token is not owned by you')
-                );
+                //validate ownership
+                if ($token->isOwnedByCustomer($this->customerSession->getCustomerId())) {
+                    //delete
+                    $token->deleteToken();
+                    //prepare response
+                    $responseContent = $this->getSuccessResponseContent();
+                } else {
+                    $responseContent = $this->getFailResponseContent('Unable to delete token');
+                }
+            } elseif ($this->paymentMethod === Config::METHOD_PI) {
+                if ($this->vaultDetailsHandler->deleteToken($this->tokenId, $this->customerSession->getCustomerId())) {
+                    //prepare response
+                    $responseContent = $this->getSuccessResponseContent();
+                } else {
+                    $responseContent = $this->getFailResponseContent('Unable to delete token');
+                }
             }
-
-            //prepare response
-            $responseContent = [
-                'success' => true,
-                'response' => true
-            ];
         } catch (\Exception $e) {
             $this->logger->critical($e);
 
-            $responseContent = [
-                'success' => false,
-                'error_message' => __("Something went wrong: %1", $e->getMessage()),
-            ];
+            $responseContent = $this->getFailResponseContent($e->getMessage());
         }
 
+        $resultJson = $this->getResultFactory();
+        $resultJson->setData($responseContent);
         if ($this->isCustomerArea == true) {
             if ($responseContent["success"] == true) {
-                $this->messageManager->addSuccess(__('Token deleted successfully.'));
-                $this->_redirect('sagepaysuite/customer/tokens');
-                return true;
+                $this->addSuccessMessage();
             } else {
                 $this->messageManager->addError(__($responseContent["error_message"]));
-                $this->_redirect('sagepaysuite/customer/tokens');
-                return false;
             }
-        } else {
-            $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
-            $resultJson->setData($responseContent);
-            return $resultJson;
+            $this->_redirect('sagepaysuite/customer/tokens');
         }
+        return $resultJson;
+    }
+
+    /**
+     * @return \Magento\Framework\Controller\ResultInterface
+     */
+    public function getResultFactory()
+    {
+        return $this->resultFactory->create(ResultFactory::TYPE_JSON);
+    }
+
+    public function addSuccessMessage()
+    {
+        $this->messageManager->addSuccess(__('Token deleted successfully.'));
+    }
+
+    /**
+     * @return array
+     */
+    private function getSuccessResponseContent()
+    {
+        return ['success' => true, 'response' => true];
+    }
+
+    /**
+     * @param $errorMessage
+     * @return array
+     */
+    private function getFailResponseContent($errorMessage)
+    {
+        return [
+            'success' => false,
+            'error_message' => __("Something went wrong: %1", $errorMessage),
+        ];
     }
 }
