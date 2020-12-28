@@ -6,47 +6,58 @@
 
 namespace Ebizmarts\SagePaySuite\Block\Customer;
 
+use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Token;
+use Ebizmarts\SagePaySuite\Model\Token\VaultDetailsHandler;
+use Magento\Customer\Helper\Session\CurrentCustomer;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
+
 /**
  * Block to display customer tokens in customer area
  */
-class TokenList extends \Magento\Framework\View\Element\Template
+class TokenList extends Template
 {
     /**
-     * @var \Magento\Customer\Helper\Session\CurrentCustomer
+     * @var CurrentCustomer
      */
     private $currentCustomer;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Config
+     * @var Config
      */
     private $_config;
 
     /**
-     * @var \Ebizmarts\SagePaySuite\Model\Token
+     * @var Token
      */
     private $_tokenModel;
 
+    /** @var VaultDetailsHandler */
+    private $_vaultDetailsHandler;
+
     /**
-     * @param \Magento\Framework\View\Element\Template\Context $context
-     * @param \Magento\Customer\Helper\Session\CurrentCustomer $currentCustomer
+     * @param Context $context
+     * @param CurrentCustomer $currentCustomer
      * @param array $data
      */
     public function __construct(
-        \Magento\Framework\View\Element\Template\Context $context,
-        \Magento\Customer\Helper\Session\CurrentCustomer $currentCustomer,
-        \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Ebizmarts\SagePaySuite\Model\Token $tokenModel,
+        Context $context,
+        CurrentCustomer $currentCustomer,
+        Config $config,
+        VaultDetailsHandler $vaultDetailsHandler,
+        Token $tokenModel,
         array $data = []
     ) {
         parent::__construct($context, $data);
-        $this->currentCustomer = $currentCustomer;
-        $this->_config = $config;
-        $this->_tokenModel = $tokenModel;
+        $this->currentCustomer      = $currentCustomer;
+        $this->_config              = $config;
+        $this->_tokenModel          = $tokenModel;
+        $this->_vaultDetailsHandler = $vaultDetailsHandler;
 
-        $this->setItems($this->_tokenModel->getCustomerTokens(
-            $this->currentCustomer->getCustomerId(),
-            $this->_config->getVendorname()
-        ));
+        $this->setItems(
+            $this->getCustomerTokensToShow()
+        );
     }
 
     /**
@@ -63,5 +74,22 @@ class TokenList extends \Magento\Framework\View\Element\Template
     public function getMaxTokenPerCustomer()
     {
         return $this->_config->getMaxTokenPerCustomer();
+    }
+
+    /**
+     * @return array
+     */
+    private function getCustomerTokensToShow()
+    {
+        $vaultTokens = $this->_vaultDetailsHandler->getTokensFromCustomerToShowOnAccount(
+            $this->currentCustomer->getCustomerId()
+        );
+
+        $serverTokens = $this->_tokenModel->getCustomerTokensToShowOnAccount(
+            $this->currentCustomer->getCustomerId(),
+            $this->_config->getVendorname()
+        );
+
+        return array_merge($vaultTokens, $serverTokens);
     }
 }

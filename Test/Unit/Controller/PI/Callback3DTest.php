@@ -1119,12 +1119,13 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->requestMock
-            ->expects($this->exactly(2))
+            ->expects($this->exactly(3))
             ->method('getParam')
-            ->withConsecutive(['orderId'], ['transactionId'])
+            ->withConsecutive(['orderId'], ['transactionId'], ['saveToken'])
             ->willReturnOnConsecutiveCalls(
                 self::ENCODED_ORDER_ID,
-                $this->returnValue(self::TEST_VPSTXID)
+                $this->returnValue(self::TEST_VPSTXID),
+                1
             );
         $this->requestMock
             ->expects($this->once())
