@@ -10,9 +10,9 @@ use Ebizmarts\SagePaySuite\Controller\Server\Notify;
 use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Ebizmarts\SagePaySuite\Model\Token;
-
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Response\Http as HttpResponse;
 use Magento\Framework\App\Request\Http as HttpRequest;
@@ -40,6 +40,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
     const ORDER_ID      = '88888888';
     const STORE_ID      = 1;
     const ENC_QUOTE_ID  =  '0:2:Dwn8kCUk6nZU5B7b0Xn26uYQDeLUKBrD:S72utt9n585GrslZpDp+DRpW+8dpqiu/EiCHXwfEhS0=';
+    const ENC_ORDER_ID  = '0:3:Lq/5e1tdLdR19OaUuu1JTxD+7secLH91mWTNsT9c';
 
     /** @var Config|\PHPUnit_Framework_MockObject_MockObject */
     private $config;
@@ -184,7 +185,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->updateOrderCallback->expects($this->once())->method('confirmPayment')->with(self::TEST_VPSTXID);
 
         $this->controllerInstantiate();
-         $this->serverNotifyController->execute();
+        $this->serverNotifyController->execute();
     }
 
     public function testExecuteOkSagePayRetry()
@@ -346,10 +347,13 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getState')
             ->willReturn(Order::STATE_PENDING_PAYMENT);
-
         $this->order->expects($this->once())
             ->method('cancel')
             ->willReturnSelf();
+        $this->order
+            ->expects($this->once())
+            ->method('getId')
+            ->willReturn(self::ORDER_ID);
 
         $transactionMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
@@ -362,7 +366,11 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($transactionMock));
 
-        $this->checkEncryptIsCalled();
+        $this->encryptor
+            ->expects($this->exactly(2))
+            ->method('encrypt')
+            ->withConsecutive([self::QUOTE_ID], [self::ORDER_ID])
+            ->willReturnOnConsecutiveCalls(self::ENC_QUOTE_ID, self::ENC_ORDER_ID);
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -391,7 +399,9 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=OK' . "\r\n" .
             'StatusDetail=Transaction ABORTED successfully' . "\r\n" .
-            'RedirectURL=?quote=' . urlencode(self::ENC_QUOTE_ID) . '&message=Transaction cancelled by customer' . "\r\n"
+            'RedirectURL=?orderId=' . urlencode(self::ENC_ORDER_ID) .
+            '&quote=' . urlencode(self::ENC_QUOTE_ID) .
+            '&message=Transaction cancelled by customer' . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -419,6 +429,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('save')
             ->willReturnSelf();
+        $this->order
+            ->expects($this->once())
+            ->method('getId')
+            ->willReturn(self::ORDER_ID);
 
         $transactionMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
@@ -431,7 +445,11 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($transactionMock));
 
-        $this->checkEncryptIsCalled();
+        $this->encryptor
+            ->expects($this->exactly(2))
+            ->method('encrypt')
+            ->withConsecutive([self::QUOTE_ID], [self::ORDER_ID])
+            ->willReturnOnConsecutiveCalls(self::ENC_QUOTE_ID, self::ENC_ORDER_ID);
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -462,7 +480,9 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=' . $errorStatusDetail . "\r\n" .
-            'RedirectURL=?message=' . $errorStatusDetail . '&quote=' . urlencode(self::ENC_QUOTE_ID) . "\r\n"
+            'RedirectURL=?message=' . $errorStatusDetail .
+            '&quote=' . urlencode(self::ENC_QUOTE_ID) .
+            '&orderId=' . urlencode(self::ENC_ORDER_ID) . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -485,6 +505,10 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->order->expects($this->any())
             ->method('cancel')
             ->willReturnSelf();
+        $this->order
+            ->expects($this->once())
+            ->method('getId')
+            ->willReturn(self::ORDER_ID);
 
         $transactionMock = $this
             ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
@@ -497,7 +521,11 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('create')
             ->will($this->returnValue($transactionMock));
 
-        $this->checkEncryptIsCalled();
+        $this->encryptor
+            ->expects($this->exactly(2))
+            ->method('encrypt')
+            ->withConsecutive([self::QUOTE_ID], [self::ORDER_ID])
+            ->willReturnOnConsecutiveCalls(self::ENC_QUOTE_ID, self::ENC_ORDER_ID);
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -526,7 +554,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Something went wrong: Invalid transaction id' . "\r\n" .
-            'RedirectURL=?message=Something went wrong: Invalid transaction id&quote=' . urlencode(self::ENC_QUOTE_ID) . "\r\n"
+            'RedirectURL=?message=Something went wrong: Invalid transaction id&quote=' . urlencode(self::ENC_QUOTE_ID) .
+            '&orderId=' . urlencode(self::ENC_ORDER_ID) . "\r\n"
         );
 
         $this->controllerInstantiate();
@@ -695,7 +724,11 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->expects($this->never())
             ->method('getInvoiceCollection');
 
-        $this->checkEncryptIsCalled();
+        $this->encryptor
+            ->expects($this->once())
+            ->method('encrypt')
+            ->with(self::QUOTE_ID)
+            ->willReturn(self::ENC_QUOTE_ID);
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -740,7 +773,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->method('setBody')
             ->with('Status=INVALID' . "\r\n" .
                 'StatusDetail=Unable to find quote' . "\r\n" .
-                'RedirectURL=?message=Unable to find quote&quote=' . "\r\n");
+                'RedirectURL=?message=Unable to find quote&quote=&orderId=' . "\r\n");
 
         $this->controllerInstantiate();
         $this->serverNotifyController->execute();
@@ -758,8 +791,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
-            'StatusDetail=Order was not found' . "\r\n" .
-            'RedirectURL=?message=Order was not found&quote=' . "\r\n"
+            'StatusDetail=Something went wrong: Invalid order.' . "\r\n" .
+            'RedirectURL=?message=Something went wrong: Invalid order.&quote=&orderId=' . "\r\n"
         );
 
         $this->serverNotifyController->execute();
@@ -880,8 +913,16 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->order->expects($this->any())
             ->method('cancel')
             ->willReturnSelf();
+        $this->order
+            ->expects($this->once())
+            ->method('getId')
+            ->willReturn(self::ORDER_ID);
 
-        $this->checkEncryptIsCalled();
+        $this->encryptor
+            ->expects($this->exactly(2))
+            ->method('encrypt')
+            ->withConsecutive([self::QUOTE_ID], [self::ORDER_ID])
+            ->willReturnOnConsecutiveCalls(self::ENC_QUOTE_ID, self::ENC_ORDER_ID);
 
         $this->request->expects($this->once())
             ->method('getPost')
@@ -908,7 +949,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->responseExpectsSetBody(
             'Status=INVALID' . "\r\n" .
             'StatusDetail=Something went wrong: Invalid VPS Signature' . "\r\n" .
-            'RedirectURL=?message=Something went wrong: Invalid VPS Signature&quote=' . urlencode(self::ENC_QUOTE_ID) . "\r\n"
+            'RedirectURL=?message=Something went wrong: Invalid VPS Signature&quote=' . urlencode(self::ENC_QUOTE_ID) .
+            '&orderId=' . urlencode(self::ENC_ORDER_ID) . "\r\n"
         );
 
         $this->controllerInstantiate();
