@@ -6,27 +6,27 @@
 
 namespace Ebizmarts\SagePaySuite\Controller\Server;
 
+use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\InvalidSignatureException;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Ebizmarts\SagePaySuite\Model\Token;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Validator\Exception;
-use Magento\Quote\Model\QuoteRepository;
 use Magento\Quote\Model\Quote;
-use Magento\Sales\Model\Order\Email\Sender\OrderSender;
-use \Ebizmarts\SagePaySuite\Helper\Data;
-use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
+use Magento\Quote\Model\QuoteRepository;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use function urlencode;
 
 class Notify extends Action implements CsrfAwareActionInterface
@@ -143,7 +143,8 @@ class Notify extends Action implements CsrfAwareActionInterface
             } catch (InvalidSignatureException $signatureException) {
                 return $this->returnInvalid(
                     __("Something went wrong: %1", $signatureException->getMessage()),
-                    $this->quote->getId()
+                    $this->quote->getId(),
+                    $order->getId()
                 );
             }
 
@@ -180,7 +181,7 @@ class Notify extends Action implements CsrfAwareActionInterface
                 } elseif ($state !== Order::STATE_CANCELED) {
                     $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Incorrect state found on order " . $order->getIncrementId() . " when trying to cancel it. State found: " . $state, [__METHOD__, __LINE__]);
                 }
-                return $this->returnAbort($this->quote->getId());
+                return $this->returnAbort($this->quote->getId(), $order->getId());
             } elseif ($status == "OK" || $status == "AUTHENTICATED" || $status == "REGISTERED") {
                 $this->updateOrderCallback->setOrder($this->order);
 
@@ -210,7 +211,8 @@ class Notify extends Action implements CsrfAwareActionInterface
                         $status,
                         $statusDetail
                     ),
-                    $this->quote->getId()
+                    $this->quote->getId(),
+                    $order->getId()
                 );
             }
         } catch (NoSuchEntityException $nse) {
@@ -219,20 +221,23 @@ class Notify extends Action implements CsrfAwareActionInterface
             $this->suiteLogger->logException($apiException, [__METHOD__, __LINE__]);
 
             //cancel pending payment order
+            $orderId = null;
             if (isset($order)) {
+                $orderId = $order->getId();
                 $this->cancelOrder($order);
             }
 
-            return $this->returnInvalid(__("Something went wrong: %1", $apiException->getUserMessage()));
+            return $this->returnInvalid(__("Something went wrong: %1", $apiException->getUserMessage()), null, $orderId);
         } catch (\Exception $e) {
             $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
 
             //cancel pending payment order
+            $orderId = null;
             if (isset($order)) {
+                $orderId = $order->getId();
                 $this->cancelOrder($order);
             }
-
-            return $this->returnInvalid(__("Something went wrong: %1", $e->getMessage()), $this->quote->getId());
+            return $this->returnInvalid(__("Something went wrong: %1", $e->getMessage()), $this->quote->getId(), $orderId);
         }
     }
 
@@ -273,11 +278,11 @@ class Notify extends Action implements CsrfAwareActionInterface
         }
     }
 
-    private function returnAbort($quoteId = null)
+    private function returnAbort($quoteId = null, $orderId = null)
     {
         $strResponse = 'Status=OK' . "\r\n";
         $strResponse .= 'StatusDetail=Transaction ABORTED successfully' . "\r\n";
-        $strResponse .= 'RedirectURL=' . $this->getAbortRedirectUrl($quoteId) . "\r\n";
+        $strResponse .= 'RedirectURL=' . $this->getAbortRedirectUrl($quoteId, $orderId) . "\r\n";
 
         $this->getResponse()->setHeader('Content-type', 'text/plain');
         $this->getResponse()->setBody($strResponse);
@@ -299,11 +304,11 @@ class Notify extends Action implements CsrfAwareActionInterface
         $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse, [__METHOD__, __LINE__]);
     }
 
-    private function returnInvalid($message = 'Invalid transaction, please try another payment method', $quoteId = null)
+    private function returnInvalid($message = 'Invalid transaction, please try another payment method', $quoteId = null, $orderId = null)
     {
         $strResponse = 'Status=INVALID' . "\r\n";
         $strResponse .= 'StatusDetail=' . $message . "\r\n";
-        $strResponse .= 'RedirectURL=' . $this->getFailedRedirectUrl($message, $quoteId) . "\r\n";
+        $strResponse .= 'RedirectURL=' . $this->getFailedRedirectUrl($message, $quoteId, $orderId) . "\r\n";
 
         $this->getResponse()->setHeader('Content-type', 'text/plain');
         $this->getResponse()->setBody($strResponse);
@@ -312,7 +317,7 @@ class Notify extends Action implements CsrfAwareActionInterface
         $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $strResponse, [__METHOD__, __LINE__]);
     }
 
-    private function getAbortRedirectUrl($quoteId = null)
+    private function getAbortRedirectUrl($quoteId = null, $orderId = null)
     {
         $url = $this->_url->getUrl('*/*/cancel', [
             '_secure' => true,
@@ -320,7 +325,9 @@ class Notify extends Action implements CsrfAwareActionInterface
         ]);
 
         $quoteId = $this->encryptor->encrypt($quoteId);
-        $url .= "?quote=" . urlencode($quoteId) . "&message=Transaction cancelled by customer";
+        $orderId = $this->encryptor->encrypt($orderId);
+        $url .= '?orderId=' . urlencode($orderId);
+        $url .= "&quote=" . urlencode($quoteId) . "&message=Transaction cancelled by customer";
 
         return $url;
     }
@@ -337,7 +344,7 @@ class Notify extends Action implements CsrfAwareActionInterface
         return $url;
     }
 
-    private function getFailedRedirectUrl($message, $quoteId = null)
+    private function getFailedRedirectUrl($message, $quoteId = null, $orderId = null)
     {
         $url = $this->_url->getUrl('*/*/cancel', [
             '_secure' => true,
@@ -345,7 +352,8 @@ class Notify extends Action implements CsrfAwareActionInterface
         ]);
 
         $quoteId = $this->encryptor->encrypt($quoteId);
-        $url .= "?message=" . $message . "&quote=" . urlencode($quoteId);
+        $orderId = $this->encryptor->encrypt($orderId);
+        $url .= "?message=" . $message . "&quote=" . urlencode($quoteId) . '&orderId=' . urlencode($orderId);
 
         return $url;
     }
