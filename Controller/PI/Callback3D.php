@@ -96,10 +96,10 @@ class Callback3D extends Action implements CsrfAwareActionInterface
 
     public function execute()
     {
+        $encryptedOrderId = $this->getRequest()->getParam("orderId");
+        $orderId = $this->decodeAndDecrypt($encryptedOrderId);
         try {
             $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
-            $encryptedOrderId = $this->getRequest()->getParam("orderId");
-            $orderId = $this->decodeAndDecrypt($encryptedOrderId);
             $order = $this->orderRepository->get($orderId);
             $customerId = $order->getCustomerId();
             if ($customerId != null) {
@@ -140,12 +140,12 @@ class Callback3D extends Action implements CsrfAwareActionInterface
                 $this->javascriptRedirect('checkout/cart');
             }
         } catch (ApiException $apiException) {
-            $this->recoverCart->setShouldCancelOrder(true)->execute();
+            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
-            $this->recoverCart->setShouldCancelOrder(true)->execute();
+            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
