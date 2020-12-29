@@ -84,6 +84,7 @@ $payment = $block->getPayment();
                     <th><?php echo $block->escapeHtml(__('Postcode Verification Result')); ?>:</th>
                     <td><?php echo $block->escapeHtml($payment->getAdditionalInformation("PostCodeResult")); ?></td>
                 </tr>
+            <?php } ?>
             <?php if ($payment->getAdditionalInformation("AVSCV2")) { ?>
                 <tr>
                     <th><?php echo $block->escapeHtml(__('AVS/CV2 Applied')); ?>:</th>
