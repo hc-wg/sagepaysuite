@@ -93,12 +93,6 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $orderRepositoryMock
-            ->expects($this->once())
-            ->method('get')
-            ->with(self::ORDER_ID)
-            ->willReturn($orderMock);
-
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
@@ -127,6 +121,12 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
         $quoteMock = $this->getMockBuilder('\Magento\Quote\Model\Quote')
             ->disableOriginalConstructor()
             ->getMock();
+
+        $orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($quoteMock)
+            ->willReturn($orderMock);
 
         $this->makeRequestMock();
 
@@ -255,12 +255,6 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $orderRepositoryMock
-            ->expects($this->once())
-            ->method('get')
-            ->with(self::ORDER_ID)
-            ->willReturn($orderMock);
-
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
@@ -274,6 +268,12 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
         $quoteMock = $this->getMockBuilder('\Magento\Quote\Model\Quote')
             ->disableOriginalConstructor()
             ->getMock();
+
+        $orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($quoteMock)
+            ->willReturn($orderMock);
 
         $this->urlBuilderMock = $this
             ->getMockBuilder('Magento\Framework\UrlInterface')
