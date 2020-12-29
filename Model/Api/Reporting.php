@@ -66,7 +66,6 @@ class Reporting
         FraudScreenResponseInterfaceFactory $fraudResponse,
         FraudScreenRuleInterfaceFactory $fraudScreenRule
     ) {
-
         $this->config              = $config;
         $this->httpTextFactory     = $httpTextFactory;
         $this->apiExceptionFactory = $apiExceptionFactory;
@@ -83,7 +82,7 @@ class Reporting
     {
         if ($this->config->getMode() == Config::MODE_LIVE) {
             return Config::URL_REPORTING_API_LIVE;
-        } else if($this->config->getMode() == Config::MODE_DEVELOPMENT) {
+        } elseif ($this->config->getMode() == Config::MODE_DEVELOPMENT) {
             return Config::URL_REPORTING_API_DEV;
         } else {
             return Config::URL_REPORTING_API_TEST;
@@ -209,7 +208,7 @@ class Reporting
     public function whitelistIpAddress($ipAddress)
     {
         $params = "<validips><ipaddress><address>$ipAddress</address>";
-        $params .= "<mask>".self::DEFAULT_SUBNET_MASK."</mask></ipaddress></validips>";
+        $params .= "<mask>" . self::DEFAULT_SUBNET_MASK . "</mask></ipaddress></validips>";
         $xml = $this->_createXml('addValidIPs', $params);
         return $this->_handleApiErrors($this->_executeRequest($xml));
     }
@@ -236,8 +235,10 @@ class Reporting
      * @return \Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterface
      * @throws \Ebizmarts\SagePaySuite\Model\Api\ApiException
      */
-    public function getFraudScreenDetail($vpstxid)
+    public function getFraudScreenDetail($vpstxid, $storeId = null)
     {
+        $this->config->setConfigurationScopeId($storeId);
+
         $params = '<vpstxid>' . $vpstxid . '</vpstxid>';
         $xmlRequest = $this->_createXml('getFraudScreenDetail', $params);
 
@@ -255,7 +256,7 @@ class Reporting
                 $fraudResponse->setFraudId((string)$result->fraudid);
                 $fraudResponse->setFraudCode((string)$result->fraudcode);
                 $fraudResponse->setFraudCodeDetail((string)$result->fraudcodedetail);
-            } else if ($fraudResponse->getFraudProviderName() == 'T3M') {
+            } elseif ($fraudResponse->getFraudProviderName() == 'T3M') {
                 $fraudResponse->setThirdmanId((string)$result->t3mid);
                 $fraudResponse->setThirdmanScore((string)$result->t3mscore);
                 $fraudResponse->setThirdmanAction((string)$result->t3maction);
