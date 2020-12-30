@@ -93,7 +93,7 @@ class StrongCustomerAuthRequestDataTest extends TestCase
 
         $piRequestMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\PiRequest::class)->disableOriginalConstructor()->getMock();
         $piRequestMock->expects($this->once())->method('getJavaEnabled')->willReturn(1);
-        $piRequestMock->expects($this->once())->method('getColorDepth')->willReturn(24);
+        $piRequestMock->expects($this->once())->method('getColorDepth')->willReturn(30);
         $piRequestMock->expects($this->once())->method('getScreenHeight')->willReturn(1080);
         $piRequestMock->expects($this->once())->method('getScreenWidth')->willReturn(1920);
         $piRequestMock->expects($this->once())->method('getTimezone')->willReturn(180);
