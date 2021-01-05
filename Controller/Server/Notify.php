@@ -74,35 +74,38 @@ class Notify extends Action
      */
     private $encryptor;
 
+    /** @var OrderLoader */
+    private $orderLoader;
+
     /**
      * Notify constructor.
      * @param Context $context
      * @param Logger $suiteLogger
-     * @param OrderFactory $orderFactory
      * @param OrderSender $orderSender
      * @param Config $config
      * @param Token $tokenModel
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param Data $suiteHelper
      * @param QuoteRepository $cartRepository
+     * @param EncryptorInterface $encryptor
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
         Logger $suiteLogger,
-        OrderFactory $orderFactory,
         OrderSender $orderSender,
         Config $config,
         Token $tokenModel,
         OrderUpdateOnCallback $updateOrderCallback,
         Data $suiteHelper,
         QuoteRepository $cartRepository,
-        EncryptorInterface $encryptor
+        EncryptorInterface $encryptor,
+        OrderLoader $orderLoader
     ) {
         parent::__construct($context);
 
         $this->suiteLogger         = $suiteLogger;
         $this->updateOrderCallback = $updateOrderCallback;
-        $this->orderFactory        = $orderFactory;
         $this->orderSender         = $orderSender;
         $this->config              = $config;
         $this->tokenModel          = $tokenModel;
@@ -110,6 +113,7 @@ class Notify extends Action
         $this->cartRepository      = $cartRepository;
         $this->encryptor           = $encryptor;
         $this->config->setMethodCode(Config::METHOD_SERVER);
+        $this->orderLoader         = $orderLoader;
     }
 
     public function execute()
@@ -126,13 +130,9 @@ class Notify extends Action
         try {
             $this->quote = $this->cartRepository->get($quoteId, [$storeId]);
 
-            $order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
-            if ($order === null || $order->getId() === null) {
-                return $this->returnInvalid(__("Order was not found"));
-            }
+            $order = $this->order = $this->orderLoader->loadOrderFromQuote($this->quote);
 
-            $this->order = $order;
-            $payment     = $order->getPayment();
+            $payment = $order->getPayment();
 
             $status = $this->postData->Status;
             $statusDetail = $this->postData->StatusDetail;

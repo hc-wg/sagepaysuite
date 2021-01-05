@@ -57,9 +57,6 @@ class Callback extends Action
     /** @var Post */
     private $postApi;
 
-    /** @var \Magento\Sales\Model\Order */
-    private $order;
-
     /**
      * @var QuoteFactory
      */
@@ -151,8 +148,6 @@ class Callback extends Action
 
             $this->validatePostDataStatusAndStatusDetail();
 
-            $this->loadQuoteFromDataSource();
-
             $completionResponse = $this->sendCompletionPost()["data"];
 
             $transactionId = $completionResponse["VPSTxId"];
@@ -162,14 +157,14 @@ class Callback extends Action
 
             $this->updatePaymentInformation($transactionId, $payment, $completionResponse);
 
-            $this->updateOrderCallback->setOrder($this->order);
+            $this->updateOrderCallback->setOrder($order);
             $this->updateOrderCallback->confirmPayment($transactionId);
 
             //prepare session to success or cancellation page
             $this->checkoutSession->clearHelperData();
             $this->checkoutSession->setLastQuoteId($this->quote->getId());
             $this->checkoutSession->setLastSuccessQuoteId($this->quote->getId());
-            $this->checkoutSession->setLastOrderId($order->getId());
+            $this->checkoutSession->setLastOrderId($orderId);
             $this->checkoutSession->setLastRealOrderId($order->getIncrementId());
             $this->checkoutSession->setLastOrderStatus($order->getStatus());
             $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
