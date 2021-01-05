@@ -149,10 +149,10 @@ class CancelTest extends \PHPUnit_Framework_TestCase
         $encryptedOrderId = '0:3:Lq/5e1tdLdR19OaUuu1JTxD+7secLH91mWTNsT9c';
         $orderId = 44;
 
-        $this->messageManagerMock->expects($this->once())
-            ->method('addError')->willReturn($this->messageManagerMock);
+        $this->messageManager->expects($this->once())
+            ->method('addError')->willReturn($this->messageManager);
 
-        $this->requestMock->expects($this->exactly(4))
+        $this->request->expects($this->exactly(4))
             ->method('getParam')
             ->withConsecutive(['message'], ['_store'], ['quote'], ['orderId'])
             ->willReturnOnConsecutiveCalls('Some message', $storeId, $encrypted, $encryptedOrderId);
@@ -163,12 +163,8 @@ class CancelTest extends \PHPUnit_Framework_TestCase
             ->withConsecutive([$encrypted], [$encryptedOrderId])
             ->willReturnOnConsecutiveCalls($quoteId, $orderId);
 
-        $this->orderFactory->expects($this->once())->method("create")->willReturn($this->order);
-        $this->order->expects($this->once())->method("loadByIncrementId")->with(self::RESERVED_ORDER_ID)->willReturnSelf();
-        $this->order->expects($this->once())->method("getId")->willReturn(self::RESERVED_ORDER_ID);
-
-        $this->quoteMock->expects($this->once())->method("getId")->willReturn($quoteId);//self::QUOTE_ID
-        $this->quoteMock->expects($this->once())->method("load")->with($quoteId)->willReturnSelf();//self::QUOTE_ID
+        $this->quote->expects($this->once())->method("getId")->willReturn($quoteId);//self::QUOTE_ID
+        $this->quote->expects($this->once())->method("load")->with($quoteId)->willReturnSelf();//self::QUOTE_ID
 
         $this->recoverCartMock
             ->expects($this->once())

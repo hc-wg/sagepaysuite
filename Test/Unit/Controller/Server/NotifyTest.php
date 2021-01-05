@@ -96,6 +96,9 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
     /** @var EncryptorInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $encryptor;
 
+    /** @var OrderLoader */
+    private $orderLoader;
+
     // @codingStandardsIgnoreStart
     public function setUp()
     {
@@ -103,7 +106,6 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
 
         // Initialize common constructor args
         $this->makeSuiteLogger();
-        $this->makeOrderFactoryMock();
         $this->makeOrderSender();
         $this->makeConfig();
         $this->makeSuiteHelper();
@@ -126,7 +128,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderLoader();
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->never())
@@ -137,6 +139,8 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Magento\Sales\Model\Order\Payment\Transaction')
             ->disableOriginalConstructor()
             ->getMock();
+
+        $paymentMock->expects($this->exactly(8))->method('setAdditionalInformation');
 
         $this->transactionFactory = $this->getMockBuilder('Magento\Sales\Model\Order\Payment\TransactionFactory')
             ->setMethods(['create'])->disableOriginalConstructor()->getMock();
@@ -197,7 +201,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderLoader();
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->never())
@@ -268,7 +272,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderLoader();
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->never())
@@ -340,7 +344,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderLoader();
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order
@@ -418,7 +422,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderLoader();
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order
@@ -499,7 +503,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderLoader();
         $this->suiteHelperExpectsRemoveCurlyBraces(1, 'INVALID_TRANSACTION');
 
         $this->order->expects($this->any())
@@ -572,7 +576,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderLoader();
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->never())
@@ -638,7 +642,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderLoader();
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->never())
@@ -704,7 +708,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderLoader();
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->never())
@@ -768,6 +772,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
     {
         $this->makeCartRepositoryWithException(self::QUOTE_ID, [self::STORE_ID]);
         $this->requestExpectsGetParam();
+        $this->makeOrderLoader(false);
 
         $this->response->expects($this->once())
             ->method('setBody')
@@ -784,8 +789,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->requestExpectsGetParam();
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
-        $this->makeOrder();
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderLoaderFailed();
         $this->suiteHelperExpectsRemoveCurlyBraces(0);
         $this->controllerInstantiate();
 
@@ -808,7 +812,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderLoader();
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $this->order->expects($this->once())
@@ -895,7 +899,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
         $this->makeQuote();
         $this->makeCartRepositoryWithFoundQuote(self::QUOTE_ID, [self::STORE_ID]);
         $this->makeOrder($paymentMock, self::ORDER_ID);
-        $this->makeOrderFactoryMock($this->order);
+        $this->makeOrderLoader();
         $this->suiteHelperExpectsRemoveCurlyBraces(1);
 
         $transactionMock = $this
@@ -969,24 +973,24 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
     private function controllerInstantiate(
         Context $contextMock = null,
         Config $configMock = null,
-        OrderFactory $orderFactoryMock = null,
         TransactionFactory $transactionFactoryMock = null,
         Quote $quoteMock = null,
         Data $helperMock = null,
         OrderSender $orderSender = null,
-        OrderUpdateOnCallback $updateOrderCallback = null
+        OrderUpdateOnCallback $updateOrderCallback = null,
+        OrderLoader $orderLoader = null
     ) {
         $args = [
             'context'            => $this->context,
             'suiteLogger'        => $this->logger,
-            'orderFactory'       => $this->orderFactory,
             'orderSender'        => $this->orderSender,
             'config'             => $this->config,
             'tokenModel'         => $this->token,
             'updateOrderCallback'=> $this->updateOrderCallback,
             'suiteHelper'        => $this->suiteHelper,
             'cartRepository'     => $this->cartRepository,
-            'encryptor'          => $this->encryptor
+            'encryptor'          => $this->encryptor,
+            'orderLoader'        => $this->orderLoader
         ];
 
         if ($updateOrderCallback !== null) {
@@ -1099,21 +1103,7 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
             $this->order->expects($this->any())->method('getPayment')->will($this->returnValue($paymentMock));
         }
 
-        $this->order->expects($this->once())->method('loadByIncrementId')->willReturnSelf();
         $this->order->expects($this->any())->method('place')->willReturnSelf();
-        $this->order->expects($this->atLeastOnce())->method('getId')->will($this->returnValue($id));
-    }
-
-    private function makeOrderFactoryMock($order = null)
-    {
-        $this->orderFactory = $this->getMockBuilder(OrderFactory::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['create'])
-            ->getMock();
-
-        if ($order) {
-            $this->orderFactory->expects($this->atLeastOnce())->method('create')->willReturn($order);
-        }
     }
 
     private function makeOrderSender()
@@ -1175,5 +1165,42 @@ class NotifyTest extends \PHPUnit_Framework_TestCase
     private function checkEncryptIsCalled()
     {
         $this->encryptor->expects($this->any())->method('encrypt')->with(self::QUOTE_ID)->willReturn(self::ENC_QUOTE_ID);
+    }
+
+    /**
+     * @param bool $executeLoadOrder
+     */
+   private function makeOrderLoader($executeLoadOrder = true)
+    {
+        $this->orderLoader = $this->getMockBuilder(OrderLoader::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['loadOrderFromQuote'])
+            ->getMock();
+
+        if($executeLoadOrder) {
+            $this->orderLoader
+                ->expects($this->once())
+                ->method('loadOrderFromQuote')
+                ->with($this->quote)
+                ->willReturn($this->order);
+        }
+    }
+
+    public function makeOrderLoaderFailed($paymentMock = null, $id = null)
+    {
+        $this->orderLoader = $this->getMockBuilder(OrderLoader::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['loadOrderFromQuote'])
+            ->getMock();
+        $this->order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
+
+        if ($paymentMock) {
+            $this->order->expects($this->any())->method('getPayment')->will($this->returnValue($paymentMock));
+        }
+        $this->orderLoader
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($this->quote)
+            ->willThrowException(new \Exception('Invalid order.'));
     }
 }
