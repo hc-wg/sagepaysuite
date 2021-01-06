@@ -1,5 +1,4 @@
 <?php
-
 namespace Ebizmarts\SagePaySuite\Test\Unit\Plugin;
 
 use Ebizmarts\SagePaySuite\Model\Config;
@@ -71,7 +70,6 @@ class StrongCustomerAuthRequestDataTest extends TestCase
     public function testNotScaTransactionConfig()
     {
         $this->configMock->expects($this->once())->method('shouldUse3dV2')->willReturn(false);
-        $this->configMock->expects($this->once())->method('shouldUse3dV2')->willReturn(false);
 
         $result = $this->sut->afterGetRequestData($this->subjectMock, []);
 
@@ -139,22 +137,23 @@ class StrongCustomerAuthRequestDataTest extends TestCase
     private function expectations($expectations = array())
     {
         $this->configMock->expects($this->once())->method('shouldUse3dV2')->willReturn(true);
-        $this->configMock->expects($this->once())->method('getValue')->with("challengewindowsize")->willReturn(self::WINDOW_SIZE);
+        $this->configMock->expects($this->once())->method('getValue')
+            ->with("challengewindowsize")->willReturn(self::WINDOW_SIZE);
 
         $this->requestMock = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
         $this->requestMock->expects($this->once())->method('getHeader')->with('Accept')->willReturn(self::ACCEPT_HEADER_ALL);
-        $this->requestMock->expects($this->once())->method('getClientIp')->willReturn(isset($expectations['getClientIp']) ? $expectations['getClientIp'] : self::REMOTE_IP);
+        $this->requestMock->expects($this->once())->method('getClientIp')
+            ->willReturn(isset($expectations['getClientIp']) ? $expectations['getClientIp'] : self::REMOTE_IP);
 
-        $this->urlMock
-            ->expects($this->once())
-            ->method('getUrl')
+        $this->urlMock->expects($this->once())->method('getUrl')
             ->with(
                 "sagepaysuite/pi/callback3Dv2",
                 ["_secure" => true, 'quoteId' => self::ENCODED_QUOTE_ID, 'saveToken' => true]
             )
             ->willReturn(self::NOTIFICATION_URL);
 
-        $this->cryptAndCodeMock->expects($this->once())->method('encryptAndEncode')->with(self::QUOTE_ID)->willReturn(self::ENCODED_QUOTE_ID);
+        $this->cryptAndCodeMock->expects($this->once())->method('encryptAndEncode')->with(self::QUOTE_ID)
+            ->willReturn(self::ENCODED_QUOTE_ID);
 
         $cartMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)->disableOriginalConstructor()->getMock();
 
@@ -169,7 +168,8 @@ class StrongCustomerAuthRequestDataTest extends TestCase
         );
 
         $this->piRequestMock->expects($this->once())->method('getJavaEnabled')->willReturn(1);
-        $this->piRequestMock->expects($this->once())->method('getColorDepth')->willReturn(24);
+        $this->piRequestMock->expects($this->once())->method('getColorDepth')
+            ->willReturn(isset($expectations['getColorDepth']) ? $expectations['getColorDepth'] : 24);
         $this->piRequestMock->expects($this->once())->method('getScreenHeight')->willReturn(1080);
         $this->piRequestMock->expects($this->once())->method('getScreenWidth')->willReturn(1920);
         $this->piRequestMock->expects($this->once())->method('getTimezone')->willReturn(180);
