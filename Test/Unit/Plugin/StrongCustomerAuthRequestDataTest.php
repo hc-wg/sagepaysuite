@@ -78,7 +78,17 @@ class StrongCustomerAuthRequestDataTest extends TestCase
 
     public function testScaTransaction()
     {
-        $this->expectations();
+        $this->expectSCAValues();
+
+        $this->sut = $this->objectManagerHelper->getObject(
+            StrongCustomerAuthRequestData::class,
+            [
+                'sagepayConfig' => $this->configMock,
+                'request' => $this->requestMock,
+                'coreUrl' => $this->urlMock,
+                'cryptAndCode' => $this->cryptAndCodeMock
+            ]
+        );
 
         $result = $this->sut->afterGetRequestData($this->subjectMock, []);
 
@@ -88,9 +98,19 @@ class StrongCustomerAuthRequestDataTest extends TestCase
 
     public function testScaTransactionMultipleIps()
     {
-        $expectations['getClientIp'] = self::MULTIPLE_REMOTE_IP;
+        $expectedSCAValues['getClientIp'] = self::MULTIPLE_REMOTE_IP;
 
-        $this->expectations($expectations);
+        $this->expectSCAValues($expectedSCAValues);
+
+        $this->sut = $this->objectManagerHelper->getObject(
+            StrongCustomerAuthRequestData::class,
+            [
+                'sagepayConfig' => $this->configMock,
+                'request' => $this->requestMock,
+                'coreUrl' => $this->urlMock,
+                'cryptAndCode' => $this->cryptAndCodeMock
+            ]
+        );
 
         $result = $this->sut->afterGetRequestData($this->subjectMock, []);
 
@@ -100,8 +120,18 @@ class StrongCustomerAuthRequestDataTest extends TestCase
 
     public function testScaTransactionSingleIpAndColorDepthChrome()
     {
-        $expectations['getColorDepth'] = 30;
-        $this->expectations($expectations);
+        $expectedSCAValues['getColorDepth'] = 30;
+        $this->expectSCAValues($expectedSCAValues);
+
+        $this->sut = $this->objectManagerHelper->getObject(
+            StrongCustomerAuthRequestData::class,
+            [
+                'sagepayConfig' => $this->configMock,
+                'request' => $this->requestMock,
+                'coreUrl' => $this->urlMock,
+                'cryptAndCode' => $this->cryptAndCodeMock
+            ]
+        );
 
         $result = $this->sut->afterGetRequestData($this->subjectMock, []);
 
@@ -134,7 +164,7 @@ class StrongCustomerAuthRequestDataTest extends TestCase
     /**
      * @param array $expectations
      */
-    private function expectations($expectations = array())
+    private function expectSCAValues($expectations = array())
     {
         $this->configMock->expects($this->once())->method('shouldUse3dV2')->willReturn(true);
         $this->configMock->expects($this->once())->method('getValue')
@@ -156,16 +186,6 @@ class StrongCustomerAuthRequestDataTest extends TestCase
             ->willReturn(self::ENCODED_QUOTE_ID);
 
         $cartMock = $this->getMockBuilder(\Magento\Quote\Model\Quote::class)->disableOriginalConstructor()->getMock();
-
-        $this->sut = $this->objectManagerHelper->getObject(
-            StrongCustomerAuthRequestData::class,
-            [
-                'sagepayConfig' => $this->configMock,
-                'request' => $this->requestMock,
-                'coreUrl' => $this->urlMock,
-                'cryptAndCode' => $this->cryptAndCodeMock
-            ]
-        );
 
         $this->piRequestMock->expects($this->once())->method('getJavaEnabled')->willReturn(1);
         $this->piRequestMock->expects($this->once())->method('getColorDepth')
