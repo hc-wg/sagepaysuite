@@ -44,9 +44,6 @@ class StrongCustomerAuthRequestDataTest extends TestCase
     /** @var UrlInterface */
     private $urlMock;
 
-    /** @var StrongCustomerAuthRequestData */
-    private $sut;
-
     protected function setUp()
     {
         $this->objectManagerHelper = new ObjectManagerHelper($this);
@@ -62,7 +59,10 @@ class StrongCustomerAuthRequestDataTest extends TestCase
     {
         $this->configMock->expects($this->once())->method('shouldUse3dV2')->willReturn(false);
 
-        $this->sut = $this->objectManagerHelper->getObject(
+        /**
+         * @var $strongCustomerAuthRequestDataObject StrongCustomerAuthRequestData
+         */
+        $strongCustomerAuthRequestDataObject = $this->objectManagerHelper->getObject(
             StrongCustomerAuthRequestData::class,
             [
                 'sagepayConfig' => $this->configMock,
@@ -72,7 +72,7 @@ class StrongCustomerAuthRequestDataTest extends TestCase
             ]
         );
 
-        $result = $this->sut->afterGetRequestData($this->subjectMock, []);
+        $result = $strongCustomerAuthRequestDataObject->afterGetRequestData($this->subjectMock, []);
 
         $this->assertEquals([], $result);
     }
@@ -81,7 +81,10 @@ class StrongCustomerAuthRequestDataTest extends TestCase
     {
         $this->expectSCAValues();
 
-        $this->sut = $this->objectManagerHelper->getObject(
+        /**
+         * @var $strongCustomerAuthRequestDataObject StrongCustomerAuthRequestData
+         */
+        $strongCustomerAuthRequestDataObject = $this->objectManagerHelper->getObject(
             StrongCustomerAuthRequestData::class,
             [
                 'sagepayConfig' => $this->configMock,
@@ -91,7 +94,7 @@ class StrongCustomerAuthRequestDataTest extends TestCase
             ]
         );
 
-        $result = $this->sut->afterGetRequestData($this->subjectMock, []);
+        $result = $strongCustomerAuthRequestDataObject->afterGetRequestData($this->subjectMock, []);
 
         $this->assertArrayHasKey(self::STRONG_CUSTOMER_AUTHENTICATION_KEY, $result);
         $this->assertEquals($this->getExpectedScaParameters(), $result[self::STRONG_CUSTOMER_AUTHENTICATION_KEY]);
@@ -103,7 +106,10 @@ class StrongCustomerAuthRequestDataTest extends TestCase
 
         $this->expectSCAValues($expectedSCAValues);
 
-        $this->sut = $this->objectManagerHelper->getObject(
+        /**
+         * @var $strongCustomerAuthRequestDataObject StrongCustomerAuthRequestData
+         */
+        $strongCustomerAuthRequestDataObject = $this->objectManagerHelper->getObject(
             StrongCustomerAuthRequestData::class,
             [
                 'sagepayConfig' => $this->configMock,
@@ -113,7 +119,7 @@ class StrongCustomerAuthRequestDataTest extends TestCase
             ]
         );
 
-        $result = $this->sut->afterGetRequestData($this->subjectMock, []);
+        $result = $strongCustomerAuthRequestDataObject->afterGetRequestData($this->subjectMock, []);
 
         $this->assertArrayHasKey(self::STRONG_CUSTOMER_AUTHENTICATION_KEY, $result);
         $this->assertEquals($this->getExpectedScaParameters(), $result[self::STRONG_CUSTOMER_AUTHENTICATION_KEY]);
