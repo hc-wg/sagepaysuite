@@ -56,6 +56,12 @@ class StrongCustomerAuthRequestDataTest extends TestCase
         $this->piRequestMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\PiRequest::class)->disableOriginalConstructor()->getMock();
         $this->cryptAndCodeMock = $this->getMockBuilder(CryptAndCodeData::class)->disableOriginalConstructor()->getMock();
         $this->urlMock = $this->getMockBuilder(UrlInterface::class)->disableOriginalConstructor()->getMock();
+    }
+
+    public function testNotScaTransactionConfig()
+    {
+        $this->configMock->expects($this->once())->method('shouldUse3dV2')->willReturn(false);
+
         $this->sut = $this->objectManagerHelper->getObject(
             StrongCustomerAuthRequestData::class,
             [
@@ -65,11 +71,6 @@ class StrongCustomerAuthRequestDataTest extends TestCase
                 'cryptAndCode'  => $this->cryptAndCodeMock
             ]
         );
-    }
-
-    public function testNotScaTransactionConfig()
-    {
-        $this->configMock->expects($this->once())->method('shouldUse3dV2')->willReturn(false);
 
         $result = $this->sut->afterGetRequestData($this->subjectMock, []);
 
