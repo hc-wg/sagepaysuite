@@ -55,12 +55,12 @@ class StrongCustomerAuthRequestData
         $result['strongCustomerAuthentication'] = [
             'browserJavascriptEnabled' => true,
             'browserJavaEnabled'       => (bool)$data->getJavaEnabled(),
-            'browserColorDepth'        => $data->getColorDepth(),
+            'browserColorDepth'        => $this->getBrowserColorDepth($data),
             'browserScreenHeight'      => $data->getScreenHeight(),
             'browserScreenWidth'       => $data->getScreenWidth(),
             'browserTZ'                => $data->getTimezone(),
             'browserAcceptHeader'      => $this->request->getHeader('Accept'),
-            'browserIP'                => $this->request->getClientIp(),
+            'browserIP'                => $this->getBrowserIP(),
             'browserLanguage'          => $data->getLanguage(),
             'browserUserAgent'         => $data->getUserAgent(),
             'notificationURL'          => $this->getNotificationUrl($quoteId),
@@ -86,5 +86,41 @@ class StrongCustomerAuthRequestData
     private function encryptAndEncode($data)
     {
         return $this->cryptAndCode->encryptAndEncode($data);
+    }
+
+    /**
+     * @param \Ebizmarts\SagePaySuite\Api\Data\PiRequest $data
+     * @return int
+     */
+    private function getBrowserColorDepth(\Ebizmarts\SagePaySuite\Api\Data\PiRequest $data)
+    {
+        $colorDepth = $data->getColorDepth();
+        $colorDepth = $colorDepth == 30 ? 24 : $colorDepth;
+
+        return $colorDepth;
+    }
+
+    /**
+     * @return mixed|string
+     */
+    private function getBrowserIP()
+    {
+        $browserIP = $this->request->getClientIp();
+        $ipAddressesArray = explode(',', $browserIP);
+
+        if (!empty($ipAddressesArray)) {
+            $browserIP = $ipAddressesArray[0];
+        }
+
+        foreach ($ipAddressesArray as $ipAddress) {
+            $ipAddress = trim($ipAddress);
+
+            if (filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                $browserIP = $ipAddress;
+                break;
+            }
+        }
+
+        return $browserIP;
     }
 }
