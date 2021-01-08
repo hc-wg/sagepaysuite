@@ -27,10 +27,30 @@ class FailureTest extends \PHPUnit\Framework\TestCase
 
         $contextMock = $this->makeContextMock($requestMock, $responseMock, $redirectMock, $messageManagerMock);
 
+        $encryptedCrypt = '@77a9f5fb9cbfc11c6f3d5d6b424c7e8468f2c8b1cee3a5096cf06ddfefe9e36bba3da2e65581150b2694d3f07df1f4f125490d1bb4d76104c38fe561692a8c7fd4130c02d0f8ab328e00adb48fa78995b6ac4446c1b6b2f41266a2a93967a320696f06b1800df8938373506c6694317130617c18cdb51d538984f9ba3fd0325e7282351cc2fc3caa355bfbae49ae6404f364f3a47452577346835e8c6b34cf38a1a6cf3e6eb46fe8ef22aa6c91473086b6e99967325c9bcff72d118a58c8e70ea9316b294c50bc3be670446d8844f8ff';
+        $encryptedOrderId = '0:3:bhpPDXw9Q3/NvDrZm94ri4wqDXyrHteaaVYUH0cz';
+        $orderId = 38;
+        $requestMock
+            ->expects($this->exactly(2))
+            ->method('getParam')
+            ->withConsecutive(['crypt'], ['orderId'])
+            ->willReturnOnConsecutiveCalls($encryptedCrypt, $encryptedOrderId);
+        $encryptorMock = $this
+            ->getMockBuilder(\Magento\Framework\Encryption\EncryptorInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $encryptorMock
+            ->expects($this->once())
+            ->method('decrypt')
+            ->with($encryptedOrderId)
+            ->willReturn($orderId);
+
         $formModelMock = $this->makeFormModelMock();
-        $formModelMock->expects($this->any())
+        $formModelMock
+            ->expects($this->once())
             ->method('decodeSagePayResponse')
-            ->will($this->returnValue($responseData));
+            ->with($encryptedCrypt)
+            ->willReturn($responseData);
 
         $recoverCartMock = $this
             ->getMockBuilder(RecoverCart::class)
@@ -43,6 +63,11 @@ class FailureTest extends \PHPUnit\Framework\TestCase
             ->willReturnSelf();
         $recoverCartMock
             ->expects($this->once())
+            ->method('setOrderId')
+            ->with($orderId)
+            ->willReturnSelf();
+        $recoverCartMock
+            ->expects($this->once())
             ->method('execute');
 
         $objectManagerHelper = new ObjectManagerHelper($this);
@@ -51,6 +76,7 @@ class FailureTest extends \PHPUnit\Framework\TestCase
             [
                 'context'     => $contextMock,
                 'formModel'   => $formModelMock,
+                'encryptor'   => $encryptorMock,
                 'recoverCart' => $recoverCartMock
             ]
         );
@@ -70,7 +96,13 @@ class FailureTest extends \PHPUnit\Framework\TestCase
     public function responseStatusDataProvider()
     {
         return [
-            [["Status" => "REJECTED", "StatusDetail" => "2000 : Invalid Card"], 'REJECTED: Invalid Card'],
+            [
+                [
+                    "Status" => "REJECTED",
+                    "StatusDetail" => "2000 : Invalid Card"
+                ],
+                'REJECTED: Invalid Card'
+            ],
             [
                 [
                     "VendorTxCode" => "2000000220-2018-11-12",

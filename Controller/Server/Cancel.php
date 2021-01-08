@@ -97,7 +97,8 @@ class Cancel extends Action
             throw new \Exception("Quote not found.");
         }
 
-        $this->recoverCart->setShouldCancelOrder(true)->execute();
+        $orderId = $this->encryptor->decrypt($this->getRequest()->getParam("orderId"));
+        $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
 
         $this
             ->getResponse()
