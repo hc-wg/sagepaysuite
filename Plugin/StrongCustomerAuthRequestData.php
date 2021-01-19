@@ -130,12 +130,9 @@ class StrongCustomerAuthRequestData
      */
     private function getBrowserIP()
     {
-        $browserIP = $this->request->getClientIp();
-        $ipAddressesArray = explode(',', $browserIP);
-
-        if (!empty($ipAddressesArray)) {
-            $browserIP = $ipAddressesArray[0];
-        }
+        $browserIP = null;
+        $clientIp = $this->request->getClientIp();
+        $ipAddressesArray = explode(',', $clientIp);
 
         foreach ($ipAddressesArray as $ipAddress) {
             $ipAddress = trim($ipAddress);
@@ -143,6 +140,18 @@ class StrongCustomerAuthRequestData
             if (filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
                 $browserIP = $ipAddress;
                 break;
+            }
+        }
+
+        if ($browserIP === null) {
+            foreach ($ipAddressesArray as $ipAddress) {
+                $ipAddress = trim($ipAddress);
+
+                if (filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+                    $ipv4 = hexdec(substr($ipAddress, 0, 2)). "." . hexdec(substr($ipAddress, 2, 2)). "." . hexdec(substr($ipAddress, 5, 2)). "." . hexdec(substr($ipAddress, 7, 2));
+                    $browserIP = $ipv4;
+                    break;
+                }
             }
         }
 
