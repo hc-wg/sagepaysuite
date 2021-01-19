@@ -128,22 +128,6 @@ class StrongCustomerAuthRequestData
     }
 
     /**
-     * @param $string
-     * @return bool
-     */
-    private function _isHexadecimal($string) {
-        return ctype_xdigit($string);
-    }
-
-    /**
-     * @param $hexadecimal
-     * @return int
-     */
-    private function _hexToInt($hexadecimal) {
-        return intval(hexdec($hexadecimal));
-    }
-
-    /**
      * @param array $ipAddressesArray
      * @return string
      */
@@ -181,5 +165,21 @@ class StrongCustomerAuthRequestData
         }
 
         return $browserIP;
+    }
+
+    /**
+     * @param $string
+     * @return bool
+     */
+    private function _isHexadecimal($string) {
+        return ctype_xdigit($string);
+    }
+
+    /**
+     * @param $hexadecimal
+     * @return int
+     */
+    private function _hexToInt($hexadecimal) {
+        return intval(hexdec($hexadecimal));
     }
 }
