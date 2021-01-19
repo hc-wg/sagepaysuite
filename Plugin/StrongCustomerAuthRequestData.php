@@ -154,7 +154,7 @@ class StrongCustomerAuthRequestData
      */
     private function _getIpvFour(array $ipAddressesArray)
     {
-        $finalIp = '127.0.0.1';
+        $browserIP = $finalIp = '127.0.0.1';
         $ipv4 = '';
 
         foreach ($ipAddressesArray as $ipAddress) {
