@@ -131,7 +131,7 @@ class StrongCustomerAuthRequestData
      */
     private function _getIpvFour(array $ipAddressesArray)
     {
-        $browserIP = '127.0.0.1';
+        $finalIp = '127.0.0.1';
         $ipv4 = '';
 
         foreach ($ipAddressesArray as $ipAddress) {
@@ -139,6 +139,7 @@ class StrongCustomerAuthRequestData
 
             if (filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
                 $ipFieldsArray = explode(":", $ipAddress);
+                $count = 0;
 
                 foreach ($ipFieldsArray as $ipField) {
                     $number = 0;
@@ -155,9 +156,18 @@ class StrongCustomerAuthRequestData
                     }
 
                     $ipv4 .= $number;
+
+                    if ($count < 3) {
+                        $ipv4 .= '.';
+                    } elseif ($count == 3) {
+                        $finalIp = $ipv4;
+                        break;
+                    }
+
+                    $count++;
                 }
 
-                $browserIP = $ipv4;
+                $browserIP = $finalIp;
                 break;
             }
         }
