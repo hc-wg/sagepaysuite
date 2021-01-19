@@ -142,7 +142,7 @@ class StrongCustomerAuthRequestData
         }
 
         if ($browserIP === null) {
-            $browserIP = $this->getIpvFour($ipAddressesArray);
+            $browserIP = $this->_getIpvFour($ipAddressesArray);
         }
 
         return $browserIP;
@@ -160,7 +160,7 @@ class StrongCustomerAuthRequestData
      * @param $hexadecimal
      * @return int
      */
-    private function hexToInt($hexadecimal) {
+    private function _hexToInt($hexadecimal) {
         return intval(hexdec($hexadecimal));
     }
 
@@ -168,7 +168,7 @@ class StrongCustomerAuthRequestData
      * @param array $ipAddressesArray
      * @return string
      */
-    private function getIpvFour(array $ipAddressesArray)
+    private function _getIpvFour(array $ipAddressesArray)
     {
         $browserIP = '127.0.0.1';
         $ipv4 = '';
@@ -181,15 +181,15 @@ class StrongCustomerAuthRequestData
 
                 foreach ($ipFieldsArray as $ipField) {
                     $number = 0;
-                    
+
                     if (strlen($ipField) >= 2) {
                         $subString = substr($ipField, 0, 2);
                         if ($this->_isHexadecimal($subString)) {
-                            $number = $this->hexToInt($subString);
+                            $number = $this->_hexToInt($subString);
                         }
                     } elseif (strlen($ipField) == 1) {
                         if ($this->_isHexadecimal($ipField)) {
-                            $number = $this->hexToInt($ipField);
+                            $number = $this->_hexToInt($ipField);
                         }
                     }
 
