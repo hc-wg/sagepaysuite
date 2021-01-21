@@ -267,7 +267,9 @@ define([
                 card_type: self.creditCardType,
                 card_exp_month: self.creditCardExpMonth,
                 card_exp_year: self.creditCardExpYear,
-                card_last4: self.creditCardLast4
+                card_last4: self.creditCardLast4,
+                save_token: 0,
+                reusable_token: 0
             };
 
             var scaParams = {
