@@ -70,6 +70,12 @@ class StrongCustomerAuthRequestData
             'challengeWindowSize'      => $this->sagepayConfig->getValue("challengewindowsize"),
         ];
 
+        $result['credentialType'] = [
+            'cofUsage'      => 'First',
+            'initiatedType' => 'CIT',
+            'mitType'       => 'Unscheduled'
+        ];
+
         return $result;
     }
 
