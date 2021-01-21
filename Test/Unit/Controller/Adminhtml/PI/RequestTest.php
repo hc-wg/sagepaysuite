@@ -452,7 +452,7 @@ class RequestTest extends \PHPUnit\Framework\TestCase
 
     private function setRequestAsserts()
     {
-        $this->requestMock->expects($this->exactly(15))->method('getPost')->withConsecutive(
+        $this->requestMock->expects($this->exactly(17))->method('getPost')->withConsecutive(
             ['merchant_session_key'],
             ['card_identifier'],
             ['card_exp_month'],
@@ -467,7 +467,9 @@ class RequestTest extends \PHPUnit\Framework\TestCase
             ['color_depth'],
             ['screen_width'],
             ['screen_height'],
-            ['timezone']
+            ['timezone'],
+            ['save_token'],
+            ['reusable_token']
         )->willReturnOnConsecutiveCalls(
                     '1B436F04-E6B5-4785-A5B9-B28E9DDC1B92',
                     '74D926FD-5E87-451A-A089-7F6B4D1A76C9',
@@ -483,7 +485,9 @@ class RequestTest extends \PHPUnit\Framework\TestCase
                     24,
                     1024,
                     768,
-                    180
+                    180,
+                    self::SAVE_TOKEN,
+                    self::REUSABLE_TOKEN
                 );
     }
 }
