@@ -704,13 +704,7 @@ define(
                 }
             },
             getRememberToken: function () {
-                var rememberToken = false;
-                var piRememberTokenElement = document.getElementById('piremembertoken');
-                if (typeof(piRememberTokenElement) != 'undefined' && piRememberTokenElement != null)
-                {
-                    rememberToken = piRememberTokenElement.checked == true
-                }
-                return rememberToken;
+                return ($('piremembertoken') && $('piremembertoken').prop('checked') === true)
             },
             saveToken: function () {
                 var self = this;
