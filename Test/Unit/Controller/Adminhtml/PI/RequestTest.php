@@ -25,6 +25,12 @@ class RequestTest extends \PHPUnit\Framework\TestCase
      */
     const TEST_VPSTXID = 'F81FD5E1-12C9-C1D7-5D05-F6E8C12A526F';
 
+    /** @var bool */
+    const REUSABLE_TOKEN = false;
+
+    /** @var bool */
+    const SAVE_TOKEN = false;
+
     /**
      * @var \Ebizmarts\SagePaySuite\Controller\Adminhtml\PI\Request
      */
@@ -341,6 +347,8 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         $piRequestManagerMock->expects($this->once())->method('setScreenWidth');
         $piRequestManagerMock->expects($this->once())->method('setScreenHeight');
         $piRequestManagerMock->expects($this->once())->method('setTimezone');
+        $piRequestManagerMock->expects($this->once())->method('setSaveToken')->with(self::SAVE_TOKEN);
+        $piRequestManagerMock->expects($this->once())->method('setReusableToken')->with(self::REUSABLE_TOKEN);
 
         $piRequestManagerFactoryMock = $this
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory::class)
@@ -444,12 +452,38 @@ class RequestTest extends \PHPUnit\Framework\TestCase
 
     private function setRequestAsserts()
     {
-        $this->requestMock->expects($this->exactly(15))->method('getPost')->withConsecutive(['merchant_session_key'],
-                ['card_identifier'], ['card_exp_month'], ['card_exp_year'], ['card_last4'], ['card_type'],
-                ['javascript_enabled'], ['accept_headers'], ['language'], ['user_agent'], ['java_enabled'],
-                ['color_depth'], ['screen_width'], ['screen_height'],
-                ['timezone'])->willReturnOnConsecutiveCalls('1B436F04-E6B5-4785-A5B9-B28E9DDC1B92',
-                '74D926FD-5E87-451A-A089-7F6B4D1A76C9', '', '', '', '', 1, '*/*', 'en-US', 'Mozilla\/5.0', 0, 24, 1024,
-                768, 180);
+        $this->requestMock->expects($this->exactly(15))->method('getPost')->withConsecutive(
+            ['merchant_session_key'],
+            ['card_identifier'],
+            ['card_exp_month'],
+            ['card_exp_year'],
+            ['card_last4'],
+            ['card_type'],
+            ['javascript_enabled'],
+            ['accept_headers'],
+            ['language'],
+            ['user_agent'],
+            ['java_enabled'],
+            ['color_depth'],
+            ['screen_width'],
+            ['screen_height'],
+            ['timezone']
+        )->willReturnOnConsecutiveCalls(
+                    '1B436F04-E6B5-4785-A5B9-B28E9DDC1B92',
+                    '74D926FD-5E87-451A-A089-7F6B4D1A76C9',
+                    '',
+                    '',
+                    '',
+                    '',
+                    1,
+                    '*/*',
+                    'en-US',
+                    'Mozilla\/5.0',
+                    0,
+                    24,
+                    1024,
+                    768,
+                    180
+                );
     }
 }
