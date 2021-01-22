@@ -704,7 +704,7 @@ define(
                 }
             },
             getRememberToken: function () {
-                return ($('piremembertoken') && $('piremembertoken').prop('checked') === true)
+                return ($('#piremembertoken') && $('#piremembertoken').prop('checked') === true);
             },
             saveToken: function () {
                 var self = this;
