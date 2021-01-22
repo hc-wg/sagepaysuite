@@ -704,8 +704,7 @@ define(
                 }
             },
             getRememberToken: function () {
-                return (document.getElementById('piremembertoken') &&
-                    document.getElementById('piremembertoken').checked == true);
+                return ($('piremembertoken') && $('piremembertoken').prop('checked') === true)
             },
             saveToken: function () {
                 var self = this;
@@ -739,14 +738,16 @@ define(
                 this.save_token = false;
                 this.use_token = false;
 
-                if (this.isTokenServiceEnabled()) {
-                    this.save_token = true;
-                    var customerTokens = this.getCustomerTokenCount();
+                if (this.dropInEnabled()) {
+                    if (this.isTokenServiceEnabled()) {
+                        this.save_token = true;
+                        var customerTokens = this.getCustomerTokenCount();
 
-                    if (customerTokens && customerTokens.length > 0) {
-                        this.used_token_slots = customerTokens.length;
-                        this.checkMaxTokensPerCustomer();
-                        this.use_token = true;
+                        if (customerTokens && customerTokens.length > 0) {
+                            this.used_token_slots = customerTokens.length;
+                            this.checkMaxTokensPerCustomer();
+                            this.use_token = true;
+                        }
                     }
                 }
 
