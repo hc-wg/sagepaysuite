@@ -820,13 +820,13 @@ define(
             },
             getSagePayToken: function (token) {
                 var sagePayToken = "";
-                var url = urlBuilder.createUrl('/sagepay/token/:tokenId/:customerId', {
+                var path = urlBuilder.createUrl('/sagepay/token/:tokenId/:customerId', {
                     tokenId: token.id,
                     customerId: token.customer_id
                 });
-
+                var completeUrl = url.build(path);
                 $.ajax({
-                    url: '/' + url,
+                    url: completeUrl,
                     data: {},
                     type: 'GET',
                     dataType: 'json',
