@@ -6,11 +6,11 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Payment\Model\Method\AbstractMethod;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -211,7 +211,6 @@ class Config
         StoreManagerInterface $storeManager,
         Logger $suiteLogger
     ) {
-
         $this->scopeConfig  = $scopeConfig;
         $this->storeManager = $storeManager;
         $this->suiteLogger  = $suiteLogger;
@@ -719,5 +718,10 @@ class Config
     public function get3dNewWindow()
     {
         return $this->getValue("threed_new_window");
+    }
+
+    public function getDebugMode()
+    {
+        return $this->getValue("debug_mode");
     }
 }
