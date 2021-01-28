@@ -187,11 +187,6 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(CustomerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerRepositoryMock
-            ->expects($this->once())
-            ->method('getById')
-            ->with(self::CUSTOMER_ID)
-            ->willReturn($customerInterfaceMock);
         $customerSessionMock = $this
             ->getMockBuilder(CustomerSession::class)
             ->disableOriginalConstructor()
@@ -350,11 +345,6 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(CustomerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerRepositoryMock
-            ->expects($this->once())
-            ->method('getById')
-            ->with(self::CUSTOMER_ID)
-            ->willReturn($customerInterfaceMock);
         $customerSessionMock = $this
             ->getMockBuilder(CustomerSession::class)
             ->disableOriginalConstructor()
