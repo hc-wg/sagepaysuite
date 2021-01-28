@@ -16,14 +16,13 @@ use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 class Callback3D extends Action
 {
     const DUPLICATED_CALLBACK_ERROR_MESSAGE = 'Duplicated 3D security callback received.';
     /** @var Config */
     private $config;
-
-    private $suiteLogger;
 
     /** @var ThreeDSecureCallbackManagement */
     private $requester;
@@ -62,7 +61,6 @@ class Callback3D extends Action
      * @param CryptAndCodeData $cryptAndCode
      * @param RecoverCart $recoverCart
      * @param CheckoutSession $checkoutSession
-     * @param Logger $suiteLogger
      * @param CustomerSession $customerSession
      * @param CustomerRepositoryInterface $customerRepository
      * @param CustomerLogin $customerLogin
@@ -76,7 +74,6 @@ class Callback3D extends Action
         CryptAndCodeData $cryptAndCode,
         RecoverCart $recoverCart,
         CheckoutSession $checkoutSession,
-        Logger $suiteLogger,
         CustomerSession $customerSession,
         CustomerRepositoryInterface $customerRepository,
         CustomerLogin $customerLogin
@@ -90,7 +87,6 @@ class Callback3D extends Action
         $this->cryptAndCode                = $cryptAndCode;
         $this->recoverCart                 = $recoverCart;
         $this->checkoutSession             = $checkoutSession;
-        $this->suiteLogger                 = $suiteLogger;
         $this->customerSession             = $customerSession;
         $this->customerRepository          = $customerRepository;
         $this->customerLogin               = $customerLogin;
