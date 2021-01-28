@@ -2,14 +2,14 @@
 
 namespace Ebizmarts\SagePaySuite\Helper;
 
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Psr\Log\LoggerInterface as Logger;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session as CustomerSession;
 
 class CustomerLogin
 {
     /** @var Logger */
-    private $suiteLogger;
+    private $logger;
 
     /** @var CustomerRepositoryInterface */
     private $customerRepository;
@@ -21,16 +21,16 @@ class CustomerLogin
      * CustomerLogin constructor.
      * @param CustomerRepositoryInterface $customerRepository
      * @param CustomerSession $customerSession
-     * @param Logger $suiteLogger
+     * @param Logger $logger
      */
     public function __construct(
         CustomerRepositoryInterface $customerRepository,
         CustomerSession $customerSession,
-        Logger $suiteLogger)
+        Logger $logger)
     {
         $this->customerRepository = $customerRepository;
         $this->customerSession = $customerSession;
-        $this->suiteLogger = $suiteLogger;
+        $this->logger = $logger;
     }
 
     /**
@@ -42,7 +42,7 @@ class CustomerLogin
             $customer = $this->customerRepository->getById($customerId);
             $this->customerSession->setCustomerDataAsLoggedIn($customer);
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
-            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
+            $this->logger->critical($e);
         }
     }
 }
