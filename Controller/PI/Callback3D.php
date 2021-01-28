@@ -12,6 +12,7 @@ use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session as CustomerSession;
 use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Sales\Api\OrderRepositoryInterface;

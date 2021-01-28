@@ -6,7 +6,6 @@ use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
@@ -17,7 +16,6 @@ use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Framework\App\RequestInterface;
 use Magento\Quote\Model\QuoteRepository;
 use Psr\Log\LoggerInterface;
 
@@ -62,9 +60,6 @@ class Callback3Dv2 extends Action
     /** @var CustomerLogin */
     private $customerLogin;
 
-    /** @var Logger */
-    private $suiteLogger;
-
     /**
      * Callback3Dv2 constructor.
      * @param Context $context
@@ -81,7 +76,6 @@ class Callback3Dv2 extends Action
      * @param CustomerSession $customerSession
      * @param CustomerRepositoryInterface $customerRepository
      * @param CustomerLogin $customerLogin
-     * @param Logger $suiteLogger
      */
     public function __construct(
         Context $context,
@@ -97,8 +91,7 @@ class Callback3Dv2 extends Action
         OrderLoader $orderLoader,
         CustomerSession $customerSession,
         CustomerRepositoryInterface $customerRepository,
-        CustomerLogin $customerLogin,
-        Logger $suiteLogger
+        CustomerLogin $customerLogin
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -116,7 +109,6 @@ class Callback3Dv2 extends Action
         $this->customerSession             = $customerSession;
         $this->customerRepository          = $customerRepository;
         $this->customerLogin               = $customerLogin;
-        $this->suiteLogger                 = $suiteLogger;
     }
 
     public function execute()
@@ -203,18 +195,5 @@ class Callback3Dv2 extends Action
     public function encryptAndEncode($data)
     {
         return $this->cryptAndCode->encryptAndEncode($data);
-    }
-
-    /**
-     * @param $customerId
-     */
-    public function logInCustomer($customerId)
-    {
-        try {
-            $customer = $this->customerRepository->getById($customerId);
-            $this->customerSession->setCustomerDataAsLoggedIn($customer);
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
-            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
-        }
     }
 }
