@@ -6,7 +6,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Payment\Model\Method\AbstractMethod;
 use Magento\Store\Model\ScopeInterface;
@@ -190,12 +189,6 @@ class Config
     private $storeManager;
 
     /**
-     * Logging instance
-     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
-     */
-    private $suiteLogger;
-
-    /**
      * @var ScopeConfigInterface
      */
     private $scopeConfig;
@@ -204,16 +197,13 @@ class Config
      * Config constructor.
      * @param ScopeConfigInterface $scopeConfig
      * @param StoreManagerInterface $storeManager
-     * @param Logger $suiteLogger
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
-        StoreManagerInterface $storeManager,
-        Logger $suiteLogger
+        StoreManagerInterface $storeManager
     ) {
         $this->scopeConfig  = $scopeConfig;
         $this->storeManager = $storeManager;
-        $this->suiteLogger  = $suiteLogger;
 
         $this->configurationScopeId = null;
         $this->configurationScope   = ScopeInterface::SCOPE_STORE;
