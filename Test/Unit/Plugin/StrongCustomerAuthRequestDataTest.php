@@ -2,9 +2,9 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Plugin;
 
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Ebizmarts\SagePaySuite\Model\PiRequest;
 use Ebizmarts\SagePaySuite\Plugin\StrongCustomerAuthRequestData;
-use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Magento\Framework\HTTP\PhpEnvironment\Request;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Framework\UrlInterface;
@@ -66,8 +66,14 @@ class StrongCustomerAuthRequestDataTest extends TestCase
         $requestMock->expects($this->once())->method('getClientIp')->willReturn(self::REMOTE_IP);
 
         $urlMock = $this->getMockBuilder(UrlInterface::class)->disableOriginalConstructor()->getMock();
-        $urlMock->expects($this->once())->method('getUrl')->with("sagepaysuite/pi/callback3Dv2", ["_secure" => true, 'quoteId' => self::ENCODED_QUOTE_ID])
-        ->willReturn(self::NOTIFICATION_URL);
+        $urlMock
+            ->expects($this->once())
+            ->method('getUrl')
+            ->with(
+                "sagepaysuite/pi/callback3Dv2",
+                ["_secure" => true, 'quoteId' => self::ENCODED_QUOTE_ID, 'saveToken' => true]
+            )
+            ->willReturn(self::NOTIFICATION_URL);
 
         $cryptAndCodeMock = $this->getMockBuilder(CryptAndCodeData::class)->disableOriginalConstructor()->getMock();
         $cryptAndCodeMock->expects($this->once())->method('encryptAndEncode')->with(self::QUOTE_ID)->willReturn(self::ENCODED_QUOTE_ID);
@@ -92,6 +98,7 @@ class StrongCustomerAuthRequestDataTest extends TestCase
         $piRequestMock->expects($this->once())->method('getTimezone')->willReturn(180);
         $piRequestMock->expects($this->once())->method('getLanguage')->willReturn(self::BROWSER_LANGUAGE);
         $piRequestMock->expects($this->once())->method('getUserAgent')->willReturn(self::USER_AGENT);
+        $piRequestMock->expects($this->once())->method('getSaveToken')->willReturn(true);
 
         $subjectMock = $this->getMockBuilder(PiRequest::class)->disableOriginalConstructor()->getMock();
         $subjectMock->expects($this->once())->method('getRequest')->willReturn($piRequestMock);
@@ -102,7 +109,7 @@ class StrongCustomerAuthRequestDataTest extends TestCase
         $result = $sut->afterGetRequestData($subjectMock, []);
 
         $this->assertArrayHasKey(self::STRONG_CUSTOMER_AUTHENTICATION_KEY, $result);
-        $this->assertEquals ($this->getExpectedScaParameters(), $result[self::STRONG_CUSTOMER_AUTHENTICATION_KEY]);
+        $this->assertEquals($this->getExpectedScaParameters(), $result[self::STRONG_CUSTOMER_AUTHENTICATION_KEY]);
     }
 
     /**

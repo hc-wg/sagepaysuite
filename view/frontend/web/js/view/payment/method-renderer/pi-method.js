@@ -20,9 +20,10 @@ define(
         'Magento_Checkout/js/model/url-builder',
         'Magento_Checkout/js/model/quote',
         'Magento_Customer/js/customer-data',
-        'Magento_Checkout/js/action/set-payment-information'
+        'Magento_Checkout/js/action/set-payment-information',
+        'mage/translate'
     ],
-    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal, agreementValidation, additionalValidators, urlBuilder, quote, customerData, setPaymentInformation) {
+    function ($, Component, storage, url, customer, placeOrderAction, fullScreenLoader, modal, agreementValidation, additionalValidators, urlBuilder, quote, customerData, setPaymentInformation, $t) {
         'use strict';
 
         $(document).ready(function () {
@@ -44,7 +45,10 @@ define(
                 creditCardLast4: '',
                 merchantSessionKey: '',
                 cardIdentifier: '',
-                dropInInstance: null
+                dropInInstance: null,
+                save_token: false,
+                use_token: true,
+                used_token_slots: 0
             },
             setPlaceOrderHandler: function (handler) {
                 this.placeOrderHandler = handler;
@@ -66,6 +70,9 @@ define(
             },
             isActive: function () {
                 return true;
+            },
+            isTokenServiceEnabled: function () {
+                return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenEnabled == true;
             },
             sagepaySetForm: function () {
                 var self = this;
@@ -91,7 +98,7 @@ define(
                     } else {
                         if (self.checkFieldFilled(code, itemId)) {
                             $(element).parents('.field').removeClass('_error');
-                        } 
+                        }
 
                         if (self.checkFilledfFormFields(code)) {
                             $('button.checkout').removeAttr('disabled');
@@ -125,8 +132,8 @@ define(
                 var expirationYr = document.getElementById(code + '_expiration_yr').value;
                 var CID = document.getElementById(code + '_cc_cid').value;
 
-                if (cardHolder == '' 
-                    || ccNumber == '' 
+                if (cardHolder == ''
+                    || ccNumber == ''
                     || expiration == 'Month' || expiration == ''
                     || expirationYr == 'Year' || expirationYr == ''
                     || CID == '') {
@@ -142,12 +149,12 @@ define(
                 var expirationYrElement = document.getElementById(code + '_expiration_yr');
                 var CIDElement = document.getElementById(code + '_cc_cid');
 
-                if (cardHolderElement !== null 
-                    && ccNumberElement !== null 
-                    && expirationElement !== null 
-                    && expirationYrElement !== null 
+                if (cardHolderElement !== null
+                    && ccNumberElement !== null
+                    && expirationElement !== null
+                    && expirationYrElement !== null
                     && CIDElement !== null) {
-                        return true;
+                    return true;
                 }
 
                 return false;
@@ -310,7 +317,9 @@ define(
                 }
 
                 if (self.dropInEnabled() && quote.billingAddress() != null) {
-                    self.preparePayment();
+                    if (!this.use_token) {
+                        self.preparePayment();
+                    }
                 }
             },
             tokenisationAuthenticationFailed: function (tokenisationResult) {
@@ -349,6 +358,36 @@ define(
                 }
                 return allowedParam;
             },
+            afterTokenise: function (tokenisationResult) {
+                var self = this;
+                var cardIdentifier = "";
+                if (tokenisationResult.success) {
+                    if (self.use_token) {
+                        cardIdentifier = self.getSagePayToken(self.getSelectedToken());
+                    } else {
+                        cardIdentifier = tokenisationResult.cardIdentifier;
+                    }
+                    self.cardIdentifier = cardIdentifier;
+                    self.creditCardType = "";
+                    self.creditCardExpYear = 0;
+                    self.creditCardExpMonth = 0;
+                    self.creditCardLast4 = 0;
+                    try {
+                        self.placeTransaction();
+                    } catch (err) {
+                        console.log(err);
+                        self.showPaymentError($.mage.__("Unable to initialize Opayo payment method, please use another payment method."));
+                    }
+                } else {
+                    //Check if it is "Authentication failed"
+                    if (self.tokenisationAuthenticationFailed(tokenisationResult)) {
+                        self.destroyInstanceSagePay();
+                        self.resetPaymentErrors();
+                    } else {
+                        self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
+                    }
+                }
+            },
             sagepayTokeniseCard: function (merchant_session_key) {
 
                 var self = this;
@@ -363,32 +402,22 @@ define(
                             self.dropInInstance = null;
                         }
 
-                        self.dropInInstance = sagepayCheckout({
-                            merchantSessionKey: merchant_session_key,
-                            onTokenise: function (tokenisationResult) {
-                                if (tokenisationResult.success) {
-                                    self.cardIdentifier = tokenisationResult.cardIdentifier;
-                                    self.creditCardType = "";
-                                    self.creditCardExpYear = 0;
-                                    self.creditCardExpMonth = 0;
-                                    self.creditCardLast4 = 0;
-                                    try {
-                                        self.placeTransaction();
-                                    } catch (err) {
-                                        console.log(err);
-                                        self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
-                                    }
-                                } else {
-                                    //Check if it is "Authentication failed"
-                                    if (self.tokenisationAuthenticationFailed(tokenisationResult)) {
-                                        self.destroyInstanceSagePay();
-                                        self.resetPaymentErrors();
-                                    } else {
-                                        self.showPaymentError('Tokenisation failed', tokenisationResult.error.errorMessage);
-                                    }
-                                }
-                            }
-                        });
+                        if (self.use_token) {
+                            var selectedToken = self.getSelectedToken();
+                            var sagePayToken = self.getSagePayToken(selectedToken);
+
+                            self.dropInInstance = sagepayCheckout({
+                                merchantSessionKey: merchant_session_key,
+                                reusableCardIdentifier: sagePayToken,
+                                onTokenise: function (tokenisationResult) { self.afterTokenise(tokenisationResult) }
+                            });
+                        } else {
+                            self.dropInInstance = sagepayCheckout({
+                                merchantSessionKey: merchant_session_key,
+                                onTokenise: function (tokenisationResult) { self.afterTokenise(tokenisationResult) }
+                            });
+                        }
+
                         self.dropInInstance.form();
                         fullScreenLoader.stopLoader();
 
@@ -425,10 +454,10 @@ define(
                                     try {
                                         self.placeTransaction();
                                     } catch (err) {
-                                        self.showPaymentError("Unable to initialize Opayo payment method, please use another payment method.");
+                                        self.showPaymentError($.mage.__("Unable to initialize Opayo payment method, please use another payment method."));
                                     }
                                 } else {
-                                    var errorMessage = "Unable to initialize Opayo payment method, please use another payment method.";
+                                    var errorMessage = $.mage.__("Unable to initialize Opayo payment method, please use another payment method.");
                                     if (response.responseJSON) {
                                         response = response.responseJSON;
                                     }
@@ -441,7 +470,7 @@ define(
                                 }
                             });
                         } catch (err) {
-                            alert("Unable to initialize Opayo payment method, please use another payment method.");
+                            alert($.mage.__("Unable to initialize Opayo payment method, please use another payment method."));
                         }
                     }
                 }
@@ -465,7 +494,9 @@ define(
                     "cc_type": self.creditCardType,
                     "cc_exp_month": self.creditCardExpMonth,
                     "cc_exp_year": self.creditCardExpYear,
-                    "cc_last_four": self.creditCardLast4
+                    "cc_last_four": self.creditCardLast4,
+                    "save_token": self.saveToken(),
+                    "reusable_token": self.reusableToken()
                 };
 
                 $.extend(sagePayRequestData, self.scaParams());
@@ -519,10 +550,12 @@ define(
                                     }
                                     form3Dv2.submit();
                                 } else {
+                                    var saveToken = self.saveToken() === true ? 1 : 0;
                                     //add transactionId param to callback
                                     callbackUrl += "?transactionId=" + response.transaction_id +
                                         "&orderId=" + response.order_id +
-                                        "&quoteId=" + response.quote_id;
+                                        "&quoteId=" + response.quote_id +
+                                        "&saveToken=" + saveToken;
 
                                     //Build 3D form.
                                     var form3D = document.getElementById(self.getCode() + '-3Dsecure-form');
@@ -608,7 +641,8 @@ define(
                     'color_depth': screen.colorDepth,
                     'screen_width': screen.width,
                     'screen_height': screen.height,
-                    'timezone': (new Date()).getTimezoneOffset()
+                    'timezone': (new Date()).getTimezoneOffset(),
+                    'save_token': this.saveToken()
                 }
             },
             /**
@@ -667,6 +701,208 @@ define(
 
                 if (null !== span) {
                     span.style.display = "none";
+                }
+            },
+            getRememberToken: function () {
+                return ($('#piremembertoken') && $('#piremembertoken').prop('checked') === true);
+            },
+            saveToken: function () {
+                var self = this;
+
+                return (self.isTokenServiceEnabled() && self.getRememberToken());
+            },
+            reusableToken: function () {
+                var self = this;
+
+                return (self.isTokenServiceEnabled() && this.use_token);
+            },
+            getCustomerTokenCount: function () {
+                var sagePayTokens = window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount;
+                if (sagePayTokens.length > 0) {
+                   this.useSavedTokens();
+                }
+                return sagePayTokens;
+            },
+            useSavedTokens: function () {
+                this.use_token = true;
+                this.destroyInstanceSagePay();
+                document.getElementById('piremembertoken').checked = 0;
+                $('#sagepay-pi-remembertoken-container').hide();
+
+                $('#' + this.getCode() + '-tokens .token-list').show();
+                $('#' + this.getCode() + '-tokens .add-new-card-link').show();
+                $('#' + this.getCode() + '-tokens .use-saved-card-link').hide();
+                $('#' + this.getCode() + '-tokens .using-new-card-message').hide();
+            },
+            customerHasTokens: function () {
+                this.save_token = false;
+                this.use_token = false;
+
+                if (this.dropInEnabled()) {
+                    if (this.isTokenServiceEnabled()) {
+                        this.save_token = true;
+                        var customerTokens = this.getCustomerTokenCount();
+
+                        if (customerTokens && customerTokens.length > 0) {
+                            this.used_token_slots = customerTokens.length;
+                            this.checkMaxTokensPerCustomer();
+                            this.use_token = true;
+                        }
+                    }
+                }
+
+                return this.use_token;
+            },
+            addNewCard: function () {
+                this.use_token = false;
+                this.loadDropInForm();
+                document.getElementById('piremembertoken').checked = 1;
+                $('#' + this.getCode() + '-tokens .token-list').hide();
+                $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
+                $('#' + this.getCode() + '-tokens .using-new-card-message').show();
+                $('#' + this.getCode() + '-tokens .use-saved-card-link').show();
+            },
+            getIcons: function (type) {
+                switch (type) {
+                    case 'VI':
+                    case 'DELTA':
+                    case 'UKE':
+                        return window.checkoutConfig.payment.ccform.icons["VI"].url;
+                        break;
+                    case 'MC':
+                    case 'MCDEBIT':
+                        return window.checkoutConfig.payment.ccform.icons["MC"].url;
+                        break;
+                    case 'MAESTRO':
+                        return window.checkoutConfig.payment.ccform.icons["MD"].url;
+                        break;
+                    case 'AMEX':
+                        return window.checkoutConfig.payment.ccform.icons["AE"].url;
+                        break;
+                    case 'DC':
+                        return window.checkoutConfig.payment.ccform.icons["DC"].url;
+                        break;
+                    case 'JCB':
+                        return window.checkoutConfig.payment.ccform.icons["JCB"].url;
+                        break;
+                    default:
+                        return "";
+                        break;
+                }
+            },
+            selectToken: function () {
+                var self = this;
+
+                if (this.isRadioChecked()) {
+                    self.use_token = true;
+                    self.loadDropInTokenForm();
+                }
+            },
+            isRadioChecked: function () {
+                var self = this;
+                var customerTokens = this.getCustomerTokenCount();
+                for (var i = 0; i < customerTokens.length; i++) {
+                    if ($('#' + self.getCode() + '-token-' + customerTokens[i].id).prop("checked") == true) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            getSelectedToken: function () {
+                var self = this;
+                var customerTokens = this.getCustomerTokenCount();
+                for (var i = 0; i < customerTokens.length; i++) {
+                    if ($('#' + self.getCode() + '-token-' + customerTokens[i].id).prop("checked") == true) {
+                        return customerTokens[i];
+                    }
+                }
+                return false;
+            },
+            getSagePayToken: function (token) {
+                var sagePayToken = "";
+                var path = urlBuilder.createUrl('/sagepay/token/:tokenId/:customerId', {
+                    tokenId: token.id,
+                    customerId: token.customer_id
+                });
+                var completeUrl = url.build(path);
+                $.ajax({
+                    url: completeUrl,
+                    data: {},
+                    type: 'GET',
+                    dataType: 'json',
+                    async: false,
+                    showLoader: false
+                }).done(function (data) {
+                    sagePayToken = data.response;
+                });
+
+                return sagePayToken;
+            },
+            loadDropInTokenForm: function () {
+                var self = this;
+
+                self.selectPaymentMethod();
+
+                if (self.dropInEnabled() && quote.billingAddress() != null && self.use_token) {
+                    self.preparePayment();
+                }
+            },
+            deleteToken: function (id) {
+                var self = this;
+                if (confirm($.mage.__("Are you sure you wish to delete this saved credit card token?"))) {
+                    var serviceUrl = url.build('sagepaysuite/token/delete');
+
+                    //send token delete post
+                    return storage.get(serviceUrl + "/token_id/" + id + "/checkout/1" + "/pmethod/" + this.getCode()).done(
+                        function (response) {
+
+                            if (response.success && response.success == true) {
+                                //check warning message
+                                self.used_token_slots = self.used_token_slots - 1;
+                                self.checkMaxTokensPerCustomer();
+                                self.checkIfCustomerRemovedAllTokens();
+
+                                //hide token row
+                                $('#' + self.getCode() + '-token-' + id).prop("checked", false);
+                                $('#' + self.getCode() + '-tokenrow-' + id).hide();
+
+                                //delete from token list
+                                var tokens = window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount;
+                                for (var i = 0; i < tokens.length; i++) {
+                                    if (id == tokens[i].id) {
+                                        tokens.splice(i, 1);
+                                    }
+                                }
+                                if (tokens.length == 0) {
+                                    $('#' + self.getCode() + '-tokens').hide();
+                                    self.use_token = false;
+                                }
+                            } else {
+                                self.showPaymentError(response.error_message);
+                            }
+                        }
+                    ).fail(
+                        function (response) {
+                            self.showPaymentError($.mage.__("Unable to delete credit card token."));
+                        }
+                    );
+                }
+            },
+            checkMaxTokensPerCustomer: function () {
+                if (this.used_token_slots > 0 && this.used_token_slots >= window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.max_tokens) {
+                    $('#' + this.getCode() + '-tokens .token-list .message-max-tokens').show();
+                    $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
+                } else {
+                    $('#' + this.getCode() + '-tokens .token-list .message-max-tokens').hide();
+                    $('#' + this.getCode() + '-tokens .add-new-card-link').show();
+                }
+            },
+            checkIfCustomerRemovedAllTokens: function () {
+                if (window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount === 0) {
+                    $('#' + this.getCode() + '-tokens .token-list').hide();
+                    $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
+                    $('#' + this.getCode() + '-tokens .use-saved-card-link').hide();
+                    $('#' + this.getCode() + '-tokens .using-new-card-message').show();
                 }
             }
         });

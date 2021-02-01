@@ -6,6 +6,8 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
+use Ebizmarts\SagePaySuite\Helper\Fraud;
+
 class FraudTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -59,7 +61,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $fraudResponse->setFraudId("someid");
         $fraudResponse->setFraudCode("somecode");
         $fraudResponse->setFraudCodeDetail("somedetail");
-        $fraudResponse->setFraudProviderName("T3M");
+        $fraudResponse->setFraudProviderName(Fraud::T3M);
         $fraudResponse->setThirdmanAction("NORESULT");
         $fraudResponse->setThirdmanRules([]);
 
@@ -77,6 +79,18 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $paymentMock->expects($this->once())->method('setAdditionalInformation')
             ->with("fraudscreenrecommendation", 'NORESULT')
             ->willReturnSelf();
+        $orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(0);
 
         $return = $this->fraudHelperModel->processFraudInformation($transactionMock, $paymentMock);
 
@@ -105,6 +119,18 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder('Magento\Sales\Model\Order\Payment')
             ->disableOriginalConstructor()
             ->getMock();
+        $orderMock = $this
+            ->getMockBuilder('Magento\Sales\Model\Order')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentMock
+            ->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(0);
 
         $return = $this->fraudHelperModel->processFraudInformation($transactionMock, $paymentMock);
 
@@ -273,6 +299,11 @@ class FraudTest extends \PHPUnit\Framework\TestCase
 
             $orderMock
                 ->expects($this->once())
+                ->method('getStoreId')
+                ->willReturn(0);
+
+            $orderMock
+                ->expects($this->once())
                 ->method('getState')
                 ->willReturn($data['getState']);
 
@@ -330,8 +361,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $fraudResponseMock->setFraudId('12345');
         $fraudResponseMock->setFraudCode('765');
         $fraudResponseMock->setFraudCodeDetail('Fraud card');
-        $fraudResponseMock->setFraudProviderName('ReD');
-
+        $fraudResponseMock->setFraudProviderName(Fraud::RED);
 
         $this->reportingApiMock->expects($this->once())
             ->method('getFraudScreenDetail')
@@ -373,7 +403,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->getMock();
 
         $paymentMock
-            ->expects($this->exactly(2))
+            ->expects($this->exactly(3))
             ->method('getOrder')
             ->willReturn($orderMock);
 
@@ -381,6 +411,11 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('getState')
             ->willReturn(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
+
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(0);
 
         $this->configMock->expects($this->any())
             ->method('getAutoInvoiceFraudPassed')
@@ -427,7 +462,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $fraudResponseMock->setFraudId('12345');
         $fraudResponseMock->setFraudCode('765');
         $fraudResponseMock->setFraudCodeDetail('Fraud card');
-        $fraudResponseMock->setFraudProviderName('ReD');
+        $fraudResponseMock->setFraudProviderName(Fraud::RED);
 
         $this->reportingApiMock->expects($this->once())
             ->method('getFraudScreenDetail')
@@ -473,7 +508,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->getMock();
 
         $paymentMock
-            ->expects($this->exactly(2))
+            ->expects($this->exactly(3))
             ->method('getOrder')
             ->willReturn($orderMock);
 
@@ -481,6 +516,11 @@ class FraudTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('getState')
             ->willReturn(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
+
+        $orderMock
+            ->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn(0);
 
         $this->configMock->expects($this->any())
             ->method('getAutoInvoiceFraudPassed')
@@ -505,7 +545,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                     'expectedregister' => 0,
                     'expectedcapture' => 0,
                     'expectedsave' => 0,
-                    'expectedorder' => 1,
+                    'expectedorder' => 2,
                     'expectedinvoice' => 0,
                     'expectedrelatedobject' => 0,
                     'expectedqty' => 0,
@@ -514,7 +554,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                     'expectedaddobject' => 0,
                     'expects' => [
                         'VPSTxId'     => null,
-                        'fraudprovidername' => 'T3M',
+                        'fraudprovidername' => Fraud::T3M,
                         'fraudscreenrecommendation' => 'HOLD',
                         'fraudid' => '4985075328',
                         'fraudcode' => '37',
@@ -546,7 +586,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                     'expectedregister' => 0,
                     'expectedcapture' => 0,
                     'expectedsave' => 0,
-                    'expectedorder' => 2,
+                    'expectedorder' => 3,
                     'expectedinvoice' => 0,
                     'expectedrelatedobject' => 0,
                     'expectedqty' => 0,
@@ -560,7 +600,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                         'fraudid' => '4985075328',
                         'fraudcode' => null,
                         'fraudcodedetail' => 'REJECT',
-                        'fraudprovidername' => 'T3M',
+                        'fraudprovidername' => Fraud::T3M,
                         'Action' => 'Marked as FRAUD.'
                     ]
                 ]
@@ -574,7 +614,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                     'expectedregister' => 1,
                     'expectedcapture' => 1,
                     'expectedsave' => 1,
-                    'expectedorder' => 2,
+                    'expectedorder' => 3,
                     'expectedinvoice' => 1,
                     'expectedrelatedobject' => 1,
                     'expectedqty' => 1,
@@ -587,7 +627,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                         'fraudid' => '12345',
                         'fraudcode' => '765',
                         'fraudcodedetail' => 'Fraud card',
-                        'fraudprovidername' => 'ReD',
+                        'fraudprovidername' => Fraud::RED,
                         'Action' => 'Captured online, invoice # generated.'
                     ]
                 ]
@@ -612,7 +652,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                     'expectedregister' => 0,
                     'expectedcapture' => 0,
                     'expectedsave' => 0,
-                    'expectedorder' => 1,
+                    'expectedorder' => 2,
                     'expectedinvoice' => 0,
                     'expectedrelatedobject' => 0,
                     'expectedqty' => 0,
@@ -625,7 +665,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                         'fraudid' => '12345',
                         'fraudcode' => '765',
                         'fraudcodedetail' => 'Fraud card',
-                        'fraudprovidername' => 'ReD',
+                        'fraudprovidername' => Fraud::RED,
                     ]
                 ]
             ]

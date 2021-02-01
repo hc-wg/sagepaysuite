@@ -76,14 +76,56 @@ class PITest extends \PHPUnit\Framework\TestCase
             ->method('get3dNewWindow')
             ->willReturn(true);
 
+        $this->configMock
+            ->expects($this->once())
+            ->method('getMaxTokenPerCustomer')
+            ->willReturn(2);
+
+        $this->configMock
+            ->expects($this->once())
+            ->method('isTokenEnabled')
+            ->willReturn(true);
+
+        $customerId = 1;
+        $customerSessionMock = $this
+            ->getMockBuilder('Magento\Customer\Model\Session')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $customerSessionMock
+            ->expects($this->exactly(2))
+            ->method('getCustomerId')
+            ->willReturn($customerId);
+
+        $tokensToShowOnGrid = [
+            [
+                'id' => 1,
+                'customer_id' => $customerId,
+                'cc_last_4' => '5559',
+                'cc_type' => 'VI',
+                'cc_exp_month' => '12',
+                'cc_exp_year' => '23'
+            ]
+        ];
+        $vaultDetailsHandlerMock = $this
+            ->getMockBuilder('Ebizmarts\SagePaySuite\Model\Token\VaultDetailsHandler')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $vaultDetailsHandlerMock
+            ->expects($this->once())
+            ->method('getTokensFromCustomerToShowOnGrid')
+            ->with($customerId)
+            ->willReturn($tokensToShowOnGrid);
+
         $objectManagerHelper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
         $this->piConfigProviderModel = $objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Model\ConfigProvider\PI',
             [
-                "config"        => $this->configMock,
-                "paymentHelper" => $paymentHelperMock,
-                "suiteHelper"   => $suiteHelperMock,
-                "storeManager"  => $this->getStoreManagerMock()
+                "config"               => $this->configMock,
+                "paymentHelper"        => $paymentHelperMock,
+                "suiteHelper"          => $suiteHelperMock,
+                "storeManager"         => $this->getStoreManagerMock(),
+                "_customerSession"     => $customerSessionMock,
+                "_vaultDetailsHandler" => $vaultDetailsHandlerMock
             ]
         );
 
@@ -91,11 +133,14 @@ class PITest extends \PHPUnit\Framework\TestCase
             [
                 'payment' => [
                     'ebizmarts_sagepaysuitepi' => [
-                        'licensed'  => true,
-                        'mode'      => 'test',
-                        'dropin'    => true,
-                        'sca'       => true,
-                        'newWindow' => true
+                        'licensed'     => true,
+                        'mode'         => 'test',
+                        'dropin'       => true,
+                        'sca'          => true,
+                        'newWindow'    => true,
+                        'tokenEnabled' => true,
+                        'tokenCount'   => $tokensToShowOnGrid,
+                        'max_tokens'   => 2
                     ],
                 ]
             ],
@@ -131,7 +176,7 @@ class PITest extends \PHPUnit\Framework\TestCase
             'Ebizmarts\SagePaySuite\Model\ConfigProvider\PI',
             [
                 "paymentHelper" => $paymentHelperMock,
-                "storeManager"  => $this->getStoreManagerMock()
+                "storeManager"  => $this->getStoreManagerMock(),
             ]
         );
 

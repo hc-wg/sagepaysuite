@@ -82,6 +82,9 @@ class Request extends \Magento\Backend\App\AbstractAction
         $data->setScreenWidth($this->getRequest()->getPost('screen_width'));
         $data->setScreenHeight($this->getRequest()->getPost('screen_height'));
         $data->setTimezone($this->getRequest()->getPost('timezone'));
+        $data->setSaveToken($this->getRequest()->getPost('save_token'));
+        $data->setReusableToken($this->getRequest()->getPost('reusable_token'));
+
 
         $this->requester->setRequestData($data);
         $this->requester->setQuote($this->quote);

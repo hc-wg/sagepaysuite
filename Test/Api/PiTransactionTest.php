@@ -183,7 +183,9 @@ class PiTransactionTest extends WebapiAbstract
                 'color_depth' => 32,
                 'screen_width' => 1024,
                 'screen_height' => 768,
-                'timezone' => 180
+                'timezone' => 180,
+                'save_token' => false,
+                'reusable_token' => false
             ]
         ];
 
