@@ -1,4 +1,4 @@
-## [1.2.28] - 2021-02-01
+## [1.2.27] - 2021-02-01
 ### Fixed
 - PI repeat with 3Dv2
 - Recover cart when session is lost
