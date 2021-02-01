@@ -712,6 +712,6 @@ class Config
 
     public function getDebugMode()
     {
-        return $this->getValue("debug_mode");
+        return $this->getAdvancedValue("debug_mode");
     }
 }

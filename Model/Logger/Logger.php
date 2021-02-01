@@ -4,8 +4,9 @@
  * See LICENSE.txt for license details.
  */
 
-
 namespace Ebizmarts\SagePaySuite\Model\Logger;
+
+use Ebizmarts\SagePaySuite\Model\Config;
 
 class Logger extends \Monolog\Logger
 {
@@ -16,14 +17,35 @@ class Logger extends \Monolog\Logger
     const LOG_REQUEST   = 'Request';
     const LOG_CRON      = 'Cron';
     const LOG_EXCEPTION = 'Exception';
+    const LOG_DEBUG     = 'Debug';
 
     // @codingStandardsIgnoreStart
     protected static $levels = [
         self::LOG_REQUEST   => 'Request',
         self::LOG_CRON      => 'Cron',
-        self::LOG_EXCEPTION => 'Exception'
+        self::LOG_EXCEPTION => 'Exception',
+        self::LOG_DEBUG     => 'Debug'
     ];
     // @codingStandardsIgnoreEnd
+
+    /** @var Config */
+    private $config;
+
+    /**
+     * Logger constructor.
+     * @param Config $config
+     * @param string $name
+     * @param array $handlers
+     * @param array $processors
+     */
+    public function __construct(
+        Config $config,
+        string $name,
+        array $handlers
+    ) {
+        parent::__construct($name, $handlers);
+        $this->config = $config;
+    }
 
     /**
      * @param $logType
@@ -47,6 +69,24 @@ class Logger extends \Monolog\Logger
         $message .= "\r\n\r\n";
 
         return $this->addRecord(self::LOG_EXCEPTION, $message, $context);
+    }
+
+    /**
+     * @param string $logType
+     * @param string $message
+     * @param array $context
+     * @return bool
+     */
+    public function debugLog($logType, $message, $context = [])
+    {
+        $recordSaved = false;
+        if ($this->config->getDebugMode()) {
+            $message = $this->messageForLog($message);
+            $message .= "\r\n";
+
+            $recordSaved = $this->addRecord($logType, $message, $context);
+        }
+        return $recordSaved;
     }
 
     /**
