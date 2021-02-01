@@ -207,20 +207,10 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(CustomerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerRepositoryMock
-            ->expects($this->once())
-            ->method('getById')
-            ->with(self::CUSTOMER_ID)
-            ->willReturn($customerInterfaceMock);
         $customerSessionMock = $this
             ->getMockBuilder(CustomerSession::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerSessionMock
-            ->expects($this->once())
-            ->method('setCustomerDataAsLoggedIn')
-            ->with($customerInterfaceMock)
-            ->willReturnSelf();
 
         $this->piCallback3DController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\PI\Callback3D',
@@ -377,20 +367,10 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(CustomerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerRepositoryMock
-            ->expects($this->once())
-            ->method('getById')
-            ->with(self::CUSTOMER_ID)
-            ->willReturn($customerInterfaceMock);
         $customerSessionMock = $this
             ->getMockBuilder(CustomerSession::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerSessionMock
-            ->expects($this->once())
-            ->method('setCustomerDataAsLoggedIn')
-            ->with($customerInterfaceMock)
-            ->willReturnSelf();
 
         $this->piCallback3DController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\PI\Callback3D',
@@ -537,20 +517,10 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(CustomerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerRepositoryMock
-            ->expects($this->once())
-            ->method('getById')
-            ->with(self::CUSTOMER_ID)
-            ->willReturn($customerInterfaceMock);
         $customerSessionMock = $this
             ->getMockBuilder(CustomerSession::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerSessionMock
-            ->expects($this->once())
-            ->method('setCustomerDataAsLoggedIn')
-            ->with($customerInterfaceMock)
-            ->willReturnSelf();
 
         $this->piCallback3DController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\PI\Callback3D',
@@ -710,20 +680,10 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(CustomerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerRepositoryMock
-            ->expects($this->once())
-            ->method('getById')
-            ->with(self::CUSTOMER_ID)
-            ->willReturn($customerInterfaceMock);
         $customerSessionMock = $this
             ->getMockBuilder(CustomerSession::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerSessionMock
-            ->expects($this->once())
-            ->method('setCustomerDataAsLoggedIn')
-            ->with($customerInterfaceMock)
-            ->willReturnSelf();
 
         $this->piCallback3DController = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\PI\Callback3D',
@@ -903,20 +863,10 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(CustomerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerRepositoryMock
-            ->expects($this->once())
-            ->method('getById')
-            ->with(self::CUSTOMER_ID)
-            ->willReturn($customerInterfaceMock);
         $customerSessionMock = $this
             ->getMockBuilder(CustomerSession::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerSessionMock
-            ->expects($this->once())
-            ->method('setCustomerDataAsLoggedIn')
-            ->with($customerInterfaceMock)
-            ->willReturnSelf();
 
         $controller = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\PI\Callback3D',
@@ -1048,20 +998,10 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(CustomerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerRepositoryMock
-            ->expects($this->once())
-            ->method('getById')
-            ->with(self::CUSTOMER_ID)
-            ->willReturn($customerInterfaceMock);
         $customerSessionMock = $this
             ->getMockBuilder(CustomerSession::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerSessionMock
-            ->expects($this->once())
-            ->method('setCustomerDataAsLoggedIn')
-            ->with($customerInterfaceMock)
-            ->willReturnSelf();
 
         $controller = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\PI\Callback3D',
@@ -1135,12 +1075,13 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->requestMock
-            ->expects($this->exactly(2))
+            ->expects($this->exactly(3))
             ->method('getParam')
-            ->withConsecutive(['orderId'], ['transactionId'])
+            ->withConsecutive(['orderId'], ['transactionId'], ['saveToken'])
             ->willReturnOnConsecutiveCalls(
                 self::ENCODED_ORDER_ID,
-                $this->returnValue(self::TEST_VPSTXID)
+                $this->returnValue(self::TEST_VPSTXID),
+                1
             );
         $this->requestMock
             ->expects($this->once())

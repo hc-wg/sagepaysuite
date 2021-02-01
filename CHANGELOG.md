@@ -1,3 +1,14 @@
+## [1.3.18] - 2021-02-01
+### Changed
+- Added token with vault usage on PI.
+
+### Fixed
+- PI repeat with 3Dv2
+- Recover cart when session is lost
+- Fraud not being retrieved for non default sotres in multi-store setup
+- Verification result not showing
+- Browser Ipv6 error on PI
+
 ## [1.3.17] - 2020-11-24
 ### Fixed
 - 3Dv1 not working with Protocol 4.00 for PI
@@ -191,6 +202,7 @@
 - Magento not running schema updates. Switching to Schema patches
 - New CSRF checks rejecting callbacks
 
+[1.3.18]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.18
 [1.3.17]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.17
 [1.3.16]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.16
 [1.3.15]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.15

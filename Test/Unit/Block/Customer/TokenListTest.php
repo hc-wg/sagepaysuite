@@ -15,8 +15,30 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
      */
     private $tokenListBlock;
 
+    /** @var int */
+    private $customerId = 23;
+
     public function testGetBackUrl()
     {
+        $vaultToken = [
+            'id' => 23,
+            'customer_id' => $this->customerId,
+            'cc_last_4' => '5559',
+            'cc_type' => 'VI',
+            'cc_exp_month' => '12',
+            'cc_exp_year' => '23',
+            'isVault' => true
+        ];
+        $serverToken = [
+            'id' => 543,
+            'customer_id' => $this->customerId,
+            'cc_last_4' => '0006',
+            'cc_type' => 'VI',
+            'cc_exp_month' => '04',
+            'cc_exp_year' => '22',
+            'isVault' => false
+        ];
+
         $urlBuilderMock = $this->makeUrlBuilderMockWithGetUrl();
         $urlBuilderMock->expects($this->once())
             ->method('getUrl')
@@ -24,18 +46,31 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
             ->willReturn('customer/account/');
 
         $tokenModelMock = $this->makeTokenModelMock();
-        $tokenModelMock->expects($this->any())
-            ->method('getCustomerTokens')
-            ->will($this->returnValue([]));
+        $tokenModelMock
+            ->expects($this->once())
+            ->method('getCustomerTokensToShowOnAccount')
+            ->willReturn([$serverToken]);
 
-        $this->tokenListBlock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Block\Customer\TokenList::class)
+        $vaultDetailsHandlerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Token\VaultDetailsHandler::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $vaultDetailsHandlerMock
+            ->expects($this->once())
+            ->method('getTokensFromCustomerToShowOnAccount')
+            ->with($this->customerId)
+            ->willReturn([$vaultToken]);
+
+        $this->tokenListBlock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Block\Customer\TokenList::class)
             ->setMethods(['setItems', 'getRefererUrl'])
             ->setConstructorArgs(
                 [
-                    "context"         => $this->makeContextMockWithUrlBuilder($urlBuilderMock),
-                    "currentCustomer" => $this->makeCurrentCustomerMock(),
-                    "config"          => $this->makeConfigMock(),
-                    "tokenModel"      => $this->makeTokenModelMock()
+                    "context"             => $this->makeContextMockWithUrlBuilder($urlBuilderMock),
+                    "currentCustomer"     => $this->makeCurrentCustomerMock(),
+                    "config"              => $this->makeConfigMock(),
+                    "vaultDetailsHandler" => $vaultDetailsHandlerMock,
+                    "tokenModel"          => $tokenModelMock
                 ]
             )
             ->getMock();
@@ -49,23 +84,44 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
 
     public function testGetBackUrlReferrer()
     {
+        $vaultToken = [
+            'id' => 23,
+            'customer_id' => $this->customerId,
+            'cc_last_4' => '5559',
+            'cc_type' => 'VI',
+            'cc_exp_month' => '12',
+            'cc_exp_year' => '23',
+            'isVault' => true
+        ];
+
         $urlBuilderMock = $this->makeUrlBuilderMockWithGetUrl();
         $urlBuilderMock->expects($this->never())
             ->method('getUrl');
 
         $tokenModelMock = $this->makeTokenModelMock();
         $tokenModelMock->expects($this->any())
-            ->method('getCustomerTokens')
+            ->method('getCustomerTokensToShowOnAccount')
             ->will($this->returnValue([]));
+
+        $vaultDetailsHandlerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Token\VaultDetailsHandler::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $vaultDetailsHandlerMock
+            ->expects($this->once())
+            ->method('getTokensFromCustomerToShowOnAccount')
+            ->with($this->customerId)
+            ->willReturn([$vaultToken]);
 
         $this->tokenListBlock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Block\Customer\TokenList::class)
             ->setMethods(['setItems', 'getRefererUrl'])
             ->setConstructorArgs(
                 [
-                    "context"         => $this->makeContextMockWithUrlBuilder($urlBuilderMock),
-                    "currentCustomer" => $this->makeCurrentCustomerMock(),
-                    "config"          => $this->makeConfigMock(),
-                    "tokenModel"      => $tokenModelMock
+                    "context"             => $this->makeContextMockWithUrlBuilder($urlBuilderMock),
+                    "currentCustomer"     => $this->makeCurrentCustomerMock(),
+                    "config"              => $this->makeConfigMock(),
+                    "vaultDetailsHandler" => $vaultDetailsHandlerMock,
+                    "tokenModel"          => $tokenModelMock
                 ]
             )
             ->getMock();
@@ -123,7 +179,10 @@ class TokenListTest extends \PHPUnit\Framework\TestCase
     {
         $currentCustomerMock = $this->getMockBuilder('Magento\Customer\Helper\Session\CurrentCustomer')
             ->setMethods(["getCustomerId"])->disableOriginalConstructor()->getMock();
-        $currentCustomerMock->expects($this->any())->method('getCustomerId')->will($this->returnValue(1));
+        $currentCustomerMock
+            ->expects($this->exactly(2))
+            ->method('getCustomerId')
+            ->willReturn($this->customerId);
 
         return $currentCustomerMock;
     }
