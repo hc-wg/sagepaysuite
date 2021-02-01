@@ -412,6 +412,7 @@
    - PI integration (frontend)
    - Online Refunds
 
+[1.1.38]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.38
 [1.1.37]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.37
 [1.1.36]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.36
 [1.1.35]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.35
