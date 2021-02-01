@@ -118,12 +118,14 @@ class Failure extends Action
             }
 
             $orderId = $this->encryptor->decrypt($this->getRequest()->getParam("orderId"));
+            $this->suiteLogger->debugLog(Logger::LOG_DEBUG, 'OrderId: ' . $orderId, [__METHOD__, __LINE__]);
             $this->recoverCart
                 ->setShouldCancelOrder(true)
                 ->setOrderId((int)$orderId)
                 ->execute();
 
             $statusDetail = $this->extractStatusDetail($response);
+            $this->suiteLogger->debugLog(Logger::LOG_DEBUG, 'statusDetail: ' . $statusDetail, [__METHOD__, __LINE__]);
 
             $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
 
