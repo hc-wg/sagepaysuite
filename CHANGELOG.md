@@ -1,3 +1,11 @@
+## [1.1.38] - 2021-02-01
+### Fixed
+- PI repeat with 3Dv2
+- Recover cart when session is lost
+- Fraud not being retrieved for non default sotres in multi-store setup
+- Verification result not showing
+- Browser Ipv6 error on PI
+
 ## [1.1.37] - 2020-11-24
 ### Fixed
 - 3Dv1 not working with Protocol 4.00 for PI
