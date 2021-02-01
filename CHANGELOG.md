@@ -1,3 +1,11 @@
+## [1.1.38] - 2021-02-01
+### Fixed
+- PI repeat with 3Dv2
+- Recover cart when session is lost
+- Fraud not being retrieved for non default sotres in multi-store setup
+- Verification result not showing
+- Browser Ipv6 error on PI
+
 ## [1.1.37] - 2020-11-24
 ### Fixed
 - 3Dv1 not working with Protocol 4.00 for PI
@@ -404,6 +412,7 @@
    - PI integration (frontend)
    - Online Refunds
 
+[1.1.38]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.38
 [1.1.37]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.37
 [1.1.36]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.36
 [1.1.35]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.35

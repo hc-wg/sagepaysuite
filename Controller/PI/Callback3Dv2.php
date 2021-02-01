@@ -6,17 +6,16 @@ use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Checkout\Model\Session;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session as CustomerSession;
+use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Framework\App\RequestInterface;
 use Magento\Quote\Model\QuoteRepository;
 use Psr\Log\LoggerInterface;
 
@@ -58,8 +57,8 @@ class Callback3Dv2 extends Action
     /** @var CustomerRepositoryInterface */
     private $customerRepository;
 
-    /** @var Logger */
-    private $suiteLogger;
+    /** @var CustomerLogin */
+    private $customerLogin;
 
     /**
      * Callback3Dv2 constructor.
@@ -76,7 +75,7 @@ class Callback3Dv2 extends Action
      * @param OrderLoader $orderLoader
      * @param CustomerSession $customerSession
      * @param CustomerRepositoryInterface $customerRepository
-     * @param Logger $suiteLogger
+     * @param CustomerLogin $customerLogin
      */
     public function __construct(
         Context $context,
@@ -92,7 +91,7 @@ class Callback3Dv2 extends Action
         OrderLoader $orderLoader,
         CustomerSession $customerSession,
         CustomerRepositoryInterface $customerRepository,
-        Logger $suiteLogger
+        CustomerLogin $customerLogin
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -109,21 +108,22 @@ class Callback3Dv2 extends Action
         $this->orderLoader                 = $orderLoader;
         $this->customerSession             = $customerSession;
         $this->customerRepository          = $customerRepository;
-        $this->suiteLogger                 = $suiteLogger;
+        $this->customerLogin               = $customerLogin;
     }
 
     public function execute()
     {
+        $orderId = null;
         try {
             $quoteIdEncrypted = $this->getRequest()->getParam("quoteId");
             $quoteIdFromParams = $this->cryptAndCode->decodeAndDecrypt($quoteIdEncrypted);
             $quote = $this->quoteRepository->get((int)$quoteIdFromParams);
-
             $order = $this->orderLoader->loadOrderFromQuote($quote);
-            $orderId = $order->getId();
+            $orderId = (int)$order->getId();
             $customerId = $order->getCustomerId();
+
             if ($customerId != null) {
-                $this->logInCustomer($customerId);
+                $this->customerLogin->logInCustomer($customerId);
             }
 
             $payment = $order->getPayment();
@@ -149,12 +149,12 @@ class Callback3Dv2 extends Action
                 $this->javascriptRedirect('checkout/cart');
             }
         } catch (ApiException $apiException) {
-            $this->recoverCart->setShouldCancelOrder(true)->execute();
+            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
             $this->logger->critical($apiException);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
-            $this->recoverCart->setShouldCancelOrder(true)->execute();
+            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
             $this->logger->critical($e);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
@@ -195,18 +195,5 @@ class Callback3Dv2 extends Action
     public function encryptAndEncode($data)
     {
         return $this->cryptAndCode->encryptAndEncode($data);
-    }
-
-    /**
-     * @param $customerId
-     */
-    public function logInCustomer($customerId)
-    {
-        try {
-            $customer = $this->customerRepository->getById($customerId);
-            $this->customerSession->setCustomerDataAsLoggedIn($customer);
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
-            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
-        }
     }
 }

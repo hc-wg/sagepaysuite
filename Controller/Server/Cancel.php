@@ -113,12 +113,8 @@ class Cancel extends Action
             throw new \Exception("Quote not found.");
         }
 
-        $order = $this->orderFactory->create()->loadByIncrementId($this->quote->getReservedOrderId());
-        if (empty($order->getId())) {
-            throw new \Exception("Order not found.");
-        }
-
-        $this->recoverCart->setShouldCancelOrder(true)->execute();
+        $orderId = $this->encryptor->decrypt($this->getRequest()->getParam("orderId"));
+        $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
 
         $this
             ->getResponse()
@@ -137,14 +133,5 @@ class Cancel extends Action
         if (!empty($message)) {
             $this->messageManager->addError($message);
         }
-    }
-
-    /**
-     * @param Quote $quote
-     */
-    private function inactivateQuote($quote)
-    {
-        $quote->setIsActive(0);
-        $quote->save();
     }
 }

@@ -45,6 +45,9 @@ class RecoverCart
     /** @var ProductRepositoryInterface */
     private $productRepository;
 
+    /** @var int */
+    private $_orderId;
+
     /**
      * RecoverCart constructor.
      * @param CheckoutSession $checkoutSession
@@ -128,7 +131,7 @@ class RecoverCart
         }
 
         $shippingAddress = $newQuote->getShippingAddress();
-        $shippingAddress->unsetData('cached_items_all');   
+        $shippingAddress->unsetData('cached_items_all');
         $newQuote->collectTotals();
         $this->quoteRepository->save($newQuote);
 
@@ -140,15 +143,12 @@ class RecoverCart
      */
     private function getOrder()
     {
-        /** Get order if it was pre-saved but not completed */
-        $presavedOrderId = $this->checkoutSession->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
-
-        if (!empty($presavedOrderId)) {
-            $order = $this->orderRepository->get($presavedOrderId);
+        $orderId = $this->getOrderId();
+        if (!empty($orderId)) {
+            $order = $this->orderRepository->get($orderId);
         } else {
             $order = null;
         }
-
         return $order;
     }
 
@@ -212,6 +212,28 @@ class RecoverCart
             }
         } catch (\Exception $e) {
             $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
+        }
+    }
+
+    /**
+     * @param int|null $orderId
+     * @return $this
+     */
+    public function setOrderId($orderId)
+    {
+        $this->_orderId = $orderId;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getOrderId()
+    {
+        if ($this->_orderId !== null) {
+            return $this->_orderId;
+        } else {
+            return $this->checkoutSession->getData(SagePaySession::PRESAVED_PENDING_ORDER_KEY);
         }
     }
 }
