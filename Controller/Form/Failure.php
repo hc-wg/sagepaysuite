@@ -9,15 +9,15 @@ namespace Ebizmarts\SagePaySuite\Controller\Form;
 
 use Ebizmarts\SagePaySuite\Model\Form;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\Encryption\EncryptorInterface;
-use Ebizmarts\SagePaySuite\Model\RecoverCart;
 
 class Failure extends Action
 {
@@ -91,7 +91,6 @@ class Failure extends Action
         EncryptorInterface $encryptor,
         RecoverCart $recoverCart
     ) {
-    
         parent::__construct($context);
         $this->suiteLogger     = $suiteLogger;
         $this->logger          = $logger;
@@ -119,18 +118,22 @@ class Failure extends Action
                 throw new LocalizedException(__('Invalid response from Opayo'));
             }
 
-            $this->recoverCart->setShouldCancelOrder(true)->execute();
+            $orderId = $this->encryptor->decrypt($this->getRequest()->getParam("orderId"));
+            $this->recoverCart
+                ->setShouldCancelOrder(true)
+                ->setOrderId((int)$orderId)
+                ->execute();
 
             $statusDetail = $this->extractStatusDetail($response);
 
             $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
 
             $this->messageManager->addError($response["Status"] . ": " . $statusDetail);
-            return $this->_redirect('checkout/cart');
         } catch (\Exception $e) {
             $this->messageManager->addError($e->getMessage());
             $this->logger->critical($e);
         }
+        return $this->_redirect('checkout/cart');
     }
 
     /**
@@ -145,7 +148,6 @@ class Failure extends Action
             $statusDetail = explode(" : ", $statusDetail);
             $statusDetail = $statusDetail[1];
         }
-
 
         return $statusDetail;
     }
