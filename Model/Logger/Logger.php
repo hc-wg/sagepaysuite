@@ -81,10 +81,7 @@ class Logger extends \Monolog\Logger
     {
         $recordSaved = false;
         if ($this->config->getDebugMode()) {
-            $message = $this->messageForLog($message);
-            $message .= "\r\n";
-
-            $recordSaved = $this->addRecord($logType, $message, $context);
+            $recordSaved = $this->sageLog($logType, $message, $context);
         }
         return $recordSaved;
     }
