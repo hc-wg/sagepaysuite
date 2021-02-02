@@ -202,7 +202,7 @@ class StrongCustomerAuthRequestDataTest extends TestCase
         $this->piRequestMock->expects($this->once())->method('getTimezone')->willReturn(180);
         $this->piRequestMock->expects($this->once())->method('getLanguage')->willReturn(self::BROWSER_LANGUAGE);
         $this->piRequestMock->expects($this->once())->method('getUserAgent')->willReturn(self::USER_AGENT);
-        $this->piRequestMock->expects($this->exactly(2))->method('getSaveToken')
+        $this->piRequestMock->expects($this->once())->method('getSaveToken')
             ->willReturnOnConsecutiveCalls(true, true);
 
         $this->subjectMock->expects($this->once())->method('getRequest')->willReturn($this->piRequestMock);
