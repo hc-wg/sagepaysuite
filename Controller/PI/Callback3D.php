@@ -13,7 +13,7 @@ use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session as CustomerSession;
-use Magento\Checkout\Model\Session;
+use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\CsrfAwareActionInterface;
@@ -53,6 +53,9 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     /** @var CustomerRepositoryInterface */
     private $customerRepository;
 
+    /** @var CustomerLogin */
+    private $customerLogin;
+
     /**
      * Callback3D constructor.
      * @param Context $context
@@ -66,6 +69,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
      * @param Logger $suiteLogger
      * @param CustomerSession $customerSession
      * @param CustomerRepositoryInterface $customerRepository
+     * @param CustomerLogin $customerLogin
      */
     public function __construct(
         Context $context,
@@ -78,7 +82,8 @@ class Callback3D extends Action implements CsrfAwareActionInterface
         CheckoutSession $checkoutSession,
         Logger $suiteLogger,
         CustomerSession $customerSession,
-        CustomerRepositoryInterface $customerRepository
+        CustomerRepositoryInterface $customerRepository,
+        CustomerLogin $customerLogin
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -92,19 +97,22 @@ class Callback3D extends Action implements CsrfAwareActionInterface
         $this->suiteLogger                 = $suiteLogger;
         $this->customerSession             = $customerSession;
         $this->customerRepository          = $customerRepository;
+        $this->customerLogin               = $customerLogin;
     }
 
     public function execute()
     {
+        $encryptedOrderId = $this->getRequest()->getParam("orderId");
+        $orderId = $this->decodeAndDecrypt($encryptedOrderId);
         try {
             $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
-            $encryptedOrderId = $this->getRequest()->getParam("orderId");
-            $orderId = $this->decodeAndDecrypt($encryptedOrderId);
             $order = $this->orderRepository->get($orderId);
             $customerId = $order->getCustomerId();
+
             if ($customerId != null) {
-                $this->logInCustomer($customerId);
+                $this->customerLogin->logInCustomer($customerId);
             }
+
             $payment = $order->getPayment();
 
             if ($this->isParesDuplicated($payment, $sanitizedPares)) {
@@ -140,12 +148,12 @@ class Callback3D extends Action implements CsrfAwareActionInterface
                 $this->javascriptRedirect('checkout/cart');
             }
         } catch (ApiException $apiException) {
-            $this->recoverCart->setShouldCancelOrder(true)->execute();
+            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
-            $this->recoverCart->setShouldCancelOrder(true)->execute();
+            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
@@ -217,18 +225,5 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     public function decodeAndDecrypt($data)
     {
         return $this->cryptAndCode->decodeAndDecrypt($data);
-    }
-
-    /**
-     * @param $customerId
-     */
-    public function logInCustomer($customerId)
-    {
-        try {
-            $customer = $this->customerRepository->getById($customerId);
-            $this->customerSession->setCustomerDataAsLoggedIn($customer);
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
-            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
-        }
     }
 }

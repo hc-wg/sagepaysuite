@@ -112,10 +112,10 @@ class StrongCustomerAuthRequestDataTest extends TestCase
         $strongCustomerAuthRequestDataObject = $this->objectManagerHelper->getObject(
             StrongCustomerAuthRequestData::class,
             [
-                'sagepayConfig' => $this->configMock,
-                'request' => $this->requestMock,
-                'coreUrl' => $this->urlMock,
-                'cryptAndCode' => $this->cryptAndCodeMock
+                'sagepayConfig' =>  $this->configMock,
+                'request' =>        $this->requestMock,
+                'coreUrl' =>        $this->urlMock,
+                'cryptAndCode' =>   $this->cryptAndCodeMock
             ]
         );
 
