@@ -11,10 +11,11 @@ use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session as CustomerSession;
+use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 
 class Callback3D extends Action
@@ -22,8 +23,6 @@ class Callback3D extends Action
     const DUPLICATED_CALLBACK_ERROR_MESSAGE = 'Duplicated 3D security callback received.';
     /** @var Config */
     private $config;
-
-    private $suiteLogger;
 
     /** @var ThreeDSecureCallbackManagement */
     private $requester;
@@ -49,6 +48,9 @@ class Callback3D extends Action
     /** @var CustomerRepositoryInterface */
     private $customerRepository;
 
+    /** @var CustomerLogin */
+    private $customerLogin;
+
     /**
      * Callback3D constructor.
      * @param Context $context
@@ -59,9 +61,9 @@ class Callback3D extends Action
      * @param CryptAndCodeData $cryptAndCode
      * @param RecoverCart $recoverCart
      * @param CheckoutSession $checkoutSession
-     * @param Logger $suiteLogger
      * @param CustomerSession $customerSession
      * @param CustomerRepositoryInterface $customerRepository
+     * @param CustomerLogin $customerLogin
      */
     public function __construct(
         Context $context,
@@ -72,9 +74,9 @@ class Callback3D extends Action
         CryptAndCodeData $cryptAndCode,
         RecoverCart $recoverCart,
         CheckoutSession $checkoutSession,
-        Logger $suiteLogger,
         CustomerSession $customerSession,
-        CustomerRepositoryInterface $customerRepository
+        CustomerRepositoryInterface $customerRepository,
+        CustomerLogin $customerLogin
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -85,9 +87,9 @@ class Callback3D extends Action
         $this->cryptAndCode                = $cryptAndCode;
         $this->recoverCart                 = $recoverCart;
         $this->checkoutSession             = $checkoutSession;
-        $this->suiteLogger                 = $suiteLogger;
         $this->customerSession             = $customerSession;
         $this->customerRepository          = $customerRepository;
+        $this->customerLogin               = $customerLogin;
     }
 
     public function execute()
@@ -98,9 +100,11 @@ class Callback3D extends Action
             $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
             $order = $this->orderRepository->get($orderId);
             $customerId = $order->getCustomerId();
+
             if ($customerId != null) {
-                $this->logInCustomer($customerId);
+                $this->customerLogin->logInCustomer($customerId);
             }
+
             $payment = $order->getPayment();
             if ($this->isParesDuplicated($payment, $sanitizedPares)) {
                 $this->javascriptRedirect('checkout/onepage/success');
@@ -192,18 +196,5 @@ class Callback3D extends Action
     public function decodeAndDecrypt($data)
     {
         return $this->cryptAndCode->decodeAndDecrypt($data);
-    }
-
-    /**
-     * @param $customerId
-     */
-    public function logInCustomer($customerId)
-    {
-        try {
-            $customer = $this->customerRepository->getById($customerId);
-            $this->customerSession->setCustomerDataAsLoggedIn($customer);
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
-            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
-        }
     }
 }
