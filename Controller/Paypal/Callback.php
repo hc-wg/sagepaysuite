@@ -10,19 +10,20 @@ use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
 use Ebizmarts\SagePaySuite\Model\Api\Post;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteRepository;
-use Magento\Framework\Encryption\EncryptorInterface;
-use Ebizmarts\SagePaySuite\Model\RecoverCart;
-use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
+use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 
 class Callback extends Action
 {
@@ -73,6 +74,9 @@ class Callback extends Action
     /** @var QuoteRepository */
     private $quoteRepository;
 
+    /** @var CustomerLogin */
+    private $customerLogin;
+
     /**
      * Callback constructor.
      * @param Context $context
@@ -87,6 +91,7 @@ class Callback extends Action
      * @param EncryptorInterface $encryptor
      * @param RecoverCart $recoverCart
      * @param OrderLoader $orderLoader
+     * @param CustomerLogin $customerLogin
      */
     public function __construct(
         Context $context,
@@ -100,9 +105,9 @@ class Callback extends Action
         SuiteHelper $suiteHelper,
         EncryptorInterface $encryptor,
         RecoverCart $recoverCart,
-        OrderLoader $orderLoader
+        OrderLoader $orderLoader,
+        CustomerLogin $customerLogin
     ) {
-
         parent::__construct($context);
         $this->config               = $config;
         $this->checkoutSession      = $checkoutSession;
@@ -114,7 +119,8 @@ class Callback extends Action
         $this->suiteHelper          = $suiteHelper;
         $this->encryptor            = $encryptor;
         $this->recoverCart          = $recoverCart;
-        $this->orderLoader         = $orderLoader;
+        $this->orderLoader          = $orderLoader;
+        $this->customerLogin        = $customerLogin;
 
         $this->config->setMethodCode(Config::METHOD_PAYPAL);
     }
@@ -125,7 +131,17 @@ class Callback extends Action
      */
     public function execute()
     {
+        $orderId = null;
         try {
+            $this->loadQuoteFromDataSource();
+            $order = $this->orderLoader->loadOrderFromQuote($this->quote);
+            $orderId = $order->getId();
+            $customerId = $order->getCustomerId();
+
+            if ($customerId != null) {
+                $this->customerLogin->logInCustomer($customerId);
+            }
+
             //get POST data
             $this->postData = $this->getRequest()->getPost();
 
@@ -133,10 +149,6 @@ class Callback extends Action
             $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->postData, [__METHOD__, __LINE__]);
 
             $this->validatePostDataStatusAndStatusDetail();
-
-            $this->loadQuoteFromDataSource();
-
-            $order = $this->orderLoader->loadOrderFromQuote($this->quote);
 
             $completionResponse = $this->sendCompletionPost()["data"];
 
@@ -163,7 +175,7 @@ class Callback extends Action
 
             return;
         } catch (\Exception $e) {
-            $this->recoverCart->setShouldCancelOrder(true)->execute();
+            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
             $this->suiteLogger->logException($e);
             $this->redirectToCartAndShowError('We can\'t place the order: ' . $e->getMessage());
         }
@@ -245,10 +257,14 @@ class Callback extends Action
     private function updatePaymentInformation($transactionId, $payment, $completionResponse)
     {
         $this->suiteLogger->sageLog(
-            Logger::LOG_REQUEST, "Flag TransactionId: " . $transactionId, [__METHOD__, __LINE__]
+            Logger::LOG_REQUEST,
+            "Flag TransactionId: " . $transactionId,
+            [__METHOD__, __LINE__]
         );
         $this->suiteLogger->sageLog(
-            Logger::LOG_REQUEST, "Flag getLastTransId: " . $payment->getLastTransId(), [__METHOD__, __LINE__]
+            Logger::LOG_REQUEST,
+            "Flag getLastTransId: " . $payment->getLastTransId(),
+            [__METHOD__, __LINE__]
         );
 
         if (!empty($transactionId) && $payment->getLastTransId() == $transactionId) {

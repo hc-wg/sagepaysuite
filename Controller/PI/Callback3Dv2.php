@@ -13,6 +13,7 @@ use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Checkout\Model\Session;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session as CustomerSession;
+use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
@@ -58,6 +59,9 @@ class Callback3Dv2 extends Action
     /** @var CustomerRepositoryInterface */
     private $customerRepository;
 
+    /** @var CustomerLogin */
+    private $customerLogin;
+
     /** @var Logger */
     private $suiteLogger;
 
@@ -76,6 +80,7 @@ class Callback3Dv2 extends Action
      * @param OrderLoader $orderLoader
      * @param CustomerSession $customerSession
      * @param CustomerRepositoryInterface $customerRepository
+     * @param CustomerLogin $customerLogin
      * @param Logger $suiteLogger
      */
     public function __construct(
@@ -92,6 +97,7 @@ class Callback3Dv2 extends Action
         OrderLoader $orderLoader,
         CustomerSession $customerSession,
         CustomerRepositoryInterface $customerRepository,
+        CustomerLogin $customerLogin,
         Logger $suiteLogger
     ) {
         parent::__construct($context);
@@ -109,23 +115,25 @@ class Callback3Dv2 extends Action
         $this->orderLoader                 = $orderLoader;
         $this->customerSession             = $customerSession;
         $this->customerRepository          = $customerRepository;
+        $this->customerLogin               = $customerLogin;
         $this->suiteLogger                 = $suiteLogger;
     }
 
     public function execute()
     {
+        $orderId = null;
         try {
             $quoteIdEncrypted = $this->getRequest()->getParam("quoteId");
             $quoteIdFromParams = $this->cryptAndCode->decodeAndDecrypt($quoteIdEncrypted);
             $quote = $this->quoteRepository->get((int)$quoteIdFromParams);
 
             $order = $this->orderLoader->loadOrderFromQuote($quote);
-            $customerId = $order->getCustomerId();
-            if ($customerId != null) {
-                $this->logInCustomer($customerId);
-            }
             $orderId = (int)$order->getId();
-            $order = $this->orderRepository->get($orderId);
+            $customerId = $order->getCustomerId();
+
+            if ($customerId != null) {
+                $this->customerLogin->logInCustomer($customerId);
+            }
 
             $payment = $order->getPayment();
 
@@ -150,12 +158,12 @@ class Callback3Dv2 extends Action
                 $this->javascriptRedirect('checkout/cart');
             }
         } catch (ApiException $apiException) {
-            $this->recoverCart->setShouldCancelOrder(true)->execute();
+            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
             $this->logger->critical($apiException);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
-            $this->recoverCart->setShouldCancelOrder(true)->execute();
+            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
             $this->logger->critical($e);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');

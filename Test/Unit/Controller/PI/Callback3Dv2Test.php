@@ -93,12 +93,6 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $orderRepositoryMock
-            ->expects($this->once())
-            ->method('get')
-            ->with(self::ORDER_ID)
-            ->willReturn($orderMock);
-
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
@@ -127,6 +121,12 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
         $quoteMock = $this->getMockBuilder('\Magento\Quote\Model\Quote')
             ->disableOriginalConstructor()
             ->getMock();
+
+        $orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($quoteMock)
+            ->willReturn($orderMock);
 
         $this->makeRequestMock();
 
@@ -187,20 +187,10 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(CustomerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerRepositoryMock
-            ->expects($this->once())
-            ->method('getById')
-            ->with(self::CUSTOMER_ID)
-            ->willReturn($customerInterfaceMock);
         $customerSessionMock = $this
             ->getMockBuilder(CustomerSession::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerSessionMock
-            ->expects($this->once())
-            ->method('setCustomerDataAsLoggedIn')
-            ->with($customerInterfaceMock)
-            ->willReturnSelf();
 
         $this->callback3Dv2Controller = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\PI\Callback3Dv2',
@@ -255,12 +245,6 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $orderRepositoryMock
-            ->expects($this->once())
-            ->method('get')
-            ->with(self::ORDER_ID)
-            ->willReturn($orderMock);
-
         $paymentMock = $this
             ->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
@@ -274,6 +258,12 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
         $quoteMock = $this->getMockBuilder('\Magento\Quote\Model\Quote')
             ->disableOriginalConstructor()
             ->getMock();
+
+        $orderLoaderMock
+            ->expects($this->once())
+            ->method('loadOrderFromQuote')
+            ->with($quoteMock)
+            ->willReturn($orderMock);
 
         $this->urlBuilderMock = $this
             ->getMockBuilder('Magento\Framework\UrlInterface')
@@ -350,20 +340,10 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(CustomerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerRepositoryMock
-            ->expects($this->once())
-            ->method('getById')
-            ->with(self::CUSTOMER_ID)
-            ->willReturn($customerInterfaceMock);
         $customerSessionMock = $this
             ->getMockBuilder(CustomerSession::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerSessionMock
-            ->expects($this->once())
-            ->method('setCustomerDataAsLoggedIn')
-            ->with($customerInterfaceMock)
-            ->willReturnSelf();
 
         $this->callback3Dv2Controller = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\PI\Callback3Dv2',

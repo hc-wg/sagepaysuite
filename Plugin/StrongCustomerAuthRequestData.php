@@ -70,6 +70,12 @@ class StrongCustomerAuthRequestData
             'challengeWindowSize'      => $this->sagepayConfig->getValue("challengewindowsize"),
         ];
 
+        $result['credentialType'] = [
+            'cofUsage'      => 'First',
+            'initiatedType' => 'CIT',
+            'mitType'       => 'Unscheduled'
+        ];
+
         return $result;
     }
 
@@ -107,12 +113,9 @@ class StrongCustomerAuthRequestData
      */
     private function getBrowserIP()
     {
-        $browserIP = $this->request->getClientIp();
-        $ipAddressesArray = explode(',', $browserIP);
-
-        if (!empty($ipAddressesArray)) {
-            $browserIP = $ipAddressesArray[0];
-        }
+        $browserIP = null;
+        $clientIp = $this->request->getClientIp();
+        $ipAddressesArray = explode(',', $clientIp);
 
         foreach ($ipAddressesArray as $ipAddress) {
             $ipAddress = trim($ipAddress);
@@ -123,6 +126,76 @@ class StrongCustomerAuthRequestData
             }
         }
 
+        if ($browserIP === null) {
+            $browserIP = $this->_getIpvFour($ipAddressesArray);
+        }
+
         return $browserIP;
+    }
+
+    /**
+     * @param array $ipAddressesArray
+     * @return string
+     */
+    private function _getIpvFour(array $ipAddressesArray)
+    {
+        $browserIP = $finalIp = '127.0.0.1';
+        $ipv4 = '';
+
+        foreach ($ipAddressesArray as $ipAddress) {
+            $ipAddress = trim($ipAddress);
+
+            if (filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+                $ipFieldsArray = explode(":", $ipAddress);
+                $count = 0;
+
+                foreach ($ipFieldsArray as $ipField) {
+                    $number = 0;
+
+                    if (strlen($ipField) >= 2) {
+                        $subString = substr($ipField, 0, 2);
+                        if ($this->_isHexadecimal($subString)) {
+                            $number = $this->_hexToInt($subString);
+                        }
+                    } elseif (strlen($ipField) == 1) {
+                        if ($this->_isHexadecimal($ipField)) {
+                            $number = $this->_hexToInt($ipField);
+                        }
+                    }
+
+                    $ipv4 .= $number;
+
+                    if ($count < 3) {
+                        $ipv4 .= '.';
+                    } elseif ($count == 3) {
+                        $finalIp = $ipv4;
+                        break;
+                    }
+
+                    $count++;
+                }
+
+                $browserIP = $finalIp;
+                break;
+            }
+        }
+
+        return $browserIP;
+    }
+
+    /**
+     * @param $string
+     * @return bool
+     */
+    private function _isHexadecimal($string) {
+        return ctype_xdigit($string);
+    }
+
+    /**
+     * @param $hexadecimal
+     * @return int
+     */
+    private function _hexToInt($hexadecimal) {
+        return intval(hexdec($hexadecimal));
     }
 }

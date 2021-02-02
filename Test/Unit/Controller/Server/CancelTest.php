@@ -11,20 +11,19 @@ use Magento\Framework\Message\ManagerInterface;
 use Ebizmarts\SagePaySuite\Controller\Server\Cancel;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\RecoverCart;
+use Magento\Checkout\Model\Cart;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\App\Response\Http as HttpResponse;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\ObjectManager\ObjectManager;
 use Magento\Framework\UrlInterface;
-use Magento\Checkout\Model\Cart;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface;
-use Ebizmarts\SagePaySuite\Model\RecoverCart;
-
-use Magento\Framework\Encryption\EncryptorInterface;
 
 class CancelTest extends \PHPUnit\Framework\TestCase
 {
@@ -111,7 +110,7 @@ class CancelTest extends \PHPUnit\Framework\TestCase
         $this->suiteLoggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $this->urlBuilderMock = $this->getMockBuilder(UrlInterface::class)->disableOriginalConstructor()->getMock();
         $this->encryptorMock = $this->getMockBuilder(EncryptorInterface::class)->disableOriginalConstructor()->getMock();
-        $this->orderLoaderMock = $this->getMockBuilder(OrderLoader::class) ->disableOriginalConstructor()->getMock();
+        $this->orderLoaderMock = $this->getMockBuilder(OrderLoader::class)->disableOriginalConstructor()->getMock();
 
         $this->quoteIdMaskFactory = $this->getMockBuilder(QuoteIdMaskFactory::class)
             ->disableOriginalConstructor()
@@ -149,19 +148,23 @@ class CancelTest extends \PHPUnit\Framework\TestCase
         $storeId = 1;
         $quoteId = 69;
         $encrypted = '0:2:Dwn8kCUk6nZU5B7b0Xn26uYQDeLUKBrD:S72utt9n585GrslZpDp+DRpW+8dpqiu/EiCHXwfEhS0=';
+        $encryptedOrderId = '0:3:Lq/5e1tdLdR19OaUuu1JTxD+7secLH91mWTNsT9c';
+        $orderId = 44;
 
         //$this->contextMock->expects($this->atLeastOnce())->method("saveErrorMessage");
         $this->messageManagerMock->expects($this->once())
             ->method('addError')->willReturn($this->messageManagerMock);
 
-        $this->requestMock->expects($this->exactly(3))
+        $this->requestMock->expects($this->exactly(4))
             ->method('getParam')
-            ->withConsecutive(['message'], ['_store'], ['quote'])
-            ->willReturnOnConsecutiveCalls('Some message', $storeId, $encrypted);
+            ->withConsecutive(['message'], ['_store'], ['quote'], ['orderId'])
+            ->willReturnOnConsecutiveCalls('Some message', $storeId, $encrypted, $encryptedOrderId);
 
-        $this->encryptorMock->expects($this->once())->method('decrypt')
-            ->with($encrypted)
-            ->willReturn($quoteId);
+        $this->encryptorMock
+            ->expects($this->exactly(2))
+            ->method('decrypt')
+            ->withConsecutive([$encrypted], [$encryptedOrderId])
+            ->willReturnOnConsecutiveCalls($quoteId, $orderId);
 
         $this->quoteMock->expects($this->once())->method("setStoreId")
             ->with($storeId)
@@ -169,13 +172,17 @@ class CancelTest extends \PHPUnit\Framework\TestCase
 
         $this->quoteMock->expects($this->once())->method("getId")->willReturn($quoteId);//self::QUOTE_ID
         $this->quoteMock->expects($this->once())->method("load")->with($quoteId)->willReturnSelf();//self::QUOTE_ID
-        
+
         $this->recoverCartMock
             ->expects($this->once())
             ->method('setShouldCancelOrder')
             ->with(true)
             ->willReturnSelf();
-
+        $this->recoverCartMock
+            ->expects($this->once())
+            ->method('setOrderId')
+            ->with($orderId)
+            ->willReturnSelf();
         $this->recoverCartMock
             ->expects($this->once())
             ->method('execute');
