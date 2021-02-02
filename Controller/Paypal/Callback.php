@@ -24,6 +24,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Validator\Exception as ValidatorException;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteRepository;
+use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 
 class Callback extends Action implements CsrfAwareActionInterface
 {
@@ -74,6 +75,9 @@ class Callback extends Action implements CsrfAwareActionInterface
     /** @var QuoteRepository */
     private $quoteRepository;
 
+    /** @var CustomerLogin */
+    private $customerLogin;
+
     /**
      * Callback constructor.
      * @param Context $context
@@ -88,6 +92,7 @@ class Callback extends Action implements CsrfAwareActionInterface
      * @param EncryptorInterface $encryptor
      * @param RecoverCart $recoverCart
      * @param OrderLoader $orderLoader
+     * @param CustomerLogin $customerLogin
      */
     public function __construct(
         Context $context,
@@ -101,7 +106,8 @@ class Callback extends Action implements CsrfAwareActionInterface
         SuiteHelper $suiteHelper,
         EncryptorInterface $encryptor,
         RecoverCart $recoverCart,
-        OrderLoader $orderLoader
+        OrderLoader $orderLoader,
+        CustomerLogin $customerLogin
     ) {
         parent::__construct($context);
         $this->config               = $config;
@@ -114,7 +120,8 @@ class Callback extends Action implements CsrfAwareActionInterface
         $this->suiteHelper          = $suiteHelper;
         $this->encryptor            = $encryptor;
         $this->recoverCart          = $recoverCart;
-        $this->orderLoader         = $orderLoader;
+        $this->orderLoader          = $orderLoader;
+        $this->customerLogin        = $customerLogin;
 
         $this->config->setMethodCode(Config::METHOD_PAYPAL);
     }
@@ -130,6 +137,11 @@ class Callback extends Action implements CsrfAwareActionInterface
             $this->loadQuoteFromDataSource();
             $order = $this->orderLoader->loadOrderFromQuote($this->quote);
             $orderId = $order->getId();
+            $customerId = $order->getCustomerId();
+
+            if ($customerId != null) {
+                $this->customerLogin->logInCustomer($customerId);
+            }
 
             //get POST data
             $this->postData = $this->getRequest()->getPost();

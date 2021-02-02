@@ -142,17 +142,75 @@ class StrongCustomerAuthRequestData
         }
 
         if ($browserIP === null) {
-            foreach ($ipAddressesArray as $ipAddress) {
-                $ipAddress = trim($ipAddress);
+            $browserIP = $this->_getIpvFour($ipAddressesArray);
+        }
 
-                if (filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-                    $ipv4 = hexdec(substr($ipAddress, 0, 2)). "." . hexdec(substr($ipAddress, 2, 2)). "." . hexdec(substr($ipAddress, 5, 2)). "." . hexdec(substr($ipAddress, 7, 2));
-                    $browserIP = $ipv4;
-                    break;
+        return $browserIP;
+    }
+
+    /**
+     * @param array $ipAddressesArray
+     * @return string
+     */
+    private function _getIpvFour(array $ipAddressesArray)
+    {
+        $browserIP = $finalIp = '127.0.0.1';
+        $ipv4 = '';
+
+        foreach ($ipAddressesArray as $ipAddress) {
+            $ipAddress = trim($ipAddress);
+
+            if (filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+                $ipFieldsArray = explode(":", $ipAddress);
+                $count = 0;
+
+                foreach ($ipFieldsArray as $ipField) {
+                    $number = 0;
+
+                    if (strlen($ipField) >= 2) {
+                        $subString = substr($ipField, 0, 2);
+                        if ($this->_isHexadecimal($subString)) {
+                            $number = $this->_hexToInt($subString);
+                        }
+                    } elseif (strlen($ipField) == 1) {
+                        if ($this->_isHexadecimal($ipField)) {
+                            $number = $this->_hexToInt($ipField);
+                        }
+                    }
+
+                    $ipv4 .= $number;
+
+                    if ($count < 3) {
+                        $ipv4 .= '.';
+                    } elseif ($count == 3) {
+                        $finalIp = $ipv4;
+                        break;
+                    }
+
+                    $count++;
                 }
+
+                $browserIP = $finalIp;
+                break;
             }
         }
 
         return $browserIP;
+    }
+
+    /**
+     * @param $string
+     * @return bool
+     */
+    private function _isHexadecimal($string) {
+        return ctype_xdigit($string);
+    }
+
+    /**
+     * @param $hexadecimal
+     * @return int
+     */
+    private function _hexToInt($hexadecimal) {
+        return intval(hexdec($hexadecimal));
     }
 }
