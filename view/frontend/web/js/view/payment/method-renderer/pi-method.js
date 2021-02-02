@@ -704,8 +704,7 @@ define(
                 }
             },
             getRememberToken: function () {
-                return (document.getElementById('piremembertoken') &&
-                    document.getElementById('piremembertoken').checked == true);
+                return ($('#piremembertoken') && $('#piremembertoken').prop('checked') === true);
             },
             saveToken: function () {
                 var self = this;
@@ -739,14 +738,16 @@ define(
                 this.save_token = false;
                 this.use_token = false;
 
-                if (this.isTokenServiceEnabled()) {
-                    this.save_token = true;
-                    var customerTokens = this.getCustomerTokenCount();
+                if (this.dropInEnabled()) {
+                    if (this.isTokenServiceEnabled()) {
+                        this.save_token = true;
+                        var customerTokens = this.getCustomerTokenCount();
 
-                    if (customerTokens && customerTokens.length > 0) {
-                        this.used_token_slots = customerTokens.length;
-                        this.checkMaxTokensPerCustomer();
-                        this.use_token = true;
+                        if (customerTokens && customerTokens.length > 0) {
+                            this.used_token_slots = customerTokens.length;
+                            this.checkMaxTokensPerCustomer();
+                            this.use_token = true;
+                        }
                     }
                 }
 
@@ -819,13 +820,13 @@ define(
             },
             getSagePayToken: function (token) {
                 var sagePayToken = "";
-                var url = urlBuilder.createUrl('/sagepay/token/:tokenId/:customerId', {
+                var path = urlBuilder.createUrl('/sagepay/token/:tokenId/:customerId', {
                     tokenId: token.id,
                     customerId: token.customer_id
                 });
-
+                var completeUrl = url.build(path);
                 $.ajax({
-                    url: '/' + url,
+                    url: completeUrl,
                     data: {},
                     type: 'GET',
                     dataType: 'json',

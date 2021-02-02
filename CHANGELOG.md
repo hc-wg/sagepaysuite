@@ -1,3 +1,14 @@
+## [1.4.4] - 2021-02-01
+### Changed
+- Added token with vault usage on PI.
+
+### Fixed
+- PI repeat with 3Dv2
+- Recover cart when session is lost
+- Fraud not being retrieved for non default sotres in multi-store setup
+- Verification result not showing
+- Browser Ipv6 error on PI
+
 ## [1.4.3] - 2020-11-24
 ### Fixed
 - 3Dv1 not working with Protocol 4.00 for PI
@@ -37,6 +48,7 @@
 - Server not recovering cart when cancel the transaction
 - Add form validation in PI WITHOUT Form
 
+[1.4.4]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.4
 [1.4.3]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.3
 [1.4.2]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.2
 [1.4.1]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.1
