@@ -150,13 +150,13 @@ class FormRequestManagement implements FormManagementInterface
             $this->quote->reserveOrderId();
             $this->quote->save();
             $this->suiteLogger->orderStartLog('FORM', $this->quote->getReservedOrderId(), $this->quote->getId());
-            $this->suiteLogger->debugLog(Logger::LOG_DEBUG, $this->quote->getData(), [__METHOD__, __LINE__]);
+            $this->suiteLogger->debugLog($this->quote->getData(), [__METHOD__, __LINE__]);
 
             $vendorname = $this->config->getVendorname();
             $this->transactionVendorTxCode = $this->suiteHelper->generateVendorTxCode(
                 $this->quote->getReservedOrderId()
             );
-            $this->suiteLogger->debugLog(Logger::LOG_DEBUG, 'Transaction VendorTxCode: ' . $this->transactionVendorTxCode, [__METHOD__, __LINE__]);
+            $this->suiteLogger->debugLog('Transaction VendorTxCode: ' . $this->transactionVendorTxCode, [__METHOD__, __LINE__]);
 
             //set payment info for save order
             $payment = $this->quote->getPayment();
@@ -165,7 +165,7 @@ class FormRequestManagement implements FormManagementInterface
             //save order with pending payment
             /** @var \Magento\Sales\Api\Data\OrderInterface $order */
             $this->order = $this->checkoutHelper->placeOrder();
-            $this->suiteLogger->debugLog(Logger::LOG_DEBUG, $this->order->getData(), [__METHOD__, __LINE__]);
+            $this->suiteLogger->debugLog($this->order->getData(), [__METHOD__, __LINE__]);
             if ($this->order->getEntityId()) {
                 //set pre-saved order flag in checkout session
                 $this->checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, $this->order->getId());
@@ -178,7 +178,7 @@ class FormRequestManagement implements FormManagementInterface
                 $payment->setAdditionalInformation('mode', $this->config->getMode());
                 $payment->setAdditionalInformation('paymentAction', $this->config->getSagepayPaymentAction());
                 $payment->save();
-                $this->suiteLogger->debugLog(Logger::LOG_DEBUG, $payment->getData(), [__METHOD__, __LINE__]);
+                $this->suiteLogger->debugLog($payment->getData(), [__METHOD__, __LINE__]);
 
                 $this->result->setSuccess(true);
                 $this->result->setRedirectUrl($this->getFormRedirectUrl());

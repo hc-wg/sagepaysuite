@@ -129,10 +129,10 @@ class Success extends Action
             $quoteIdEncrypted = $request->getParam("quoteid");
             $quoteIdFromParams = $this->encryptor->decrypt($quoteIdEncrypted);
             $this->quote = $this->quoteRepository->get((int)$quoteIdFromParams);
-            $this->suiteLogger->debugLog(Logger::LOG_DEBUG, $this->quote->getData(), [__METHOD__, __LINE__]);
+            $this->suiteLogger->debugLog($this->quote->getData(), [__METHOD__, __LINE__]);
 
             $this->order = $this->orderLoader->loadOrderFromQuote($this->quote);
-            $this->suiteLogger->debugLog(Logger::LOG_DEBUG, $this->order->getData(), [__METHOD__, __LINE__]);
+            $this->suiteLogger->debugLog($this->order->getData(), [__METHOD__, __LINE__]);
 
             $transactionId = $response["VPSTxId"];
             $transactionId = $this->suiteHelper->removeCurlyBraces($transactionId); //strip brackets
@@ -144,7 +144,6 @@ class Success extends Action
 
             if (!$isDuplicated) {
                 $this->suiteLogger->debugLog(
-                    Logger::LOG_DEBUG,
                     'Payment VendorTxCode: ' . $vendorTxCode . ' Response VendorTxCode: ' . $response['VendorTxCode'],
                     [__METHOD__, __LINE__]
                 );
@@ -164,7 +163,7 @@ class Success extends Action
                     }
 
                     $payment->save();
-                    $this->suiteLogger->debugLog(Logger::LOG_DEBUG, $payment->getData(), [__METHOD__, __LINE__]);
+                    $this->suiteLogger->debugLog($payment->getData(), [__METHOD__, __LINE__]);
                 } else {
                     throw new \Magento\Framework\Validator\Exception(__('Invalid transaction id.'));
                 }
