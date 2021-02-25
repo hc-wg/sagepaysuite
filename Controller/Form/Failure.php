@@ -134,6 +134,14 @@ class Failure extends Action
             $this->messageManager->addError($e->getMessage());
             $this->logger->critical($e);
         }
+
+        $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
+        $this->suiteLogger->orderEndLog(
+            $response['VPSTxId'],
+            $this->extractIncrementIdFromVendorTxCode($response),
+            $quoteId
+        );
+
         return $this->_redirect('checkout/cart');
     }
 
@@ -151,5 +159,15 @@ class Failure extends Action
         }
 
         return $statusDetail;
+    }
+
+    /**
+     * @param array $response
+     * @return string
+     */
+    private function extractIncrementIdFromVendorTxCode(array $response): string
+    {
+        $vendorTxCode = explode("-", $response['VendorTxCode']);
+        return $vendorTxCode[0];
     }
 }
