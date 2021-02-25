@@ -171,7 +171,7 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
             ->with($type, $message, $context)
             ->willReturn(true);
 
-        $this->assertEquals($data['expectedReturn'], $loggerMock->debugLog($type, $message, $context));
+        $this->assertEquals($data['expectedReturn'], $loggerMock->debugLog($message, $context));
     }
 
     public function debugLogTestDataProvider()

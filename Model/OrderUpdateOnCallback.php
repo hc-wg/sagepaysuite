@@ -116,7 +116,7 @@ class OrderUpdateOnCallback
         $transaction->setPaymentId($payment->getId());
         $transaction->setIsClosed($closed);
         $transaction->save();
-        $this->suiteLogger->debugLog(Logger::LOG_DEBUG, $transaction->getData(), [__METHOD__, __LINE__]);
+        $this->suiteLogger->debugLog($transaction->getData(), [__METHOD__, __LINE__]);
 
         //update invoice transaction id
         $this->order->getInvoiceCollection()
@@ -130,7 +130,7 @@ class OrderUpdateOnCallback
             $invoices = $this->order->getInvoiceCollection();
             if ($invoices->count() > 0) {
                 $this->invoiceEmailSender->send($invoices->getFirstItem());
-                $this->suiteLogger->debugLog(Logger::LOG_REQUEST, 'Invoice confirmation sent for order: ' . $this->order->getIncrementId(), [__METHOD__, __LINE__]);
+                $this->suiteLogger->debugLog('Invoice confirmation sent for order: ' . $this->order->getIncrementId(), [__METHOD__, __LINE__]);
             }
         }
     }

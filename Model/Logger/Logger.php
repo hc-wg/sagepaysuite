@@ -72,16 +72,15 @@ class Logger extends \Monolog\Logger
     }
 
     /**
-     * @param string $logType
      * @param string $message
      * @param array $context
      * @return bool
      */
-    public function debugLog($logType, $message, $context = [])
+    public function debugLog($message, $context = [])
     {
         $recordSaved = false;
         if ($this->config->getDebugMode()) {
-            $recordSaved = $this->sageLog($logType, $message, $context);
+            $recordSaved = $this->sageLog(self::LOG_DEBUG, $message, $context);
         }
         return $recordSaved;
     }

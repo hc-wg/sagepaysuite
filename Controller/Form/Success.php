@@ -128,17 +128,15 @@ class Success extends \Magento\Framework\App\Action\Action
 
             $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
 
-            $this->_quote = $this->_quoteFactory->create()->load(
-                $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"))
-            );
-            $this->_suiteLogger->debugLog(Logger::LOG_DEBUG, $this->_quote->getData(), [__METHOD__, __LINE__]);
-
+            $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
+            $this->_quote = $this->_quoteFactory->create()->load($quoteId);
+            $this->_suiteLogger->debugLog($this->_quote->getData(), [__METHOD__, __LINE__]);
 
             $this->_order = $this->_orderFactory->create()->loadByIncrementId($this->_quote->getReservedOrderId());
             if ($this->_order === null || $this->_order->getId() === null) {
                 throw new LocalizedException(__('Order not available.'));
             }
-            $this->_suiteLogger->debugLog(Logger::LOG_DEBUG, $this->_order->getData(), [__METHOD__, __LINE__]);
+            $this->_suiteLogger->debugLog($this->_order->getData(), [__METHOD__, __LINE__]);
 
             $transactionId = $response["VPSTxId"];
             $transactionId = $this->suiteHelper->removeCurlyBraces($transactionId); //strip brackets
@@ -151,7 +149,6 @@ class Success extends \Magento\Framework\App\Action\Action
 
             if (!$isDuplicated) {
                 $this->_suiteLogger->debugLog(
-                    Logger::LOG_DEBUG,
                     'Payment VendorTxCode: ' . $vendorTxCode . ' Response VendorTxCode: ' . $response['VendorTxCode'],
                     [__METHOD__, __LINE__]
                 );
@@ -170,7 +167,7 @@ class Success extends \Magento\Framework\App\Action\Action
                     }
 
                     $payment->save();
-                    $this->_suiteLogger->debugLog(Logger::LOG_DEBUG, $payment->getData(), [__METHOD__, __LINE__]);
+                    $this->_suiteLogger->debugLog($payment->getData(), [__METHOD__, __LINE__]);
                 } else {
                     throw new \Magento\Framework\Validator\Exception(__('Invalid transaction id.'));
                 }
@@ -210,7 +207,7 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
             $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
 
-            $this->suiteLogger->orderEndLog($transactionId, $this->order->getIncrementId(), $quoteId);
+            $this->_suiteLogger->orderEndLog($transactionId, $this->_order->getIncrementId(), $quoteId);
             return $this->_redirect($redirect);
         } catch (\Exception $e) {
             $this->_suiteLogger->logException($e);
