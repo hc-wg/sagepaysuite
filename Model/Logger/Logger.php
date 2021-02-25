@@ -112,4 +112,34 @@ class Logger extends \Monolog\Logger
 
         return $message;
     }
+
+    /**
+     * @param string $paymentMethod
+     * @param string $incrementId
+     * @param int $cartId
+     */
+    public function orderStartLog($paymentMethod, $incrementId, $cartId)
+    {
+        $message = "\n";
+        $message .= '---------- ';
+        $message .= "Starting order with " . $paymentMethod . ": Order: " . $incrementId . " - Cart: " . $cartId;
+        $message .= ' ----------';
+        $this->sageLog(self::LOG_REQUEST, $message);
+        $this->debugLog(self::LOG_DEBUG, $message);
+    }
+
+    /**
+     * @param $vpstxid
+     * @param $incrementId
+     * @param $cartId
+     */
+    public function orderEndLog($vpstxid, $incrementId, $cartId)
+    {
+        $message = "\n";
+        $message .= '---------- ';
+        $message .= "End of Order " . $incrementId . " - Cart: " . $cartId . " - VPSTxId: " . $vpstxid;
+        $message .= ' ----------';
+        $this->sageLog(self::LOG_REQUEST, $message);
+        $this->debugLog(self::LOG_DEBUG, $message);
+    }
 }
