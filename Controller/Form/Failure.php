@@ -119,7 +119,7 @@ class Failure extends Action
             }
 
             $orderId = $this->encryptor->decrypt($this->getRequest()->getParam("orderId"));
-            $this->suiteLogger->debugLog(Logger::LOG_DEBUG, 'OrderId: ' . $orderId, [__METHOD__, __LINE__]);
+            $this->suiteLogger->debugLog('OrderId: ' . $orderId, [__METHOD__, __LINE__]);
             $this->recoverCart
                 ->setShouldCancelOrder(true)
                 ->setOrderId((int)$orderId)
