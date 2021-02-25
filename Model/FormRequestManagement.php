@@ -149,6 +149,7 @@ class FormRequestManagement implements FormManagementInterface
             $this->quote->collectTotals();
             $this->quote->reserveOrderId();
             $this->quote->save();
+            $this->suiteLogger->orderStartLog('FORM', $this->quote->getReservedOrderId(), $this->quote->getId());
             $this->suiteLogger->debugLog(Logger::LOG_DEBUG, $this->quote->getData(), [__METHOD__, __LINE__]);
 
             $vendorname = $this->config->getVendorname();
@@ -247,7 +248,7 @@ class FormRequestManagement implements FormManagementInterface
         $data['FailureURL'] .=
             '?quoteid=' . urlencode($encryptedQuoteId) .
             '&orderId=' . urlencode($encryptedOrderId);
-
+        
         //email details
         $data['VendorEMail']  = $this->config->getFormVendorEmail();
         $data['SendEMail']    = $this->config->getFormSendEmail();
