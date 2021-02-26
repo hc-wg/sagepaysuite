@@ -124,7 +124,7 @@ class Logger extends \Monolog\Logger
         $message .= "Starting order with " . $paymentMethod . ": Order: " . $incrementId . " - Cart: " . $cartId;
         $message .= ' ----------';
         $this->sageLog(self::LOG_REQUEST, $message);
-        $this->debugLog(self::LOG_DEBUG, $message);
+        $this->debugLog($message);
     }
 
     /**
@@ -139,6 +139,6 @@ class Logger extends \Monolog\Logger
         $message .= "End of Order " . $incrementId . " - Cart: " . $cartId . " - VPSTxId: " . $vpstxid;
         $message .= ' ----------';
         $this->sageLog(self::LOG_REQUEST, $message);
-        $this->debugLog(self::LOG_DEBUG, $message);
+        $this->debugLog($message);
     }
 }
