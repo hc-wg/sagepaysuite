@@ -714,4 +714,9 @@ class Config
     {
         return $this->getAdvancedValue("debug_mode");
     }
+
+    public function getPersonalInfoRemoval()
+    {
+        return $this->getAdvancedValue("personal_info_removal");
+    }
 }
