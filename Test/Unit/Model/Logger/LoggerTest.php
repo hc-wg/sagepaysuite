@@ -6,6 +6,9 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Logger;
 
+use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\Logger;
+
 class LoggerTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -14,7 +17,7 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
     public function testSageLog($data)
     {
         $loggerMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->getMockBuilder(Logger\Logger::class)
             ->setMethods(['addRecord'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -33,7 +36,7 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
         return [
             'test null' => [
                 [
-                    'type'      => \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST,
+                    'type'      => Logger\Logger::LOG_REQUEST,
                     'message'   => null,
                     'message_p' => "NULL",
                     'context'   => ['Zarata', 34]
@@ -41,7 +44,7 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
             ],
             'test string' => [
                 [
-                    'type'      => \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST,
+                    'type'      => Logger\Logger::LOG_REQUEST,
                     'message'   => "ERROR TEST",
                     'message_p' => "ERROR TEST",
                     'context'   => []
@@ -49,7 +52,7 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
             ],
             'test array' => [
                 [
-                    'type'      => \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST,
+                    'type'      => Logger\Logger::LOG_REQUEST,
                     'message'   => ["error" => true],
                     'message_p' => json_encode(["error" => true], JSON_PRETTY_PRINT),
                     'context'   => []
@@ -57,7 +60,7 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
             ],
             'test object' => [
                 [
-                    'type'      => \Ebizmarts\SagePaySuite\Model\Logger\Logger::LOG_REQUEST,
+                    'type'      => Logger\Logger::LOG_REQUEST,
                     'message'   => (object)["error" => true],
                     'message_p' => json_encode(((object)["error" => true]), JSON_PRETTY_PRINT),
                     'context'   => ['MyClass\\Test', 69]
@@ -75,7 +78,7 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
             ->getMock();
 
         $loggerMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->getMockBuilder(Logger\Logger::class)
             ->setMethods(['addRecord'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -91,7 +94,7 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
     public function testInvalidMessage()
     {
         $loggerMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->getMockBuilder(Logger\Logger::class)
             ->setMethods(['addRecord'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -106,5 +109,88 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
         $obj->resource = opendir('./'); // @codingStandardsIgnoreLine
 
         $this->assertTrue($loggerMock->sageLog('Request', $obj));
+    }
+
+    /**
+     * @dataProvider debugLogTestDataProvider
+     */
+    public function testDebugLog($data)
+    {
+        $requestHandlerMock = $this
+            ->getMockBuilder(Logger\Request::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $exceptionHandlerMock = $this
+            ->getMockBuilder(Logger\Exception::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $cronHandlerMock = $this
+            ->getMockBuilder(Logger\Cron::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $debugHandlerMock = $this
+            ->getMockBuilder(Logger\Debug::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $type = Logger\Logger::LOG_DEBUG;
+        $message = "ERROR TEST";
+        $context = [];
+        $handlers = [
+            $requestHandlerMock,
+            $cronHandlerMock,
+            $exceptionHandlerMock,
+            $debugHandlerMock
+        ];
+        $name = "SagePaySuiteLogger";
+
+        $configMock = $this
+            ->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock = $this
+            ->getMockBuilder(Logger\Logger::class)
+            ->setMethods(['sageLog'])
+            ->setConstructorArgs(
+                [
+                    'config'   => $configMock,
+                    'name'     => $name,
+                    'handlers' => $handlers
+                ]
+            )
+            ->getMock();
+
+        $configMock
+            ->expects($this->once())
+            ->method('getDebugMode')
+            ->willReturn($data['debugModeEnable']);
+
+        $loggerMock
+            ->expects($this->exactly($data['expectsSageLog']))
+            ->method('sageLog')
+            ->with($type, $message, $context)
+            ->willReturn(true);
+
+        $this->assertEquals($data['expectedReturn'], $loggerMock->debugLog($message, $context));
+    }
+
+    public function debugLogTestDataProvider()
+    {
+        return [
+            'test debug mode enabled' => [
+                [
+                    'debugModeEnable' => true,
+                    'expectsSageLog' => 1,
+                    'expectedReturn' => true
+                ]
+            ],
+            'test debug mode disable' => [
+                [
+                    'debugModeEnable' => false,
+                    'expectsSageLog' => 0,
+                    'expectedReturn' => false
+                ]
+            ]
+        ];
     }
 }

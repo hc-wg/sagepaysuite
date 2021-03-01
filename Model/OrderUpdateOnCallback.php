@@ -4,10 +4,11 @@ declare(strict_types=1);
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForActionFactory;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\Order\Payment\Transaction\Repository as TransactionRepository;
 use Magento\Sales\Model\Order\Payment\TransactionFactory;
 
@@ -34,13 +35,27 @@ class OrderUpdateOnCallback
     /** @var TransactionRepository */
     private $transactionRepository;
 
+    /** @var Logger */
+    private $suiteLogger;
+
+    /**
+     * OrderUpdateOnCallback constructor.
+     * @param Config $config
+     * @param OrderSender $orderEmailSender
+     * @param InvoiceSender $invoiceEmailSender
+     * @param ClosedForActionFactory $actionFactory
+     * @param TransactionFactory $transactionFactory
+     * @param TransactionRepository $transactionRepository
+     * @param Logger $suiteLogger
+     */
     public function __construct(
         Config $config,
         OrderSender $orderEmailSender,
         InvoiceSender $invoiceEmailSender,
         ClosedForActionFactory $actionFactory,
         TransactionFactory $transactionFactory,
-        TransactionRepository $transactionRepository
+        TransactionRepository $transactionRepository,
+        Logger $suiteLogger
     ) {
         $this->config = $config;
         $this->orderEmailSender = $orderEmailSender;
@@ -48,6 +63,7 @@ class OrderUpdateOnCallback
         $this->actionFactory = $actionFactory;
         $this->transactionFactory = $transactionFactory;
         $this->transactionRepository = $transactionRepository;
+        $this->suiteLogger = $suiteLogger;
     }
 
     public function setOrder(Order $order)
@@ -101,6 +117,7 @@ class OrderUpdateOnCallback
         $transaction->setPaymentId($payment->getId());
         $transaction->setIsClosed($closed);
         $transaction->save();
+        $this->suiteLogger->debugLog($transaction->getData(), [__METHOD__, __LINE__]);
 
         //update invoice transaction id
         $this->order->getInvoiceCollection()
@@ -114,6 +131,7 @@ class OrderUpdateOnCallback
             $invoices = $this->order->getInvoiceCollection();
             if ($invoices->count() > 0) {
                 $this->invoiceEmailSender->send($invoices->getFirstItem());
+                $this->suiteLogger->debugLog('Invoice confirmation sent for order: ' . $this->order->getIncrementId(), [__METHOD__, __LINE__]);
             }
         }
     }

@@ -4,8 +4,9 @@
  * See LICENSE.txt for license details.
  */
 
-
 namespace Ebizmarts\SagePaySuite\Model\Logger;
+
+use Ebizmarts\SagePaySuite\Model\Config;
 
 class Logger extends \Monolog\Logger
 {
@@ -16,14 +17,35 @@ class Logger extends \Monolog\Logger
     const LOG_REQUEST   = 'Request';
     const LOG_CRON      = 'Cron';
     const LOG_EXCEPTION = 'Exception';
+    const LOG_DEBUG     = 'Debug';
 
     // @codingStandardsIgnoreStart
     protected static $levels = [
         self::LOG_REQUEST   => 'Request',
         self::LOG_CRON      => 'Cron',
-        self::LOG_EXCEPTION => 'Exception'
+        self::LOG_EXCEPTION => 'Exception',
+        self::LOG_DEBUG     => 'Debug'
     ];
     // @codingStandardsIgnoreEnd
+
+    /** @var Config */
+    private $config;
+
+    /**
+     * Logger constructor.
+     * @param Config $config
+     * @param string $name
+     * @param array $handlers
+     * @param array $processors
+     */
+    public function __construct(
+        Config $config,
+        string $name,
+        array $handlers
+    ) {
+        parent::__construct($name, $handlers);
+        $this->config = $config;
+    }
 
     /**
      * @param $logType
@@ -47,6 +69,20 @@ class Logger extends \Monolog\Logger
         $message .= "\r\n\r\n";
 
         return $this->addRecord(self::LOG_EXCEPTION, $message, $context);
+    }
+
+    /**
+     * @param string $message
+     * @param array $context
+     * @return bool
+     */
+    public function debugLog($message, $context = [])
+    {
+        $recordSaved = false;
+        if ($this->config->getDebugMode()) {
+            $recordSaved = $this->sageLog(self::LOG_DEBUG, $message, $context);
+        }
+        return $recordSaved;
     }
 
     /**
@@ -74,5 +110,35 @@ class Logger extends \Monolog\Logger
         $message = (string)$message;
 
         return $message;
+    }
+
+    /**
+     * @param string $paymentMethod
+     * @param string $incrementId
+     * @param int $cartId
+     */
+    public function orderStartLog($paymentMethod, $incrementId, $cartId)
+    {
+        $message = "\n";
+        $message .= '---------- ';
+        $message .= "Starting order with " . $paymentMethod . ": Order: " . $incrementId . " - Cart: " . $cartId;
+        $message .= ' ----------';
+        $this->sageLog(self::LOG_REQUEST, $message);
+        $this->debugLog($message);
+    }
+
+    /**
+     * @param $vpstxid
+     * @param $incrementId
+     * @param $cartId
+     */
+    public function orderEndLog($vpstxid, $incrementId, $cartId)
+    {
+        $message = "\n";
+        $message .= '---------- ';
+        $message .= "End of Order " . $incrementId . " - Cart: " . $cartId . " - VPSTxId: " . $vpstxid;
+        $message .= ' ----------';
+        $this->sageLog(self::LOG_REQUEST, $message);
+        $this->debugLog($message);
     }
 }
