@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Logger;
 
+use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\Config;
 
 class Logger extends \Monolog\Logger
@@ -31,20 +32,25 @@ class Logger extends \Monolog\Logger
     /** @var Config */
     private $config;
 
+    /** @var Data */
+    private $suiteHelper;
+
     /**
      * Logger constructor.
      * @param Config $config
+     * @param Data $suiteHelper
      * @param string $name
      * @param array $handlers
-     * @param array $processors
      */
     public function __construct(
         Config $config,
+        Data $suiteHelper,
         string $name,
         array $handlers
     ) {
         parent::__construct($name, $handlers);
-        $this->config = $config;
+        $this->config      = $config;
+        $this->suiteHelper = $suiteHelper;
     }
 
     /**
@@ -96,6 +102,7 @@ class Logger extends \Monolog\Logger
         }
 
         if (is_array($message)) {
+            $message = $this->suiteHelper->removePersonalInformation($message);
             $message = json_encode($message, JSON_PRETTY_PRINT);
         }
 
