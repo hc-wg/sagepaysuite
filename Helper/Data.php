@@ -345,4 +345,52 @@ class Data extends AbstractHelper
     {
         return preg_replace("/[^a-zA-Z0-9-\-\{\}\_\.]/", "", $text);
     }
+
+    /**
+     * @param array $data
+     * @return array
+     */
+    public function removePersonalInformation(array $data)
+    {
+        if ($this->sagePaySuiteConfig->getPersonalInfoRemoval()) {
+            $fieldsNames = $this->getPersonalInfoFieldsNames();
+            foreach ($fieldsNames as $field) {
+                if (isset($data[$field]) && !empty($data[$field])) {
+                    $data[$field] = "XXXXXXXXX";
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array
+     */
+    private function getPersonalInfoFieldsNames()
+    {
+        return [
+            'CustomerEMail',
+            "BillingSurname",
+            "BillingFirstnames",
+            "BillingAddress1",
+            "BillingAddress2",
+            "BillingCity",
+            "BillingPostCode",
+            "BillingCountry",
+            "BillingPhone",
+            "DeliverySurname",
+            "DeliveryFirstnames",
+            "DeliveryAddress1",
+            "DeliveryAddress2",
+            "DeliveryCity",
+            "DeliveryPostCode",
+            "DeliveryCountry",
+            "DeliveryPhone",
+            "customer_email",
+            "customer_firstname",
+            "customer_lastname",
+            "customer_middlename"
+        ];
+    }
 }
