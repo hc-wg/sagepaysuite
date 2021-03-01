@@ -6,6 +6,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Logger;
 
+use Ebizmarts\SagePaySuite\Helper\Data;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger;
 
@@ -16,12 +17,56 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
      */
     public function testSageLog($data)
     {
+        $requestHandlerMock = $this
+            ->getMockBuilder(Logger\Request::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $exceptionHandlerMock = $this
+            ->getMockBuilder(Logger\Exception::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $cronHandlerMock = $this
+            ->getMockBuilder(Logger\Cron::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $debugHandlerMock = $this
+            ->getMockBuilder(Logger\Debug::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $handlers = [
+            $requestHandlerMock,
+            $cronHandlerMock,
+            $exceptionHandlerMock,
+            $debugHandlerMock
+        ];
+        $name = "SagePaySuiteLogger";
+
+        $configMock = $this
+            ->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $suiteHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $loggerMock = $this
             ->getMockBuilder(Logger\Logger::class)
             ->setMethods(['addRecord'])
-            ->disableOriginalConstructor()
+            ->setConstructorArgs(
+                [
+                    'config'      => $configMock,
+                    'suiteHelper' => $suiteHelperMock,
+                    'name'        => $name,
+                    'handlers'    => $handlers
+                ]
+            )
             ->getMock();
 
+        $suiteHelperMock
+            ->expects($this->exactly($data['removalPersonalInformationExpects']))
+            ->method('removePersonalInformation')
+            ->with($data['message'])
+            ->willReturn($data['removalPersonalInformationReturn']);
         $loggerMock
             ->expects($this->once())
             ->method('addRecord')
@@ -39,7 +84,9 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
                     'type'      => Logger\Logger::LOG_REQUEST,
                     'message'   => null,
                     'message_p' => "NULL",
-                    'context'   => ['Zarata', 34]
+                    'context'   => ['Zarata', 34],
+                    'removalPersonalInformationReturn' => [],
+                    'removalPersonalInformationExpects' => 0
                 ]
             ],
             'test string' => [
@@ -47,7 +94,9 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
                     'type'      => Logger\Logger::LOG_REQUEST,
                     'message'   => "ERROR TEST",
                     'message_p' => "ERROR TEST",
-                    'context'   => []
+                    'context'   => [],
+                    'removalPersonalInformationReturn' => [],
+                    'removalPersonalInformationExpects' => 0
                 ]
             ],
             'test array' => [
@@ -55,7 +104,9 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
                     'type'      => Logger\Logger::LOG_REQUEST,
                     'message'   => ["error" => true],
                     'message_p' => json_encode(["error" => true], JSON_PRETTY_PRINT),
-                    'context'   => []
+                    'context'   => [],
+                    'removalPersonalInformationReturn' => ["error" => true],
+                    'removalPersonalInformationExpects' => 1
                 ]
             ],
             'test object' => [
@@ -63,7 +114,29 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
                     'type'      => Logger\Logger::LOG_REQUEST,
                     'message'   => (object)["error" => true],
                     'message_p' => json_encode(((object)["error" => true]), JSON_PRETTY_PRINT),
-                    'context'   => ['MyClass\\Test', 69]
+                    'context'   => ['MyClass\\Test', 69],
+                    'removalPersonalInformationReturn' => [],
+                    'removalPersonalInformationExpects' => 0
+                ]
+            ],
+            'test array with removal personal information' => [
+                [
+                    'type'      => Logger\Logger::LOG_REQUEST,
+                    'message'   => ["error" => true, "BillingFirstnames" => "Kevin"],
+                    'message_p' => json_encode(["error" => true, "BillingFirstnames" => "XXXXXXXXX"], JSON_PRETTY_PRINT),
+                    'context'   => [],
+                    'removalPersonalInformationReturn' => ["error" => true, "BillingFirstnames" => "XXXXXXXXX"],
+                    'removalPersonalInformationExpects' => 1
+                ]
+            ],
+            'test array with removal personal information empty' => [
+                [
+                    'type'      => Logger\Logger::LOG_REQUEST,
+                    'message'   => ["error" => true, "BillingFirstnames" => ""],
+                    'message_p' => json_encode(["error" => true, "BillingFirstnames" => ""], JSON_PRETTY_PRINT),
+                    'context'   => [],
+                    'removalPersonalInformationReturn' => ["error" => true, "BillingFirstnames" => ""],
+                    'removalPersonalInformationExpects' => 1
                 ]
             ]
         ];
@@ -132,6 +205,10 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder(Logger\Debug::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $suiteHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $type = Logger\Logger::LOG_DEBUG;
         $message = "ERROR TEST";
@@ -153,9 +230,10 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['sageLog'])
             ->setConstructorArgs(
                 [
-                    'config'   => $configMock,
-                    'name'     => $name,
-                    'handlers' => $handlers
+                    'config'      => $configMock,
+                    'suiteHelper' => $suiteHelperMock,
+                    'name'        => $name,
+                    'handlers'    => $handlers
                 ]
             )
             ->getMock();
