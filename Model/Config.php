@@ -718,8 +718,8 @@ class Config
         return $this->getAdvancedValue("debug_mode");
     }
 
-    public function getPersonalInfoRemoval()
+    public function getPreventPersonalDataLogging()
     {
-        return $this->getAdvancedValue("personal_info_removal");
+        return $this->getAdvancedValue("prevent_personal_data_logging");
     }
 }

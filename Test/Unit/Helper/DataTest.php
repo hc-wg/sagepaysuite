@@ -501,7 +501,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
 
         $this->configMock
             ->expects($this->once())
-            ->method('getPersonalInfoRemoval')
+            ->method('getPreventPersonalDataLogging')
             ->willReturn(true);
 
         $this->assertEquals($expectedReturn, $this->dataHelper->removePersonalInformation($data));
