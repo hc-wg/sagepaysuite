@@ -353,7 +353,7 @@ class Data extends AbstractHelper
      */
     public function removePersonalInformation(array $data)
     {
-        if ($this->sagePaySuiteConfig->getPersonalInfoRemoval()) {
+        if ($this->sagePaySuiteConfig->getPreventPersonalDataLogging()) {
             $fieldsNames = $this->getPersonalInfoFieldsNames();
             foreach ($fieldsNames as $field) {
                 if (isset($data[$field]) && !empty($data[$field])) {
