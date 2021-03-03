@@ -28,6 +28,7 @@
             </global>
             <advanced>
                 <debug_mode>0</debug_mode>
+                <prevent_personal_data_logging>1</prevent_personal_data_logging>
                 <threedsecure>UseMSPSetting</threedsecure>
                 <avscvc>UseMSPSetting</avscvc>
                 <fraud_autoinvoice>0</fraud_autoinvoice>

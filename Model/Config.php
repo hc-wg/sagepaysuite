@@ -714,4 +714,9 @@ class Config
     {
         return $this->getAdvancedValue("debug_mode");
     }
+
+    public function getPreventPersonalDataLogging()
+    {
+        return $this->getAdvancedValue("prevent_personal_data_logging");
+    }
 }

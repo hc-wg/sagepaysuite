@@ -7,6 +7,7 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Helper;
 
 use Ebizmarts\SagePaySuite\Helper\Data;
+use Ebizmarts\SagePaySuite\Model\Config;
 use \Ebizmarts\SagePaySuite\Model\Config\ModuleVersion;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\RequestInterface;
@@ -475,5 +476,36 @@ class DataTest extends \PHPUnit\Framework\TestCase
             1,
             $dataHelperMock->obtainConfigurationScopeIdFromRequest()
         );
+    }
+
+    public function testRemovePersonalInformation()
+    {
+        $data = [
+            "VendorTxCode" =>"000000104-2021-03-01-1959421614628782",
+            "Description" => "Online transaction.",
+            "CustomerEMail" => "test@ebizmarts.com",
+            "BillingSurname" => "ebizmarts",
+            "BillingFirstnames" => "test",
+            "BillingAddress1" => "test",
+            "BillingAddress2" => "",
+            "Amount" => "27.00"
+        ];
+        $expectedReturn = [
+            "VendorTxCode" =>"000000104-2021-03-01-1959421614628782",
+            "Description" => "Online transaction.",
+            "CustomerEMail" => "XXXXXXXXX",
+            "BillingSurname" => "XXXXXXXXX",
+            "BillingFirstnames" => "XXXXXXXXX",
+            "BillingAddress1" => "XXXXXXXXX",
+            "BillingAddress2" => "",
+            "Amount" => "27.00"
+        ];
+
+        $this->configMock
+            ->expects($this->once())
+            ->method('getPreventPersonalDataLogging')
+            ->willReturn(true);
+
+        $this->assertEquals($expectedReturn, $this->dataHelper->removePersonalInformation($data));
     }
 }
