@@ -105,7 +105,7 @@ class Cancel extends Action
 
         $storeId = $this->getRequest()->getParam("_store");
         $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quote"));
-
+        $this->suiteLogger->debugLog($this->getRequest()->getParams(), [__METHOD__, __LINE__]);
         $this->quote->setStoreId($storeId);
         $this->quote->load($quoteId);
 
@@ -115,6 +115,8 @@ class Cancel extends Action
 
         $orderId = $this->encryptor->decrypt($this->getRequest()->getParam("orderId"));
         $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
+
+        $this->suiteLogger->orderEndLog('', $orderId, $quoteId);
 
         $this
             ->getResponse()
