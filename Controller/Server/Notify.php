@@ -123,11 +123,14 @@ class Notify extends Action
 
         //log response
         $this->suiteLogger->sageLog(Logger::LOG_REQUEST, $this->postData, [__METHOD__, __LINE__]);
+        $this->suiteLogger->debugLog("StoreId: " . $storeId . " QuoteId: " . $quoteId, [__METHOD__, __LINE__]);
 
         try {
             $this->quote = $this->cartRepository->get($quoteId, [$storeId]);
+            $this->suiteLogger->debugLog($this->quote, [__METHOD__, __LINE__]);
 
             $order = $this->orderLoader->loadOrderFromQuote($this->quote);
+            $this->suiteLogger->debugLog($order, [__METHOD__, __LINE__]);
 
             $this->order = $order;
             $payment     = $order->getPayment();
@@ -170,6 +173,7 @@ class Notify extends Action
 
             $this->persistToken($order);
 
+            $this->suiteLogger->debugLog('Transaction status: ' . $status, [__METHOD__, __LINE__]);
             if ($status == "ABORT") { //Transaction canceled by customer
                 //cancel pending payment order
                 $state = $order->getState();
@@ -271,6 +275,11 @@ class Notify extends Action
     {
         try {
             $order->cancel()->save();
+            $this->suiteLogger->sageLog(
+                Logger::LOG_REQUEST,
+                'Order ' . $order->getIncrementId() . 'cancelled on Notify',
+                [__METHOD__, __LINE__]
+            );
         } catch (\Exception $e) {
             $this->suiteLogger->logException($e, [__METHOD__, __LINE__]);
         }
