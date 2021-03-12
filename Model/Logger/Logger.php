@@ -78,7 +78,7 @@ class Logger extends \Monolog\Logger
     }
 
     /**
-     * @param string $message
+     * @param string|array $message
      * @param array $context
      * @return bool
      */
