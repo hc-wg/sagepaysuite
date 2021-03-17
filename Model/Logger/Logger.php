@@ -139,11 +139,15 @@ class Logger extends \Monolog\Logger
      * @param $incrementId
      * @param $cartId
      */
-    public function orderEndLog($vpstxid, $incrementId, $cartId)
+    public function orderEndLog($incrementId, $cartId, $vpstxid = null)
     {
         $message = "\n";
         $message .= '---------- ';
-        $message .= "End of Order " . $incrementId . " - Cart: " . $cartId . " - VPSTxId: " . $vpstxid;
+        $message .= "End of Order " . $incrementId;
+        $message .= " - Cart: " . $cartId;
+        if (!empty($vpstxid)) {
+            $message .= " - VPSTxId: " . $vpstxid;
+        }
         $message .= ' ----------';
         $this->sageLog(self::LOG_REQUEST, $message);
         $this->debugLog($message);
