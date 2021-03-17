@@ -129,10 +129,10 @@ class Notify extends Action implements CsrfAwareActionInterface
 
         try {
             $this->quote = $this->cartRepository->get($quoteId, [$storeId]);
-            $this->suiteLogger->debugLog($this->quote, [__METHOD__, __LINE__]);
+            $this->suiteLogger->debugLog($this->quote->getData(), [__METHOD__, __LINE__]);
 
             $order = $this->orderLoader->loadOrderFromQuote($this->quote);
-            $this->suiteLogger->debugLog($order, [__METHOD__, __LINE__]);
+            $this->suiteLogger->debugLog($order->getData(), [__METHOD__, __LINE__]);
 
             $this->order = $order;
             $payment     = $order->getPayment();

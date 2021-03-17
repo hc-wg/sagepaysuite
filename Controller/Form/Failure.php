@@ -174,6 +174,6 @@ class Failure extends Action
         $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
         $orderId = isset($response['VendorTxCode']) ? $this->extractIncrementIdFromVendorTxCode($response) : "";
         $vpstxid = isset($response['VPSTxId']) ? $response['VPSTxId'] : "";
-        $this->suiteLogger->orderEndLog($vpstxid, $orderId, $quoteId);
+        $this->suiteLogger->orderEndLog($orderId, $quoteId, $vpstxid);
     }
 }
