@@ -104,7 +104,8 @@ class Success extends \Magento\Framework\App\Action\Action
             //remove order pre-saved flag from checkout
             $this->_checkoutSession->setData(SagePaySession::PRESAVED_PENDING_ORDER_KEY, null);
             $this->_checkoutSession->setData(SagePaySession::CONVERTING_QUOTE_TO_ORDER, 0);
-            $this->_suiteLogger->orderEndLog($order->getPayment()->getLastTransId(), $order->getIncrementId(), $quoteId);
+
+            $this->suiteLogger->orderEndLog($order->getIncrementId(), $quoteId, $order->getPayment()->getLastTransId());
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             $this->messageManager->addError(__('An error ocurred.'));

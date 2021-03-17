@@ -203,11 +203,11 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->_checkoutSession->setLastOrderId($this->_order->getId());
             $this->_checkoutSession->setLastRealOrderId($this->_order->getIncrementId());
             $this->_checkoutSession->setLastOrderStatus($this->_order->getStatus());
-
             $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
             $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
 
-            $this->_suiteLogger->orderEndLog($transactionId, $this->_order->getIncrementId(), $quoteId);
+            $this->suiteLogger->orderEndLog($this->order->getIncrementId(), $quoteId, $transactionId);
+
             return $this->_redirect($redirect);
         } catch (\Exception $e) {
             $this->_suiteLogger->logException($e);
