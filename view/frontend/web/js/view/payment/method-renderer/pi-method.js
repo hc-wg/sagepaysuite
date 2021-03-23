@@ -716,23 +716,23 @@ define(
 
                 return (self.isTokenServiceEnabled() && this.use_token);
             },
-            getCustomerTokenCount: function () {
-                var sagePayTokens = window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount;
-                if (sagePayTokens.length > 0) {
-                   this.useSavedTokens();
+            getCustomerTokens: function () {
+                return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount;
+            },
+            getCustomerTokensForInitialization: function () {
+                var customerTokens = this.getCustomerTokens();
+                if (customerTokens.length > 0) {
+                    this.useSavedTokens();
                 }
-                return sagePayTokens;
+                return customerTokens;
             },
             useSavedTokens: function () {
                 this.use_token = true;
                 this.destroyInstanceSagePay();
-                document.getElementById('piremembertoken').checked = 0;
-                $('#sagepay-pi-remembertoken-container').hide();
 
                 $('#' + this.getCode() + '-tokens .token-list').show();
-                $('#' + this.getCode() + '-tokens .add-new-card-link').show();
-                $('#' + this.getCode() + '-tokens .use-saved-card-link').hide();
-                $('#' + this.getCode() + '-tokens .using-new-card-message').hide();
+                $('#' + this.getCode() + '-tokens .use-different-card').show();
+                $('#sagepay-pi-remembertoken-container').hide();
             },
             customerHasTokens: function () {
                 this.save_token = false;
@@ -741,7 +741,7 @@ define(
                 if (this.dropInEnabled()) {
                     if (this.isTokenServiceEnabled()) {
                         this.save_token = true;
-                        var customerTokens = this.getCustomerTokenCount();
+                        var customerTokens = this.getCustomerTokens();
 
                         if (customerTokens && customerTokens.length > 0) {
                             this.used_token_slots = customerTokens.length;
@@ -753,14 +753,14 @@ define(
 
                 return this.use_token;
             },
-            addNewCard: function () {
+            useDifferentCard: function () {
                 this.use_token = false;
                 this.loadDropInForm();
                 document.getElementById('piremembertoken').checked = 1;
-                $('#' + this.getCode() + '-tokens .token-list').hide();
-                $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
-                $('#' + this.getCode() + '-tokens .using-new-card-message').show();
-                $('#' + this.getCode() + '-tokens .use-saved-card-link').show();
+                this.uncheckRadio();
+                $('#' + this.getCode() + '-tokens .token-list').show();
+                $('#' + this.getCode() + '-tokens .use-different-card').hide();
+                $('#sagepay-pi-remembertoken-container').show();
             },
             getIcons: function (type) {
                 switch (type) {
@@ -800,7 +800,7 @@ define(
             },
             isRadioChecked: function () {
                 var self = this;
-                var customerTokens = this.getCustomerTokenCount();
+                var customerTokens = this.getCustomerTokens();
                 for (var i = 0; i < customerTokens.length; i++) {
                     if ($('#' + self.getCode() + '-token-' + customerTokens[i].id).prop("checked") == true) {
                         return true;
@@ -808,9 +808,17 @@ define(
                 }
                 return false;
             },
+            uncheckRadio: function () {
+                var self = this;
+                var customerTokens = this.getCustomerTokens();
+
+                for (var i = 0; i < customerTokens.length; i++) {
+                    $('#' + self.getCode() + '-token-' + customerTokens[i].id).prop("checked", false);
+                }
+            },
             getSelectedToken: function () {
                 var self = this;
-                var customerTokens = this.getCustomerTokenCount();
+                var customerTokens = this.getCustomerTokens();
                 for (var i = 0; i < customerTokens.length; i++) {
                     if ($('#' + self.getCode() + '-token-' + customerTokens[i].id).prop("checked") == true) {
                         return customerTokens[i];
@@ -900,9 +908,8 @@ define(
             checkIfCustomerRemovedAllTokens: function () {
                 if (window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount === 0) {
                     $('#' + this.getCode() + '-tokens .token-list').hide();
-                    $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
-                    $('#' + this.getCode() + '-tokens .use-saved-card-link').hide();
-                    $('#' + this.getCode() + '-tokens .using-new-card-message').show();
+                    $('#' + this.getCode() + '-tokens .use-different-card').hide();
+                    $('#sagepay-pi-remembertoken-container').show();
                 }
             }
         });
