@@ -73,6 +73,8 @@
     <preference for="\Ebizmarts\SagePaySuite\Api\PiManagementInterface" type="\Ebizmarts\SagePaySuite\Model\PiRequestManagement" />
     <preference for="\Ebizmarts\SagePaySuite\Api\GuestPiManagementInterface" type="\Ebizmarts\SagePaySuite\Model\GuestPiRequestManagement" />
 
+    <preference for="\Ebizmarts\SagePaySuite\Api\TokenGetInterface" type="\Ebizmarts\SagePaySuite\Model\Token\Get" />
+
     <type name="Magento\Framework\Console\CommandList">
         <arguments>
             <argument name="commands" xsi:type="array">
