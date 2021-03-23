@@ -47,7 +47,7 @@ define(
                 cardIdentifier: '',
                 dropInInstance: null,
                 save_token: false,
-                use_token: true,
+                use_token: false,
                 used_token_slots: 0
             },
             setPlaceOrderHandler: function (handler) {
