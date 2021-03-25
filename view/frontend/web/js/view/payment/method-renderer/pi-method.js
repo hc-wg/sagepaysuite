@@ -761,6 +761,7 @@ define(
                 $('#' + this.getCode() + '-tokens .token-list').show();
                 $('#' + this.getCode() + '-tokens .use-different-card').hide();
                 $('#sagepay-pi-remembertoken-container').show();
+                this.checkMaxTokensPerCustomer();
             },
             getIcons: function (type) {
                 switch (type) {
@@ -899,10 +900,10 @@ define(
             checkMaxTokensPerCustomer: function () {
                 if (this.used_token_slots > 0 && this.used_token_slots >= window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.max_tokens) {
                     $('#' + this.getCode() + '-tokens .token-list .message-max-tokens').show();
-                    $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
+                    $('#sagepay-pi-remembertoken-container').hide();
+                    document.getElementById('piremembertoken').checked = 0;
                 } else {
                     $('#' + this.getCode() + '-tokens .token-list .message-max-tokens').hide();
-                    $('#' + this.getCode() + '-tokens .add-new-card-link').show();
                 }
             },
             checkIfCustomerRemovedAllTokens: function () {
