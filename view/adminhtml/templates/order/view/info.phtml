@@ -217,7 +217,6 @@ $payment = $block->getPayment();
                 <?php if (!empty($payment->getAdditionalInformation("fraudrules"))): ?>
                     <tr>
                         <th><a href="" onclick="$('thirdman-breakdown').toggle();return false;"><?php echo $block->escapeHtml(__('Show 3rd Man scores')); ?></a>:</th>
-                        <?php $rules = $payment->getAdditionalInformation("fraudrules") ?>
                     </tr>
                 <?php endif; ?>
             <?php endif; ?>
@@ -234,7 +233,6 @@ $payment = $block->getPayment();
             </tr>
             <?php foreach($rules as $rule): ?>
             <tr>
-
                 <td style="text-align:left"><?php echo (string)$rule['description'] ?></td>
                 <td style="text-align:left"><?php echo (string)$rule['score'] ?></td>
             </tr>
