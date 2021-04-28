@@ -322,10 +322,10 @@ class PIRest
     private function validateThreeDSubmit(\stdClass $resultData)
     {
         if (!isset($resultData->status)) {
-            if (empty($resultData)) {
+            if (empty((array)$resultData)) {
                 $resultData->status = "Operation not allowed";
             } else {
-                throw new ApiException(__('Invalid 3D secure response.'));
+                throw new ApiException(__('Invalid 3D secure response. ' . $jsonVar = json_encode($resultData, JSON_PRETTY_PRINT)));
             }
         }
     }
