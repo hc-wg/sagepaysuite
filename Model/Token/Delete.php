@@ -2,6 +2,7 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Token;
 
+use Ebizmarts\SagePaySuite\Api\TokenGetInterface;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Vault\Api\Data\PaymentTokenInterface;
 use Magento\Vault\Api\PaymentTokenRepositoryInterface;
@@ -11,7 +12,7 @@ class Delete
     /** @var Logger */
     private $suiteLogger;
 
-    /** @var Get */
+    /** @var TokenGetInterface */
     private $tokenGet;
 
     /** @var PaymentTokenRepositoryInterface */
@@ -20,12 +21,12 @@ class Delete
     /**
      * Delete constructor.
      * @param Logger $suiteLogger
-     * @param Get $tokenGet
+     * @param TokenGetInterface $tokenGet
      * @param PaymentTokenRepositoryInterface $paymentTokenRepository
      */
     public function __construct(
         Logger $suiteLogger,
-        Get $tokenGet,
+        TokenGetInterface $tokenGet,
         PaymentTokenRepositoryInterface $paymentTokenRepository
     ) {
         $this->suiteLogger            = $suiteLogger;
