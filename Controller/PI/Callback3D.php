@@ -112,7 +112,7 @@ class Callback3D extends Action
 
             $payment = $order->getPayment();
             if ($this->isParesDuplicated($payment, $sanitizedPares)) {
-                $this->javascriptRedirect('checkout/onepage/success');
+                $this->javascriptRedirect('sagepaysuite/pi/success');
                 return;
             } else {
                 $payment->setAdditionalInformation(SagePaySession::PARES_SENT, $sanitizedPares);
