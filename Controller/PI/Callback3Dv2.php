@@ -153,7 +153,7 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
             $response = $this->requester->placeOrder();
 
             if ($response->getErrorMessage() === null) {
-                $this->javascriptRedirect('checkout/onepage/success');
+                $this->javascriptRedirect('sagepaysuite/pi/success');
             } else {
                 $this->messageManager->addError($response->getErrorMessage());
                 $this->javascriptRedirect('checkout/cart');
