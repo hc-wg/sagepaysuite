@@ -3,6 +3,7 @@
 namespace Ebizmarts\SagePaySuite\Controller\PI;
 
 use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory;
+use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
@@ -13,7 +14,6 @@ use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Checkout\Model\Session;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session as CustomerSession;
-use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
@@ -130,12 +130,18 @@ class Callback3Dv2 extends Action
             $order = $this->orderLoader->loadOrderFromQuote($quote);
             $orderId = (int)$order->getId();
             $customerId = $order->getCustomerId();
+            $this->suiteLogger->debugLog(
+                "OrderId: " . $orderId . " QuoteId: " . $quoteIdFromParams . " CustomerId: " . $customerId,
+                [__LINE__, __METHOD__]
+            );
+            $this->suiteLogger->debugLog($order->getData(), [__LINE__, __METHOD__]);
 
             if ($customerId != null) {
                 $this->customerLogin->logInCustomer($customerId);
             }
 
             $payment = $order->getPayment();
+            $this->suiteLogger->debugLog($payment->getData(), [__LINE__, __METHOD__]);
 
             /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
             $data = $this->piRequestManagerDataFactory->create();
