@@ -120,7 +120,7 @@ class Callback3D extends Action
             }
 
             if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
-                $this->javascriptRedirect('checkout/onepage/success');
+                $this->javascriptRedirect('sagepaysuite/pi/success');
                 return;
             }
             /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
@@ -139,7 +139,7 @@ class Callback3D extends Action
             $response = $this->requester->placeOrder();
 
             if ($response->getErrorMessage() === null) {
-                $this->javascriptRedirect('checkout/onepage/success');
+                $this->javascriptRedirect('sagepaysuite/pi/success');
             } else {
                 $this->messageManager->addError($response->getErrorMessage());
                 $this->javascriptRedirect('checkout/cart');
