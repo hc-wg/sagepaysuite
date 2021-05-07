@@ -116,7 +116,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $payment = $order->getPayment();
 
             if ($this->isParesDuplicated($payment, $sanitizedPares)) {
-                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId());
+                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
                 return;
             } else {
                 $payment->setAdditionalInformation(SagePaySession::PARES_SENT, $sanitizedPares);
@@ -124,7 +124,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             }
 
             if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
-                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId());
+                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
                 return;
             }
             /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
@@ -142,7 +142,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $response = $this->requester->placeOrder();
 
             if ($response->getErrorMessage() === null) {
-                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId());
+                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
             } else {
                 $this->messageManager->addError($response->getErrorMessage());
                 $this->javascriptRedirect('checkout/cart');
@@ -173,11 +173,11 @@ class Callback3D extends Action implements CsrfAwareActionInterface
         return ($savedPares !== null) && ($pares === $savedPares);
     }
 
-    private function javascriptRedirect($url, $quoteId)
+    private function javascriptRedirect($url, $quoteId = null, $orderId = null)
     {
         $finalUrl = $this->_url->getUrl($url, ['_secure' => true]);
         if ($quoteId !== null) {
-            $finalUrl .= "?quoteId=$quoteId";
+            $finalUrl .= "?quoteId=$quoteId&orderId=$orderId";
         }
         //redirect to success via javascript
         $this

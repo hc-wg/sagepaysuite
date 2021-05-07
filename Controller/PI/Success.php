@@ -9,7 +9,7 @@ use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Checkout\Model\Type\Onepage;
-use Magento\Quote\Api\CartRepositoryInterface;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
 class Success extends Action implements CsrfAwareActionInterface
 {
@@ -19,26 +19,27 @@ class Success extends Action implements CsrfAwareActionInterface
     /** @var Onepage */
     private $onepage;
 
-    /** @var CartRepositoryInterface */
-    private $cartRepository;
+    /** @var OrderLoader */
+    private $orderLoader;
 
     /**
      * Callback3D constructor.
      * @param Context $context
      * @param Onepage $onepage
      * @param Config $config
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
         Onepage $onepage,
         Config $config,
-        CartRepositoryInterface $quoteRepository
+        OrderLoader $orderLoader
 
     ) {
         parent::__construct($context);
         $this->config = $config;
         $this->onepage = $onepage;
-        $this->cartRepository = $quoteRepository;
+        $this->orderLoader = $orderLoader;
         $this->config->setMethodCode(Config::METHOD_PI);
 
     }
@@ -47,23 +48,12 @@ class Success extends Action implements CsrfAwareActionInterface
     {
         $session = $this->onepage->getCheckout();
         $quoteId = $this->getRequest()->getParam("quoteId");
+        $orderId = $this->getRequest()->getParam("orderId");
         $session->setLastSuccessQuoteId($quoteId);
         $session->setLastQuoteId($quoteId);
-        $quote = $this->cartRepository->get($quoteId);
-        $session->setLastOrderId($quote->getOrderId());
-
-
-
-        error_log(__METHOD__."\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
-        error_log($quote->getOrderId()."\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
-        error_log($this->_objectManager->get(\Magento\Checkout\Model\Session\SuccessValidator::class)->isValid()."\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
-
-        $session = $this->onepage->getCheckout();
-        error_log($session->getLastOrderId()."\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
-        error_log("lastRealOrder\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
-        error_log(json_encode($session->getLastRealOrder()->getData(),JSON_PRETTY_PRINT)."\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
-        error_log("quote\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
-        error_log(json_encode($session->getQuote()->getData(),JSON_PRETTY_PRINT)."\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
+        $session->setLastOrderId($orderId);
+        $order = $this->orderLoader->loadOrderById($orderId);
+        $session->setLastRealOrderId($order->getIncrementId());
 
         $this->_redirect("checkout/onepage/success");
     }
