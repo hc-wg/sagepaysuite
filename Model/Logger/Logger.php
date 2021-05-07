@@ -107,6 +107,7 @@ class Logger extends \Monolog\Logger
         }
 
         if (is_object($message)) {
+            $message = $this->suiteHelper->removePersonalInformation($message);
             $message = json_encode($message, JSON_PRETTY_PRINT);
         }
 
