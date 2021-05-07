@@ -116,7 +116,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $payment = $order->getPayment();
 
             if ($this->isParesDuplicated($payment, $sanitizedPares)) {
-                $this->javascriptRedirect('sagepaysuite/pi/success');
+                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId());
                 return;
             } else {
                 $payment->setAdditionalInformation(SagePaySession::PARES_SENT, $sanitizedPares);
@@ -124,7 +124,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             }
 
             if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
-                $this->javascriptRedirect('sagepaysuite/pi/success');
+                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId());
                 return;
             }
             /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
@@ -142,7 +142,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $response = $this->requester->placeOrder();
 
             if ($response->getErrorMessage() === null) {
-                $this->javascriptRedirect('sagepaysuite/pi/success');
+                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId());
             } else {
                 $this->messageManager->addError($response->getErrorMessage());
                 $this->javascriptRedirect('checkout/cart');
@@ -171,14 +171,18 @@ class Callback3D extends Action implements CsrfAwareActionInterface
         return ($savedPares !== null) && ($pares === $savedPares);
     }
 
-    private function javascriptRedirect($url)
+    private function javascriptRedirect($url, $quoteId)
     {
+        $finalUrl = $this->_url->getUrl($url, ['_secure' => true]);
+        if ($quoteId !== null) {
+            $finalUrl .= "?quoteId=$quoteId";
+        }
         //redirect to success via javascript
         $this
             ->getResponse()
             ->setBody(
                 '<script>window.top.location.href = "'
-                . $this->_url->getUrl($url, ['_secure' => true])
+                . $finalUrl
                 . '";</script>'
             );
     }
