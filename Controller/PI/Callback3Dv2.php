@@ -153,7 +153,7 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
             $response = $this->requester->placeOrder();
 
             if ($response->getErrorMessage() === null) {
-                $this->javascriptRedirect('sagepaysuite/pi/success');
+                $this->javascriptRedirect('sagepaysuite/pi/success', $quote->getId());
             } else {
                 $this->messageManager->addError($response->getErrorMessage());
                 $this->javascriptRedirect('checkout/cart');
@@ -171,14 +171,18 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
         }
     }
 
-    private function javascriptRedirect($url)
+    private function javascriptRedirect($url, $quoteId = null)
     {
+        $finalUrl = $this->_url->getUrl($url, ['_secure' => true]);
+        if ($quoteId !== null) {
+            $finalUrl .= "?quoteId=$quoteId";
+        }
         //redirect to success via javascript
         $this
             ->getResponse()
             ->setBody(
                 '<script>window.top.location.href = "'
-                . $this->_url->getUrl($url, ['_secure' => true])
+                . $finalUrl
                 . '";</script>'
             );
     }
