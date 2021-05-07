@@ -38,8 +38,20 @@ class Success extends Action implements CsrfAwareActionInterface
     public function execute()
     {
         $session = $this->onepage->getCheckout();
-        $order = $session->getLastRealOrder();
-        $session->setLastSuccessQuoteId($order->getQuoteId());
+        $quoteId = $this->getRequest()->getParam("quoteId");
+        $session->setLastSuccessQuoteId($quoteId);
+
+
+        error_log(__METHOD__."\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
+        error_log($this->_objectManager->get(\Magento\Checkout\Model\Session\SuccessValidator::class)->isValid()."\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
+
+        $session = $this->onepage->getCheckout();
+        error_log($session->getLastOrderId()."\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
+        error_log("lastRealOrder\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
+        error_log(json_encode($session->getLastRealOrder()->getData(),JSON_PRETTY_PRINT)."\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
+        error_log("quote\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
+        error_log(json_encode($session->getQuote()->getData(),JSON_PRETTY_PRINT)."\n", 3, '/Users/Santiago/Sites/opayo-234/var/log/ebizmarts.log');
+
         $this->_redirect("checkout/onepage/success");
     }
 
