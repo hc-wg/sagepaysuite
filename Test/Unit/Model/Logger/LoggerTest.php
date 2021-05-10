@@ -64,7 +64,7 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
 
         $suiteHelperMock
             ->expects($this->exactly($data['removalPersonalInformationExpects']))
-            ->method('removePersonalInformation')
+            ->method($data['removalPersonalInformationMethod'])
             ->with($data['message'])
             ->willReturn($data['removalPersonalInformationReturn']);
         $loggerMock
@@ -86,7 +86,8 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
                     'message_p' => "NULL",
                     'context'   => ['Zarata', 34],
                     'removalPersonalInformationReturn' => [],
-                    'removalPersonalInformationExpects' => 0
+                    'removalPersonalInformationExpects' => 0,
+                    'removalPersonalInformationMethod' => 'removePersonalInformation'
                 ]
             ],
             'test string' => [
@@ -96,7 +97,8 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
                     'message_p' => "ERROR TEST",
                     'context'   => [],
                     'removalPersonalInformationReturn' => [],
-                    'removalPersonalInformationExpects' => 0
+                    'removalPersonalInformationExpects' => 0,
+                    'removalPersonalInformationMethod' => 'removePersonalInformation'
                 ]
             ],
             'test array' => [
@@ -106,7 +108,8 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
                     'message_p' => json_encode(["error" => true], JSON_PRETTY_PRINT),
                     'context'   => [],
                     'removalPersonalInformationReturn' => ["error" => true],
-                    'removalPersonalInformationExpects' => 1
+                    'removalPersonalInformationExpects' => 1,
+                    'removalPersonalInformationMethod' => 'removePersonalInformation'
                 ]
             ],
             'test object' => [
@@ -115,8 +118,9 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
                     'message'   => (object)["error" => true],
                     'message_p' => json_encode(((object)["error" => true]), JSON_PRETTY_PRINT),
                     'context'   => ['MyClass\\Test', 69],
-                    'removalPersonalInformationReturn' => [],
-                    'removalPersonalInformationExpects' => 0
+                    'removalPersonalInformationReturn' => ["error" => true],
+                    'removalPersonalInformationExpects' => 1,
+                    'removalPersonalInformationMethod' => 'removePersonalInformationObject'
                 ]
             ],
             'test array with removal personal information' => [
@@ -126,7 +130,8 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
                     'message_p' => json_encode(["error" => true, "BillingFirstnames" => "XXXXXXXXX"], JSON_PRETTY_PRINT),
                     'context'   => [],
                     'removalPersonalInformationReturn' => ["error" => true, "BillingFirstnames" => "XXXXXXXXX"],
-                    'removalPersonalInformationExpects' => 1
+                    'removalPersonalInformationExpects' => 1,
+                    'removalPersonalInformationMethod' => 'removePersonalInformation'
                 ]
             ],
             'test array with removal personal information empty' => [
@@ -136,7 +141,8 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
                     'message_p' => json_encode(["error" => true, "BillingFirstnames" => ""], JSON_PRETTY_PRINT),
                     'context'   => [],
                     'removalPersonalInformationReturn' => ["error" => true, "BillingFirstnames" => ""],
-                    'removalPersonalInformationExpects' => 1
+                    'removalPersonalInformationExpects' => 1,
+                    'removalPersonalInformationMethod' => 'removePersonalInformation'
                 ]
             ]
         ];
@@ -166,10 +172,59 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
 
     public function testInvalidMessage()
     {
+        $obj = new \stdClass();
+        $obj->resource = opendir('./'); // @codingStandardsIgnoreLine
+
+        $requestHandlerMock = $this
+            ->getMockBuilder(Logger\Request::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $exceptionHandlerMock = $this
+            ->getMockBuilder(Logger\Exception::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $cronHandlerMock = $this
+            ->getMockBuilder(Logger\Cron::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $debugHandlerMock = $this
+            ->getMockBuilder(Logger\Debug::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $handlers = [
+            $requestHandlerMock,
+            $cronHandlerMock,
+            $exceptionHandlerMock,
+            $debugHandlerMock
+        ];
+        $name = "SagePaySuiteLogger";
+
+        $configMock = $this
+            ->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $suiteHelperMock = $this
+            ->getMockBuilder(Data::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $suiteHelperMock
+            ->expects($this->once())
+            ->method('removePersonalInformationObject')
+            ->with($obj)
+            ->willReturn($obj);
+
         $loggerMock = $this
             ->getMockBuilder(Logger\Logger::class)
             ->setMethods(['addRecord'])
-            ->disableOriginalConstructor()
+            ->setConstructorArgs(
+                [
+                    'config'      => $configMock,
+                    'suiteHelper' => $suiteHelperMock,
+                    'name'        => $name,
+                    'handlers'    => $handlers
+                ]
+            )
             ->getMock();
 
         $loggerMock
@@ -177,9 +232,6 @@ class LoggerTest extends \PHPUnit\Framework\TestCase
             ->method('addRecord')
             ->with('Request', "Type is not supported\r\n", [])
             ->willReturn(true);
-
-        $obj = new \stdClass();
-        $obj->resource = opendir('./'); // @codingStandardsIgnoreLine
 
         $this->assertTrue($loggerMock->sageLog('Request', $obj));
     }
