@@ -347,13 +347,12 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $data
+     * @param array $data
      * @return string[]
      */
     public function removePersonalInformation($data)
     {
         if ($this->sagePaySuiteConfig->getPreventPersonalDataLogging()) {
-            $data = $this->checkIfObjectAndConvertToArray($data);
             $fieldsNames = $this->getPersonalInfoFieldsNames();
             $data = $this->findAndReplacePersonalInformation($data, $fieldsNames);
             $data = $this->removePiShippingBillingInformation($data);
@@ -363,9 +362,27 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param string[] $array
-     * @param string[] $fieldsNames
-     * @return string[]
+     * @param Object $data
+     * @return string[]|Object
+     */
+    public function removePersonalInformationObject($data)
+    {
+        $array = $data;
+        if ($this->sagePaySuiteConfig->getPreventPersonalDataLogging()) {
+            $array = json_decode(json_encode($data), true);
+            if (!empty(json_last_error())) {
+                return $data;
+            }
+            $array = $this->removePersonalInformation($array);
+        }
+
+        return $array;
+    }
+
+    /**
+     * @param array $array
+     * @param array $fieldsNames
+     * @return array
      */
     private function findAndReplacePersonalInformation(array $array, array $fieldsNames)
     {
@@ -446,10 +463,7 @@ class Data extends AbstractHelper
      */
     private function checkIfObjectAndConvertToArray($data)
     {
-        if (is_object($data)) {
-            $data = json_decode(json_encode($data), true);
-        }
-        return $data;
+
     }
 
     /**
