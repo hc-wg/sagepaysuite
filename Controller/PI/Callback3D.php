@@ -148,6 +148,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
 
             $response = $this->requester->placeOrder();
 
+            $this->suiteLogger->orderEndLog($order->getIncrementId(), $order->getQuoteId(), $payment->getLastTransId());
             if ($response->getErrorMessage() === null) {
                 $this->javascriptRedirect('checkout/onepage/success');
             } else {
