@@ -144,6 +144,7 @@ class Callback3D extends Action
 
             $response = $this->requester->placeOrder();
 
+            $this->suiteLogger->orderEndLog($order->getIncrementId(), $order->getQuoteId(), $payment->getLastTransId());
             if ($response->getErrorMessage() === null) {
                 $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
             } else {

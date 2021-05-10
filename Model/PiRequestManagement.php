@@ -75,6 +75,7 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
         $data->setTimezone($requestData->getTimezone());
 
         $quote = $this->getQuoteById($cartId);
+        $this->suiteLogger->orderStartLog('PI', $quote->getReservedOrderId(), $cartId);
         $this->suiteLogger->debugLog($quote->getData(), [__LINE__, __METHOD__]);
 
         $this->requester->setRequestData($data);
