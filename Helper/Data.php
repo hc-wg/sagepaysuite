@@ -348,7 +348,7 @@ class Data extends AbstractHelper
 
     /**
      * @param array $data
-     * @return string[]
+     * @return array
      */
     public function removePersonalInformation($data)
     {
@@ -363,7 +363,7 @@ class Data extends AbstractHelper
 
     /**
      * @param Object $data
-     * @return string[]|Object
+     * @return array|Object
      */
     public function removePersonalInformationObject($data)
     {
@@ -455,15 +455,6 @@ class Data extends AbstractHelper
             "city",
             "postalCode"
         ];
-    }
-
-    /**
-     * @param $data
-     * @return mixed
-     */
-    private function checkIfObjectAndConvertToArray($data)
-    {
-
     }
 
     /**
