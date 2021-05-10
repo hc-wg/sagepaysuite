@@ -493,10 +493,10 @@ class DataTest extends \PHPUnit\Framework\TestCase
         $expectedReturn = [
             "VendorTxCode" =>"000000104-2021-03-01-1959421614628782",
             "Description" => "Online transaction.",
-            "CustomerEMail" => "XXXXXXXXX",
-            "BillingSurname" => "XXXXXXXXX",
-            "BillingFirstnames" => "XXXXXXXXX",
-            "BillingAddress1" => "XXXXXXXXX",
+            "CustomerEMail" => "tXXXXXXXXXm",
+            "BillingSurname" => "eXXXXXXXXXs",
+            "BillingFirstnames" => "tXXXXXXXXXt",
+            "BillingAddress1" => "tXXXXXXXXXt",
             "BillingAddress2" => "",
             "Amount" => "27.00"
         ];
