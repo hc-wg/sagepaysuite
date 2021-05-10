@@ -12,6 +12,7 @@ use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForAction;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\PI;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
@@ -518,6 +519,10 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\CryptAndCodeData::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $suiteLoggerMock = $this
+            ->getMockBuilder(Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $threeDSecureCallbackManagementMock = $this
             ->getMockBuilder(ThreeDSecureCallbackManagement::class)
@@ -541,7 +546,8 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit_Framework_TestCase
                 'payResultFactory'   => $this->payResultFactoryMock,
                 'invoiceEmailSender' => $invoiceSenderMock,
                 'config'             => $configMock,
-                'cryptAndCode'       => $cryptAndCodeDataMock
+                'cryptAndCode'       => $cryptAndCodeDataMock,
+                'suiteLogger'        => $suiteLoggerMock
             ])
             ->getMock();
 
