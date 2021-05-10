@@ -158,6 +158,7 @@ class Callback3Dv2 extends Action implements CsrfAwareActionInterface
 
             $response = $this->requester->placeOrder();
 
+            $this->suiteLogger->orderEndLog($order->getIncrementId(), $quoteIdFromParams, $payment->getLastTransId());
             if ($response->getErrorMessage() === null) {
                 $this->javascriptRedirect('sagepaysuite/pi/success', $quote->getId(), $orderId);
             } else {
