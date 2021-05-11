@@ -453,7 +453,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->requestMock
-            ->expects($this->exactly(3))
+            ->expects($this->once())
             ->method('getParam')
             ->withConsecutive(
                 ['orderId']
