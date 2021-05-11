@@ -30,17 +30,6 @@ class OrderLoader
     }
 
     /**
-     * @param $id
-     * @return \Magento\Sales\Api\Data\OrderInterface
-     * @throws \Magento\Framework\Exception\InputException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     */
-    public function loadOrderById($id)
-    {
-        return $this->orderRepository->get($id);
-    }
-
-    /**
      * @param Quote $quote
      * @return \Magento\Sales\Model\Order
      * @throws LocalizedException

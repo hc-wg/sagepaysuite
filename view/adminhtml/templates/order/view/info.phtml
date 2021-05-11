@@ -150,16 +150,33 @@ $payment = $block->getPayment();
             ): ?>
                 <tr>
                     <td colspan="2">
-                        <?php echo $block->escapeHtml(__('Not enough information.')); ?>
+                            <?php echo $block->escapeHtml(__('Not enough information.')); ?>
                     </td>
                 </tr>
             <?php else: ?>
+                <tr>
+                    <th><?php echo $block->escapeHtml(__('Fraud Recommendation')); ?>:</th>
+                    <td><?php $html = $payment->getAdditionalInformation("fraudscreenrecommendation");
+                    switch ($html):
+                        case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_CHALLENGE:
+                        case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD:
+                            $html = '<span style="color:orange;">' . $html . '</span>';
+                            break;
+                        case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY:
+                        case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT:
+                            $html = '<span style="color:red;">' . $html . '</span>';
+                            break;
+                    endswitch;
+                        echo $html;
+                    ?>
+                    </td>
+                </tr>
                 <?php if (!empty($payment->getAdditionalInformation("fraudprovidername"))): ?>
                     <tr>
                         <th><?php echo $block->escapeHtml(__('Provider')); ?>:</th>
                         <td><?php if ($payment->getAdditionalInformation("fraudprovidername") == "ReD"):
                                 $html = '<img style="height: 20px;" src="' . $block->getViewFileUrl('Ebizmarts_SagePaySuite::images/red_logo.png') . '">';
-                            else:
+                             else:
                                 $html = '<span><img style="height: 20px;vertical-align: text-top;" src="' . $block->getViewFileUrl('Ebizmarts_SagePaySuite::images/t3m_logo.png') . '"> T3M</span>';
                             endif;
                             echo $html;
@@ -167,77 +184,8 @@ $payment = $block->getPayment();
                         </td>
                     </tr>
                 <?php endif; ?>
-                <?php if (!empty($payment->getAdditionalInformation("fraudcodedetail"))): ?>
-                    <?php $fraudDetails = $payment->getAdditionalInformation("fraudcodedetail")?>
-                <?php endif; ?>
-                <tr title="<?php echo $fraudDetails ?>">
-                    <?php $infoImage = '<img style="height: 20px;vertical-align: text-top;" src="' . $block->getViewFileUrl('Ebizmarts_SagePaySuite::images/info.png') . '">' ?>
-                    <th><?php echo $block->escapeHtml(__('Fraud Recommendation')); ?>:</th>
-                    <td >
-                        <?php $html = $payment->getAdditionalInformation("fraudscreenrecommendation");
-                        switch ($html):
-                            case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_CHALLENGE:
-                            case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_HOLD:
-                                $html = '<span style="color:orange;">' . $html . '</span>';
-                                break;
-                            case \Ebizmarts\SagePaySuite\Model\Config::REDSTATUS_DENY:
-                            case \Ebizmarts\SagePaySuite\Model\Config::T3STATUS_REJECT:
-                                $html = '<span style="color:red;">' . $html . '</span>';
-                                break;
-                        endswitch;
-                        echo $html;
-                        ?>
-                        <?php echo " " . $infoImage?>
-                    </td>
-                </tr>
-                <?php if (!empty($payment->getAdditionalInformation("fraudcode"))): ?>
-                    <?php $fraudCode = $payment->getAdditionalInformation("fraudcode") ?>
-                    <tr title="<?php echo $fraudDetails ?>">
-                        <th><?php echo $block->escapeHtml(__('Fraud result')); ?>:</th>
-                        <?php if ($fraudCode >= -1000 && $fraudCode <= 29) : ?>
-                            <td style="color:#228B22"><?php $html = $payment->getAdditionalInformation("fraudcode");
-                                echo $html;
-                                ?>
-                            </td>
-                        <?php endif;?>
-                        <?php if ($fraudCode >= 30 && $fraudCode <= 49) : ?>
-                            <td style="color:#FFA500"><?php $html = $payment->getAdditionalInformation("fraudcode");
-                                echo $html;
-                                ?>
-                            </td>
-                        <?php endif;?>
-                        <?php if ($fraudCode >= 50 && $fraudCode <= 1000) : ?>
-                            <td style="color:#FF0000"><?php $html = $payment->getAdditionalInformation("fraudcode");
-                                echo $html;
-                                ?>
-                            </td>
-                        <?php endif;?>
-                    </tr>
-                <?php endif; ?>
-                <?php if (!empty($payment->getAdditionalInformation("fraudrules"))): ?>
-                    <tr>
-                        <th><a href="" onclick="$('thirdman-breakdown').toggle();return false;"><?php echo $block->escapeHtml(__('Show 3rd Man scores')); ?></a>:</th>
-                    </tr>
-                <?php endif; ?>
             <?php endif; ?>
             </tbody>
         </table>
-        <?php if (!empty($payment->getAdditionalInformation("fraudrules"))): ?>
-        <?php $rules = $payment->getAdditionalInformation("fraudrules") ?>
-        <table id="thirdman-breakdown" class="data-table admin__table-secondary" style="display:none;">
-            <tr>
-                <th style="font-weight: bold"><?php echo $block->escapeHtml(__('DESCRIPTION')); ?>
-                    <a href="https://www.opayo.co.uk/file/27231/download-document/Fraud%20Screening%20guide.pdf?token=liPfWBin" target="_blank"><?php echo $block->escapeHtml(__('(More information)')); ?></a>
-                </th>
-                <th style="font-weight: bold"><?php echo $block->escapeHtml(__('SCORE')); ?></th>
-            </tr>
-            <?php foreach($rules as $rule): ?>
-            <tr>
-                <td style="text-align:left"><?php echo (string)$rule['description'] ?></td>
-                <td style="text-align:left"><?php echo (string)$rule['score'] ?></td>
-            </tr>
-            <?php endforeach; ?>
-        </table>
-        <?php endif;?>
     </div>
 </div>
