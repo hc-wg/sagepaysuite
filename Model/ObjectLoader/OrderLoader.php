@@ -30,6 +30,17 @@ class OrderLoader
     }
 
     /**
+     * @param $orderId
+     * @return \Magento\Sales\Api\Data\OrderInterface
+     * @throws \Magento\Framework\Exception\InputException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    public function getById($orderId)
+    {
+        return $this->orderRepository->get($orderId);
+    }
+
+    /**
      * @param Quote $quote
      * @return \Magento\Sales\Model\Order
      * @throws LocalizedException
