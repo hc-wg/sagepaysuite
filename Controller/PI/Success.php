@@ -5,13 +5,10 @@ namespace Ebizmarts\SagePaySuite\Controller\PI;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\CsrfAwareActionInterface;
-use Magento\Framework\App\Request\InvalidRequestException;
-use Magento\Framework\App\RequestInterface;
 use Magento\Checkout\Model\Type\Onepage;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
-class Success extends Action implements CsrfAwareActionInterface
+class Success extends Action
 {
     /** @var Config */
     private $config;
