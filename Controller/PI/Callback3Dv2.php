@@ -152,7 +152,7 @@ class Callback3Dv2 extends Action
             $response = $this->requester->placeOrder();
 
             if ($response->getErrorMessage() === null) {
-                $this->javascriptRedirect('sagepaysuite/pi/success', $quote->getId());
+                $this->javascriptRedirect('sagepaysuite/pi/success', $quote->getId(), $orderId);
             } else {
                 $this->messageManager->addError($response->getErrorMessage());
                 $this->javascriptRedirect('checkout/cart');
@@ -170,11 +170,19 @@ class Callback3Dv2 extends Action
         }
     }
 
-    private function javascriptRedirect($url, $quoteId = null)
+    private function javascriptRedirect($url, $quoteId = null, $orderId = null)
     {
         $finalUrl = $this->_url->getUrl($url, ['_secure' => true]);
         if ($quoteId !== null) {
             $finalUrl .= "?quoteId=$quoteId";
+        }
+
+        if ($orderId !== null) {
+            if ($quoteId !== null) {
+                $finalUrl .= "&orderId=$orderId";
+            } else {
+                $finalUrl .= "?orderId=$orderId";
+            }
         }
         //redirect to success via javascript
         $this
