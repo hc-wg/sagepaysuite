@@ -731,6 +731,10 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
         );
     }
 
+    /**
+     * @expectedException \Ebizmarts\SagePaySuite\Model\Api\ApiException
+     * @expectedExceptionMessage Invalid 3D secure response.
+     */
     public function testSubmit3DEmptyResponse()
     {
         $pi3dRequestMock = $this
@@ -738,44 +742,27 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
             ->setMethods(['__toArray', 'setParEs'])
             ->disableOriginalConstructor()
             ->getMock();
-
-        $piTransactionResult3DFactoryMock = $this
-            ->getMockBuilder(PiTransactionResultThreeDFactory::class)
-            ->setMethods(["create"])
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $piTransactionResultThreeD = $this
-            ->getMockBuilder(PiTransactionResultThreeD::class)
-            ->setMethods(['setStatus'])
-            ->disableOriginalConstructor()
-            ->getMock();
+        $pi3dRequestMock->expects($this->once())->method('setParEs')->with("fsd678dfs786dfs786fds678fds");
+        $pi3dRequestMock->expects($this->once())->method('__toArray')->willReturn(["paRes" => "fsd678dfs786dfs786fds678fds"]);
 
         $pi3dRequestFactoryMock = $this
             ->getMockBuilder(PiThreeDSecureRequestFactory::class)
             ->setMethods(["create"])
             ->disableOriginalConstructor()
             ->getMock();
+        $pi3dRequestFactoryMock->expects($this->once())->method('create')->willReturn($pi3dRequestMock);
 
-        $loggerMock = $this
-            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $pi3dRequestFactoryMock
+        $this->httpRestFactoryMock
             ->expects($this->once())
             ->method('create')
-            ->willReturn($pi3dRequestMock);
+            ->willReturn($this->httpRestMock);
 
-        $pi3dRequestMock
-            ->expects($this->once())
-            ->method('setParEs')
-            ->with("fsd678dfs786dfs786fds678fds");
-
-        $pi3dRequestMock
-            ->expects($this->once())
-            ->method('__toArray')
-            ->willReturn(["paRes" => "fsd678dfs786dfs786fds678fds"]);
+        $piTransactionResult3DFactoryMock = $this
+        ->getMockBuilder(PiTransactionResultThreeDFactory::class)
+        ->setMethods(["create"])
+        ->disableOriginalConstructor()
+        ->getMock();
+        $piTransactionResult3DFactoryMock->expects($this->never())->method('create');
 
         $this->httpRestMock
             ->expects($this->once())
@@ -785,34 +772,23 @@ class PIRestTest extends \PHPUnit\Framework\TestCase
 
         $this->verifyResponseCalledOnceReturns201();
 
-        $this->httpRestFactoryMock
-            ->expects($this->exactly(2))
-            ->method('create')
-            ->willReturn($this->httpRestMock);
-
-        $piTransactionResult3DFactoryMock
-            ->expects($this->once())
-            ->method('create')
-            ->willReturn($piTransactionResultThreeD);
-
-        $piTransactionResultThreeD
-            ->expects($this->once())
-            ->method('setStatus')
-            ->with('Operation not allowed');
-
         $this->httpResponseMock
             ->expects($this->once())
             ->method('getResponseData')
             ->willReturn(json_decode('{}'));
 
+        $loggerMock = $this
+            ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\Logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggerMock
+            ->expects($this->once())
+            ->method('sageLog');
+
         $this->httpRestMock
-            ->expects($this->exactly(3))
+            ->expects($this->once())
             ->method('getLogger')
             ->willReturn($loggerMock);
-
-        $loggerMock
-            ->expects($this->exactly(3))
-            ->method('sageLog');
 
         $this->pirestApiModel  = $this->objectManager->getObject(
             self::PI_REST,

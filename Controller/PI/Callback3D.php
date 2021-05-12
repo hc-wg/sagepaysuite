@@ -116,7 +116,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $payment = $order->getPayment();
 
             if ($this->isParesDuplicated($payment, $sanitizedPares)) {
-                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
+                $this->javascriptRedirect('checkout/onepage/success');
                 return;
             } else {
                 $payment->setAdditionalInformation(SagePaySession::PARES_SENT, $sanitizedPares);
@@ -124,7 +124,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             }
 
             if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
-                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
+                $this->javascriptRedirect('checkout/onepage/success');
                 return;
             }
             /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
@@ -142,20 +142,18 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $response = $this->requester->placeOrder();
 
             if ($response->getErrorMessage() === null) {
-                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
+                $this->javascriptRedirect('checkout/onepage/success');
             } else {
                 $this->messageManager->addError($response->getErrorMessage());
                 $this->javascriptRedirect('checkout/cart');
             }
         } catch (ApiException $apiException) {
             $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
-            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getMessage(), [__METHOD__, __LINE__]);
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
         } catch (\Exception $e) {
             $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
-            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getMessage(), [__METHOD__, __LINE__]);
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
@@ -173,18 +171,14 @@ class Callback3D extends Action implements CsrfAwareActionInterface
         return ($savedPares !== null) && ($pares === $savedPares);
     }
 
-    private function javascriptRedirect($url, $quoteId = null, $orderId = null)
+    private function javascriptRedirect($url)
     {
-        $finalUrl = $this->_url->getUrl($url, ['_secure' => true]);
-        if ($quoteId !== null) {
-            $finalUrl .= "?quoteId=$quoteId&orderId=$orderId";
-        }
         //redirect to success via javascript
         $this
             ->getResponse()
             ->setBody(
                 '<script>window.top.location.href = "'
-                . $finalUrl
+                . $this->_url->getUrl($url, ['_secure' => true])
                 . '";</script>'
             );
     }
