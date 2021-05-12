@@ -224,7 +224,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
 
         $this->expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true])
+            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true]) . "?orderId=50"
             . '";</script>'
         );
 
@@ -384,7 +384,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
 
         $this->expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true])
+            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true]) . "?orderId=50"
             . '";</script>'
         );
 
@@ -455,8 +455,12 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
         $this->requestMock
             ->expects($this->once())
             ->method('getParam')
-            ->withConsecutive(['orderId'])
-            ->willReturnOnConsecutiveCalls(self::ENCODED_ORDER_ID);
+            ->withConsecutive(
+                ['orderId']
+            )
+            ->willReturnOnConsecutiveCalls(
+                self::ENCODED_ORDER_ID
+            );
 
         $this->requestMock
             ->expects($this->once())
@@ -532,7 +536,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
 
         $this->expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true])
+            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true]) . "?orderId=50"
             . '";</script>'
         );
 
@@ -899,8 +903,12 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
         $this->requestMock
             ->expects($this->once())
             ->method('getParam')
-            ->withConsecutive(['orderId'])
-            ->willReturnOnConsecutiveCalls(self::ENCODED_ORDER_ID);
+            ->withConsecutive(
+                ['orderId']
+            )
+            ->willReturnOnConsecutiveCalls(
+                self::ENCODED_ORDER_ID
+            );
 
         $cryptAndCodeMock = $this
             ->getMockBuilder(CryptAndCodeData::class)
