@@ -445,9 +445,9 @@ class Callback3Dv2Test extends \PHPUnit_Framework_TestCase
             ->willReturnSelf();
 
         $this->requestMock
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('getParam')
-            ->withConsecutive(['quoteId'], ['saveToken'])
-            ->willReturnOnConsecutiveCalls(self::ENCODED_QUOTE_ID, true);
+            ->with('quoteId')
+            ->willReturn(self::ENCODED_QUOTE_ID);
     }
 }
