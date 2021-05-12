@@ -1,4 +1,4 @@
-## [1.1.27.1] - 2021-05-12
+## [1.2.27.1] - 2021-05-12
 ### Fixed
 - PI with 3D redirecting to cart after checkout
 
