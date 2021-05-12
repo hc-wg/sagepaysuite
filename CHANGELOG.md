@@ -1,6 +1,6 @@
 ## [1.1.38.1] - 2021-05-12
 ### Fixed
-- PI repeat with 3Dv2
+- PI with 3D redirecting to cart after checkout
 
 ## [1.1.38] - 2021-02-01
 ### Fixed
