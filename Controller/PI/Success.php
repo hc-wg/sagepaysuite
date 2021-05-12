@@ -9,6 +9,7 @@ use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Checkout\Model\Type\Onepage;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
 class Success extends Action implements CsrfAwareActionInterface
 {
@@ -18,21 +19,26 @@ class Success extends Action implements CsrfAwareActionInterface
     /** @var Onepage */
     private $onepage;
 
+    /** @var OrderLoader */
+    private $orderLoader;
+
     /**
      * Callback3D constructor.
      * @param Context $context
      * @param Onepage $onepage
      * @param Config $config
+     * @param OrderLoader $orderLoader
      */
     public function __construct(
         Context $context,
         Onepage $onepage,
-        Config $config
-
+        Config $config,
+        OrderLoader $orderLoader
     ) {
         parent::__construct($context);
         $this->config = $config;
         $this->onepage = $onepage;
+        $this->orderLoader = $orderLoader;
         $this->config->setMethodCode(Config::METHOD_PI);
 
     }
@@ -42,9 +48,16 @@ class Success extends Action implements CsrfAwareActionInterface
         $session = $this->onepage->getCheckout();
         $quoteId = $this->getRequest()->getParam("quoteId");
         $orderId = $this->getRequest()->getParam("orderId");
-        $session->setLastSuccessQuoteId($quoteId);
-        $session->setLastQuoteId($quoteId);
-        $session->setLastOrderId($orderId);
+        if ($quoteId) {
+            $session->setLastSuccessQuoteId($quoteId);
+            $session->setLastQuoteId($quoteId);
+        }
+
+        if ($orderId) {
+            $session->setLastOrderId($orderId);
+            $order = $this->orderLoader->getById($orderId);
+            $session->setLastRealOrderId($order->getIncrementId());
+        }
 
         $this->_redirect("checkout/onepage/success");
     }
