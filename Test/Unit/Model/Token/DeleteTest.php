@@ -3,7 +3,6 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Token;
 
 use Ebizmarts\SagePaySuite\Model\Token\Delete;
-use Ebizmarts\SagePaySuite\Model\Token\Get;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Vault\Api\Data\PaymentTokenInterface;
 use Magento\Vault\Api\PaymentTokenRepositoryInterface;
