@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\PI;
 
 use Ebizmarts\SagePaySuite\Controller\PI\Callback3Dv2;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Magento\Checkout\Model\Session;
 use Magento\Customer\Api\CustomerRepositoryInterface;
@@ -189,6 +190,15 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $suiteLoggerMock = $this
+            ->getMockBuilder(Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $suiteLoggerMock
+            ->expects($this->exactly(3))
+            ->method('debugLog')
+            ->willReturnSelf();
+
         $this->callback3Dv2Controller = $this->objectManagerHelper->getObject(
             'Ebizmarts\SagePaySuite\Controller\PI\Callback3Dv2',
             [
@@ -202,7 +212,8 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
                 'checkoutSession'             => $checkoutSessionMock,
                 'orderLoader'                 => $orderLoaderMock,
                 'customerSession'             => $customerSessionMock,
-                'customerRepository'          => $customerRepositoryMock
+                'customerRepository'          => $customerRepositoryMock,
+                'suiteLogger'                 => $suiteLoggerMock
             ]
         );
 
@@ -315,7 +326,8 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->expects($this->exactly(2))
             ->method('getParam')
             ->withConsecutive(['quoteId'], ['saveToken'])
-            ->willReturnOnConsecutiveCalls(self::ENCODED_QUOTE_ID, true);        $this->cryptAndCodeMock->expects($this->once())->method('decodeAndDecrypt')->with(self::ENCODED_QUOTE_ID)->willReturn(self::QUOTE_ID);
+            ->willReturnOnConsecutiveCalls(self::ENCODED_QUOTE_ID, true);
+        $this->cryptAndCodeMock->expects($this->once())->method('decodeAndDecrypt')->with(self::ENCODED_QUOTE_ID)->willReturn(self::QUOTE_ID);
         $quoteRepositoryMock->expects($this->once())->method('get')->with(self::QUOTE_ID)->willReturn($quoteMock);
         $orderLoaderMock->expects($this->once())->method('loadOrderFromQuote')->with($quoteMock)->willReturn($orderMock);
         $orderMock->expects($this->once())->method('getId')->willReturn(self::ORDER_ID);
