@@ -8,7 +8,7 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Vault\Api\PaymentTokenRepositoryInterface;
 
-class Get
+class Get implements \Ebizmarts\SagePaySuite\Api\TokenGetInterface
 {
     /** @var Logger */
     private $suiteLogger;
