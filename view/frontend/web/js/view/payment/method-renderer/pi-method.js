@@ -867,7 +867,7 @@ define(
 
                             if (response.success && response.success == true) {
                                 //check warning message
-                                self.used_token_slots = self.used_token_slots - 1;
+                                self.used_token_slots--;
                                 self.checkMaxTokensPerCustomer();
                                 self.checkIfCustomerRemovedAllTokens();
 
@@ -876,15 +876,11 @@ define(
                                 $('#' + self.getCode() + '-tokenrow-' + id).hide();
 
                                 //delete from token list
-                                var tokens = window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount;
+                                var tokens = self.getCustomerTokens();
                                 for (var i = 0; i < tokens.length; i++) {
                                     if (id == tokens[i].id) {
                                         tokens.splice(i, 1);
                                     }
-                                }
-                                if (tokens.length == 0) {
-                                    $('#' + self.getCode() + '-tokens').hide();
-                                    self.use_token = false;
                                 }
                             } else {
                                 self.showPaymentError(response.error_message);
@@ -907,10 +903,12 @@ define(
                 }
             },
             checkIfCustomerRemovedAllTokens: function () {
-                if (window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount === 0) {
+                if (this.getCustomerTokens().length === 1) {
                     $('#' + this.getCode() + '-tokens .token-list').hide();
                     $('#' + this.getCode() + '-tokens .use-different-card').hide();
                     $('#sagepay-pi-remembertoken-container').show();
+                    this.use_token = false;
+                    this.loadDropInForm();
                 }
             }
         });
