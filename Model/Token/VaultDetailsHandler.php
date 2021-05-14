@@ -2,6 +2,7 @@
 
 namespace Ebizmarts\SagePaySuite\Model\Token;
 
+use Ebizmarts\SagePaySuite\Api\TokenGetInterface;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Plugin\DeleteTokenFromSagePay;
 use Magento\Framework\Exception\AuthenticationException;
@@ -17,7 +18,7 @@ class VaultDetailsHandler
     /** @var Save */
     private $tokenSave;
 
-    /** @var Get */
+    /** @var TokenGetInterface */
     private $tokenGet;
 
     /** @var Delete */
@@ -33,7 +34,7 @@ class VaultDetailsHandler
      * VaultDetailsHandler constructor.
      * @param Logger $suiteLogger
      * @param Save $tokenSave
-     * @param Get $tokenGet
+     * @param TokenGetInterface $tokenGet
      * @param Delete $tokenDelete
      * @param DeleteTokenFromSagePay $deleteTokenFromSagePay
      * @param ManagerInterface $messageManager
@@ -41,7 +42,7 @@ class VaultDetailsHandler
     public function __construct(
         Logger $suiteLogger,
         Save $tokenSave,
-        Get $tokenGet,
+        TokenGetInterface $tokenGet,
         Delete $tokenDelete,
         DeleteTokenFromSagePay $deleteTokenFromSagePay,
         ManagerInterface $messageManager
