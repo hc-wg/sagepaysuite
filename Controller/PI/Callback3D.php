@@ -146,6 +146,7 @@ class Callback3D extends Action
             }
         } catch (ApiException $apiException) {
             $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getMessage(), [__METHOD__, __LINE__]);
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
@@ -156,6 +157,7 @@ class Callback3D extends Action
             throw new \RuntimeException(__(self::DUPLICATED_CALLBACK_ERROR_MESSAGE));
         } catch (\Exception $e) {
             $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getMessage(), [__METHOD__, __LINE__]);
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');
