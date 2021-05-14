@@ -4,7 +4,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Token;
 
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Token\Delete;
-use Ebizmarts\SagePaySuite\Model\Token\Get;
+use Ebizmarts\SagePaySuite\Api\TokenGetInterface;
 use Ebizmarts\SagePaySuite\Model\Token\Save;
 use Ebizmarts\SagePaySuite\Model\Token\VaultDetailsHandler;
 use Ebizmarts\SagePaySuite\Plugin\DeleteTokenFromSagePay;
@@ -62,7 +62,7 @@ class VaultDetailsHandlerTest extends TestCase
         ];
 
         $tokenGetMock = $this
-            ->getMockBuilder(Get::class)
+            ->getMockBuilder(TokenGetInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $tokenGetMock
@@ -106,7 +106,7 @@ class VaultDetailsHandlerTest extends TestCase
             ->willReturn($sagepayToken);
 
         $tokenGetMock = $this
-            ->getMockBuilder(Get::class)
+            ->getMockBuilder(TokenGetInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $tokenGetMock

@@ -119,6 +119,7 @@ class Failure extends Action
             }
 
             $orderId = $this->encryptor->decrypt($this->getRequest()->getParam("orderId"));
+            $this->suiteLogger->debugLog('OrderId: ' . $orderId, [__METHOD__, __LINE__]);
             $this->recoverCart
                 ->setShouldCancelOrder(true)
                 ->setOrderId((int)$orderId)
@@ -133,6 +134,9 @@ class Failure extends Action
             $this->messageManager->addError($e->getMessage());
             $this->logger->critical($e);
         }
+
+        $this->addOrderEndLog($response);
+
         return $this->_redirect('checkout/cart');
     }
 
@@ -150,5 +154,26 @@ class Failure extends Action
         }
 
         return $statusDetail;
+    }
+
+    /**
+     * @param array $response
+     * @return string
+     */
+    private function extractIncrementIdFromVendorTxCode(array $response): string
+    {
+        $vendorTxCode = explode("-", $response['VendorTxCode']);
+        return $vendorTxCode[0];
+    }
+
+    /**
+     * @param array $response
+     */
+    private function addOrderEndLog(array $response): void
+    {
+        $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
+        $orderId = isset($response['VendorTxCode']) ? $this->extractIncrementIdFromVendorTxCode($response) : "";
+        $vpstxid = isset($response['VPSTxId']) ? $response['VPSTxId'] : "";
+        $this->suiteLogger->orderEndLog($orderId, $quoteId, $vpstxid);
     }
 }
