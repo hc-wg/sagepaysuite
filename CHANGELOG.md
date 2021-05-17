@@ -1,3 +1,7 @@
+## [1.3.19.1] - 2021-05-12
+### Fixed
+- PI with 3D redirecting to cart after checkout
+
 ## [1.3.19] - 2021-02-02
 ### Fixed
 - Composer installation problem
@@ -206,6 +210,7 @@
 - Magento not running schema updates. Switching to Schema patches
 - New CSRF checks rejecting callbacks
 
+[1.3.19.1]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.19.1
 [1.3.19]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.19
 [1.3.18]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.18
 [1.3.17]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.3.17
