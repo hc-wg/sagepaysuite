@@ -233,7 +233,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
 
         $this->expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true])
+            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true]) . "?orderId=50"
             . '";</script>'
         );
 
@@ -397,7 +397,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
 
         $this->expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true])
+            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true]) . "?orderId=50"
             . '";</script>'
         );
 
@@ -545,7 +545,7 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
 
         $this->expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true])
+            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true]) . "?orderId=50"
             . '";</script>'
         );
 
