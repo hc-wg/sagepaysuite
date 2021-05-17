@@ -1,3 +1,7 @@
+## [1.4.5.1] - 2021-05-12
+### Fixed
+- PI with 3D redirecting to cart after checkout
+
 ## [1.4.5] - 2021-02-02
 ### Fixed
 - Composer installation problem when requiring Magento vault
@@ -52,6 +56,7 @@
 - Server not recovering cart when cancel the transaction
 - Add form validation in PI WITHOUT Form
 
+[1.4.5.1]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.5.1
 [1.4.5]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.5
 [1.4.4]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.4
 [1.4.3]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.3
