@@ -160,12 +160,6 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->method('getErrorMessage')
             ->willReturnArgument(null);
 
-        $this->requestMock
-            ->expects($this->exactly(2))
-            ->method('getParam')
-            ->withConsecutive(['quoteId'], ['saveToken'])
-            ->willReturnOnConsecutiveCalls(self::ENCODED_QUOTE_ID, true);
-
         $this->cryptAndCodeMock->expects($this->once())->method('decodeAndDecrypt')->with(self::ENCODED_QUOTE_ID)->willReturn(self::QUOTE_ID);
         $quoteRepositoryMock->expects($this->once())->method('get')->with(self::QUOTE_ID)->willReturn($quoteMock);
         $orderLoaderMock->expects($this->once())->method('loadOrderFromQuote')->with($quoteMock)->willReturn($orderMock);
@@ -219,7 +213,7 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
 
         $this->expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true])
+            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true]) . "?orderId=50"
             . '";</script>'
         );
 
@@ -464,5 +458,11 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
             ->method('setParams')
             ->with(['orderId' => self::ENCODED_ORDER_ID, 'quoteId' => self::ENCODED_QUOTE_ID])
             ->willReturnSelf();
+
+        $this->requestMock
+            ->expects($this->exactly(2))
+            ->method('getParam')
+            ->withConsecutive(['quoteId'], ['saveToken'])
+            ->willReturnOnConsecutiveCalls(self::ENCODED_QUOTE_ID, true);
     }
 }

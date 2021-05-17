@@ -119,7 +119,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
 
             if ($this->isParesDuplicated($payment, $sanitizedPares)) {
                 $this->suiteLogger->debugLog("Duplicated Pares", [__LINE__, __METHOD__]);
-                $this->javascriptRedirect('checkout/onepage/success');
+                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
                 return;
             } else {
                 $payment->setAdditionalInformation(SagePaySession::PARES_SENT, $sanitizedPares);
@@ -129,7 +129,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $orderState = $order->getState();
             $this->suiteLogger->debugLog("Order State: " . $orderState, [__LINE__, __METHOD__]);
             if ($orderState !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
-                $this->javascriptRedirect('checkout/onepage/success');
+                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
                 return;
             }
             /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager $data */
@@ -150,7 +150,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
 
             $this->suiteLogger->orderEndLog($order->getIncrementId(), $order->getQuoteId(), $payment->getLastTransId());
             if ($response->getErrorMessage() === null) {
-                $this->javascriptRedirect('checkout/onepage/success');
+                $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
             } else {
                 $this->messageManager->addError($response->getErrorMessage());
                 $this->javascriptRedirect('checkout/cart');
@@ -186,14 +186,32 @@ class Callback3D extends Action implements CsrfAwareActionInterface
         return ($savedPares !== null) && ($pares === $savedPares);
     }
 
-    private function javascriptRedirect($url)
+    /**
+     * @param $url
+     * @param $quoteId
+     * @param $orderId
+     */
+    private function javascriptRedirect($url, $quoteId = null, $orderId = null)
     {
+        $finalUrl = $this->_url->getUrl($url, ['_secure' => true]);
+        if ($quoteId !== null) {
+            $finalUrl .= "?quoteId=$quoteId";
+        }
+
+        if ($orderId !== null) {
+            if ($quoteId !== null) {
+                $finalUrl .= "&orderId=$orderId";
+            } else {
+                $finalUrl .= "?orderId=$orderId";
+            }
+        }
+
         //redirect to success via javascript
         $this
             ->getResponse()
             ->setBody(
                 '<script>window.top.location.href = "'
-                . $this->_url->getUrl($url, ['_secure' => true])
+                . $finalUrl
                 . '";</script>'
             );
     }
