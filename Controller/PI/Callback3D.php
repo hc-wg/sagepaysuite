@@ -128,7 +128,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
 
             $orderState = $order->getState();
             $this->suiteLogger->debugLog("Order State: " . $orderState, [__LINE__, __METHOD__]);
-            if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
+            if ($orderState !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
                 $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
                 return;
             }
