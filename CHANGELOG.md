@@ -1,3 +1,7 @@
+## [1.2.27.1] - 2021-05-12
+### Fixed
+- PI with 3D redirecting to cart after checkout
+
 ## [1.2.27] - 2021-02-01
 ### Fixed
 - PI repeat with 3Dv2
@@ -295,6 +299,7 @@
 ### Added
 - First release with Magento 2.2.0 compatibility.
 
+[1.2.27.1]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.27.1
 [1.2.27]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.27
 [1.2.26]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.26
 [1.2.25]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.25
