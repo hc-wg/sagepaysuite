@@ -159,8 +159,6 @@ class Callback3Dv2Test extends \PHPUnit_Framework_TestCase
             ->method('getErrorMessage')
             ->willReturnArgument(null);
 
-        $this->requestMock->expects($this->once())->method('getParam')->with('quoteId')->willReturn(self::ENCODED_QUOTE_ID);
-
         $this->cryptAndCodeMock->expects($this->once())->method('decodeAndDecrypt')->with(self::ENCODED_QUOTE_ID)->willReturn(self::QUOTE_ID);
         $quoteRepositoryMock->expects($this->once())->method('get')->with(self::QUOTE_ID)->willReturn($quoteMock);
         $orderLoaderMock->expects($this->once())->method('loadOrderFromQuote')->with($quoteMock)->willReturn($orderMock);
@@ -195,7 +193,7 @@ class Callback3Dv2Test extends \PHPUnit_Framework_TestCase
                 'orderRepository'             => $orderRepositoryMock,
                 'quoteRepository'             => $quoteRepositoryMock,
                 'cryptAndCode'                => $this->cryptAndCodeMock,
-                'checkoutSession'             => $checkoutSessionMock, 
+                'checkoutSession'             => $checkoutSessionMock,
                 'orderLoader'                 => $orderLoaderMock,
                 'customerSession'             => $customerSessionMock,
                 'customerRepository'          => $customerRepositoryMock
@@ -204,7 +202,7 @@ class Callback3Dv2Test extends \PHPUnit_Framework_TestCase
 
         $this->expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true])
+            . $this->urlBuilderMock->getUrl('checkout/onepage/success', ['_secure' => true]) . "?orderId=50"
             . '";</script>'
         );
 
@@ -445,5 +443,11 @@ class Callback3Dv2Test extends \PHPUnit_Framework_TestCase
             ->method('setParams')
             ->with(['orderId' => self::ENCODED_ORDER_ID, 'quoteId' => self::ENCODED_QUOTE_ID])
             ->willReturnSelf();
+
+        $this->requestMock
+            ->expects($this->once())
+            ->method('getParam')
+            ->with('quoteId')
+            ->willReturn(self::ENCODED_QUOTE_ID);
     }
 }
