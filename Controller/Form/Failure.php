@@ -159,7 +159,7 @@ class Failure extends Action
      * @param array $response
      * @return string
      */
-    private function extractIncrementIdFromVendorTxCode(array $response): string
+    private function extractIncrementIdFromVendorTxCode(array $response)
     {
         $vendorTxCode = explode("-", $response['VendorTxCode']);
         return $vendorTxCode[0];
@@ -168,7 +168,7 @@ class Failure extends Action
     /**
      * @param array $response
      */
-    private function addOrderEndLog(array $response): void
+    private function addOrderEndLog(array $response)
     {
         $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
         $orderId = isset($response['VendorTxCode']) ? $this->extractIncrementIdFromVendorTxCode($response) : "";
