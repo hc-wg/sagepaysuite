@@ -113,9 +113,7 @@ class EcommerceManagement extends RequestManagement
             $payment->setTransactionId($this->getPayResult()->getTransactionId());
             $payment->setLastTransId($this->getPayResult()->getTransactionId());
             $payment->save();
-
-            $this->suiteLogger->debugLog($payment->getData(), [__LINE__, __METHOD__]);
-
+            $this->sagePaySuiteLogger->debugLog($payment->getData(), [__LINE__, __METHOD__]);
             $this->createInvoiceForSuccessPayment($payment, $order);
         } else {
             throw new \Magento\Framework\Validator\Exception(__('Unable to save Opayo order'));
