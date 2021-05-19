@@ -19,7 +19,7 @@ class Payment
     /** @var \Ebizmarts\SagePaySuite\Model\Logger\Logger */
     private $logger;
 
-    /** @var  */
+    /** @var */
     private $suiteHelper;
 
     /** @var \Ebizmarts\SagePaySuite\Model\Config */
@@ -31,10 +31,10 @@ class Payment
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
         \Ebizmarts\SagePaySuite\Model\Config $config
     ) {
-        $this->logger      = $logger;
-        $this->api         = $sharedApi;
+        $this->logger = $logger;
+        $this->api = $sharedApi;
         $this->suiteHelper = $suiteHelper;
-        $this->config      = $config;
+        $this->config = $config;
     }
 
     public function setApi(PaymentOperations $apiInstance)
@@ -52,8 +52,8 @@ class Payment
     {
         try {
             $transactionId = "-1";
-            $action        = "with";
-            $order         = $payment->getOrder();
+            $action = "with";
+            $order = $payment->getOrder();
 
             if ($this->canCaptureAuthorizedTransaction($payment, $order)) {
                 $transactionId = $payment->getParentTransactionId();
@@ -245,10 +245,9 @@ class Payment
      */
     public function calculateAmount($amount, $order)
     {
-        $orderCurrencyCode = $order->getOrderCurrencyCode();
-        $baseCurrencyCode = $order->getBaseCurrencyCode();
-
-        if ($baseCurrencyCode !== $orderCurrencyCode) {
+        if ($amount == $order->getBaseGrandTotal()) {
+            $amount = $order->getGrandTotal();
+        } else {
             $rate = $order->getBaseToOrderRate();
             $currencySwitcherAmount = $amount * $rate;
             $amount = $currencySwitcherAmount;
