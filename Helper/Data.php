@@ -461,7 +461,7 @@ class Data extends AbstractHelper
      * @param array $data
      * @return array
      */
-    private function removePiShippingBillingInformation(array $data): array
+    private function removePiShippingBillingInformation(array $data)
     {
         if (isset($data["shippingDetails"]) && !empty($data["shippingDetails"])) {
             $piShippingDetailsFieldsName = $this->getPiShippingDetailsFields();
