@@ -12,7 +12,7 @@ use Ebizmarts\SagePaySuite\Controller\Cart\Recover;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class RecoverTest extends \PHPUnit\Framework\TestCase
+class RecoverTest extends \PHPUnit_Framework_TestCase
 {
     public function testExecute()
     {

@@ -8,7 +8,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Ui\Component\Listing\Column;
 
 use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\FraudColumn;
 
-class FraudColumnTest extends \PHPUnit\Framework\TestCase
+class FraudColumnTest extends \PHPUnit_Framework_TestCase
 {
     const INDEX = "fraudcode";
     const IMAGE_URL_TEST = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/test.png';

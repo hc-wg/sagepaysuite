@@ -13,7 +13,7 @@ use Magento\Framework\UrlInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Ebizmarts\SagePaySuite\Controller\Server\RedirectToSuccess;
 
-class RedirectToSuccessTest extends \PHPUnit\Framework\TestCase
+class RedirectToSuccessTest extends \PHPUnit_Framework_TestCase
 {
     /** @var Context|\PHPUnit_Framework_MockObject_MockObject */
     private $contextMock;

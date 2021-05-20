@@ -2,7 +2,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Logger;
 
-class DebugTest extends \PHPUnit\Framework\TestCase
+class DebugTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var \Ebizmarts\SagePaySuite\Model\Logger\Debug
