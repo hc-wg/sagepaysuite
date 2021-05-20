@@ -45,7 +45,7 @@ class Logger extends \Monolog\Logger
     public function __construct(
         Config $config,
         Data $suiteHelper,
-        string $name,
+        $name,
         array $handlers
     ) {
         parent::__construct($name, $handlers);
