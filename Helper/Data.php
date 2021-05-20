@@ -346,4 +346,133 @@ class Data extends AbstractHelper
     {
         return preg_replace("/[^a-zA-Z0-9-\-\{\}\_\.]/", "", $text);
     }
+
+    /**
+     * @param array $data
+     * @return array
+     */
+    public function removePersonalInformation($data)
+    {
+        if ($this->sagePaySuiteConfig->getPreventPersonalDataLogging()) {
+            $fieldsNames = $this->getPersonalInfoFieldsNames();
+            $data = $this->findAndReplacePersonalInformation($data, $fieldsNames);
+            $data = $this->removePiShippingBillingInformation($data);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param Object $data
+     * @return array|Object
+     */
+    public function removePersonalInformationObject($data)
+    {
+        $array = $data;
+        if ($this->sagePaySuiteConfig->getPreventPersonalDataLogging()) {
+            $array = json_decode(json_encode($data), true);
+            if (!empty(json_last_error())) {
+                return $data;
+            }
+            $array = $this->removePersonalInformation($array);
+        }
+
+        return $array;
+    }
+
+    /**
+     * @param array $array
+     * @param array $fieldsNames
+     * @return array
+     */
+    private function findAndReplacePersonalInformation(array $array, array $fieldsNames)
+    {
+        foreach ($fieldsNames as $field) {
+            if (isset($array[$field]) && !empty($array[$field])) {
+                $firstChar = substr($array[$field], 0, 1);
+                $lastChar = substr($array[$field], -1);
+                $array[$field] = $firstChar . "XXXXXXXXX" . $lastChar;
+            }
+        }
+
+        return $array;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getPersonalInfoFieldsNames()
+    {
+        return [
+            "CustomerEMail",
+            "BillingSurname",
+            "BillingFirstnames",
+            "BillingAddress1",
+            "BillingAddress2",
+            "BillingCity",
+            "BillingPostCode",
+            "BillingPhone",
+            "DeliverySurname",
+            "DeliveryFirstnames",
+            "DeliveryAddress1",
+            "DeliveryAddress2",
+            "DeliveryCity",
+            "DeliveryPostCode",
+            "DeliveryPhone",
+            "customer_email",
+            "customer_firstname",
+            "customer_lastname",
+            "customer_middlename",
+            "customerFirstName",
+            "customerLastName",
+            "customerEmail",
+            "customerPhone"
+        ];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getPiShippingDetailsFields()
+    {
+        return [
+            "recipientFirstName",
+            "recipientLastName",
+            "shippingAddress1",
+            "shippingAddress2",
+            "shippingCity",
+            "shippingPostalCode"
+        ];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getPiBillingAddressFields()
+    {
+        return [
+            "address1",
+            "address2",
+            "city",
+            "postalCode"
+        ];
+    }
+
+    /**
+     * @param array $data
+     * @return array
+     */
+    private function removePiShippingBillingInformation(array $data): array
+    {
+        if (isset($data["shippingDetails"]) && !empty($data["shippingDetails"])) {
+            $piShippingDetailsFieldsName = $this->getPiShippingDetailsFields();
+            $data['shippingDetails'] = $this->findAndReplacePersonalInformation($data['shippingDetails'], $piShippingDetailsFieldsName);
+        }
+
+        if (isset($data["billingAddress"]) && !empty($data["billingAddress"])) {
+            $piBillingAddressFieldsName = $this->getPiBillingAddressFields();
+            $data['billingAddress'] = $this->findAndReplacePersonalInformation($data['billingAddress'], $piBillingAddressFieldsName);
+        }
+        return $data;
+    }
 }
