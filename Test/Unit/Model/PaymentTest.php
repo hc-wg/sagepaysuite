@@ -176,14 +176,6 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
 
         $orderMock
             ->expects($this->once())
-            ->method('getOrderCurrencyCode')
-            ->willReturn('EUR');
-        $orderMock
-            ->expects($this->once())
-            ->method('getBaseCurrencyCode')
-            ->willReturn('GBP');
-        $orderMock
-            ->expects($this->once())
             ->method('getBaseToOrderRate')
             ->willReturn(1.3);
 
@@ -325,14 +317,7 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
         $sut->setApi($sharedApiMock);
 
         $orderMock = $this->makeOrderMockPendingState();
-        $orderMock
-            ->expects($this->once())
-            ->method('getOrderCurrencyCode')
-            ->willReturn('EUR');
-        $orderMock
-            ->expects($this->once())
-            ->method('getBaseCurrencyCode')
-            ->willReturn('GBP');
+
         $orderMock
             ->expects($this->once())
             ->method('getBaseToOrderRate')
@@ -415,14 +400,7 @@ class PaymentTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(Order::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $orderMock
-            ->expects($this->once())
-            ->method('getOrderCurrencyCode')
-            ->willReturn('EUR');
-        $orderMock
-            ->expects($this->once())
-            ->method('getBaseCurrencyCode')
-            ->willReturn('GBP');
+
         $orderMock
             ->expects($this->once())
             ->method('getBaseToOrderRate')
