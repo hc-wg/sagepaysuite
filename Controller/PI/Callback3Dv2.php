@@ -7,6 +7,7 @@ use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
 use Ebizmarts\SagePaySuite\Model\RecoverCart;
@@ -60,6 +61,9 @@ class Callback3Dv2 extends Action
     /** @var CustomerLogin */
     private $customerLogin;
 
+    /** @var Logger */
+    private $suiteLogger;
+
     /**
      * Callback3Dv2 constructor.
      * @param Context $context
@@ -76,6 +80,7 @@ class Callback3Dv2 extends Action
      * @param CustomerSession $customerSession
      * @param CustomerRepositoryInterface $customerRepository
      * @param CustomerLogin $customerLogin
+     * @param Logger $suiteLogger
      */
     public function __construct(
         Context $context,
@@ -91,7 +96,8 @@ class Callback3Dv2 extends Action
         OrderLoader $orderLoader,
         CustomerSession $customerSession,
         CustomerRepositoryInterface $customerRepository,
-        CustomerLogin $customerLogin
+        CustomerLogin $customerLogin,
+        Logger $suiteLogger
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -109,6 +115,7 @@ class Callback3Dv2 extends Action
         $this->customerSession             = $customerSession;
         $this->customerRepository          = $customerRepository;
         $this->customerLogin               = $customerLogin;
+        $this->suiteLogger                 = $suiteLogger;
     }
 
     public function execute()

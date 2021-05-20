@@ -134,11 +134,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getResultRedirectFactory')
             ->willReturn($this->resultRedirectFactoryMock);
-
-        $this->orderMock
-            ->expects($this->once())
-            ->method('getEntityId')
-            ->willReturn($orderId);
+        
         $this->orderMock
             ->expects($this->exactly(2))
             ->method('getIncrementId')
@@ -149,7 +145,7 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->willReturn("canceled");
 
         $paymentMock = $this
-            ->getMockBuilder(OrderPaymentInterface::class)
+            ->getMockBuilder(\Magento\Sales\Api\Data\OrderPaymentInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
