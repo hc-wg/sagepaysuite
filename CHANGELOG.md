@@ -12,6 +12,7 @@
 - The service interface name "Ebizmarts\SagePaySuite\Model\Token\Get" is invalid.
 - Invoice created successfully in Magento when transaction was aborted
 - PI Authorize and Capture orders not being invoiced
+- Recover cart message appearing in product page after successful order with PI and 3D
 
 ## [1.3.19.1] - 2021-05-12
 ### Fixed
