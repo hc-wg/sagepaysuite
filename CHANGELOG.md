@@ -1,3 +1,11 @@
+## [1.1.39] - 2021-05-26
+### Added
+- Debug Mode setting
+- Prevent customer personal data from logging setting
+- Show 3rdMan score and score breakdown on order details
+### Fixed
+- PI Authorize and Capture orders not being invoiced
+
 ## [1.1.38.1] - 2021-05-12
 ### Fixed
 - PI with 3D redirecting to cart after checkout
@@ -416,6 +424,7 @@
    - PI integration (frontend)
    - Online Refunds
 
+[1.1.39]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.39
 [1.1.38.1]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.38.1
 [1.1.38]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.38
 [1.1.37]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.37
