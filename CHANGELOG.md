@@ -5,6 +5,7 @@
 - Show 3rdMan score and score breakdown on order details
 ### Fixed
 - PI Authorize and Capture orders not being invoiced
+- Recover cart message appearing in product page after successful order with PI and 3D
 
 ## [1.1.38.1] - 2021-05-12
 ### Fixed
