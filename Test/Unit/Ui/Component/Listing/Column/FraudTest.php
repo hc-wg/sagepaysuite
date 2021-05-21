@@ -13,7 +13,7 @@ use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponent\Processor;
 use Magento\Framework\View\Element\UiComponentFactory;
 
-class FraudTest extends \PHPUnit\Framework\TestCase
+class FraudTest extends \PHPUnit_Framework_TestCase
 {
     const FIELD_NAME = "sagepay_fraud";
     const INDEX = "fraudcode";

@@ -10,6 +10,7 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\OrderFactory;
@@ -81,6 +82,7 @@ class Success extends \Magento\Framework\App\Action\Action
     {
         try {
             $request = $this->getRequest();
+            $this->_suiteLogger->debugLog($request->getParams(), [__METHOD__, __LINE__]);
 
             $storeId = $request->getParam("_store");
             $quoteId = $this->encryptor->decrypt($request->getParam("quoteid"));
@@ -102,6 +104,8 @@ class Success extends \Magento\Framework\App\Action\Action
             //remove order pre-saved flag from checkout
             $this->_checkoutSession->setData(SagePaySession::PRESAVED_PENDING_ORDER_KEY, null);
             $this->_checkoutSession->setData(SagePaySession::CONVERTING_QUOTE_TO_ORDER, 0);
+
+            $this->_suiteLogger->orderEndLog($order->getIncrementId(), $quoteId, $order->getPayment()->getLastTransId());
         } catch (\Exception $e) {
             $this->_logger->critical($e);
             $this->messageManager->addError(__('An error ocurred.'));

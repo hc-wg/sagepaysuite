@@ -9,7 +9,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Ui\Component\Listing\Column;
 
 use Ebizmarts\SagePaySuite\Ui\Component\Listing\Column\OrderGridColumns;
 
-class OrderGridColumnsTest extends \PHPUnit\Framework\TestCase
+class OrderGridColumnsTest extends \PHPUnit_Framework_TestCase
 {
     const IMAGE_URL_CHECK = 'Ebizmarts_SagePaySuite::images/icon-shield-check.png';
     const IMAGE_URL_CROSS = 'Ebizmarts_SagePaySuite::images/icon-shield-cross.png';

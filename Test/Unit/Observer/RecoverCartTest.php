@@ -11,7 +11,7 @@ use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-class RecoverCartTest extends \PHPUnit\Framework\TestCase
+class RecoverCartTest extends \PHPUnit_Framework_TestCase
 {
     const TEST_BASE_URL = "http://magento.test/";
     const TEST_MESSAGE  = "There is an order in process. Click <a target='_self' href=http://magento.test/sagepaysuite/cart/recover>HERE</a> to recover the cart.";

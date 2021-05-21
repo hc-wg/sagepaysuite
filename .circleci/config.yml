@@ -115,6 +115,7 @@ jobs:
       steps:
         - attach_workspace:
             at: ~/magento2
+        - run: sudo sh -c 'echo "memory_limit = 512M" > /usr/local/etc/php/conf.d/memory.ini'
         - sagepay/run-php-unit-tests:
             coverage: --coverage-text
 workflows:

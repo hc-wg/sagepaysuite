@@ -7,19 +7,19 @@
 namespace Ebizmarts\SagePaySuite\Controller\Form;
 
 use Ebizmarts\SagePaySuite\Helper\Checkout;
+use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
+use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Form;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\OrderUpdateOnCallback;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
-use Ebizmarts\SagePaySuite\Helper\Data as SuiteHelper;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderFactory;
-use Magento\Framework\Encryption\EncryptorInterface;
-use Ebizmarts\SagePaySuite\Model\Config;
 
 class Success extends \Magento\Framework\App\Action\Action
 {
@@ -87,6 +87,7 @@ class Success extends \Magento\Framework\App\Action\Action
      * @param OrderSender $orderSender
      * @param OrderUpdateOnCallback $updateOrderCallback
      * @param SuiteHelper $suiteHelper
+     * @param EncryptorInterface $encryptor
      */
     public function __construct(
         Context $context,
@@ -101,7 +102,6 @@ class Success extends \Magento\Framework\App\Action\Action
         SuiteHelper $suiteHelper,
         EncryptorInterface $encryptor
     ) {
-    
         parent::__construct($context);
         $this->_checkoutSession    = $checkoutSession;
         $this->_quoteFactory       = $quoteFactory;
@@ -128,14 +128,15 @@ class Success extends \Magento\Framework\App\Action\Action
 
             $this->_suiteLogger->sageLog(Logger::LOG_REQUEST, $response, [__METHOD__, __LINE__]);
 
-            $this->_quote = $this->_quoteFactory->create()->load(
-                $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"))
-            );
+            $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quoteid"));
+            $this->_quote = $this->_quoteFactory->create()->load($quoteId);
+            $this->_suiteLogger->debugLog($this->_quote->getData(), [__METHOD__, __LINE__]);
 
             $this->_order = $this->_orderFactory->create()->loadByIncrementId($this->_quote->getReservedOrderId());
             if ($this->_order === null || $this->_order->getId() === null) {
                 throw new LocalizedException(__('Order not available.'));
             }
+            $this->_suiteLogger->debugLog($this->_order->getData(), [__METHOD__, __LINE__]);
 
             $transactionId = $response["VPSTxId"];
             $transactionId = $this->suiteHelper->removeCurlyBraces($transactionId); //strip brackets
@@ -147,6 +148,10 @@ class Success extends \Magento\Framework\App\Action\Action
             $isDuplicated = $payment->getAdditionalInformation("Status") == Config::OK_STATUS;
 
             if (!$isDuplicated) {
+                $this->_suiteLogger->debugLog(
+                    'Payment VendorTxCode: ' . $vendorTxCode . ' Response VendorTxCode: ' . $response['VendorTxCode'],
+                    [__METHOD__, __LINE__]
+                );
                 if (!empty($transactionId) && ($vendorTxCode == $response['VendorTxCode'])) {
                     foreach ($response as $name => $value) {
                         $payment->setTransactionAdditionalInfo($name, $value);
@@ -162,6 +167,7 @@ class Success extends \Magento\Framework\App\Action\Action
                     }
 
                     $payment->save();
+                    $this->_suiteLogger->debugLog($payment->getData(), [__METHOD__, __LINE__]);
                 } else {
                     throw new \Magento\Framework\Validator\Exception(__('Invalid transaction id.'));
                 }
@@ -197,9 +203,10 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->_checkoutSession->setLastOrderId($this->_order->getId());
             $this->_checkoutSession->setLastRealOrderId($this->_order->getIncrementId());
             $this->_checkoutSession->setLastOrderStatus($this->_order->getStatus());
-
             $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
             $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
+
+            $this->_suiteLogger->orderEndLog($this->_order->getIncrementId(), $quoteId, $transactionId);
 
             return $this->_redirect($redirect);
         } catch (\Exception $e) {

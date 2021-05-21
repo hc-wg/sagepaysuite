@@ -13,9 +13,8 @@ use Magento\Framework\View\Asset\Repository;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use \Ebizmarts\SagePaySuite\Helper\AdditionalInformation;
 
-class OrderGridInfoTest extends \PHPUnit\Framework\TestCase
+class OrderGridInfoTest extends \PHPUnit_Framework_TestCase
 {
     const ENTITY_ID = 1;
     const IMAGE_URL_TEST = 'https://example.com/adminhtml/Magento/backend/en_US/Ebizmarts_SagePaySuite/images/test.png';
