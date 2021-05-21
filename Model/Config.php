@@ -10,7 +10,6 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Payment\Model\Method\AbstractMethod;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
-use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -190,12 +189,6 @@ class Config
     private $storeManager;
 
     /**
-     * Logging instance
-     * @var \Ebizmarts\SagePaySuite\Model\Logger\Logger
-     */
-    private $suiteLogger;
-
-    /**
      * @var ScopeConfigInterface
      */
     private $scopeConfig;
@@ -204,17 +197,13 @@ class Config
      * Config constructor.
      * @param ScopeConfigInterface $scopeConfig
      * @param StoreManagerInterface $storeManager
-     * @param Logger $suiteLogger
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
-        StoreManagerInterface $storeManager,
-        Logger $suiteLogger
+        StoreManagerInterface $storeManager
     ) {
-
         $this->scopeConfig  = $scopeConfig;
         $this->storeManager = $storeManager;
-        $this->suiteLogger  = $suiteLogger;
 
         $this->configurationScopeId = null;
         $this->configurationScope   = ScopeInterface::SCOPE_STORE;
@@ -719,5 +708,15 @@ class Config
     public function get3dNewWindow()
     {
         return $this->getValue("threed_new_window");
+    }
+
+    public function getDebugMode()
+    {
+        return $this->getAdvancedValue("debug_mode");
+    }
+
+    public function getPreventPersonalDataLogging()
+    {
+        return $this->getAdvancedValue("prevent_personal_data_logging");
     }
 }

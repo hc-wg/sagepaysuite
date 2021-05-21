@@ -3,38 +3,48 @@
 namespace Ebizmarts\SagePaySuite\Model;
 
 use Ebizmarts\SagePaySuite\Api\Data\PiRequest as PiDataRequest;
+use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\PiRequestManagement\EcommerceManagement;
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Quote\Model\QuoteIdMaskFactory;
 
 class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInterface
 {
     /** @var Config */
     private $config;
 
-    /** @var \Magento\Quote\Api\CartRepositoryInterface */
+    /** @var CartRepositoryInterface */
     private $quoteRepository;
 
     /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager */
     private $piRequestManagerDataFactory;
 
-    /** @var \Ebizmarts\SagePaySuite\Model\PiRequestManagement\EcommerceManagement */
+    /** @var EcommerceManagement */
     private $requester;
 
-    /** @var \Magento\Quote\Model\QuoteIdMaskFactory */
+    /** @var QuoteIdMaskFactory */
     private $quoteIdMaskFactory;
 
+    /** @var Logger */
+    private $suiteLogger;
+
     public function __construct(
-        \Ebizmarts\SagePaySuite\Model\Config $config,
-        \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
-        \Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory $piReqManagerFactory,
-        \Ebizmarts\SagePaySuite\Model\PiRequestManagement\EcommerceManagement $requester,
-        \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory
+        Config $config,
+        CartRepositoryInterface $quoteRepository,
+        PiRequestManagerFactory $piReqManagerFactory,
+        EcommerceManagement $requester,
+        QuoteIdMaskFactory $quoteIdMaskFactory,
+        Logger $suiteLogger
     ) {
         $this->config = $config;
-        $this->config->setMethodCode(\Ebizmarts\SagePaySuite\Model\Config::METHOD_PI);
+        $this->config->setMethodCode(Config::METHOD_PI);
 
         $this->requester                   = $requester;
         $this->quoteRepository             = $quoteRepository;
         $this->quoteIdMaskFactory          = $quoteIdMaskFactory;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
+        $this->suiteLogger                 = $suiteLogger;
     }
 
     /**
@@ -66,8 +76,12 @@ class PiRequestManagement implements \Ebizmarts\SagePaySuite\Api\PiManagementInt
         $data->setScreenWidth($requestData->getScreenWidth());
         $data->setTimezone($requestData->getTimezone());
 
+        $quote = $this->getQuoteById($cartId);
+        $this->suiteLogger->orderStartLog('PI', $quote->getReservedOrderId(), $cartId);
+        $this->suiteLogger->debugLog($quote->getData(), [__LINE__, __METHOD__]);
+
         $this->requester->setRequestData($data);
-        $this->requester->setQuote($this->getQuoteById($cartId));
+        $this->requester->setQuote($quote);
 
         return $this->requester->placeOrder();
     }

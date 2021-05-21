@@ -3,6 +3,7 @@
 namespace Ebizmarts\SagePaySuite\Controller\PI;
 
 use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory;
+use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
@@ -13,7 +14,6 @@ use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session as CustomerSession;
-use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\CsrfAwareActionInterface;
@@ -108,14 +108,17 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
             $order = $this->orderRepository->get($orderId);
             $customerId = $order->getCustomerId();
+            $this->suiteLogger->debugLog($order->getData(), [__LINE__, __METHOD__]);
 
             if ($customerId != null) {
                 $this->customerLogin->logInCustomer($customerId);
             }
 
             $payment = $order->getPayment();
+            $this->suiteLogger->debugLog($payment->getData(), [__LINE__, __METHOD__]);
 
             if ($this->isParesDuplicated($payment, $sanitizedPares)) {
+                $this->suiteLogger->debugLog("Duplicated Pares", [__LINE__, __METHOD__]);
                 $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
                 return;
             } else {
@@ -123,7 +126,9 @@ class Callback3D extends Action implements CsrfAwareActionInterface
                 $payment->save();
             }
 
-            if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
+            $orderState = $order->getState();
+            $this->suiteLogger->debugLog("Order State: " . $orderState, [__LINE__, __METHOD__]);
+            if ($orderState !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
                 $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
                 return;
             }
@@ -141,6 +146,7 @@ class Callback3D extends Action implements CsrfAwareActionInterface
 
             $response = $this->requester->placeOrder();
 
+            $this->suiteLogger->orderEndLog($order->getIncrementId(), $order->getQuoteId(), $payment->getLastTransId());
             if ($response->getErrorMessage() === null) {
                 $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
             } else {
