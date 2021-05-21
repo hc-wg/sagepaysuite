@@ -1,3 +1,18 @@
+## [1.4.39] - 2021-05-26
+### Added
+- Compatibility with Magento 2.4.2-p1
+- Debug Mode setting
+- Prevent customer personal data from logging setting
+- Show 3rdMan score and score breakdown on order details
+### Changed
+- Ask customers if want to save the credit card when they already have tokens
+### Fixed
+- 0.01 difference when you try to invoice PI Defer orders
+- DropIn form not appearing after deleting all tokens on checkout
+- The service interface name "Ebizmarts\SagePaySuite\Model\Token\Get" is invalid.
+- Invoice created successfully in Magento when transaction was aborted
+- PI Authorize and Capture orders not being invoiced
+
 ## [1.4.5.1] - 2021-05-12
 ### Fixed
 - PI with 3D redirecting to cart after checkout
@@ -56,6 +71,7 @@
 - Server not recovering cart when cancel the transaction
 - Add form validation in PI WITHOUT Form
 
+[1.4.39]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.39
 [1.4.5.1]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.5.1
 [1.4.5]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.5
 [1.4.4]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.4
