@@ -56,6 +56,9 @@ class Success extends Action
             $session->setLastRealOrderId($order->getIncrementId());
         }
 
+        $session->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
+        $session->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
+
         $this->_redirect("checkout/onepage/success");
     }
 }

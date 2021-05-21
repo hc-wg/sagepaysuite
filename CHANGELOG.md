@@ -7,6 +7,7 @@
 - 0.01 difference when you try to invoice PI Defer orders
 - Invoice created successfully in Magento when transaction was aborted
 - PI Authorize and Capture orders not being invoiced
+- Recover cart message appearing in product page after successful order with PI and 3D
 
 ## [1.2.27.1] - 2021-05-12
 ### Fixed
