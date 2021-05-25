@@ -12,6 +12,7 @@ use Ebizmarts\SagePaySuite\Model\Api\PIRest;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Config\ClosedForAction;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
+use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\PI;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
@@ -655,6 +656,10 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(\Ebizmarts\SagePaySuite\Model\CryptAndCodeData::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $suiteLoggerMock = $this
+            ->getMockBuilder(Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $threeDSecureCallbackManagementMock = $this
             ->getMockBuilder(ThreeDSecureCallbackManagement::class)
@@ -665,22 +670,23 @@ class ThreeDSecureCallbackManagementTest extends \PHPUnit\Framework\TestCase
                 'getPayResult'
             ])
             ->setConstructorArgs([
-                'checkoutHelper'     => $checkoutMock,
-                'piRestApi'          => $piRestMock,
-                'ccConvert'          => $sagePayCardTypeMock,
-                'piRequest'          => $piRequestMock,
-                'suiteHelper'        => $dataMock,
-                'result'             => $piResultMock,
-                'checkoutSession'    => $sessionMock,
-                'httpRequest'        => $requestMock,
-                'transactionFactory' => $transactionFactoryMock,
-                'payResultFactory'   => $this->payResultFactoryMock,
-                'actionFactory'      => $closedForActionFactoryMock,
-                'orderRepository'    => $orderRepositoryMock,
-                'invoiceEmailSender' => $invoiceSenderMock,
-                'config'             => $configMock,
-                'paymentFailures'    => $paymentFailuresInterfaceMock,
-                'cryptAndCode'       => $cryptAndCodeDataMock
+                'checkoutHelper'      => $checkoutMock,
+                'piRestApi'           => $piRestMock,
+                'ccConvert'           => $sagePayCardTypeMock,
+                'piRequest'           => $piRequestMock,
+                'suiteHelper'         => $dataMock,
+                'result'              => $piResultMock,
+                'checkoutSession'     => $sessionMock,
+                'httpRequest'         => $requestMock,
+                'transactionFactory'  => $transactionFactoryMock,
+                'payResultFactory'    => $this->payResultFactoryMock,
+                'actionFactory'       => $closedForActionFactoryMock,
+                'orderRepository'     => $orderRepositoryMock,
+                'invoiceEmailSender'  => $invoiceSenderMock,
+                'config'              => $configMock,
+                'paymentFailures'     => $paymentFailuresInterfaceMock,
+                'cryptAndCode'        => $cryptAndCodeDataMock,
+                'suiteLogger'         => $suiteLoggerMock
             ])
             ->getMock();
 

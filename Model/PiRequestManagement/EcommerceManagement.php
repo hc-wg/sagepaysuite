@@ -134,7 +134,7 @@ class EcommerceManagement extends RequestManagement
             $payment->setTransactionId($this->getPayResult()->getTransactionId());
             $payment->setLastTransId($this->getPayResult()->getTransactionId());
             $payment->save();
-
+            $this->sagePaySuiteLogger->debugLog($payment->getData(), [__LINE__, __METHOD__]);
             $this->createInvoiceForSuccessPayment($payment, $order);
         } else {
             throw new ValidatorException(__('Unable to save Opayo order'));
@@ -169,9 +169,12 @@ class EcommerceManagement extends RequestManagement
     private function createInvoiceForSuccessPayment($payment, $order)
     {
         //invoice
-        if ($this->getPayResult()->getStatusCode() === Config::SUCCESS_STATUS) {
+        $statusCode = $this->getPayResult()->getStatusCode();
+        $this->sagePaySuiteLogger->debugLog("StatusCode: " . $statusCode, [__LINE__, __METHOD__]);
+        if ($statusCode === Config::SUCCESS_STATUS) {
             $request = $this->getRequest();
             $sagePayPaymentAction = $request['transactionType'];
+            $this->sagePaySuiteLogger->debugLog("PaymentAction: " . $sagePayPaymentAction, [__LINE__, __METHOD__]);
             if ($sagePayPaymentAction === Config::ACTION_PAYMENT_PI) {
                 $payment->getMethodInstance()->markAsInitialized();
             }

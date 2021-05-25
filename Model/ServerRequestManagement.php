@@ -2,7 +2,6 @@
 
 namespace Ebizmarts\SagePaySuite\Model;
 
-use Ebizmarts\SagePaySuite;
 use Magento\Framework\Validator\Exception as InputException;
 
 class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManagementInterface
@@ -88,6 +87,23 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
      */
     private $encryptor;
 
+    /**
+     * ServerRequestManagement constructor.
+     * @param Config $config
+     * @param \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper
+     * @param Api\Post $postApi
+     * @param Logger\Logger $suiteLogger
+     * @param \Ebizmarts\SagePaySuite\Helper\Checkout $checkoutHelper
+     * @param \Ebizmarts\SagePaySuite\Helper\Request $requestHelper
+     * @param Token $tokenModel
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Magento\Customer\Model\Session $customerSession
+     * @param \Ebizmarts\SagePaySuite\Api\Data\ResultInterface $result
+     * @param \Magento\Quote\Api\CartRepositoryInterface $quoteRepository
+     * @param \Magento\Framework\UrlInterface $coreUrl
+     * @param \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory
+     * @param \Magento\Framework\Encryption\EncryptorInterface $encryptor
+     */
     public function __construct(
         Config $config,
         \Ebizmarts\SagePaySuite\Helper\Data $suiteHelper,
@@ -104,7 +120,6 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         \Magento\Quote\Model\QuoteIdMaskFactory $quoteIdMaskFactory,
         \Magento\Framework\Encryption\EncryptorInterface $encryptor
     ) {
-    
         $this->result             = $result;
         $this->quoteRepository    = $quoteRepository;
         $this->_config            = $config;
@@ -134,7 +149,6 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
      */
     public function savePaymentInformationAndPlaceOrder($cartId, $save_token, $token)
     {
-
         try {
             //prepare quote
             $quote = $this->getQuoteById($cartId);
@@ -143,8 +157,12 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
             $quote->collectTotals();
             $quote->reserveOrderId();
 
+            $this->_suiteLogger->orderStartLog('SERVER', $quote->getReservedOrderId(), $quote->getId());
+            $this->_suiteLogger->debugLog($quote->getData(), [__METHOD__, __LINE__]);
+
             //generate POST request
             $request = $this->_generateRequest($save_token, $token);
+            $this->_suiteLogger->debugLog($request, [__METHOD__, __LINE__]);
 
             //send POST to Sage Pay
             $post_response = $this->_postApi->sendPost(
@@ -152,6 +170,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
                 $this->_getServiceURL(),
                 ["OK"]
             );
+            $this->_suiteLogger->debugLog($post_response, [__METHOD__, __LINE__]);
 
             //set payment info for save order
             $transactionId = $post_response["data"]["VPSTxId"];
@@ -161,7 +180,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
 
             //save order with pending payment
             $order = $this->_checkoutHelper->placeOrder($quote);
-
+            $this->_suiteLogger->debugLog($order->getData(), [__METHOD__, __LINE__]);
             if ($order) {
                 //set pre-saved order flag in checkout session
                 $this->_checkoutSession->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, $order->getId());
@@ -177,6 +196,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
                 $payment->setAdditionalInformation('paymentAction', $this->_config->getSagepayPaymentAction());
                 $payment->setAdditionalInformation('securityKey', $post_response["data"]["SecurityKey"]);
                 $payment->save();
+                $this->_suiteLogger->debugLog($payment->getData(), [__METHOD__, __LINE__]);
 
                 //prepare response
                 $this->result->setSuccess(true);
@@ -223,7 +243,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         $mode = $this->_config->getMode();
         if ($mode == Config::MODE_LIVE) {
             return Config::URL_SERVER_POST_LIVE;
-        } else if($mode == Config::MODE_DEVELOPMENT) {
+        } elseif ($mode == Config::MODE_DEVELOPMENT) {
             return Config::URL_SERVER_POST_DEV;
         } else {
             return Config::URL_SERVER_POST_TEST;
@@ -237,7 +257,6 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
      */
     private function _generateRequest($save_token, $token)
     {
-
         $data                    = [];
         $data["VPSProtocol"]     = $this->_config->getVPSProtocol();
         $data["TxType"]          = $this->_config->getSagepayPaymentAction();
@@ -250,6 +269,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         //populate payment amount information
         $data = array_merge($data, $this->_requestHelper->populatePaymentAmountAndCurrency($this->_quote));
 
+        $this->_suiteLogger->debugLog("Basket Format: " . $this->_config->getBasketFormat(), [__METHOD__, __LINE__]);
         if ($this->_config->getBasketFormat() != Config::BASKETFORMAT_DISABLED) {
             $data = array_merge($data, $this->_requestHelper->populateBasketInformation($this->_quote));
         }
@@ -265,6 +285,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
             $customer_data->getId(),
             $this->_config->getVendorname()
         );
+
         if ($save_token && !empty($customer_data) && !$slots) {
             //save token
             $data["CreateToken"] = 1;
@@ -282,6 +303,7 @@ class ServerRequestManagement implements \Ebizmarts\SagePaySuite\Api\ServerManag
         $data["BillingAgreement"] = (int)$this->_config->getPaypalBillingAgreement();
 
         //server profile
+        $this->_suiteLogger->debugLog("Low Profile enabled: " . $this->_config->isServerLowProfileEnabled(), [__METHOD__, __LINE__]);
         if ((bool)$this->_config->isServerLowProfileEnabled() === true) {
             $data["Profile"] = "LOW";
         }
