@@ -57,6 +57,18 @@
                 </group>
                 <group id="advanced" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Advanced Settings</label>
+                    <field id="debug_mode" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>Debug Mode</label>
+                        <comment><![CDATA[This will create two new logs and start logging more information. We recommend having it disabled unless it's required.]]></comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>sagepaysuite/advanced/debug_mode</config_path>
+                    </field>
+                    <field id="prevent_personal_data_logging" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>Prevent personal data logging</label>
+                        <comment><![CDATA[Customers' personal information will no longer be logged, XXXXX will be logged instead.]]></comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>sagepaysuite/advanced/prevent_personal_data_logging</config_path>
+                    </field>
                     <field id="threedsecure" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>3D Secure Authentication</label>
                         <comment><![CDATA[The 3D Secure configuration is also declared in Opayo's dashboard and will be overwritten by this setting if not set to 'default'.]]></comment>

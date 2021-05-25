@@ -84,7 +84,7 @@ class Cancel extends Action
         EncryptorInterface $encryptor,
         RecoverCart $recoverCart
     ) {
-    
+
         parent::__construct($context);
         $this->suiteLogger        = $suiteLogger;
         $this->config             = $config;
@@ -105,9 +105,10 @@ class Cancel extends Action
 
         $storeId = $this->getRequest()->getParam("_store");
         $quoteId = $this->encryptor->decrypt($this->getRequest()->getParam("quote"));
-
+        $this->suiteLogger->debugLog($this->getRequest()->getParams(), [__METHOD__, __LINE__]);
         $this->quote->setStoreId($storeId);
         $this->quote->load($quoteId);
+        $incrementId = $this->quote->getReservedOrderId();
 
         if (empty($this->quote->getId())) {
             throw new \Exception("Quote not found.");
@@ -115,6 +116,8 @@ class Cancel extends Action
 
         $orderId = $this->encryptor->decrypt($this->getRequest()->getParam("orderId"));
         $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
+
+        $this->suiteLogger->orderEndLog($incrementId, $quoteId);
 
         $this
             ->getResponse()

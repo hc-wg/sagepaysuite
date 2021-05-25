@@ -606,7 +606,8 @@ class SuccessTest extends \PHPUnit_Framework_TestCase
             ->setMethods(
                 [
                     'logException',
-                    'sageLog'
+                    'sageLog',
+                    'debugLog'
                 ]
             )
             ->disableOriginalConstructor()

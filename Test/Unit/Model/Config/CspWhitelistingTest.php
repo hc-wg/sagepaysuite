@@ -2,7 +2,7 @@
 
 namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Config;
 
-class CspWhitelistingTest extends \PHPUnit\Framework\TestCase
+class CspWhitelistingTest extends \PHPUnit_Framework_TestCase
 {
     public function testCspUrlsValues()
     {

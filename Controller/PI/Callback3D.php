@@ -3,6 +3,7 @@
 namespace Ebizmarts\SagePaySuite\Controller\PI;
 
 use Ebizmarts\SagePaySuite\Api\Data\PiRequestManagerFactory;
+use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
@@ -11,7 +12,6 @@ use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session as CustomerSession;
-use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
@@ -51,6 +51,9 @@ class Callback3D extends Action
     /** @var CustomerLogin */
     private $customerLogin;
 
+    /** @var Logger */
+    private $suiteLogger;
+
     /**
      * Callback3D constructor.
      * @param Context $context
@@ -64,6 +67,7 @@ class Callback3D extends Action
      * @param CustomerSession $customerSession
      * @param CustomerRepositoryInterface $customerRepository
      * @param CustomerLogin $customerLogin
+     * @param Logger $suiteLogger
      */
     public function __construct(
         Context $context,
@@ -76,7 +80,8 @@ class Callback3D extends Action
         CheckoutSession $checkoutSession,
         CustomerSession $customerSession,
         CustomerRepositoryInterface $customerRepository,
-        CustomerLogin $customerLogin
+        CustomerLogin $customerLogin,
+        Logger $suiteLogger
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -90,6 +95,7 @@ class Callback3D extends Action
         $this->customerSession             = $customerSession;
         $this->customerRepository          = $customerRepository;
         $this->customerLogin               = $customerLogin;
+        $this->suiteLogger                 = $suiteLogger;
     }
 
     public function execute()
@@ -100,13 +106,17 @@ class Callback3D extends Action
             $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
             $order = $this->orderRepository->get($orderId);
             $customerId = $order->getCustomerId();
+            $this->suiteLogger->debugLog($order->getData(), [__LINE__, __METHOD__]);
 
             if ($customerId != null) {
                 $this->customerLogin->logInCustomer($customerId);
             }
 
             $payment = $order->getPayment();
+            $this->suiteLogger->debugLog($payment->getData(), [__LINE__, __METHOD__]);
+
             if ($this->isParesDuplicated($payment, $sanitizedPares)) {
+                $this->suiteLogger->debugLog("Duplicated Pares", [__LINE__, __METHOD__]);
                 $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
                 return;
             } else {
@@ -114,7 +124,9 @@ class Callback3D extends Action
                 $payment->save();
             }
 
-            if ($order->getState() !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
+            $orderState = $order->getState();
+            $this->suiteLogger->debugLog("Order State: " . $orderState, [__LINE__, __METHOD__]);
+            if ($orderState !== \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
                 $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
                 return;
             }
@@ -133,6 +145,7 @@ class Callback3D extends Action
 
             $response = $this->requester->placeOrder();
 
+            $this->suiteLogger->orderEndLog($order->getIncrementId(), $order->getQuoteId(), $payment->getLastTransId());
             if ($response->getErrorMessage() === null) {
                 $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
             } else {
@@ -141,6 +154,7 @@ class Callback3D extends Action
             }
         } catch (ApiException $apiException) {
             $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getMessage(), [__METHOD__, __LINE__]);
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError($apiException->getUserMessage());
             $this->javascriptRedirect('checkout/cart');
@@ -151,6 +165,7 @@ class Callback3D extends Action
             throw new \RuntimeException(__(self::DUPLICATED_CALLBACK_ERROR_MESSAGE));
         } catch (\Exception $e) {
             $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getMessage(), [__METHOD__, __LINE__]);
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
             $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
             $this->javascriptRedirect('checkout/cart');

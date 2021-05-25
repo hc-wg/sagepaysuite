@@ -38,9 +38,6 @@ class EcommerceManagement extends RequestManagement
     /** @var Config */
     private $config;
 
-    /** @var EncryptorInterface */
-    private $encryptor;
-
     /** @var CryptAndCodeData */
     private $cryptAndCode;
 
@@ -116,7 +113,7 @@ class EcommerceManagement extends RequestManagement
             $payment->setTransactionId($this->getPayResult()->getTransactionId());
             $payment->setLastTransId($this->getPayResult()->getTransactionId());
             $payment->save();
-
+            $this->sagePaySuiteLogger->debugLog($payment->getData(), [__LINE__, __METHOD__]);
             $this->createInvoiceForSuccessPayment($payment, $order);
         } else {
             throw new \Magento\Framework\Validator\Exception(__('Unable to save Opayo order'));
@@ -151,7 +148,9 @@ class EcommerceManagement extends RequestManagement
     private function createInvoiceForSuccessPayment($payment, $order)
     {
         //invoice
-        if ($this->getPayResult()->getStatusCode() == \Ebizmarts\SagePaySuite\Model\Config::SUCCESS_STATUS) {
+        $statusCode = $this->getPayResult()->getStatusCode();
+        $this->sagePaySuiteLogger->debugLog("StatusCode: " . $statusCode, [__LINE__, __METHOD__]);
+        if ($statusCode === Config::SUCCESS_STATUS) {
             $payment->getMethodInstance()->markAsInitialized();
             $order->place()->save();
 

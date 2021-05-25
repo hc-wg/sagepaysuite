@@ -34,7 +34,7 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
             )
             ->disableOriginalConstructor()
             ->getMock();
-        $configMock->expects($this->once())->method('getBasketFormat')->willReturn("Disabled");
+        $configMock->expects($this->exactly(2))->method('getBasketFormat')->willReturn("Disabled");
         $configMock->expects($this->exactly(2))->method('getSagepayPaymentAction')->willReturn("PAYMENT");
         $configMock->expects($this->exactly(2))->method('getMode')->willReturn("test");
         $configMock->expects($this->exactly(3))->method('getVendorname')->willReturn("testebizmarts");
@@ -42,7 +42,7 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
         $configMock->expects($this->once())->method('getAvsCvc')->willReturn(0);
         $configMock->expects($this->once())->method('isGiftAidEnabled')->willReturn(0);
         $configMock->expects($this->once())->method('getPaypalBillingAgreement')->willReturn(0);
-        $configMock->expects($this->once())->method('isServerLowProfileEnabled')->willReturn(0);
+        $configMock->expects($this->exactly(2))->method('isServerLowProfileEnabled')->willReturn(0);
 
         $helperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Data::class)
             ->disableOriginalConstructor()
@@ -154,9 +154,9 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $quoteMock->expects($this->once())->method('collectTotals')->willReturnSelf();
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
-        $quoteMock->expects($this->once())->method('getReservedOrderId')->willReturn(123);
+        $quoteMock->expects($this->exactly(2))->method('getReservedOrderId')->willReturn(123);
         $quoteMock->expects($this->once())->method('getPayment')->willReturn($paymentMock);
-        $quoteMock->expects($this->once())->method('getId')->willReturn(456);
+        $quoteMock->expects($this->exactly(2))->method('getId')->willReturn(456);
 
         $checkoutSessionMock->method('getQuote')->willReturn($quoteMock);
         $checkoutSessionMock->expects($this->exactly(2))->method('setData')->withConsecutive(
@@ -240,7 +240,7 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
             )
             ->disableOriginalConstructor()
             ->getMock();
-        $configMock->expects($this->once())->method('getBasketFormat')->willReturn("Disabled");
+        $configMock->expects($this->exactly(2))->method('getBasketFormat')->willReturn("Disabled");
         $configMock->expects($this->once())->method('getSagepayPaymentAction')->willReturn("PAYMENT");
         $configMock->expects($this->once())->method('getMode')->willReturn("live");
         $configMock->expects($this->exactly(2))->method('getVendorname')->willReturn("liveebizmarts");
@@ -248,7 +248,7 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
         $configMock->expects($this->once())->method('getAvsCvc')->willReturn(0);
         $configMock->expects($this->once())->method('isGiftAidEnabled')->willReturn(0);
         $configMock->expects($this->once())->method('getPaypalBillingAgreement')->willReturn(0);
-        $configMock->expects($this->once())->method('isServerLowProfileEnabled')->willReturn(1);
+        $configMock->expects($this->exactly(2))->method('isServerLowProfileEnabled')->willReturn(1);
 
         $helperMock = $this->getMockBuilder(\Ebizmarts\SagePaySuite\Helper\Data::class)
             ->disableOriginalConstructor()
@@ -338,8 +338,9 @@ class ServerRequestManagementTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $quoteMock->expects($this->once())->method('collectTotals')->willReturnSelf();
         $quoteMock->expects($this->once())->method('reserveOrderId')->willReturnSelf();
-        $quoteMock->expects($this->once())->method('getReservedOrderId')->willReturn(123);
+        $quoteMock->expects($this->exactly(2))->method('getReservedOrderId')->willReturn(123);
         $quoteMock->expects($this->never())->method('getPayment')->willReturn($paymentMock);
+        $quoteMock->expects($this->exactly(2))->method('getId')->willReturn(456);
 
         $checkoutSessionMock->method('getQuote')->willReturn($quoteMock);
 

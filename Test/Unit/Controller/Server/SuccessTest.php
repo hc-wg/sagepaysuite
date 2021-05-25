@@ -11,16 +11,16 @@ use Ebizmarts\SagePaySuite\Model\Logger\Logger as SuiteLogger;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\Http as HttpRequest;
+use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface as Logger;
-use Magento\Framework\Controller\Result\RedirectFactory;
-use Magento\Framework\Controller\Result\Redirect;
 
-class SuccessTest extends \PHPUnit\Framework\TestCase
+class SuccessTest extends \PHPUnit_Framework_TestCase
 {
     /** @var Session|\PHPUnit_Framework_MockObject_MockObject */
     private $checkoutSessionMock;
@@ -106,6 +106,9 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
         $storeId = 1;
         $quoteId = 69;
         $encrypted = '0:2:Dwn8kCUk6nZU5B7b0Xn26uYQDeLUKBrD:S72utt9n585GrslZpDp+DRpW+8dpqiu/EiCHXwfEhS0=';
+        $orderId = 52;
+        $incrementId = "10000014";
+        $transactionId = "F8A9409B-9C6C-4CCC-74DE-A6ED131B1DCC";
 
         $this->contextMock->expects($this->any())->method('getRequest')->willReturn($this->requestMock);
 
@@ -131,6 +134,29 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('getResultRedirectFactory')
             ->willReturn($this->resultRedirectFactoryMock);
+        
+        $this->orderMock
+            ->expects($this->exactly(2))
+            ->method('getIncrementId')
+            ->willReturn($incrementId);
+        $this->orderMock
+            ->expects($this->once())
+            ->method('getStatus')
+            ->willReturn("canceled");
+
+        $paymentMock = $this
+            ->getMockBuilder(\Magento\Sales\Api\Data\OrderPaymentInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->orderMock
+            ->expects($this->once())
+            ->method('getPayment')
+            ->willReturn($paymentMock);
+        $paymentMock
+            ->expects($this->once())
+            ->method('getLastTransId')
+            ->willReturn($transactionId);
 
         $this->resultRedirectFactoryMock
             ->expects($this->once())
@@ -141,6 +167,12 @@ class SuccessTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('setPath')
             ->with('checkout/onepage/success', ['_secure' => true]);
+
+        $this->suiteLoggerMock
+            ->expects($this->once())
+            ->method('orderEndLog')
+            ->with($incrementId, $quoteId, $transactionId)
+            ->willReturnSelf();
 
         $this->serverSuccessController = new Success(
             $this->contextMock,
