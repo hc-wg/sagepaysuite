@@ -24,11 +24,14 @@
 
     <type name="Ebizmarts\SagePaySuite\Model\Logger\Logger">
         <arguments>
+            <argument name="config" xsi:type="object">Ebizmarts\SagePaySuite\Model\Config</argument>
+            <argument name="suiteHelper" xsi:type="object">Ebizmarts\SagePaySuite\Helper\Data</argument>
             <argument name="name" xsi:type="string">SagePaySuiteLogger</argument>
             <argument name="handlers"  xsi:type="array">
                 <item name="Request" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\Request</item>
                 <item name="Cron" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\Cron</item>
                 <item name="Exception" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\Exception</item>
+                <item name="Debug" xsi:type="object">Ebizmarts\SagePaySuite\Model\Logger\Debug</item>
             </argument>
         </arguments>
     </type>
@@ -69,6 +72,8 @@
     <preference for="\Ebizmarts\SagePaySuite\Api\PiMerchantInterface" type="\Ebizmarts\SagePaySuite\Model\PiMsk" />
     <preference for="\Ebizmarts\SagePaySuite\Api\PiManagementInterface" type="\Ebizmarts\SagePaySuite\Model\PiRequestManagement" />
     <preference for="\Ebizmarts\SagePaySuite\Api\GuestPiManagementInterface" type="\Ebizmarts\SagePaySuite\Model\GuestPiRequestManagement" />
+
+    <preference for="\Ebizmarts\SagePaySuite\Api\TokenGetInterface" type="\Ebizmarts\SagePaySuite\Model\Token\Get" />
 
     <type name="Magento\Framework\Console\CommandList">
         <arguments>

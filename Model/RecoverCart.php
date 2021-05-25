@@ -207,6 +207,11 @@ class RecoverCart
             if ($state === Order::STATE_PENDING_PAYMENT) {
                 //The order might be cancelled on Controller/Server/Notify. This checks if the order is not cancelled before trying to cancel it.
                 $order->cancel()->save();
+                $this->suiteLogger->sageLog(
+                    Logger::LOG_REQUEST,
+                    'Order ' . $order->getIncrementId() . ' cancelled when recovering cart',
+                    [__METHOD__, __LINE__]
+                );
             } elseif ($state !== Order::STATE_CANCELED) {
                 $this->suiteLogger->sageLog(Logger::LOG_REQUEST, "Incorrect state found on order " . $order->getIncrementId() . " when trying to cancel it. State found: " . $state, [__METHOD__, __LINE__]);
             }

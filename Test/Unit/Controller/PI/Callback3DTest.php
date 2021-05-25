@@ -7,17 +7,16 @@
 namespace Ebizmarts\SagePaySuite\Test\Unit\Controller\PI;
 
 use Ebizmarts\SagePaySuite\Controller\PI\Callback3D;
+use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
+use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Magento\Sales\Model\Order\Payment;
-use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
-
 
 class Callback3DTest extends \PHPUnit\Framework\TestCase
 {
@@ -141,6 +140,10 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(Logger::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $suiteLoggerMock
+            ->expects($this->exactly(3))
+            ->method('debugLog')
+            ->willReturnSelf();
 
         $checkoutSessionMock = $this
             ->getMockBuilder(\Magento\Checkout\Model\Session::class)
@@ -308,6 +311,10 @@ class Callback3DTest extends \PHPUnit\Framework\TestCase
             ->getMockBuilder(Logger::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $suiteLoggerMock
+            ->expects($this->exactly(3))
+            ->method('debugLog')
+            ->willReturnSelf();
 
         $checkoutSessionMock = $this
             ->getMockBuilder(\Magento\Checkout\Model\Session::class)

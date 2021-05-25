@@ -47,7 +47,7 @@ define(
                 cardIdentifier: '',
                 dropInInstance: null,
                 save_token: false,
-                use_token: true,
+                use_token: false,
                 used_token_slots: 0
             },
             setPlaceOrderHandler: function (handler) {
@@ -716,23 +716,23 @@ define(
 
                 return (self.isTokenServiceEnabled() && this.use_token);
             },
-            getCustomerTokenCount: function () {
-                var sagePayTokens = window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount;
-                if (sagePayTokens.length > 0) {
-                   this.useSavedTokens();
+            getCustomerTokens: function () {
+                return window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount;
+            },
+            getCustomerTokensForInitialization: function () {
+                var customerTokens = this.getCustomerTokens();
+                if (customerTokens.length > 0) {
+                    this.useSavedTokens();
                 }
-                return sagePayTokens;
+                return customerTokens;
             },
             useSavedTokens: function () {
                 this.use_token = true;
                 this.destroyInstanceSagePay();
-                document.getElementById('piremembertoken').checked = 0;
-                $('#sagepay-pi-remembertoken-container').hide();
 
                 $('#' + this.getCode() + '-tokens .token-list').show();
-                $('#' + this.getCode() + '-tokens .add-new-card-link').show();
-                $('#' + this.getCode() + '-tokens .use-saved-card-link').hide();
-                $('#' + this.getCode() + '-tokens .using-new-card-message').hide();
+                $('#' + this.getCode() + '-tokens .use-different-card').show();
+                $('#sagepay-pi-remembertoken-container').hide();
             },
             customerHasTokens: function () {
                 this.save_token = false;
@@ -741,7 +741,7 @@ define(
                 if (this.dropInEnabled()) {
                     if (this.isTokenServiceEnabled()) {
                         this.save_token = true;
-                        var customerTokens = this.getCustomerTokenCount();
+                        var customerTokens = this.getCustomerTokens();
 
                         if (customerTokens && customerTokens.length > 0) {
                             this.used_token_slots = customerTokens.length;
@@ -753,14 +753,15 @@ define(
 
                 return this.use_token;
             },
-            addNewCard: function () {
+            useDifferentCard: function () {
                 this.use_token = false;
                 this.loadDropInForm();
                 document.getElementById('piremembertoken').checked = 1;
-                $('#' + this.getCode() + '-tokens .token-list').hide();
-                $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
-                $('#' + this.getCode() + '-tokens .using-new-card-message').show();
-                $('#' + this.getCode() + '-tokens .use-saved-card-link').show();
+                this.uncheckRadio();
+                $('#' + this.getCode() + '-tokens .token-list').show();
+                $('#' + this.getCode() + '-tokens .use-different-card').hide();
+                $('#sagepay-pi-remembertoken-container').show();
+                this.checkMaxTokensPerCustomer();
             },
             getIcons: function (type) {
                 switch (type) {
@@ -795,12 +796,14 @@ define(
 
                 if (this.isRadioChecked()) {
                     self.use_token = true;
+                    $('#' + this.getCode() + '-tokens .use-different-card').show();
+                    $('#sagepay-pi-remembertoken-container').hide();
                     self.loadDropInTokenForm();
                 }
             },
             isRadioChecked: function () {
                 var self = this;
-                var customerTokens = this.getCustomerTokenCount();
+                var customerTokens = this.getCustomerTokens();
                 for (var i = 0; i < customerTokens.length; i++) {
                     if ($('#' + self.getCode() + '-token-' + customerTokens[i].id).prop("checked") == true) {
                         return true;
@@ -808,9 +811,17 @@ define(
                 }
                 return false;
             },
+            uncheckRadio: function () {
+                var self = this;
+                var customerTokens = this.getCustomerTokens();
+
+                for (var i = 0; i < customerTokens.length; i++) {
+                    $('#' + self.getCode() + '-token-' + customerTokens[i].id).prop("checked", false);
+                }
+            },
             getSelectedToken: function () {
                 var self = this;
-                var customerTokens = this.getCustomerTokenCount();
+                var customerTokens = this.getCustomerTokens();
                 for (var i = 0; i < customerTokens.length; i++) {
                     if ($('#' + self.getCode() + '-token-' + customerTokens[i].id).prop("checked") == true) {
                         return customerTokens[i];
@@ -858,7 +869,7 @@ define(
 
                             if (response.success && response.success == true) {
                                 //check warning message
-                                self.used_token_slots = self.used_token_slots - 1;
+                                self.used_token_slots--;
                                 self.checkMaxTokensPerCustomer();
                                 self.checkIfCustomerRemovedAllTokens();
 
@@ -867,15 +878,11 @@ define(
                                 $('#' + self.getCode() + '-tokenrow-' + id).hide();
 
                                 //delete from token list
-                                var tokens = window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount;
+                                var tokens = self.getCustomerTokens();
                                 for (var i = 0; i < tokens.length; i++) {
                                     if (id == tokens[i].id) {
                                         tokens.splice(i, 1);
                                     }
-                                }
-                                if (tokens.length == 0) {
-                                    $('#' + self.getCode() + '-tokens').hide();
-                                    self.use_token = false;
                                 }
                             } else {
                                 self.showPaymentError(response.error_message);
@@ -891,18 +898,19 @@ define(
             checkMaxTokensPerCustomer: function () {
                 if (this.used_token_slots > 0 && this.used_token_slots >= window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.max_tokens) {
                     $('#' + this.getCode() + '-tokens .token-list .message-max-tokens').show();
-                    $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
+                    $('#sagepay-pi-remembertoken-container').hide();
+                    document.getElementById('piremembertoken').checked = 0;
                 } else {
                     $('#' + this.getCode() + '-tokens .token-list .message-max-tokens').hide();
-                    $('#' + this.getCode() + '-tokens .add-new-card-link').show();
                 }
             },
             checkIfCustomerRemovedAllTokens: function () {
-                if (window.checkoutConfig.payment.ebizmarts_sagepaysuitepi.tokenCount === 0) {
+                if (this.getCustomerTokens().length === 1) {
                     $('#' + this.getCode() + '-tokens .token-list').hide();
-                    $('#' + this.getCode() + '-tokens .add-new-card-link').hide();
-                    $('#' + this.getCode() + '-tokens .use-saved-card-link').hide();
-                    $('#' + this.getCode() + '-tokens .using-new-card-message').show();
+                    $('#' + this.getCode() + '-tokens .use-different-card').hide();
+                    $('#sagepay-pi-remembertoken-container').show();
+                    this.use_token = false;
+                    this.loadDropInForm();
                 }
             }
         });
