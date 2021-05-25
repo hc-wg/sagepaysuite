@@ -796,6 +796,8 @@ define(
 
                 if (this.isRadioChecked()) {
                     self.use_token = true;
+                    $('#' + this.getCode() + '-tokens .use-different-card').show();
+                    $('#sagepay-pi-remembertoken-container').hide();
                     self.loadDropInTokenForm();
                 }
             },
