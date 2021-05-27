@@ -32,7 +32,7 @@ interface TokenGetInterface
 
     /**
      * @param string $tokenId
-     * @return ResultInterface
+     * @return Ebizmarts\SagePaySuite\Api\Data\ResultInterface
      */
     public function getSagePayTokenAsResultInterface($tokenId);
 }
