@@ -2,8 +2,6 @@
 
 namespace Ebizmarts\SagePaySuite\Api;
 
-use Ebizmarts\SagePaySuite\Api\Data\ResultInterface;
-
 interface TokenGetInterface
 {
     /**
