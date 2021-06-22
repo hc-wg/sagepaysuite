@@ -17,16 +17,11 @@ use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Quote\Model\QuoteRepository;
-use Psr\Log\LoggerInterface;
 
 class Callback3Dv2 extends Action
 {
     /** @var Config */
     private $config;
-
-    /** @var LoggerInterface */
-    private $logger;
 
     /** @var ThreeDSecureCallbackManagement */
     private $requester;
@@ -34,20 +29,11 @@ class Callback3Dv2 extends Action
     /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager */
     private $piRequestManagerDataFactory;
 
-    /** @var Session */
-    private $checkoutSession;
-
-    /** @var OrderRepositoryInterface */
-    private $orderRepository;
-
     /** @var QuoteRepository */
     private $quoteRepository;
 
     /** @var CryptAndCodeData */
     private $cryptAndCode;
-
-    /** @var RecoverCart */
-    private $recoverCart;
 
     /** @var OrderLoader */
     private $orderLoader;
@@ -68,14 +54,10 @@ class Callback3Dv2 extends Action
      * Callback3Dv2 constructor.
      * @param Context $context
      * @param Config $config
-     * @param LoggerInterface $logger
      * @param ThreeDSecureCallbackManagement $requester
      * @param PiRequestManagerFactory $piReqManagerFactory
-     * @param Session $checkoutSession
-     * @param OrderRepositoryInterface $orderRepository
      * @param QuoteRepository $quoteRepository
      * @param CryptAndCodeData $cryptAndCode
-     * @param RecoverCart $recoverCart
      * @param OrderLoader $orderLoader
      * @param CustomerSession $customerSession
      * @param CustomerRepositoryInterface $customerRepository
@@ -85,14 +67,10 @@ class Callback3Dv2 extends Action
     public function __construct(
         Context $context,
         Config $config,
-        LoggerInterface $logger,
         ThreeDSecureCallbackManagement $requester,
         PiRequestManagerFactory $piReqManagerFactory,
-        Session $checkoutSession,
-        OrderRepositoryInterface $orderRepository,
         QuoteRepository $quoteRepository,
         CryptAndCodeData $cryptAndCode,
-        RecoverCart $recoverCart,
         OrderLoader $orderLoader,
         CustomerSession $customerSession,
         CustomerRepositoryInterface $customerRepository,
@@ -102,15 +80,11 @@ class Callback3Dv2 extends Action
         parent::__construct($context);
         $this->config = $config;
         $this->config->setMethodCode(Config::METHOD_PI);
-        $this->logger = $logger;
-        $this->checkoutSession    = $checkoutSession;
-        $this->orderRepository = $orderRepository;
-        $this->quoteRepository = $quoteRepository;
-
-        $this->requester = $requester;
+        $this->quoteRepository             = $quoteRepository;
+        $this->quoteRepository             = $quoteRepository;
+        $this->requester                   = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
         $this->cryptAndCode                = $cryptAndCode;
-        $this->recoverCart                 = $recoverCart;
         $this->orderLoader                 = $orderLoader;
         $this->customerSession             = $customerSession;
         $this->customerRepository          = $customerRepository;
