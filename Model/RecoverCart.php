@@ -81,7 +81,7 @@ class RecoverCart
         $order = $this->getOrder();
 
         if ($this->verifyIfOrderIsValid($order)) {
-            $quote = $this->checkoutSession->getQuote();
+            $quote = $this->quoteRepository->get($order->getQuoteId());
             if (!empty($quote)) {
                 if ($this->_shouldCancelOrder) {
                     $this->tryCancelOrder($order);
