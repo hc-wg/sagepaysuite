@@ -7,11 +7,8 @@ use Ebizmarts\SagePaySuite\Helper\CustomerLogin;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
-use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Ebizmarts\SagePaySuite\Model\Session as SagePaySession;
 use Magento\Checkout\Model\Session as CheckoutSession;
-use Magento\Customer\Api\CustomerRepositoryInterface;
-use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Sales\Api\OrderRepositoryInterface;
@@ -38,17 +35,8 @@ class Callback3D extends Action
     /** @var CryptAndCodeData */
     private $cryptAndCode;
 
-    /** @var RecoverCart */
-    private $recoverCart;
-
     /** @var CheckoutSession */
     private $checkoutSession;
-
-    /** @var CustomerSession */
-    private $customerSession;
-
-    /** @var CustomerRepositoryInterface */
-    private $customerRepository;
 
     /** @var CustomerLogin */
     private $customerLogin;
@@ -61,11 +49,8 @@ class Callback3D extends Action
      * @param PiRequestManagerFactory $piReqManagerFactory
      * @param OrderRepositoryInterface $orderRepository
      * @param CryptAndCodeData $cryptAndCode
-     * @param RecoverCart $recoverCart
      * @param CheckoutSession $checkoutSession
      * @param Logger $suiteLogger
-     * @param CustomerSession $customerSession
-     * @param CustomerRepositoryInterface $customerRepository
      * @param CustomerLogin $customerLogin
      */
     public function __construct(
@@ -75,11 +60,8 @@ class Callback3D extends Action
         PiRequestManagerFactory $piReqManagerFactory,
         OrderRepositoryInterface $orderRepository,
         CryptAndCodeData $cryptAndCode,
-        RecoverCart $recoverCart,
         CheckoutSession $checkoutSession,
         Logger $suiteLogger,
-        CustomerSession $customerSession,
-        CustomerRepositoryInterface $customerRepository,
         CustomerLogin $customerLogin
     ) {
         parent::__construct($context);
@@ -89,11 +71,8 @@ class Callback3D extends Action
         $this->requester                   = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
         $this->cryptAndCode                = $cryptAndCode;
-        $this->recoverCart                 = $recoverCart;
         $this->checkoutSession             = $checkoutSession;
         $this->suiteLogger                 = $suiteLogger;
-        $this->customerSession             = $customerSession;
-        $this->customerRepository          = $customerRepository;
         $this->customerLogin               = $customerLogin;
     }
 
