@@ -121,9 +121,9 @@ class Callback3Dv2 extends Action
     public function execute()
     {
         $orderId = null;
+        $quoteIdEncrypted = $this->getRequest()->getParam("quoteId");
+        $quoteIdFromParams = $this->cryptAndCode->decodeAndDecrypt($quoteIdEncrypted);
         try {
-            $quoteIdEncrypted = $this->getRequest()->getParam("quoteId");
-            $quoteIdFromParams = $this->cryptAndCode->decodeAndDecrypt($quoteIdEncrypted);
             $quote = $this->quoteRepository->get((int)$quoteIdFromParams);
             $order = $this->orderLoader->loadOrderFromQuote($quote);
             $orderId = (int)$order->getId();
@@ -159,23 +159,26 @@ class Callback3Dv2 extends Action
             if ($response->getErrorMessage() === null) {
                 $this->javascriptRedirect('sagepaysuite/pi/success', $quote->getId(), $orderId);
             } else {
-                $this->messageManager->addError($response->getErrorMessage());
-                $this->javascriptRedirect('checkout/cart');
+                $this->javascriptRedirect('sagepaysuite/pi/failure', $quoteIdFromParams, null, $response->getErrorMessage());
             }
         } catch (ApiException $apiException) {
-            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
-            $this->logger->critical($apiException);
-            $this->messageManager->addError($apiException->getUserMessage());
-            $this->javascriptRedirect('checkout/cart');
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getMessage() . " - orderId: " . $orderId, [__METHOD__, __LINE__]);
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
+            $this->javascriptRedirect('sagepaysuite/pi/failure', $quoteIdFromParams, $orderId, $apiException->getUserMessage());
         } catch (\Exception $e) {
-            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
-            $this->logger->critical($e);
-            $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
-            $this->javascriptRedirect('checkout/cart');
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getMessage() . " - orderId: " . $orderId, [__METHOD__, __LINE__]);
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
+            $this->javascriptRedirect('sagepaysuite/pi/failure', $quoteIdFromParams, $orderId, $e->getMessage());
         }
     }
 
-    private function javascriptRedirect($url, $quoteId = null, $orderId = null)
+    /**
+     * @param $url
+     * @param $quoteId
+     * @param $orderId
+     * @param $errorMessage
+     */
+    private function javascriptRedirect($url, $quoteId = null, $orderId = null, $errorMessage = null)
     {
         $finalUrl = $this->_url->getUrl($url, ['_secure' => true]);
         if ($quoteId !== null) {
@@ -189,6 +192,16 @@ class Callback3Dv2 extends Action
                 $finalUrl .= "?orderId=$orderId";
             }
         }
+
+        if ($errorMessage !== null) {
+            $errorMessage = urlencode($errorMessage);
+            if ($quoteId !== null || $orderId !== null) {
+                $finalUrl .= "&errorMessage=$errorMessage";
+            } else {
+                $finalUrl .= "?errorMessage=$errorMessage";
+            }
+        }
+
         //redirect to success via javascript
         $this
             ->getResponse()
