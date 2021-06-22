@@ -104,6 +104,8 @@ class Callback3D extends Action implements CsrfAwareActionInterface
     {
         $encryptedOrderId = $this->getRequest()->getParam("orderId");
         $orderId = $this->decodeAndDecrypt($encryptedOrderId);
+        $encryptedQuoteId = $this->getRequest()->getParam("quoteId");
+        $quoteId = $this->decodeAndDecrypt($encryptedQuoteId);
         try {
             $sanitizedPares = $this->sanitizePares($this->getRequest()->getPost('PaRes'));
             $order = $this->orderRepository->get($orderId);
@@ -150,19 +152,16 @@ class Callback3D extends Action implements CsrfAwareActionInterface
             if ($response->getErrorMessage() === null) {
                 $this->javascriptRedirect('sagepaysuite/pi/success', $order->getQuoteId(), $orderId);
             } else {
-                $this->messageManager->addError($response->getErrorMessage());
-                $this->javascriptRedirect('checkout/cart');
+                $this->javascriptRedirect('sagepaysuite/pi/failure', $quoteId, null, $response->getErrorMessage());
             }
         } catch (ApiException $apiException) {
-            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getMessage() . " - orderId: " . $orderId, [__METHOD__, __LINE__]);
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
-            $this->messageManager->addError($apiException->getUserMessage());
-            $this->javascriptRedirect('checkout/cart');
+            $this->javascriptRedirect('sagepaysuite/pi/failure', $quoteId, $orderId, $apiException->getUserMessage());
         } catch (\Exception $e) {
-            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getMessage() . " - orderId: " . $orderId, [__METHOD__, __LINE__]);
             $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
-            $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
-            $this->javascriptRedirect('checkout/cart');
+            $this->javascriptRedirect('sagepaysuite/pi/failure', $quoteId, $orderId, $e->getMessage());
         }
     }
 
@@ -181,8 +180,9 @@ class Callback3D extends Action implements CsrfAwareActionInterface
      * @param $url
      * @param $quoteId
      * @param $orderId
+     * @param $errorMessage
      */
-    private function javascriptRedirect($url, $quoteId = null, $orderId = null)
+    private function javascriptRedirect($url, $quoteId = null, $orderId = null, $errorMessage = null)
     {
         $finalUrl = $this->_url->getUrl($url, ['_secure' => true]);
         if ($quoteId !== null) {
@@ -194,6 +194,15 @@ class Callback3D extends Action implements CsrfAwareActionInterface
                 $finalUrl .= "&orderId=$orderId";
             } else {
                 $finalUrl .= "?orderId=$orderId";
+            }
+        }
+
+        if ($errorMessage !== null) {
+            $errorMessage = urlencode($errorMessage);
+            if ($quoteId !== null || $orderId !== null) {
+                $finalUrl .= "&errorMessage=$errorMessage";
+            } else {
+                $finalUrl .= "?errorMessage=$errorMessage";
             }
         }
 
