@@ -61,7 +61,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
         $fraudResponse->setFraudId("someid");
         $fraudResponse->setFraudCode("somecode");
         $fraudResponse->setFraudCodeDetail("somedetail");
-        $fraudResponse->setFraudProviderName(Fraud::T3M);
+        $fraudResponse->setFraudProviderName(Fraud::FSG);
         $fraudResponse->setThirdmanAction("NORESULT");
         $fraudResponse->setThirdmanRules([]);
 
@@ -549,7 +549,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                     'expectedaddobject' => 0,
                     'expects' => [
                         'VPSTxId'     => null,
-                        'fraudprovidername' => Fraud::T3M,
+                        'fraudprovidername' => Fraud::FSG,
                         'fraudscreenrecommendation' => 'HOLD',
                         'fraudid' => '4985075328',
                         'fraudcode' => '37',
@@ -595,7 +595,7 @@ class FraudTest extends \PHPUnit\Framework\TestCase
                         'fraudid' => '4985075328',
                         'fraudcode' => null,
                         'fraudcodedetail' => 'REJECT',
-                        'fraudprovidername' => Fraud::T3M,
+                        'fraudprovidername' => Fraud::FSG,
                         'Action' => 'Marked as FRAUD.'
                     ]
                 ]
