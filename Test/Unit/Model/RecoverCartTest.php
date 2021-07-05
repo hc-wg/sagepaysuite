@@ -138,11 +138,6 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->method('get')
             ->willReturn($this->orderMock);
 
-        $this->checkoutSessionMock
-            ->expects($this->once())
-            ->method('getQuote')
-            ->willReturn($this->quoteMock);
-
         $this->orderMock
             ->expects($this->once())
             ->method('getId')
@@ -352,11 +347,6 @@ class RecoverCartTest extends \PHPUnit\Framework\TestCase
             ->expects($this->once())
             ->method('getId')
             ->willReturn(self::TEST_ORDER_ID);
-
-        $this->checkoutSessionMock
-            ->expects($this->once())
-            ->method('getQuote')
-            ->willReturn(null);
 
         $this->messageManagerMock
             ->expects($this->once())
