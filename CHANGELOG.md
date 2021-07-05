@@ -1,3 +1,8 @@
+## [1.2.40] - 2021-07-07
+### Fixed
+- Module not recovering cart when PI 3D fails.
+- Fraud check failing after Opayo update
+
 ## [1.2.39] - 2021-05-26
 ### Added
 - Debug Mode setting
@@ -310,6 +315,7 @@
 ### Added
 - First release with Magento 2.2.0 compatibility.
 
+[1.2.40]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.40
 [1.2.39]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.39
 [1.2.27.1]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.27.1
 [1.2.27]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.2.27
