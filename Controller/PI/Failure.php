@@ -8,12 +8,10 @@ use Ebizmarts\SagePaySuite\Model\RecoverCart;
 use Magento\Checkout\Model\Type\Onepage;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\CsrfAwareActionInterface;
-use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 
-class Failure extends Action implements CsrfAwareActionInterface
+class Failure extends Action
 {
     /** @var Config */
     private $config;
