@@ -52,21 +52,19 @@ class Failure extends Action implements CsrfAwareActionInterface
     public function execute()
     {
         $session = $this->onepage->getCheckout();
-        $quoteId = $this->getRequest()->getParam("quoteId");
-        $orderId = $this->getRequest()->getParam("orderId");
-        $errorMessage = $this->getRequest()->getParam("errorMessage");
-        if ($orderId) {
-            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
-        } elseif ($quoteId) {
-            $session->setQuoteId($quoteId);
-            $quote = $this->quoteRepository->get($quoteId);
+        $params = $this->getRequest()->getParams();
+        if (isset($params['orderId']) && $params['orderId'] !== null) {
+            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($params['orderId'])->execute();
+        } elseif (isset($params['quoteId']) && $params['quoteId'] !== null) {
+            $session->setQuoteId((int)$params['quoteId']);
+            $quote = $this->quoteRepository->get($params['quoteId']);
             $session->replaceQuote($quote);
         }
         $session->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
         $session->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
 
-        if (!empty($errorMessage)) {
-            $this->messageManager->addError(urldecode($errorMessage));
+        if (!empty($params['errorMessage'])) {
+            $this->addErrorMessage($params['errorMessage']);
         }
 
         $this->_redirect("checkout/cart");
@@ -96,5 +94,13 @@ class Failure extends Action implements CsrfAwareActionInterface
     public function validateForCsrf(RequestInterface $request): ?bool
     {
         return true;
+    }
+
+    /**
+     * @param $errorMessage
+     */
+    public function addErrorMessage(string $errorMessage)
+    {
+        $this->messageManager->addError(urldecode($errorMessage));
     }
 }
