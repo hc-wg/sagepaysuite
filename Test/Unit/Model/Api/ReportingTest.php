@@ -9,6 +9,7 @@ namespace Ebizmarts\SagePaySuite\Test\Unit\Model\Api;
 use Ebizmarts\SagePaySuite\Api\Data\HttpResponse;
 use Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponse;
 use Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRule;
+use Ebizmarts\SagePaySuite\Helper\Fraud;
 use Ebizmarts\SagePaySuite\Model\Api\ApiException;
 use Ebizmarts\SagePaySuite\Model\Api\HttpText;
 use Ebizmarts\SagePaySuite\Model\Api\Reporting;
@@ -255,7 +256,7 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('0000', $response->getErrorCode());
         $this->assertEquals('30/11/2016 09:55:01', $response->getTimestamp());
-        $this->assertEquals('T3M', $response->getFraudProviderName());
+        $this->assertEquals(Fraud::FSG, $response->getFraudProviderName());
         $this->assertEquals('4985075328', $response->getThirdmanId());
         $this->assertEquals('37', $response->getThirdmanScore());
         $this->assertEquals('HOLD', $response->getThirdmanAction());
@@ -315,7 +316,7 @@ class ReportingTest extends \PHPUnit_Framework_TestCase
         return '<vspaccess>
                         <errorcode>0000</errorcode>
                         <timestamp>30/11/2016 09:55:01</timestamp>
-                        <fraudprovidername>T3M</fraudprovidername>
+                        <fraudprovidername>FSG</fraudprovidername>
                         <t3mid>4985075328</t3mid>
                         <t3mscore>37</t3mscore>
                         <t3maction>HOLD</t3maction>
