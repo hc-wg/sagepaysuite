@@ -18,7 +18,7 @@ use Magento\Store\Model\Store;
 
 class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const T3M = 'T3M';
+    const FSG = 'FSG';
     const RED = 'ReD';
 
     /**
@@ -187,7 +187,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         if ($fraudprovidername == self::RED) {
             $recommendation = $fraudData->getFraudScreenRecommendation();
-        } elseif ($fraudprovidername == self::T3M) {
+        } elseif ($fraudprovidername == self::FSG) {
             $recommendation = $fraudData->getThirdmanAction();
         }
 
@@ -206,7 +206,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         if ($fraudprovidername == self::RED) {
             $passed = $fraudData->getFraudScreenRecommendation() == Config::REDSTATUS_ACCEPT;
-        } elseif ($fraudprovidername == self::T3M) {
+        } elseif ($fraudprovidername == self::FSG) {
             $passed = $fraudData->getThirdmanAction() == Config::T3STATUS_OK;
         }
 
@@ -228,7 +228,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
             $fraudid                   = $fraudData->getFraudId();
             $fraudcode                 = $fraudData->getFraudCode();
             $fraudcodedetail           = $fraudData->getFraudCodeDetail();
-        } elseif ($fraudprovidername == self::T3M) {
+        } elseif ($fraudprovidername == self::FSG) {
             $fraudscreenrecommendation = $fraudData->getThirdmanAction();
             $fraudid                   = $fraudData->getThirdmanId();
             $fraudcode                 = $fraudData->getThirdmanScore();
@@ -258,7 +258,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
             $fraudid                   = $fraudData->getFraudId();
             $fraudcode                 = $fraudData->getFraudCode();
             $fraudcodedetail           = $fraudData->getFraudCodeDetail();
-        } elseif ($fraudprovidername == self::T3M) {
+        } elseif ($fraudprovidername == self::FSG) {
             $fraudscreenrecommendation = $fraudData->getThirdmanAction();
             $fraudid                   = $fraudData->getThirdmanId();
             $fraudcode                 = $fraudData->getThirdmanScore();
@@ -286,7 +286,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         if ($fraudprovidername == self::RED) {
             $isFraud = $fraudData->getFraudScreenRecommendation() == Config::REDSTATUS_DENY;
-        } elseif ($fraudprovidername == self::T3M) {
+        } elseif ($fraudprovidername == self::FSG) {
             $isFraud = $fraudData->getThirdmanAction() == Config::T3STATUS_REJECT;
         }
 
@@ -305,7 +305,7 @@ class Fraud extends \Magento\Framework\App\Helper\AbstractHelper
 
         if ($fraudprovidername == self::RED) {
             $providerChecked = $fraudData->getFraudScreenRecommendation() != Config::REDSTATUS_NOTCHECKED;
-        } elseif ($fraudprovidername == self::T3M) {
+        } elseif ($fraudprovidername == self::FSG) {
             $providerChecked = $fraudData->getThirdmanAction() != Config::T3STATUS_NORESULT;
         }
 
