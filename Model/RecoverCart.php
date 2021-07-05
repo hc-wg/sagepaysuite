@@ -10,6 +10,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
@@ -87,7 +88,7 @@ class RecoverCart
                     $this->tryCancelOrder($order);
                 }
                 try {
-                    $this->cloneQuoteAndReplaceInSession($order);
+                    $this->cloneQuoteAndReplaceInSession($quote);
                 } catch (LocalizedException $e) {
                     $this->logExceptionAndShowError(self::GENERAL_ERROR_MESSAGE, $e);
                 } catch (NoSuchEntityException $e) {
@@ -103,13 +104,12 @@ class RecoverCart
     }
 
     /**
-     * @param OrderInterface $order
+     * @param Quote $quote
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    private function cloneQuoteAndReplaceInSession(OrderInterface $order)
+    private function cloneQuoteAndReplaceInSession(Quote $quote)
     {
-        $quote = $this->quoteRepository->get($order->getQuoteId());
         $items = $quote->getAllVisibleItems();
         $customer = $quote->getCustomer();
 
