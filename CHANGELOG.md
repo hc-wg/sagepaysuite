@@ -1,3 +1,8 @@
+## [1.1.40] - 2021-07-07
+### Fixed
+- Module not recovering cart when PI 3D fails.
+- Fraud check failing after Opayo update
+
 ## [1.1.39] - 2021-05-26
 ### Added
 - Debug Mode setting
@@ -425,6 +430,7 @@
    - PI integration (frontend)
    - Online Refunds
 
+[1.1.40]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.40
 [1.1.39]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.39
 [1.1.38.1]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.38.1
 [1.1.38]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.1.38
