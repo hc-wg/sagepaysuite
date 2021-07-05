@@ -12,9 +12,8 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Api\Data\CartInterface;
-use PHPUnit\Framework\TestCase;
 
-class FailureTest extends TestCase
+class FailureTest extends \PHPUnit_Framework_TestCase
 {
     private $configMock;
 
