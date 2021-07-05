@@ -10,13 +10,11 @@ use Ebizmarts\SagePaySuite\Model\CryptAndCodeData;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 use Ebizmarts\SagePaySuite\Model\PiRequestManagement\ThreeDSecureCallbackManagement;
-use Ebizmarts\SagePaySuite\Model\RecoverCart;
-use Magento\Checkout\Model\Session;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Quote\Model\QuoteRepository;
 
 class Callback3Dv2 extends Action
 {
@@ -37,12 +35,6 @@ class Callback3Dv2 extends Action
 
     /** @var OrderLoader */
     private $orderLoader;
-
-    /** @var CustomerSession */
-    private $customerSession;
-
-    /** @var CustomerRepositoryInterface */
-    private $customerRepository;
 
     /** @var CustomerLogin */
     private $customerLogin;
