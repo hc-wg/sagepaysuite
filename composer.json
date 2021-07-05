@@ -1,6 +1,6 @@
 {
     "name": "ebizmarts/sagepaysuite",
-    "version": "1.4.5.1",
+    "version": "1.4.39",
     "description": "Official Opayo integration for Magento 2.",
     "require": {
         "magento/module-sales": "103.0.*",

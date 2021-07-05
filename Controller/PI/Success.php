@@ -3,13 +3,13 @@
 namespace Ebizmarts\SagePaySuite\Controller\PI;
 
 use Ebizmarts\SagePaySuite\Model\Config;
+use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
+use Magento\Checkout\Model\Type\Onepage;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
-use Magento\Checkout\Model\Type\Onepage;
-use Ebizmarts\SagePaySuite\Model\ObjectLoader\OrderLoader;
 
 class Success extends Action implements CsrfAwareActionInterface
 {
@@ -40,7 +40,6 @@ class Success extends Action implements CsrfAwareActionInterface
         $this->onepage = $onepage;
         $this->orderLoader = $orderLoader;
         $this->config->setMethodCode(Config::METHOD_PI);
-
     }
 
     public function execute()
@@ -58,6 +57,8 @@ class Success extends Action implements CsrfAwareActionInterface
             $order = $this->orderLoader->getById($orderId);
             $session->setLastRealOrderId($order->getIncrementId());
         }
+        $session->setData(\Ebizmarts\SagePaySuite\Model\Session::PRESAVED_PENDING_ORDER_KEY, null);
+        $session->setData(\Ebizmarts\SagePaySuite\Model\Session::CONVERTING_QUOTE_TO_ORDER, 0);
 
         $this->_redirect("checkout/onepage/success");
     }
