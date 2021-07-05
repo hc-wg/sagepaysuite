@@ -71,7 +71,7 @@ class Failure extends Action
     /**
      * @param $errorMessage
      */
-    public function addErrorMessage(string $errorMessage)
+    public function addErrorMessage($errorMessage)
     {
         $this->messageManager->addError(urldecode($errorMessage));
     }
