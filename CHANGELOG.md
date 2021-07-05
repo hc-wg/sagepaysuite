@@ -1,3 +1,9 @@
+## [1.4.40] - 2021-07-07
+### Fixed
+- Module not recovering cart when PI 3D fails.
+- Fraud check failing after Opayo update
+- The "ResultInterface" class doesn't exist and the namespace must be specified.
+
 ## [1.4.39] - 2021-05-26
 ### Added
 - Compatibility with Magento 2.4.2-p1
@@ -72,6 +78,7 @@
 - Server not recovering cart when cancel the transaction
 - Add form validation in PI WITHOUT Form
 
+[1.4.40]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.40
 [1.4.39]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.39
 [1.4.5.1]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.5.1
 [1.4.5]: https://github.com/ebizmarts/magento2-sage-pay-suite/releases/tag/1.4.5
