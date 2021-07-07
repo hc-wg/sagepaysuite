@@ -222,6 +222,9 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
 
     public function testExecuteERROR()
     {
+        $errorMessage = 'Invalid 3D secure authentication.';
+        $encodedErrorMessage = urlencode($errorMessage);
+
         $checkoutSessionMock = $this
             ->getMockBuilder(Session::class)
             ->disableOriginalConstructor()
@@ -287,7 +290,6 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
         $messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
             ->disableOriginalConstructor()
             ->getMock();
-        $messageManagerMock->expects($this->once())->method('addError')->with('Invalid 3D secure authentication.');
 
         $contextMock = $this->makeContextMock($messageManagerMock);
 
@@ -364,7 +366,8 @@ class Callback3Dv2Test extends \PHPUnit\Framework\TestCase
 
         $this->expectSetBody(
             '<script>window.top.location.href = "'
-            . $this->urlBuilderMock->getUrl('checkout/cart', ['_secure' => true, 'quoteId' => self::ENCRYPTED_QUOTE_ID])
+            . $this->urlBuilderMock->getUrl('sagepaysuite/pi/failure', ['_secure' => true])
+            . '?quoteId=' . self::QUOTE_ID . '&errorMessage=' . $encodedErrorMessage
             . '";</script>'
         );
 
