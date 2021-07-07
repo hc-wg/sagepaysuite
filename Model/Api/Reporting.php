@@ -8,6 +8,7 @@ namespace Ebizmarts\SagePaySuite\Model\Api;
 
 use Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenResponseInterfaceFactory;
 use Ebizmarts\SagePaySuite\Api\SagePayData\FraudScreenRuleInterfaceFactory;
+use Ebizmarts\SagePaySuite\Helper\Fraud;
 use Ebizmarts\SagePaySuite\Model\Config;
 use Ebizmarts\SagePaySuite\Model\Logger\Logger;
 use Magento\Framework\ObjectManager\ObjectManager;
@@ -250,12 +251,12 @@ class Reporting
         $fraudResponse->setFraudProviderName((string)$result->fraudprovidername);
 
         if ($fraudResponse->getErrorCode() == '0000') {
-            if ($fraudResponse->getFraudProviderName() == 'ReD') {
+            if ($fraudResponse->getFraudProviderName() == Fraud::RED) {
                 $fraudResponse->setFraudScreenRecommendation((string)$result->fraudscreenrecommendation);
                 $fraudResponse->setFraudId((string)$result->fraudid);
                 $fraudResponse->setFraudCode((string)$result->fraudcode);
                 $fraudResponse->setFraudCodeDetail((string)$result->fraudcodedetail);
-            } elseif ($fraudResponse->getFraudProviderName() == 'T3M') {
+            } elseif ($fraudResponse->getFraudProviderName() == Fraud::FSG) {
                 $fraudResponse->setThirdmanId((string)$result->t3mid);
                 $fraudResponse->setThirdmanScore((string)$result->t3mscore);
                 $fraudResponse->setThirdmanAction((string)$result->t3maction);
