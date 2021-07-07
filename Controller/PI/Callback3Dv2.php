@@ -19,15 +19,11 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
 use Magento\Quote\Model\QuoteRepository;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Psr\Log\LoggerInterface;
 
 class Callback3Dv2 extends Action
 {
     /** @var Config */
     private $config;
-
-    /** @var LoggerInterface */
-    private $logger;
 
     /** @var ThreeDSecureCallbackManagement */
     private $requester;
@@ -35,20 +31,11 @@ class Callback3Dv2 extends Action
     /** @var \Ebizmarts\SagePaySuite\Api\Data\PiRequestManager */
     private $piRequestManagerDataFactory;
 
-    /** @var Session */
-    private $checkoutSession;
-
-    /** @var OrderRepositoryInterface */
-    private $orderRepository;
-
     /** @var QuoteRepository */
     private $quoteRepository;
 
     /** @var CryptAndCodeData */
     private $cryptAndCode;
-
-    /** @var RecoverCart */
-    private $recoverCart;
 
     /** @var OrderLoader */
     private $orderLoader;
@@ -69,14 +56,10 @@ class Callback3Dv2 extends Action
      * Callback3D constructor.
      * @param Context $context
      * @param Config $config
-     * @param LoggerInterface $logger
      * @param ThreeDSecureCallbackManagement $requester
      * @param PiRequestManagerFactory $piReqManagerFactory
-     * @param Session $checkoutSession
-     * @param OrderRepositoryInterface $orderRepository
      * @param QuoteRepository $quoteRepository
      * @param CryptAndCodeData $cryptAndCode
-     * @param RecoverCart $recoverCart
      * @param OrderLoader $orderLoader
      * @param CustomerSession $customerSession
      * @param CustomerRepositoryInterface $customerRepository
@@ -86,14 +69,10 @@ class Callback3Dv2 extends Action
     public function __construct(
         Context $context,
         Config $config,
-        LoggerInterface $logger,
         ThreeDSecureCallbackManagement $requester,
         PiRequestManagerFactory $piReqManagerFactory,
-        Session $checkoutSession,
-        OrderRepositoryInterface $orderRepository,
         QuoteRepository $quoteRepository,
         CryptAndCodeData $cryptAndCode,
-        RecoverCart $recoverCart,
         OrderLoader $orderLoader,
         CustomerSession $customerSession,
         CustomerRepositoryInterface $customerRepository,
@@ -103,15 +82,11 @@ class Callback3Dv2 extends Action
         parent::__construct($context);
         $this->config = $config;
         $this->config->setMethodCode(Config::METHOD_PI);
-        $this->logger = $logger;
-        $this->checkoutSession    = $checkoutSession;
-        $this->orderRepository = $orderRepository;
-        $this->quoteRepository = $quoteRepository;
-
-        $this->requester = $requester;
+        $this->quoteRepository             = $quoteRepository;
+        $this->quoteRepository             = $quoteRepository;
+        $this->requester                   = $requester;
         $this->piRequestManagerDataFactory = $piReqManagerFactory;
         $this->cryptAndCode                = $cryptAndCode;
-        $this->recoverCart                 = $recoverCart;
         $this->orderLoader                 = $orderLoader;
         $this->customerSession             = $customerSession;
         $this->customerRepository          = $customerRepository;
@@ -122,9 +97,9 @@ class Callback3Dv2 extends Action
     public function execute()
     {
         $orderId = null;
+        $quoteIdEncrypted = $this->getRequest()->getParam("quoteId");
+        $quoteIdFromParams = $this->cryptAndCode->decodeAndDecrypt($quoteIdEncrypted);
         try {
-            $quoteIdEncrypted = $this->getRequest()->getParam("quoteId");
-            $quoteIdFromParams = $this->cryptAndCode->decodeAndDecrypt($quoteIdEncrypted);
             $quote = $this->quoteRepository->get((int)$quoteIdFromParams);
 
             $order = $this->orderLoader->loadOrderFromQuote($quote);
@@ -161,23 +136,26 @@ class Callback3Dv2 extends Action
             if ($response->getErrorMessage() === null) {
                 $this->javascriptRedirect('sagepaysuite/pi/success', $quote->getId(), $orderId);
             } else {
-                $this->messageManager->addError($response->getErrorMessage());
-                $this->javascriptRedirect('checkout/cart');
+                $this->javascriptRedirect('sagepaysuite/pi/failure', $quoteIdFromParams, null, $response->getErrorMessage());
             }
         } catch (ApiException $apiException) {
-            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
-            $this->logger->critical($apiException);
-            $this->messageManager->addError($apiException->getUserMessage());
-            $this->javascriptRedirect('checkout/cart');
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getMessage() . " - orderId: " . $orderId, [__METHOD__, __LINE__]);
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $apiException->getTraceAsString(), [__METHOD__, __LINE__]);
+            $this->javascriptRedirect('sagepaysuite/pi/failure', $quoteIdFromParams, $orderId, $apiException->getUserMessage());
         } catch (\Exception $e) {
-            $this->recoverCart->setShouldCancelOrder(true)->setOrderId($orderId)->execute();
-            $this->logger->critical($e);
-            $this->messageManager->addError(__("Something went wrong: %1", $e->getMessage()));
-            $this->javascriptRedirect('checkout/cart');
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getMessage() . " - orderId: " . $orderId, [__METHOD__, __LINE__]);
+            $this->suiteLogger->sageLog(Logger::LOG_EXCEPTION, $e->getTraceAsString(), [__METHOD__, __LINE__]);
+            $this->javascriptRedirect('sagepaysuite/pi/failure', $quoteIdFromParams, $orderId, $e->getMessage());
         }
     }
 
-    private function javascriptRedirect($url, $quoteId = null, $orderId = null)
+    /**
+     * @param $url
+     * @param $quoteId
+     * @param $orderId
+     * @param $errorMessage
+     */
+    private function javascriptRedirect($url, $quoteId = null, $orderId = null, $errorMessage = null)
     {
         $finalUrl = $this->_url->getUrl($url, ['_secure' => true]);
         if ($quoteId !== null) {
@@ -191,6 +169,16 @@ class Callback3Dv2 extends Action
                 $finalUrl .= "?orderId=$orderId";
             }
         }
+
+        if ($errorMessage !== null) {
+            $errorMessage = urlencode($errorMessage);
+            if ($quoteId !== null || $orderId !== null) {
+                $finalUrl .= "&errorMessage=$errorMessage";
+            } else {
+                $finalUrl .= "?errorMessage=$errorMessage";
+            }
+        }
+
         //redirect to success via javascript
         $this
             ->getResponse()
